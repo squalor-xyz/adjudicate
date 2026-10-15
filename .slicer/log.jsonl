@@ -245,3 +245,21 @@
 {"when": "2026-10-15T04:59:18Z", "item": "S04", "action": "status", "from": "started", "to": "done", "note": "S04 landed: JSON-frontmatter record file read and write (Marshal, Unmarshal, Parse, ReadFile, WriteFile) with BOM and CRLF rejection; 159 tests green, vet and gofmt clean; decisions C48-C55.", "by": "Jon R"}
 {"when": "2026-10-15T04:59:31Z", "item": "S05", "action": "note", "from": "", "to": "", "note": "From S04 review/gate: (1) model.WriteFile is a plain os.Writ", "by": "Jon R"}
 {"when": "2026-10-15T04:59:31Z", "item": "S14", "action": "note", "from": "", "to": "", "note": "From S04 review: model.Parse returns Record{} on any JSON de", "by": "Jon R"}
+{"when": "2026-10-15T05:00:37Z", "item": "S05", "action": "status", "from": "open", "to": "started", "note": "", "by": "Jon R"}
+{"when": "2026-10-15T05:05:33Z", "item": "C56", "action": "catalog", "from": "", "to": "Config: .adjudicate.json at the repo root, one JSON object with an optional store key", "note": "add"}
+{"when": "2026-10-15T05:05:33Z", "item": "C57", "action": "catalog", "from": "", "to": "Root discovery: nearest directory, from the working directory up, holding .adjudicate.json as a regular file", "note": "add"}
+{"when": "2026-10-15T05:05:33Z", "item": "C58", "action": "catalog", "from": "", "to": "Record file name: <ID padded to four digits>-<slug>.md; slug is the title's lowercase ASCII letters and digits joined by -, at most 60 bytes, untitled if empty", "note": "add"}
+{"when": "2026-10-15T05:05:33Z", "item": "C59", "action": "catalog", "from": "", "to": "Record files are found by name: regular file, four or more digits above zero, then -, text and .md; the ID comes from the name", "note": "add"}
+{"when": "2026-10-15T05:05:33Z", "item": "C60", "action": "catalog", "from": "", "to": "Duplicate IDs: List returns every file in ID then file-name order; Get and Update fail with ErrDuplicateID", "note": "add"}
+{"when": "2026-10-15T05:05:34Z", "item": "C61", "action": "catalog", "from": "", "to": "List is strict: the first unreadable or invalid record file is an error naming it", "note": "add"}
+{"when": "2026-10-15T05:05:34Z", "item": "C62", "action": "catalog", "from": "", "to": "Store writes are atomic: Update writes a .adj-*.tmp file and renames it over the record; Create writes one and links it into place so it never replaces a file", "note": "add"}
+{"when": "2026-10-15T05:05:34Z", "item": "C63", "action": "catalog", "from": "", "to": "Create ignores the ID in the record and adds no history entry; the store directory is made on first Create; a missing directory is an empty store; Update keeps the file path", "note": "add"}
+{"when": "2026-10-15T05:10:14Z", "item": "C56", "action": "catalog", "from": "", "to": "body", "note": "edit"}
+{"when": "2026-10-15T05:10:14Z", "item": "C57", "action": "catalog", "from": "", "to": "body", "note": "edit"}
+{"when": "2026-10-15T05:10:14Z", "item": "C62", "action": "catalog", "from": "", "to": "title,body", "note": "edit"}
+{"when": "2026-10-15T05:10:14Z", "item": "C64", "action": "catalog", "from": "", "to": "Permissions and retry: new records are 0644, Update keeps the old file's permission bits, and Create retries up to three times when its file name is taken", "note": "add"}
+{"when": "2026-10-15T05:11:57Z", "item": "S05", "action": "note", "from": "", "to": "", "note": "Verified: internal/store (Open, List, Get, Create, Update), ", "by": "Jon R"}
+{"when": "2026-10-15T05:11:57Z", "item": "S05", "action": "status", "from": "started", "to": "done", "note": "Store, config and ID allocation: internal/store with atomic create (link, bounded retry) and update (rename), 0644/preserved perms, fsync; 231 tests green, vet/gofmt clean; C56-C64.", "by": "Jon R"}
+{"when": "2026-10-15T05:12:11Z", "item": "S14", "action": "note", "from": "", "to": "", "note": "From S05 review: store.scan/fileID (internal/store/store.go)", "by": "Jon R"}
+{"when": "2026-10-15T05:12:11Z", "item": "S15", "action": "note", "from": "", "to": "", "note": "From S05 review/gate: store.Get/Update already return ErrDup", "by": "Jon R"}
+{"when": "2026-10-15T05:12:11Z", "item": "S06", "action": "note", "from": "", "to": "", "note": "From S05 gate (nits): internal/store/store.go:44-45 beforeLi", "by": "Jon R"}

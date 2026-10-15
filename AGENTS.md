@@ -23,12 +23,28 @@ library only.
 - `internal/model`: the record type, validation, status transitions and the
   record file format; its only file I/O is `ReadFile` and `WriteFile` in
   `file.go`.
-- `internal/commands`, `internal/store`, `internal/query`, `internal/render`:
-  added by later slices.
+- `internal/store`: one repo's record directory (`store.go`) and its config
+  (`config.go`); see "Store and config" below.
+- `internal/commands`, `internal/query`, `internal/render`: added by later
+  slices.
 - `scripts/env.sh`: Go cache and temp setup (see below).
 
 Exit codes for every command: 0 success; 1 a failed operation or failed check;
 2 a usage error (C34).
+
+## Store and config
+
+- The repo root is the nearest directory, from the working directory up, that
+  holds `.adjudicate.json` (`store.FindRoot`). The file is one JSON object; its
+  only key is `store`, the store directory relative to the root (default
+  `decisions`, C29). Unknown keys, an absolute path or a path that leaves the
+  root are errors. With no config file `store.Open(root)` uses the defaults.
+- A record file is `<ID padded to four digits>-<slug>.md` in the store
+  directory; the slug is the title's lowercase ASCII letters and digits joined
+  by `-`. Files not named like that are ignored; a file named like a record
+  that is malformed or invalid makes `List` fail (C61). The next ID is one past
+  the highest ID in the file names. `Update` keeps the file's path and
+  permission bits; new files are 0644.
 
 ## Setup and checks
 

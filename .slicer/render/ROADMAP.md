@@ -198,6 +198,42 @@ Records are small text files; an atomic replace is left to the store slice if it
 
 The slice Files list places them in model; they are the package's only file I/O, so AGENTS.md:23 and the record.go package doc change with them.
 
+### C56 Config: .adjudicate.json at the repo root, one JSON object with an optional store key
+
+Unknown keys, an absolute store and a store that leaves the root are errors (invalid config); a missing file means the defaults (store decisions/). One standard-library format, and a typo in a key does not pass silently. The store-path check is lexical: a symlinked store can still point outside the root, and the config is owner-authored.
+
+### C57 Root discovery: nearest directory, from the working directory up, holding .adjudicate.json as a regular file
+
+store.FindRoot returns it, or ErrNoRoot if none; adj init (later) writes the file. The config file is the one marker the owner already configures, and a directory of that name does not count. The walk goes to the file system root with no git boundary, so an .adjudicate.json in an ancestor directory applies.
+
+### C58 Record file name: <ID padded to four digits>-<slug>.md; slug is the title's lowercase ASCII letters and digits joined by -, at most 60 bytes, untitled if empty
+
+Non-ASCII characters and punctuation act as separators, so names are portable and diff-stable; 60 bytes keeps paths short; IDs above 9999 keep all digits.
+
+### C59 Record files are found by name: regular file, four or more digits above zero, then -, text and .md; the ID comes from the name
+
+A file that does not parse still reserves its ID, so a broken file never lets Create reuse a number; List and Get reject a file whose record ID differs from its name.
+
+### C60 Duplicate IDs: List returns every file in ID then file-name order; Get and Update fail with ErrDuplicateID
+
+Detecting and renumbering collisions is S15; the store must not silently pick one file, and Create still allocates one past the highest ID.
+
+### C61 List is strict: the first unreadable or invalid record file is an error naming it
+
+Every command needs records that satisfy the model; lint (S14) uses model.Parse itself to report invalid files instead of loading them.
+
+### C62 Store writes go through a synced temp file: Update renames it over the record, Create links it into place and never replaces a file
+
+Answers C54 for the store. The record is written to a .adj-*.tmp file (names start with a dot, so never taken for records) and fsynced. Update renames it over the record; after a crash the file is the old record or the new one, but the directory is not fsynced, so which one is not guaranteed. Create links it into place, so it can never overwrite a file; the link also keeps a reader from seeing half a record. Accepted limit: os.Link fails on file systems without hard links and there is no fallback. Concurrent creates in one checkout with different titles can still both get the same ID because the scan is not locked; lint (S14) detects that and renumber (S15) fixes it (C26).
+
+### C63 Create ignores the ID in the record and adds no history entry; the store directory is made on first Create; a missing directory is an empty store; Update keeps the file path
+
+The ID is the store's to allocate (C26); the ask command writes the history entry and date (C43); an unrenamed file keeps git history and links to it.
+
+### C64 Permissions and retry: new records are 0644, Update keeps the old file's permission bits, and Create retries up to three times when its file name is taken
+
+os.CreateTemp makes 0600 files, so the store sets the mode itself: 0644 for a new record (git-friendly, umask-independent) and the replaced file's bits on Update so a chosen mode survives. When the link finds the name taken (another writer after our scan), Create rescans and takes the next ID, then gives up with an error wrapping os.ErrExist that names the target file; no locking, which is the owner's design call.
+
 ## Assumptions
 
 ### C14 Name: keep 'dlog' as placeholder
@@ -254,34 +290,34 @@ PENDING OWNER CONFIRMATION - not decided. Source: Dependency/licensing notes (ma
 
 *Retired: Owner decided 2026-10-15: see decision C31 (GPL-3.0-or-later)..*
 
-22 items · — 13 · done 4 · later 5
+22 items · — 12 · done 5 · later 5
 
 | # | Slice | Title | Size | Effort | Trees | Findings | Status |
 |---|---|---|---|---|---|---|---|
-| 1 | [S05](slices/S05.md) | Store, config and ID allocation | M | 2 | store | PROJECT.md Architecture sketch (ID allocation, Determinism); Open decisions 4, 6, 7 | — |
-| 2 | [S06](slices/S06.md) | Commands: init and ask | M | 2 | cli | PROJECT.md v1 feature tier; Milestone 2 | — |
-| 3 | [S07](slices/S07.md) | Commands: decide, reject, withdraw | S | 1 | cli | PROJECT.md v1 feature tier; Lifecycle; Milestone 2 | — |
-| 4 | [S08](slices/S08.md) | Commands: show and list with --json | S | 1 | cli | PROJECT.md v1 feature tier; Milestone 2; acceptance (--json) | — |
-| 5 | [S09](slices/S09.md) | Command: inbox | S | 1 | cli | PROJECT.md Goals 2; v1 feature tier; Milestone 3 | — |
-| 6 | [S10](slices/S10.md) | Command: check | S | 1 | cli | PROJECT.md Goals 6; v1 feature tier; Milestone 3 | — |
-| 7 | [S11](slices/S11.md) | Command: context | M | 2 | cli | PROJECT.md Goals 5; v1 feature tier; Risks (context bloat); Milestone 3 | — |
-| 8 | [S12](slices/S12.md) | Agent snippet: adj ai and JSON shape docs | S | 1 | docs | PROJECT.md v1 feature tier; Risks (adoption); acceptance (--json documented) | — |
-| 9 | [S13](slices/S13.md) | Command: supersede | S | 1 | cli | PROJECT.md Goals 4; Lifecycle; acceptance (supersede); Milestone 4 | — |
-| 10 | [S14](slices/S14.md) | Command: lint | M | 2 | cli | PROJECT.md Goals 8; acceptance (lint fixtures); Open decisions 5; Milestone 4 | — |
-| 11 | [S15](slices/S15.md) | ID collision detection and renumber | M | 2 | store | PROJECT.md Open decisions 4; Risks (merge conflicts on IDs); Milestone 4 | — |
-| 12 | [S16](slices/S16.md) | Docs and v1 acceptance round trip | S | 1 | docs | PROJECT.md v1 acceptance criteria; Milestone 5 | — |
-| 13 | [S17](slices/S17.md) | Dogfood: record adjudicate's own decisions with adj | S | 1 | docs | PROJECT.md Milestone 5; acceptance (own decisions recorded) | — |
-| 14 | [S18](slices/S18.md) | Later: cross-repo inbox | M | 2 | later | PROJECT.md Feature tiers (Later); Open decisions 6 | later |
-| 15 | [S19](slices/S19.md) | Later: TUI or static HTML inbox | M | 2 | later | PROJECT.md Feature tiers (Later) | later |
-| 16 | [S20](slices/S20.md) | Later: slicer integration | M | 2 | later | PROJECT.md Feature tiers (Later); Non-goals (not replacing slicer); Risks (overlap with slicer catalog) | later |
-| 17 | [S21](slices/S21.md) | Later: optional owner-only decide enforcement | M | 2 | later | PROJECT.md Feature tiers (Later); Open decisions 5; Non-goals | later |
-| 18 | [S22](slices/S22.md) | Later: import from ADR folders | M | 2 | later | PROJECT.md Feature tiers (Later) | later |
+| 1 | [S06](slices/S06.md) | Commands: init and ask | M | 2 | cli | PROJECT.md v1 feature tier; Milestone 2 | — |
+| 2 | [S07](slices/S07.md) | Commands: decide, reject, withdraw | S | 1 | cli | PROJECT.md v1 feature tier; Lifecycle; Milestone 2 | — |
+| 3 | [S08](slices/S08.md) | Commands: show and list with --json | S | 1 | cli | PROJECT.md v1 feature tier; Milestone 2; acceptance (--json) | — |
+| 4 | [S09](slices/S09.md) | Command: inbox | S | 1 | cli | PROJECT.md Goals 2; v1 feature tier; Milestone 3 | — |
+| 5 | [S10](slices/S10.md) | Command: check | S | 1 | cli | PROJECT.md Goals 6; v1 feature tier; Milestone 3 | — |
+| 6 | [S11](slices/S11.md) | Command: context | M | 2 | cli | PROJECT.md Goals 5; v1 feature tier; Risks (context bloat); Milestone 3 | — |
+| 7 | [S12](slices/S12.md) | Agent snippet: adj ai and JSON shape docs | S | 1 | docs | PROJECT.md v1 feature tier; Risks (adoption); acceptance (--json documented) | — |
+| 8 | [S13](slices/S13.md) | Command: supersede | S | 1 | cli | PROJECT.md Goals 4; Lifecycle; acceptance (supersede); Milestone 4 | — |
+| 9 | [S14](slices/S14.md) | Command: lint | M | 2 | cli | PROJECT.md Goals 8; acceptance (lint fixtures); Open decisions 5; Milestone 4 | — |
+| 10 | [S15](slices/S15.md) | ID collision detection and renumber | M | 2 | store | PROJECT.md Open decisions 4; Risks (merge conflicts on IDs); Milestone 4 | — |
+| 11 | [S16](slices/S16.md) | Docs and v1 acceptance round trip | S | 1 | docs | PROJECT.md v1 acceptance criteria; Milestone 5 | — |
+| 12 | [S17](slices/S17.md) | Dogfood: record adjudicate's own decisions with adj | S | 1 | docs | PROJECT.md Milestone 5; acceptance (own decisions recorded) | — |
+| 13 | [S18](slices/S18.md) | Later: cross-repo inbox | M | 2 | later | PROJECT.md Feature tiers (Later); Open decisions 6 | later |
+| 14 | [S19](slices/S19.md) | Later: TUI or static HTML inbox | M | 2 | later | PROJECT.md Feature tiers (Later) | later |
+| 15 | [S20](slices/S20.md) | Later: slicer integration | M | 2 | later | PROJECT.md Feature tiers (Later); Non-goals (not replacing slicer); Risks (overlap with slicer catalog) | later |
+| 16 | [S21](slices/S21.md) | Later: optional owner-only decide enforcement | M | 2 | later | PROJECT.md Feature tiers (Later); Open decisions 5; Non-goals | later |
+| 17 | [S22](slices/S22.md) | Later: import from ADR folders | M | 2 | later | PROJECT.md Feature tiers (Later) | later |
 
 ---
 
 | # | Slice | Title | Size | Effort | Trees | Findings | Status |
 |---|---|---|---|---|---|---|---|
-| 19 | [S01](slices/S01.md) | Confirm open decisions | S | 1 | decisions | PROJECT.md Open decisions 1-7; Core concepts (kind); Dependency/licensing notes | done |
-| 20 | [S02](slices/S02.md) | Project scaffolding | S | 1 | scaffold | PROJECT.md Stack recommendation; Dependency/licensing notes | done |
-| 21 | [S03](slices/S03.md) | Record model and lifecycle transitions | M | 2 | model | PROJECT.md Core concepts / data model; Milestone 1 | done |
-| 22 | [S04](slices/S04.md) | Record file read and write | S | 1 | model | PROJECT.md Open decisions 3; Core concepts (Record) | done |
+| 18 | [S01](slices/S01.md) | Confirm open decisions | S | 1 | decisions | PROJECT.md Open decisions 1-7; Core concepts (kind); Dependency/licensing notes | done |
+| 19 | [S02](slices/S02.md) | Project scaffolding | S | 1 | scaffold | PROJECT.md Stack recommendation; Dependency/licensing notes | done |
+| 20 | [S03](slices/S03.md) | Record model and lifecycle transitions | M | 2 | model | PROJECT.md Core concepts / data model; Milestone 1 | done |
+| 21 | [S04](slices/S04.md) | Record file read and write | S | 1 | model | PROJECT.md Open decisions 3; Core concepts (Record) | done |
+| 22 | [S05](slices/S05.md) | Store, config and ID allocation | M | 2 | store | PROJECT.md Architecture sketch (ID allocation, Determinism); Open decisions 4, 6, 7 | done |

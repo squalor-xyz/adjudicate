@@ -23,7 +23,8 @@ const fence = "---"
 // bom is the UTF-8 byte order mark. A record file must not start with it (C48).
 const bom = "\xef\xbb\xbf"
 
-// errCRLF is why a file with CRLF line endings is rejected: LF only (C48).
+// errCRLF is why a file whose frontmatter uses CRLF line endings is rejected:
+// LF only (C48). The body is kept verbatim and may contain CR (C49).
 const errCRLF = "CRLF line endings are not supported (LF only)"
 
 // Marshal encodes r as a record file. It validates r first and returns an

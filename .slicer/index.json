@@ -219,7 +219,7 @@
       "id": "S05",
       "title": "Store, config and ID allocation",
       "short_title": "Store, config and ID allocation",
-      "status": "open",
+      "status": "done",
       "has_slice": true,
       "depends_on": [
         "S04",
@@ -232,6 +232,17 @@
           "text": "**2026-10-15** — From S04 review/gate: (1) model.WriteFile is a plain os.WriteFile (C54) — decide whether create/update need temp-file-plus-rename and record it (C32). (2) Empty non-nil slices do not round-trip DeepEqual (omitempty) — build records with nil slices or compare accordingly. (3) Nit: internal/model/file.go:26 comment says 'a file with CRLF line endings is rejected'; reword to 'a file whose frontmatter uses CRLF' (body is verbatim per C49).",
           "created_at": "2026-10-15T04:59:31Z",
           "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "ad6b34ea-6fb7-432f-9565-f268c82c0e38",
+          "kind": "",
+          "text": "**2026-10-15** — Verified: internal/store (Open, List, Get, Create, Update), .adjudicate.json config with defaults, root discovery, sequential ID allocation by scan. Create links a synced temp file into place with a bounded retry of 3; Update renames over the record. New files 0644, Update preserves permission bits. 231 tests green, go vet and gofmt clean, catalog decisions C56-C64 recorded. Locking against concurrent creates is deferred to the owner (duplicate IDs are left to lint S14 and renumber S15).",
+          "created_at": "2026-10-15T05:11:57Z",
+          "attempt": 1,
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
@@ -261,7 +272,7 @@
         "importance": 3,
         "urgency": 3,
         "effort": 2,
-        "attempts": 0
+        "attempts": 1
       }
     },
     {
@@ -273,7 +284,19 @@
       "depends_on": [
         "S05"
       ],
-      "note_records": [],
+      "note_records": [
+        {
+          "id": "86d07360-5623-485c-8687-a85aa41119a3",
+          "kind": "",
+          "text": "**2026-10-15** — From S05 gate (nits): internal/store/store.go:44-45 beforeLink doc says 'just before the file is linked'; it runs before writeNew (before the temp file is written) — reword. Five test trailing comments exceed 80 cols (config_test.go:84, store_test.go:127,249,335,539). FindRoot returns ErrNoRoot when no .adjudicate.json — map to the 'run adj init' message.",
+          "created_at": "2026-10-15T05:12:11Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        }
+      ],
       "claim": null,
       "fields": {
         "size": "M",
@@ -565,6 +588,17 @@
           "verified_by": "",
           "verified_at": "",
           "stale_after": ""
+        },
+        {
+          "id": "f4182219-5dac-4fec-99ec-8154906bbc28",
+          "kind": "",
+          "text": "**2026-10-15** — From S05 review: store.scan/fileID (internal/store/store.go) are unexported and List is strict (C61). Lint needs the record-file name rule (C59), incl. broken files keeping their ID — add an exported store method returning (id, path) entries (e.g. Files()) rather than copying the rule, then model.Parse each.",
+          "created_at": "2026-10-15T05:12:11Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
         }
       ],
       "claim": null,
@@ -602,7 +636,19 @@
         "S14",
         "S01"
       ],
-      "note_records": [],
+      "note_records": [
+        {
+          "id": "8f68ee01-a6e4-46d2-9e6e-ad430e534315",
+          "kind": "",
+          "text": "**2026-10-15** — From S05 review/gate: store.Get/Update already return ErrDuplicateID naming both files (C60). Concurrent Create in one checkout can also produce duplicate IDs with different slugs (C62/C64), not only branch merges. A non-regular entry (dir/symlink) at the next ID's name makes Create give up after 3 attempts with os.ErrExist naming the path; lint/renumber may want to report it.",
+          "created_at": "2026-10-15T05:12:11Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        }
+      ],
       "claim": null,
       "fields": {
         "size": "M",
@@ -863,7 +909,7 @@
   "goals": "adjudicate is a small CLI (`adj`) with a plain-text store that records project decisions as a loop: an agent asks, the owner decides in batches, and every later agent reads the decision. The goal and non-goal records below come from PROJECT.md; the owner's decisions on its open questions are catalog records C23-C33, and they override PROJECT.md where it differs (name, runtime, record format, license).",
   "non_goals": "",
   "catalog": {
-    "next_id": 56,
+    "next_id": 65,
     "id_prefix": "C",
     "id_width": 2,
     "records": [
@@ -1358,6 +1404,87 @@
         "kind": "decision",
         "title": "ReadFile and WriteFile live in model/file.go, so model gains I/O",
         "body": "The slice Files list places them in model; they are the package's only file I/O, so AGENTS.md:23 and the record.go package doc change with them.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C56",
+        "kind": "decision",
+        "title": "Config: .adjudicate.json at the repo root, one JSON object with an optional store key",
+        "body": "Unknown keys, an absolute store and a store that leaves the root are errors (invalid config); a missing file means the defaults (store decisions/). One standard-library format, and a typo in a key does not pass silently. The store-path check is lexical: a symlinked store can still point outside the root, and the config is owner-authored.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C57",
+        "kind": "decision",
+        "title": "Root discovery: nearest directory, from the working directory up, holding .adjudicate.json as a regular file",
+        "body": "store.FindRoot returns it, or ErrNoRoot if none; adj init (later) writes the file. The config file is the one marker the owner already configures, and a directory of that name does not count. The walk goes to the file system root with no git boundary, so an .adjudicate.json in an ancestor directory applies.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C58",
+        "kind": "decision",
+        "title": "Record file name: <ID padded to four digits>-<slug>.md; slug is the title's lowercase ASCII letters and digits joined by -, at most 60 bytes, untitled if empty",
+        "body": "Non-ASCII characters and punctuation act as separators, so names are portable and diff-stable; 60 bytes keeps paths short; IDs above 9999 keep all digits.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C59",
+        "kind": "decision",
+        "title": "Record files are found by name: regular file, four or more digits above zero, then -, text and .md; the ID comes from the name",
+        "body": "A file that does not parse still reserves its ID, so a broken file never lets Create reuse a number; List and Get reject a file whose record ID differs from its name.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C60",
+        "kind": "decision",
+        "title": "Duplicate IDs: List returns every file in ID then file-name order; Get and Update fail with ErrDuplicateID",
+        "body": "Detecting and renumbering collisions is S15; the store must not silently pick one file, and Create still allocates one past the highest ID.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C61",
+        "kind": "decision",
+        "title": "List is strict: the first unreadable or invalid record file is an error naming it",
+        "body": "Every command needs records that satisfy the model; lint (S14) uses model.Parse itself to report invalid files instead of loading them.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C62",
+        "kind": "decision",
+        "title": "Store writes go through a synced temp file: Update renames it over the record, Create links it into place and never replaces a file",
+        "body": "Answers C54 for the store. The record is written to a .adj-*.tmp file (names start with a dot, so never taken for records) and fsynced. Update renames it over the record; after a crash the file is the old record or the new one, but the directory is not fsynced, so which one is not guaranteed. Create links it into place, so it can never overwrite a file; the link also keeps a reader from seeing half a record. Accepted limit: os.Link fails on file systems without hard links and there is no fallback. Concurrent creates in one checkout with different titles can still both get the same ID because the scan is not locked; lint (S14) detects that and renumber (S15) fixes it (C26).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C63",
+        "kind": "decision",
+        "title": "Create ignores the ID in the record and adds no history entry; the store directory is made on first Create; a missing directory is an empty store; Update keeps the file path",
+        "body": "The ID is the store's to allocate (C26); the ask command writes the history entry and date (C43); an unrenamed file keeps git history and links to it.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C64",
+        "kind": "decision",
+        "title": "Permissions and retry: new records are 0644, Update keeps the old file's permission bits, and Create retries up to three times when its file name is taken",
+        "body": "os.CreateTemp makes 0600 files, so the store sets the mode itself: 0644 for a new record (git-friendly, umask-independent) and the replaced file's bits on Update so a chosen mode survives. When the link finds the name taken (another writer after our scan), Create rescans and takes the next ID, then gives up with an error wrapping os.ErrExist that names the target file; no locking, which is the owner's design call.",
         "status": "active",
         "reason": "",
         "successor": ""
