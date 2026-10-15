@@ -182,15 +182,15 @@ func TestCheckTextStartsWithTheResult(t *testing.T) {
 	}{
 		{"kubernetes", "not found\n"},
 		{"ops", "open\n7  open  Logging format\n"},
-		{"theme", "closed\n3  rejected  Theme\n"},
-		{"queue", "closed\n4  withdrawn  Queue\n"},
-		{"postgres", "decided\n6  decided  Database\n  Decision: sqlite\n  Rationale: embedded\n5  superseded  Old database\n  Superseded by: 6\n"},
+		{"theme", "closed\n3  rejected  Theme\n  Rationale: not needed\n"},
+		{"queue", "closed\n4  withdrawn  Queue\n  Rationale: no longer needed\n"},
+		{"postgres", "decided\n6  decided  Database\n  Decision: sqlite\n  Rationale: embedded\n5  superseded  Old database\n  Superseded by: 6\n  Rationale: familiar\n"},
 		{"redis", "decided\n2  decided  Cache layer\n  Decision: redis\n  Rationale: fast\n"},
 		{"storage", "decided\n" +
 			"2  decided  Cache layer\n  Decision: redis\n  Rationale: fast\n" +
 			"6  decided  Database\n  Decision: sqlite\n  Rationale: embedded\n" +
 			"1  open  Pick a store\n" +
-			"5  superseded  Old database\n  Superseded by: 6\n"},
+			"5  superseded  Old database\n  Superseded by: 6\n  Rationale: familiar\n"},
 	}
 	for _, tt := range tests {
 		r := run(testEnv(root), "", "check", tt.query)

@@ -412,7 +412,7 @@ A stray word is a typo to report (C94), and several words would need a rule for 
 
 ### C110 S10 check output: first line is the result word; JSON is {query, result, decided, open, closed} with list-shaped records
 
-Text: decided, open, closed or not found on line one, then ID  status  title per record (decided, open, then closed), with a decided record's Decision and Rationale and a superseded record's Superseded by indented under it. JSON: query (trimmed), result, and the decided, open and closed record arrays, always present and never null, so an agent reads one record shape (C86, C87). The result word is spelled the same in both: not found.
+Text: decided, open, closed or not found on line one, then ID  status  title per record (decided, open, closed), with a decided record's Decision and Rationale indented under it, and a closed record's Superseded by (superseded only) then Rationale (C132). JSON: query (trimmed), result, and the decided, open and closed record arrays, always present and never null, so an agent reads one record shape (C86, C87). The result word is spelled the same in both: not found.
 
 ### C111 S10 handler and render files: cli/check.go, commands/check.go, render/check.go, plus commands/check_test.go and render/check_test.go
 
@@ -522,6 +522,10 @@ Two files cannot be written atomically (C62 is per file). OLD first because the 
 
 Superseding changes a decision, so it is owner-only like decide and reject (C27, C126). The S12 gate note asked for it; ai_test checks the list names it, as the drift test only checks that named commands exist.
 
+### C138 S24 check text closed records: full rationale, after Superseded by
+
+Closed records print the whole rationale through writeField (multi-line under the label, trailing breaks trimmed, empty omitted), not the first line as adj context does (C117): context is a compact export of settled answers, while a closed record's reason is the thing check exists to show, and the slice requires the C102 continuation. The label is Rationale, as for decided records. A superseded record prints Superseded by first, then Rationale: the pointer to the decision in force leads, the old reason follows. Implements C132.
+
 ### C39 LICENSE is a stub until the owner supplies the full GPL-3.0 text and copyright holder
 
 No GPL-3.0 text exists in the adjudicate repo and the workspace has no network, so the stub carries the SPDX line, the or-later notice and TODO(owner) markers.
@@ -584,7 +588,7 @@ PENDING OWNER CONFIRMATION - not decided. Source: Dependency/licensing notes (ma
 
 *Retired: Owner decided 2026-10-15: see decision C31 (GPL-3.0-or-later)..*
 
-24 items · — 6 · done 13 · later 5
+24 items · — 5 · done 14 · later 5
 
 | # | Slice | Title | Size | Effort | Trees | Findings | Status |
 |---|---|---|---|---|---|---|---|
@@ -598,22 +602,22 @@ PENDING OWNER CONFIRMATION - not decided. Source: Dependency/licensing notes (ma
 | 8 | [S21](slices/S21.md) | Later: optional owner-only decide enforcement | M | 2 | later | PROJECT.md Feature tiers (Later); Open decisions 5; Non-goals | later |
 | 9 | [S22](slices/S22.md) | Later: import from ADR folders | M | 2 | later | PROJECT.md Feature tiers (Later) | later |
 | 10 | [S23](slices/S23.md) | Lock ID allocation with flock | M | 2 | store | Owner decision 2026-10-15 (S05 review MEDIUM-2; C62, C64) | — |
-| 11 | [S24](slices/S24.md) | Check text shows the rationale under closed records | S | 1 | render | Owner decision 2026-10-15 (S10 gate: closed records show only ID, status, title in text) | — |
 
 ---
 
 | # | Slice | Title | Size | Effort | Trees | Findings | Status |
 |---|---|---|---|---|---|---|---|
-| 12 | [S01](slices/S01.md) | Confirm open decisions | S | 1 | decisions | PROJECT.md Open decisions 1-7; Core concepts (kind); Dependency/licensing notes | done |
-| 13 | [S02](slices/S02.md) | Project scaffolding | S | 1 | scaffold | PROJECT.md Stack recommendation; Dependency/licensing notes | done |
-| 14 | [S03](slices/S03.md) | Record model and lifecycle transitions | M | 2 | model | PROJECT.md Core concepts / data model; Milestone 1 | done |
-| 15 | [S04](slices/S04.md) | Record file read and write | S | 1 | model | PROJECT.md Open decisions 3; Core concepts (Record) | done |
-| 16 | [S05](slices/S05.md) | Store, config and ID allocation | M | 2 | store | PROJECT.md Architecture sketch (ID allocation, Determinism); Open decisions 4, 6, 7 | done |
-| 17 | [S06](slices/S06.md) | Commands: init and ask | M | 2 | cli | PROJECT.md v1 feature tier; Milestone 2 | done |
-| 18 | [S07](slices/S07.md) | Commands: decide, reject, withdraw | S | 1 | cli | PROJECT.md v1 feature tier; Lifecycle; Milestone 2 | done |
-| 19 | [S08](slices/S08.md) | Commands: show and list with --json | S | 1 | cli | PROJECT.md v1 feature tier; Milestone 2; acceptance (--json) | done |
-| 20 | [S09](slices/S09.md) | Command: inbox | S | 1 | cli | PROJECT.md Goals 2; v1 feature tier; Milestone 3 | done |
-| 21 | [S10](slices/S10.md) | Command: check | S | 1 | cli | PROJECT.md Goals 6; v1 feature tier; Milestone 3 | done |
-| 22 | [S11](slices/S11.md) | Command: context | M | 2 | cli | PROJECT.md Goals 5; v1 feature tier; Risks (context bloat); Milestone 3 | done |
-| 23 | [S12](slices/S12.md) | Agent snippet: adj ai and JSON shape docs | S | 1 | docs | PROJECT.md v1 feature tier; Risks (adoption); acceptance (--json documented) | done |
-| 24 | [S13](slices/S13.md) | Command: supersede | S | 1 | cli | PROJECT.md Goals 4; Lifecycle; acceptance (supersede); Milestone 4 | done |
+| 11 | [S01](slices/S01.md) | Confirm open decisions | S | 1 | decisions | PROJECT.md Open decisions 1-7; Core concepts (kind); Dependency/licensing notes | done |
+| 12 | [S02](slices/S02.md) | Project scaffolding | S | 1 | scaffold | PROJECT.md Stack recommendation; Dependency/licensing notes | done |
+| 13 | [S03](slices/S03.md) | Record model and lifecycle transitions | M | 2 | model | PROJECT.md Core concepts / data model; Milestone 1 | done |
+| 14 | [S04](slices/S04.md) | Record file read and write | S | 1 | model | PROJECT.md Open decisions 3; Core concepts (Record) | done |
+| 15 | [S05](slices/S05.md) | Store, config and ID allocation | M | 2 | store | PROJECT.md Architecture sketch (ID allocation, Determinism); Open decisions 4, 6, 7 | done |
+| 16 | [S06](slices/S06.md) | Commands: init and ask | M | 2 | cli | PROJECT.md v1 feature tier; Milestone 2 | done |
+| 17 | [S07](slices/S07.md) | Commands: decide, reject, withdraw | S | 1 | cli | PROJECT.md v1 feature tier; Lifecycle; Milestone 2 | done |
+| 18 | [S08](slices/S08.md) | Commands: show and list with --json | S | 1 | cli | PROJECT.md v1 feature tier; Milestone 2; acceptance (--json) | done |
+| 19 | [S09](slices/S09.md) | Command: inbox | S | 1 | cli | PROJECT.md Goals 2; v1 feature tier; Milestone 3 | done |
+| 20 | [S10](slices/S10.md) | Command: check | S | 1 | cli | PROJECT.md Goals 6; v1 feature tier; Milestone 3 | done |
+| 21 | [S11](slices/S11.md) | Command: context | M | 2 | cli | PROJECT.md Goals 5; v1 feature tier; Risks (context bloat); Milestone 3 | done |
+| 22 | [S12](slices/S12.md) | Agent snippet: adj ai and JSON shape docs | S | 1 | docs | PROJECT.md v1 feature tier; Risks (adoption); acceptance (--json documented) | done |
+| 23 | [S13](slices/S13.md) | Command: supersede | S | 1 | cli | PROJECT.md Goals 4; Lifecycle; acceptance (supersede); Milestone 4 | done |
+| 24 | [S24](slices/S24.md) | Check text shows the rationale under closed records | S | 1 | render | Owner decision 2026-10-15 (S10 gate: closed records show only ID, status, title in text) | done |

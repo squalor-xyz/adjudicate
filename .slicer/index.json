@@ -892,7 +892,19 @@
         "S12",
         "S15"
       ],
-      "note_records": [],
+      "note_records": [
+        {
+          "id": "07d80c61-c851-4662-aa76-1b249a234e27",
+          "kind": "",
+          "text": "**2026-10-15** — From S24 review/gate: (1) ai.md tells agents to read a closed record with 'adj show ID'; check text now prints its rationale (C138) — consider 'read the Rationale in the check output, adj show ID for the full record' (ai_test requires the 'adj show ID' text; update both). (2) Nit: AGENTS.md:125-127 check entry wraps past 80 cols; also line ~181 (env.sh) is 86 cols.",
+          "created_at": "2026-10-15T12:51:34Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        }
+      ],
       "claim": null,
       "fields": {
         "size": "S",
@@ -1162,10 +1174,22 @@
       "id": "S24",
       "title": "Check text shows the rationale under closed records",
       "short_title": "Check text shows the rationale under closed records",
-      "status": "open",
+      "status": "done",
       "has_slice": true,
       "depends_on": [],
-      "note_records": [],
+      "note_records": [
+        {
+          "id": "f382624b-7dcc-4e0e-968c-e8a90026f734",
+          "kind": "",
+          "text": "**2026-10-15** — Check text shows the full Rationale under rejected, withdrawn and superseded matches (Superseded by first, then Rationale); decided/open output and JSON unchanged. All tests green, vet and gofmt clean. C138 added, C110 updated.",
+          "created_at": "2026-10-15T12:51:22Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        }
+      ],
       "claim": null,
       "fields": {
         "size": "S",
@@ -1191,7 +1215,7 @@
         "importance": 2,
         "urgency": 2,
         "effort": 1,
-        "attempts": 0
+        "attempts": 1
       }
     }
   ],
@@ -1199,7 +1223,7 @@
   "goals": "adjudicate is a small CLI (`adj`) with a plain-text store that records project decisions as a loop: an agent asks, the owner decides in batches, and every later agent reads the decision. The goal and non-goal records below come from PROJECT.md; the owner's decisions on its open questions are catalog records C23-C33, and they override PROJECT.md where it differs (name, runtime, record format, license).",
   "non_goals": "",
   "catalog": {
-    "next_id": 138,
+    "next_id": 139,
     "id_prefix": "C",
     "id_width": 2,
     "records": [
@@ -2188,7 +2212,7 @@
         "id": "C110",
         "kind": "decision",
         "title": "S10 check output: first line is the result word; JSON is {query, result, decided, open, closed} with list-shaped records",
-        "body": "Text: decided, open, closed or not found on line one, then ID  status  title per record (decided, open, then closed), with a decided record's Decision and Rationale and a superseded record's Superseded by indented under it. JSON: query (trimmed), result, and the decided, open and closed record arrays, always present and never null, so an agent reads one record shape (C86, C87). The result word is spelled the same in both: not found.",
+        "body": "Text: decided, open, closed or not found on line one, then ID  status  title per record (decided, open, closed), with a decided record's Decision and Rationale indented under it, and a closed record's Superseded by (superseded only) then Rationale (C132). JSON: query (trimmed), result, and the decided, open and closed record arrays, always present and never null, so an agent reads one record shape (C86, C87). The result word is spelled the same in both: not found.",
         "status": "active",
         "reason": "",
         "successor": ""
@@ -2432,6 +2456,15 @@
         "kind": "decision",
         "title": "S13 the agent snippet's never-run list gains adj supersede",
         "body": "Superseding changes a decision, so it is owner-only like decide and reject (C27, C126). The S12 gate note asked for it; ai_test checks the list names it, as the drift test only checks that named commands exist.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C138",
+        "kind": "decision",
+        "title": "S24 check text closed records: full rationale, after Superseded by",
+        "body": "Closed records print the whole rationale through writeField (multi-line under the label, trailing breaks trimmed, empty omitted), not the first line as adj context does (C117): context is a compact export of settled answers, while a closed record's reason is the thing check exists to show, and the slice requires the C102 continuation. The label is Rationale, as for decided records. A superseded record prints Superseded by first, then Rationale: the pointer to the decision in force leads, the old reason follows. Implements C132.",
         "status": "active",
         "reason": "",
         "successor": ""

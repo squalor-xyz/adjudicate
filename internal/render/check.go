@@ -15,9 +15,11 @@ import (
 // CheckText writes the result of adj check: the outcome (decided, open, closed
 // or not found) on the first line, then one line per matching record, "ID
 // status  title": decided records first, then open, then closed ones. A decided
-// record is followed by its decision and rationale, indented; a superseded one
-// by the ID of the record that replaced it. Nothing else of a record is shown;
-// adj show has it.
+// record is followed by its decision and rationale, indented. A closed record
+// (rejected, withdrawn or superseded) is followed by its rationale, so the
+// reason it was closed is in the answer; a superseded one has the ID of the
+// record that replaced it first. Nothing else of a record is shown; adj show
+// has it.
 func CheckText(w io.Writer, res query.Result) error {
 	var b strings.Builder
 	fmt.Fprintf(&b, "%s\n", res.Outcome)
@@ -34,6 +36,7 @@ func CheckText(w io.Writer, res query.Result) error {
 		if r.SupersededBy != 0 {
 			writeField(&b, "  ", "Superseded by", strconv.Itoa(r.SupersededBy))
 		}
+		writeField(&b, "  ", "Rationale", r.Rationale)
 	}
 	_, err := io.WriteString(w, b.String())
 	return err

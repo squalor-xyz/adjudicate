@@ -122,7 +122,9 @@ below).
   is the result: `decided` if any decided record is listed, else `open`, else
   `closed`, else `not found` (C107). Then one line per record, `ID  status
   title`: decided, open, then closed ones, with a decided record's `Decision:`
-  and `Rationale:` under it and `Superseded by:` under a superseded one.
+  and `Rationale:` under it, and a closed record's `Rationale:` (why it was
+  rejected, withdrawn or superseded; the whole text, C132, C138), after `Superseded
+  by:` on a superseded one. An open record has no detail lines.
   `--json` prints `{"query", "result", "decided", "open", "closed"}`
   (`docs/json.md`). Exit 0 for every completed check, whatever the result
   (including `closed` and `not found`), so a script reads the `result`; exit 1

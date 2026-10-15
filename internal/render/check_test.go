@@ -44,12 +44,42 @@ func TestCheckText(t *testing.T) {
 		{
 			name: "closed lists the closed records, with the replacement of a superseded one",
 			res:  query.Result{Outcome: query.Closed, Closed: []model.Record{rejected, withdrawn, superseded}},
-			want: "closed\n5  rejected  Theme\n6  withdrawn  Queue\n7  superseded  Old store\n  Superseded by: 2\n",
+			want: "closed\n5  rejected  Theme\n  Rationale: not needed\n6  withdrawn  Queue\n7  superseded  Old store\n  Superseded by: 2\n",
 		},
 		{
 			name: "decided, open and closed: in that order",
 			res:  query.Result{Outcome: query.Decided, Decided: []model.Record{decided}, Open: []model.Record{open}, Closed: []model.Record{superseded}},
 			want: "decided\n2  decided  Cache layer\n  Decision: redis\n  Rationale: fast\n10  open  Pick a store\n7  superseded  Old store\n  Superseded by: 2\n",
+		},
+		{
+			name: "a withdrawn record shows its rationale",
+			res: query.Result{Outcome: query.Closed, Closed: []model.Record{
+				{ID: 6, Title: "Queue", Status: model.StatusWithdrawn, Rationale: "no longer needed"}}},
+			want: "closed\n6  withdrawn  Queue\n  Rationale: no longer needed\n",
+		},
+		{
+			name: "a superseded record shows its replacement, then its rationale",
+			res: query.Result{Outcome: query.Closed, Closed: []model.Record{
+				{ID: 7, Title: "Old store", Status: model.StatusSuperseded, SupersededBy: 2, Decision: "mysql", Rationale: "familiar"}}},
+			want: "closed\n7  superseded  Old store\n  Superseded by: 2\n  Rationale: familiar\n",
+		},
+		{
+			name: "a multi-line closed rationale goes under its label and loses trailing breaks",
+			res: query.Result{Outcome: query.Closed, Closed: []model.Record{
+				{ID: 5, Title: "Theme", Status: model.StatusRejected, Rationale: "too slow\nand too big\n\n"}}},
+			want: "closed\n5  rejected  Theme\n  Rationale:\n    too slow\n    and too big\n",
+		},
+		{
+			name: "a closed rationale of only line breaks prints no line",
+			res: query.Result{Outcome: query.Closed, Closed: []model.Record{
+				{ID: 5, Title: "Theme", Status: model.StatusRejected, Rationale: "\n\n"}}},
+			want: "closed\n5  rejected  Theme\n",
+		},
+		{
+			name: "an open record shows no rationale",
+			res: query.Result{Outcome: query.Open, Open: []model.Record{
+				{ID: 10, Title: "Pick a store", Status: model.StatusOpen, Rationale: "stray"}}},
+			want: "open\n10  open  Pick a store\n",
 		},
 		{name: "not found is one line", res: query.Result{Outcome: query.NotFound}, want: "not found\n"},
 		{

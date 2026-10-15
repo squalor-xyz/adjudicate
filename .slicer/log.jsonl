@@ -384,3 +384,9 @@
 {"when": "2026-10-15T12:46:46Z", "item": "S13", "action": "note", "from": "", "to": "", "note": "Verified: adj supersede OLD --by NEW links both records and ", "by": "Jon R"}
 {"when": "2026-10-15T12:46:46Z", "item": "S13", "action": "status", "from": "started", "to": "done", "note": "adj supersede OLD --by NEW: OLD superseded, NEW lists it in supersedes, both validated before any write, OLD-first write with rollback; ai.md never-run list updated; tests, vet, gofmt green; C133-C137.", "by": "Jon R"}
 {"when": "2026-10-15T12:46:58Z", "item": "S15", "action": "note", "from": "", "to": "", "note": "From S13 review: supersede history notes embed record IDs as", "by": "Jon R"}
+{"when": "2026-10-15T12:47:54Z", "item": "S24", "action": "status", "from": "open", "to": "started", "note": "", "by": "Jon R"}
+{"when": "2026-10-15T12:48:12Z", "item": "C110", "action": "catalog", "from": "", "to": "body", "note": "edit"}
+{"when": "2026-10-15T12:48:12Z", "item": "C138", "action": "catalog", "from": "", "to": "S24 check text closed records: full rationale, after Superseded by", "note": "add"}
+{"when": "2026-10-15T12:51:22Z", "item": "S24", "action": "note", "from": "", "to": "", "note": "Check text shows the full Rationale under rejected, withdraw", "by": "Jon R"}
+{"when": "2026-10-15T12:51:22Z", "item": "S24", "action": "status", "from": "started", "to": "done", "note": "Check text shows the full rationale under closed records (C132, C138); C110 updated.", "by": "Jon R"}
+{"when": "2026-10-15T12:51:34Z", "item": "S16", "action": "note", "from": "", "to": "", "note": "From S24 review/gate: (1) ai.md tells agents to read a close", "by": "Jon R"}
