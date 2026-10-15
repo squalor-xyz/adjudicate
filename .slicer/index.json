@@ -919,7 +919,7 @@
       "id": "S16",
       "title": "Docs and v1 acceptance round trip",
       "short_title": "Docs and v1 acceptance round trip",
-      "status": "open",
+      "status": "done",
       "has_slice": true,
       "depends_on": [
         "S12",
@@ -958,6 +958,17 @@
           "verified_by": "",
           "verified_at": "",
           "stale_after": ""
+        },
+        {
+          "id": "e3c827cd-0b88-4d47-97e5-dc4391794511",
+          "kind": "",
+          "text": "**2026-10-15** — README.md (every v1 command, build via scripts/env.sh, GPL-3.0-or-later) and cmd/adj/roundtrip_test.go (builds adj in TestMain, walks init/ask/inbox/decide/context/check, second ask+decide, supersede, show history, lint exit 0; README heading per command). Folded in queued notes: ai.md closed-record wording, AGENTS.md re-wraps and best-effort dir sync and flock failure text, lint leftover message 'check both', godoc placement, IsStaleCopy matches any renumber entry, lock text 'another process', store.go invalid-record comment. go test ./..., vet, gofmt, go list -m all, slicer check clean.",
+          "created_at": "2026-10-15T16:10:44Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
         }
       ],
       "claim": null,
@@ -982,7 +993,7 @@
         "importance": 2,
         "urgency": 1,
         "effort": 1,
-        "attempts": 0
+        "attempts": 1
       }
     },
     {

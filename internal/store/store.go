@@ -265,8 +265,9 @@ const recordPerm fs.FileMode = 0o644
 // past the highest ID in the store (1 for an empty store); the ID in r is
 // ignored. The file is <ID padded to four digits>-<slug of the title>.md with
 // mode 0644, and the store directory is made if it is missing. The record is
-// validated, and an invalid one is an error matching model.ErrInvalid with
-// nothing written.
+// validated, and an invalid one is an error matching model.ErrInvalid with no
+// record written (the store directory and the lock file are not made for one
+// that is invalid whatever its ID).
 //
 // Create never overwrites a file: if the name is taken it rescans and tries
 // the next ID, up to three times, then returns an error matching os.ErrExist
@@ -284,9 +285,11 @@ const recordPerm fs.FileMode = 0o644
 // are not known and are not avoided.
 func (s *Store) Create(r model.Record) (model.Record, error) {
 	// Check the record before the store directory or the lock file exists, so
-	// an invalid record writes nothing. The ID is only known under the lock;
-	// one that no link names stands in for it, and the check is made again
-	// with the real ID below.
+	// a record that is invalid whatever its ID makes neither. The ID is only
+	// known under the lock; one that no link names stands in for it, and the
+	// check is made again with the real ID below. A record that is invalid
+	// only with its real ID fails there, after lock made the store directory
+	// and the lock file: no record is written, but those two exist.
 	probe := r
 	probe.ID = unlinkedID(r)
 	if err := probe.Validate(); err != nil {

@@ -196,6 +196,9 @@ func TestCreateFailsWhenTheLockStaysHeld(t *testing.T) {
 	if !strings.Contains(err.Error(), lockPath) {
 		t.Errorf("err = %v, want it to name %s", err, lockPath)
 	}
+	if !strings.Contains(err.Error(), "still held by another process after") || strings.Contains(err.Error(), "adj process") {
+		t.Errorf("err = %v, want \"still held by another process after\" (the holder need not be adj)", err)
+	}
 	if time.Since(start) > waitFor {
 		t.Errorf("Create waited %v for a 50ms timeout", time.Since(start))
 	}

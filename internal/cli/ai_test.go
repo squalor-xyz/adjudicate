@@ -179,7 +179,7 @@ func TestAISnippetGuidesEachCheckResult(t *testing.T) {
 	// A closed question may have been rejected: read why, and do not re-ask.
 	_, afterClosed, _ := strings.Cut(snippet, "If `closed`")
 	closed, _, _ := strings.Cut(afterClosed, "If `not found`")
-	for _, want := range []string{"rejected", "`adj show ID`", "do not re-ask a rejected question"} {
+	for _, want := range []string{"rejected", "Rationale", "`adj show ID`", "do not re-ask a rejected question"} {
 		if !strings.Contains(closed, want) {
 			t.Errorf("the guidance for `closed` does not say %q:\n%s", want, closed)
 		}

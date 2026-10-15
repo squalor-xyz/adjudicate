@@ -20,6 +20,7 @@ library only.
 ## Layout
 
 - `cmd/adj`: `main`; calls `internal/cli.Run` and exits with its code.
+  `roundtrip_test.go` builds `adj` and walks the v1 acceptance round trip.
 - `internal/cli`: subcommand dispatch, usage and flag parsing (`flags.go`:
   flags after positional arguments, repeatable string flags). `Run` is the
   process entry; `RunWith(Env, ...)` takes the repo root, clock, environment
@@ -49,6 +50,7 @@ library only.
   `context.go`, `lint.go`, `json.go`);
   the JSON shapes are in `docs/json.md`, and `internal/cli/jsonshape_test.go`
   pins each read command's `--json` keys to it.
+- `README.md`: what adjudicate is, how to build it and use each command.
 - `scripts/env.sh`: Go cache and temp setup (see below).
 
 Exit codes for every command: 0 success; 1 a failed operation or failed check;
@@ -70,7 +72,7 @@ below). `adj lint` exits 1 when it finds an error (see its entry).
   typed. `asked_by` is `--by`, else `$ADJ_ASKED_BY`, else blank. The ID is
   taken under the store's lock (see "Store and config"): an `ask` that cannot
   get the lock within 5 seconds exits 1 with an error that names `.adj.lock`
-  and creates nothing.
+  and creates no record.
 - `adj decide ID OPTION --why TEXT`, or `adj decide ID --text TEXT --why TEXT`,
   `[--by NAME] [--root DIR]`: moves an `open` record to `decided`. OPTION
   (trimmed) must be one of the record's option labels; `decision` is that
@@ -131,8 +133,8 @@ below). `adj lint` exits 1 when it finds an error (see its entry).
   `closed`, else `not found` (C107). Then one line per record, `ID  status
   title`: decided, open, then closed ones, with a decided record's `Decision:`
   and `Rationale:` under it, and a closed record's `Rationale:` (why it was
-  rejected, withdrawn or superseded; the whole text, C132, C138), after `Superseded
-  by:` on a superseded one. An open record has no detail lines.
+  rejected, withdrawn or superseded; the whole text, C132, C138), after
+  `Superseded by:` on a superseded one. An open record has no detail lines.
   `--json` prints `{"query", "result", "decided", "open", "closed"}`
   (`docs/json.md`). Exit 0 for every completed check, whatever the result
   (including `closed` and `not found`), so a script reads the `result`; exit 1
@@ -178,34 +180,37 @@ below). `adj lint` exits 1 when it finds an error (see its entry).
   does not name it (C145).
 - `adj renumber [--keep-links] [--root DIR]` (C150): resolves record files that
   share an ID (`adj lint` reports them as `duplicate-id`; merged branches and
-  clones make them, and so do asks on a system without the ID lock, C26, C114). Of the files with one ID the record `created`
-  first keeps it, then the file name breaks a tie (C146). Each other record is
-  written to a new file `<next free ID>-<same name text>.md` (next free ID: one
-  past the highest in the store, colliding IDs taken in ascending order), with
-  its permission bits and one `renumber` history entry (note `from N`), and the
-  old file is removed after the new one is complete (C148). Prints one line per
-  move, `OLD-FILE -> NEW-FILE (id N -> M)`; no collision prints nothing and
-  changes nothing, exit 0. Links to a colliding ID cannot be told apart, so they
-  and the history notes are never rewritten (C147, C149): if any record links to
-  one, renumber lists the links, exits 1 and changes nothing, until
-  `--keep-links` accepts that they stay with the record that keeps the ID (they
-  are listed on stderr). Every record file must be readable (it may hold a
-  link); a colliding record needs a valid `created` date (C158); a record that
-  moves must be valid with the ID it will get (C151); these are checked before
-  the first write. A new ID is never one that a link names without a file
-  (C155). With a collision it holds the store's ID lock from reading the files
-  to the last move (see "Store and config"), so an `adj ask` cannot take an ID
-  a move is about to use; a refusal after that leaves only the empty lock file.
-  With no collision it takes no lock. The directory is synced before the old
-  file goes (C157). A move that cannot remove the old file takes the new one
-  away again; if that fails too the error names both files. After a crash between the two, the record is in both
-  files and the old one is a stale copy: `adj lint` reports it as
-  `renumber-leftover`, and `adj renumber` refuses (exit 1, nothing changed,
-  `store.ErrStaleCopy`) until the owner deletes the old file (C156); nothing is
-  deleted automatically. An argument or unknown flag exits 2. Owner-only: the
-  agent snippet tells agents to report a duplicate ID and not to run it (C153).
-  A name taken by a directory or another writer is skipped for the next ID
-  (C154).
+  clones make them, and so do asks on a system without the ID lock, C26, C114).
+  Of the files with one ID the record `created` first keeps it, then the file
+  name breaks a tie (C146). Each other record is written to a new file `<next
+  free ID>-<same name text>.md` (next free ID: one past the highest in the
+  store, colliding IDs taken in ascending order), with its permission bits and
+  one `renumber` history entry (note `from N`), and the old file is removed
+  after the new one is complete (C148). Prints one line per move, `OLD-FILE ->
+  NEW-FILE (id N -> M)`; no collision prints nothing and changes nothing, exit
+  0. Links to a colliding ID cannot be told apart, so they and the history notes
+  are never rewritten (C147, C149): if any record links to one, renumber lists
+  the links, exits 1 and changes nothing, until `--keep-links` accepts that they
+  stay with the record that keeps the ID (they are listed on stderr). Every
+  record file must be readable (it may hold a link); a colliding record needs a
+  valid `created` date (C158); a record that moves must be valid with the ID it
+  will get (C151); these are checked before the first write. A new ID is never
+  one that a link names without a file (C155). With a collision it holds the
+  store's ID lock from reading the files to the last move (see "Store and
+  config"), so an `adj ask` cannot take an ID a move is about to use; a refusal
+  after that leaves only the empty lock file. With no collision it takes no
+  lock. The directory is synced before the old file goes, on a best-effort
+  basis: a failed sync is ignored (C157). A move that cannot remove the old file
+  takes the new one away again; if that fails too the error names both files.
+  After a crash between the two, the record is in both files and the old one is
+  a stale copy: `adj lint` reports it as `renumber-leftover` (the new file has a
+  `renumber` history entry `from N` for the old file's ID, wherever it sits in
+  the history), and `adj renumber` refuses (exit 1, nothing changed,
+  `store.ErrStaleCopy`) until the owner checks both files and deletes the old
+  one (C156); nothing is deleted automatically. An argument or unknown flag
+  exits 2. Owner-only: the agent snippet tells agents to report a duplicate ID
+  and not to run it (C153). A name taken by a directory or another writer is
+  skipped for the next ID (C154).
 - `adj ai`: prints the AGENTS.md snippet in `internal/commands/ai.md` (check
   before asking and what each result means, ask, read the decisions, withdraw
   your own question, only the owner decides and never run decide, reject or
@@ -240,27 +245,30 @@ below). `adj lint` exits 1 when it finds an error (see its entry).
 - ID allocation is locked (C114, C159-C162). `Create` and `Renumber` take an
   exclusive advisory `flock` on `<store>/.adj.lock` (`decisions/.adj.lock` by
   default) and hold it from the scan of the IDs to the link of the new file, so
-  two `adj ask` runs on one checkout cannot take one ID. `Update` is not
-  locked. The lock file is an empty dot-file, never taken for a record, made on
-  first use and never deleted; the lock is released when the call returns or
-  the process dies. A writer waits up to 5 seconds (polling every 10 ms); if the
+  two `adj ask` runs on one checkout cannot take one ID. `Update` is not locked.
+  The lock file is an empty dot-file, never taken for a record, made on first
+  use and never deleted; the lock is released when the call returns or the
+  process dies. A writer waits up to 5 seconds (polling every 10 ms); if the
   lock is still held it fails with an error that names the lock file and writes
-  nothing. `Create` also skips an ID that a `supersedes` or `superseded_by` link
-  names without a file (C155); a file it cannot read keeps its ID by name but
-  its links are not known. The lock only serialises one checkout: branches and
-  clones still collide, and `adj lint` and `adj renumber` handle that. Locking
-  needs `syscall.Flock` (darwin, linux, the BSDs, illumos); other systems have
-  no lock and only the bounded retry of C64. A team that does not want the lock
-  file in git adds `decisions/.adj.lock` (its store directory) to its
-  `.gitignore`; `adj` writes no `.gitignore`. A test that lists the store
-  directory leaves the lock file out.
+  no record. If `flock` itself fails (ENOLCK or EOPNOTSUPP, as on some network
+  file systems), `adj ask` exits 1 with an error that names `.adj.lock` and
+  writes no record. On a network file system the lock may be local to each host,
+  so asks from two hosts can still take one ID. `Create` also skips an ID that a
+  `supersedes` or `superseded_by` link names without a file (C155); a file it
+  cannot read keeps its ID by name but its links are not known. The lock only
+  serialises one checkout: branches and clones still collide, and `adj lint` and
+  `adj renumber` handle that. Locking needs `syscall.Flock` (darwin, linux, the
+  BSDs, illumos); other systems have no lock and only the bounded retry of C64.
+  A team that does not want the lock file in git adds `decisions/.adj.lock` (its
+  store directory) to its `.gitignore`; `adj` writes no `.gitignore`. A test
+  that lists the store directory leaves the lock file out.
 
 ## Setup and checks
 
 Run from the repo root:
 
 ```sh
-. scripts/env.sh                   # Go caches and temp files stay under .cache/ (C33)
+. scripts/env.sh                   # Go caches, temp files: .cache/ (C33)
 go test ./...
 go vet ./...
 gofmt -l cmd internal              # must print nothing

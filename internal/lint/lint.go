@@ -240,8 +240,9 @@ func problems(err error) []string {
 }
 
 // leftovers reports each file that an interrupted renumber left behind: its
-// record also exists under another ID, in a file with the same name text whose
-// last history entry says it was renumbered from this file's ID (C148).
+// record also exists under another ID, in a file with the same name text and a
+// renumber history entry that says it was renumbered from this file's ID
+// (C148).
 func leftovers(recs []parsed) []Finding {
 	var out []Finding
 	for _, p := range recs {
@@ -249,7 +250,7 @@ func leftovers(recs []parsed) []Finding {
 			if store.IsStaleCopy(store.File{ID: p.id, Name: p.name}, store.File{ID: q.id, Name: q.name}, q.rec) {
 				out = append(out, Finding{
 					ID: p.id, File: p.file, Severity: SeverityError, Check: CheckRenumberLeftover,
-					Message: fmt.Sprintf("%s has this record renumbered from id %d: this file is a stale copy left by an interrupted renumber; delete it", q.name, p.id),
+					Message: fmt.Sprintf("%s has this record renumbered from id %d: this file is a stale copy left by an interrupted renumber; check both, delete it", q.name, p.id),
 				})
 			}
 		}

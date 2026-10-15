@@ -123,10 +123,10 @@ var fixtureCases = []struct {
 	{"renumber-leftover", []lint.Finding{
 		finding(2, "0002-alpha.md", errSev, lint.CheckDuplicateID, "more than one file has id 2: 0002-alpha.md, 0002-beta.md"),
 		finding(2, "0002-beta.md", errSev, lint.CheckDuplicateID, "more than one file has id 2: 0002-alpha.md, 0002-beta.md"),
-		finding(2, "0002-beta.md", errSev, lint.CheckRenumberLeftover, "0004-beta.md has this record renumbered from id 2: this file is a stale copy left by an interrupted renumber; delete it"),
+		finding(2, "0002-beta.md", errSev, lint.CheckRenumberLeftover, "0004-beta.md has this record renumbered from id 2: this file is a stale copy left by an interrupted renumber; check both, delete it"),
 	}},
 	{"renumber-leftover-alone", []lint.Finding{
-		finding(2, "0002-beta.md", errSev, lint.CheckRenumberLeftover, "0004-beta.md has this record renumbered from id 2: this file is a stale copy left by an interrupted renumber; delete it"),
+		finding(2, "0002-beta.md", errSev, lint.CheckRenumberLeftover, "0004-beta.md has this record renumbered from id 2: this file is a stale copy left by an interrupted renumber; check both, delete it"),
 	}},
 	// A link listed twice is one finding, not two identical ones.
 	{"duplicate-supersedes", []lint.Finding{

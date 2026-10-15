@@ -53,7 +53,7 @@ func acquire(path string, timeout time.Duration, busy func()) (unlock func(), er
 		}
 		if !time.Now().Before(deadline) {
 			f.Close()
-			return nil, fmt.Errorf("lock %s: still held by another adj process after %v; nothing was written", path, timeout)
+			return nil, fmt.Errorf("lock %s: still held by another process after %v; nothing was written", path, timeout)
 		}
 		time.Sleep(lockPoll)
 	}

@@ -82,8 +82,9 @@ func LinkSupersedes(r *Record, old int, date string) error {
 // status and changes nothing else, links included: renumbering resolves two
 // files with one ID (C26), and a link to the old ID cannot be told apart from
 // a link to the other record (C147). newID must be positive and differ from
-// the current ID, and date must be a YYYY-MM-DD date. The result is validated on a copy
-// (the history entry's date included), so on error r is untouched (C45).
+// the current ID, and date must be a YYYY-MM-DD date. The result is validated
+// on a copy (the history entry's date included), so on error r is untouched
+// (C45).
 func Renumber(r *Record, newID int, date string) error {
 	if newID == r.ID {
 		return fmt.Errorf("%w: id: record %d is already %d", ErrInvalid, r.ID, newID)

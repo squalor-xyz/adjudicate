@@ -409,13 +409,15 @@ The checks:
 - `duplicate-id` (error): more than one record file has this ID in its name,
   as two branches or clones can produce (concurrent `adj ask` calls on one
   checkout are serialised by a lock, where the system has file locks). Every
-  file with the ID gets the finding, and the message lists them all. `adj renumber`
-  gives all but one of them a new ID. A link to such an ID is not dangling.
+  file with the ID gets the finding, and the message lists them all.
+  `adj renumber` gives all but one of them a new ID. A link to such an ID is
+  not dangling.
 - `renumber-leftover` (error): the file is the stale copy that an interrupted
   `adj renumber` left behind: another file has the same record under a new ID
-  (same file name text, last history entry `renumber` with the note `from N`
-  for this file's ID). Delete the stale file. It is reported whether or not the
-  file still shares its ID with another.
+  (same file name text, a `renumber` history entry with the note `from N` for
+  this file's ID, wherever it sits in the history). Check both files, then
+  delete the stale one. It is reported whether or not the file still shares its
+  ID with another.
 - `dangling-link` (error): `supersedes` or `superseded_by` names an ID that no
   record file has. A link listed twice in one record is reported once.
 - `supersede-state` (error): `superseded_by` is set on a record whose status is

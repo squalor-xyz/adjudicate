@@ -17,14 +17,14 @@ import (
 	"github.com/squalor-xyz/adjudicate/internal/model"
 )
 
-// ErrAmbiguousLinks is matched by the error Renumber returns when a record
-// links to an ID that more than one file has and the caller did not accept
-// that the link stays with the record that keeps the ID (C147).
 // ErrStaleCopy is matched by the error Renumber returns when a record file is
 // the stale copy that an interrupted earlier Renumber left behind (C148):
 // another file holds the same record under a new ID.
 var ErrStaleCopy = errors.New("stale copy left by an interrupted renumber")
 
+// ErrAmbiguousLinks is matched by the error Renumber returns when a record
+// links to an ID that more than one file has and the caller did not accept
+// that the link stays with the record that keeps the ID (C147).
 var ErrAmbiguousLinks = errors.New("links to a colliding id are ambiguous")
 
 // Move is one record file that Renumber gave a new ID.
@@ -63,31 +63,31 @@ func NameText(name string) string {
 	return text
 }
 
-// RenumberedFrom returns the ID a record was renumbered from, if its last
-// history entry is a renumber entry with the note "from N" (model.Renumber).
-func RenumberedFrom(r model.Record) (int, bool) {
-	if len(r.History) == 0 {
-		return 0, false
+// RenumberedFrom reports whether a history entry of r is a renumber entry with
+// the note "from id" (model.Renumber). Any entry counts, not only the last: the
+// record may have been edited since.
+func RenumberedFrom(r model.Record, id int) bool {
+	for _, h := range r.History {
+		if h.Event != model.EventRenumber {
+			continue
+		}
+		n, ok := strings.CutPrefix(h.Note, "from ")
+		if !ok {
+			continue
+		}
+		if from, err := strconv.Atoi(n); err == nil && from > 0 && from == id {
+			return true
+		}
 	}
-	last := r.History[len(r.History)-1]
-	if last.Event != model.EventRenumber {
-		return 0, false
-	}
-	n, ok := strings.CutPrefix(last.Note, "from ")
-	if !ok {
-		return 0, false
-	}
-	id, err := strconv.Atoi(n)
-	return id, err == nil && id > 0
+	return false
 }
 
 // IsStaleCopy reports whether stale is the old file of a renumber that was
 // interrupted before it was removed: moved, a file with another ID and the
-// same name text, holds a record whose last history entry says it was
-// renumbered from stale's ID (C148).
+// same name text, holds a record with a renumber history entry that says it
+// was renumbered from stale's ID (C148).
 func IsStaleCopy(stale, moved File, movedRec model.Record) bool {
-	from, ok := RenumberedFrom(movedRec)
-	return ok && moved.ID != stale.ID && from == stale.ID && NameText(moved.Name) == NameText(stale.Name)
+	return moved.ID != stale.ID && NameText(moved.Name) == NameText(stale.Name) && RenumberedFrom(movedRec, stale.ID)
 }
 
 // Renumber resolves every ID that more than one record file has (C26). Of the
@@ -293,9 +293,10 @@ func ambiguousLinks(links []Link) error {
 	return fmt.Errorf("%w: %s; renumber cannot tell which record each one means", ErrAmbiguousLinks, strings.Join(parts, "; "))
 }
 
-// moveFile, called with the store lock held, writes rec, the record in file old, under the next free ID and
-// removes old. The new file is complete before the old one goes, so a crash
-// between the two leaves both and loses nothing (C148).
+// moveFile, called with the store lock held, writes rec, the record in file
+// old, under the next free ID and removes old. The new file is complete before
+// the old one goes, so a crash between the two leaves both and loses nothing
+// (C148).
 func (s *Store) moveFile(old, kept File, rec model.Record, date string, avoid map[int]bool) (Move, error) {
 	perm := recordPerm
 	if fi, err := os.Stat(old.Path); err == nil {

@@ -255,7 +255,7 @@ func TestRenumberPrintsTheMovesDoneBeforeAFailure(t *testing.T) {
 
 const interruptedLint = `decisions/0002-alpha.md: record 2: error: duplicate-id: more than one file has id 2: 0002-alpha.md, 0002-beta.md
 decisions/0002-beta.md: record 2: error: duplicate-id: more than one file has id 2: 0002-alpha.md, 0002-beta.md
-decisions/0002-beta.md: record 2: error: renumber-leftover: 0004-beta.md has this record renumbered from id 2: this file is a stale copy left by an interrupted renumber; delete it
+decisions/0002-beta.md: record 2: error: renumber-leftover: 0004-beta.md has this record renumbered from id 2: this file is a stale copy left by an interrupted renumber; check both, delete it
 3 errors, 0 warnings
 `
 

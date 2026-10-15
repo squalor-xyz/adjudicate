@@ -565,6 +565,43 @@ func TestRenumberRefusesAfterAnInterruptedMove(t *testing.T) {
 	}
 }
 
+// The copy's last history entry need not be the renumber one: the record is
+// edited after the crash (here it is decided) and the old file is still a
+// stale copy. Renumber refuses, and IsStaleCopy says so for any renumber
+// entry "from N" in the history, not only for the last entry.
+func TestRenumberRefusesAStaleCopyWhoseRecordWasEditedSince(t *testing.T) {
+	root := fixture(t, "collision-interrupted")
+	path := filepath.Join(root, "decisions", "0004-beta.md")
+	writeFile(t, path, `---
+{"id":4,"title":"Beta","status":"decided","created":"2026-10-02","decided_at":"2026-11-03","decision":"b","rationale":"because","history":[{"date":"2026-10-02","event":"ask"},{"date":"2026-11-02","event":"renumber","note":"from 2"},{"date":"2026-11-03","event":"decide"}]}
+---
+Beta body.
+`)
+	before := tree(t, root)
+	got, err := mustOpen(t, root).Renumber(renumberDate, false)
+	if !errors.Is(err, ErrStaleCopy) {
+		t.Fatalf("Renumber = %+v, %v; want ErrStaleCopy", got.Moves, err)
+	}
+	if len(got.Moves) != 0 || !reflect.DeepEqual(tree(t, root), before) {
+		t.Errorf("a refused Renumber moved %+v or changed the store", got.Moves)
+	}
+
+	rec := model.Record{History: []model.HistoryEntry{
+		{Event: model.EventAsk},
+		{Event: model.EventRenumber, Note: "from 2"},
+		{Event: model.EventDecide},
+	}}
+	stale, moved := File{ID: 2, Name: "0002-beta.md"}, File{ID: 4, Name: "0004-beta.md"}
+	if !IsStaleCopy(stale, moved, rec) {
+		t.Error("IsStaleCopy = false for a record renumbered from 2 and edited since")
+	}
+	// A renumber entry for another ID anywhere in the history is no match.
+	rec.History[1].Note = "from 9"
+	if IsStaleCopy(stale, moved, rec) {
+		t.Error("IsStaleCopy = true for a record renumbered from 9")
+	}
+}
+
 // A file that looks like a copy only by name text is not one: the copy must
 // have been renumbered from this file's ID.
 func TestRenumberOnlyRefusesACopyRenumberedFromThatID(t *testing.T) {
