@@ -311,3 +311,17 @@
 {"when": "2026-10-15T10:11:25Z", "item": "S08", "action": "status", "from": "started", "to": "done", "note": "show and list with --json implemented, reviewed and gated PASS; tests, vet and gofmt clean; decisions C86-C96.", "by": "Jon R"}
 {"when": "2026-10-15T10:11:46Z", "item": "S09", "action": "note", "from": "", "to": "", "note": "From S08 gate (low, cosmetic): internal/render/text.go:48,51", "by": "Jon R"}
 {"when": "2026-10-15T10:11:50Z", "item": "S12", "action": "note", "from": "", "to": "", "note": "From S08 review: show/list record keys are omitempty (C87); ", "by": "Jon R"}
+{"when": "2026-10-15T10:15:40Z", "item": "S09", "action": "status", "from": "open", "to": "started", "note": "", "by": "Jon R"}
+{"when": "2026-10-15T10:16:52Z", "item": "C97", "action": "catalog", "from": "", "to": "S09 inbox arguments: adj inbox [--json] [--root DIR], no filters or positional arguments", "note": "add"}
+{"when": "2026-10-15T10:16:53Z", "item": "C98", "action": "catalog", "from": "", "to": "S09 inbox order: created date, then ID, ascending", "note": "add"}
+{"when": "2026-10-15T10:16:54Z", "item": "C99", "action": "catalog", "from": "", "to": "S09 inbox --json: the list shape, {\"records\": [...]} of full record objects", "note": "add"}
+{"when": "2026-10-15T10:16:56Z", "item": "C100", "action": "catalog", "from": "", "to": "S09 inbox text layout: 'ID  title' then indented Created, Options, Recommendation and Reasoning", "note": "add"}
+{"when": "2026-10-15T10:16:58Z", "item": "C101", "action": "catalog", "from": "", "to": "S09 empty inbox prints nothing in text and an empty array in JSON, exit 0", "note": "add"}
+{"when": "2026-10-15T10:17:01Z", "item": "C102", "action": "catalog", "from": "", "to": "S09 render trims trailing line breaks of option summaries, tradeoffs and history notes", "note": "add"}
+{"when": "2026-10-15T10:17:03Z", "item": "C103", "action": "catalog", "from": "", "to": "S09 handler files: cli/inbox.go, commands/inbox.go, render/inbox.go, plus commands/inbox_test.go and render/inbox_test.go", "note": "add"}
+{"when": "2026-10-15T10:17:05Z", "item": "C104", "action": "catalog", "from": "", "to": "S09 docs/json.md inbox example is checked by a test", "note": "add"}
+{"when": "2026-10-15T10:31:51Z", "item": "C100", "action": "catalog", "from": "", "to": "title,body", "note": "edit"}
+{"when": "2026-10-15T10:34:57Z", "item": "C98", "action": "catalog", "from": "", "to": "body", "note": "edit"}
+{"when": "2026-10-15T10:35:04Z", "item": "S09", "action": "note", "from": "", "to": "", "note": "Verified: adj inbox text and JSON list open records only, ol", "by": "Jon R"}
+{"when": "2026-10-15T10:35:06Z", "item": "S09", "action": "status", "from": "started", "to": "done", "note": "adj inbox: open questions oldest first with context, options, tradeoffs and recommendation; text and JSON; tests, vet, gofmt clean; C97-C104.", "by": "Jon R"}
+{"when": "2026-10-15T10:35:27Z", "item": "S12", "action": "note", "from": "", "to": "", "note": "From S09 review: reuse or move docsJSONExample/jsonBlockUnde", "by": "Jon R"}

@@ -437,7 +437,7 @@
       "id": "S09",
       "title": "Command: inbox",
       "short_title": "Command: inbox",
-      "status": "open",
+      "status": "done",
       "has_slice": true,
       "depends_on": [
         "S08"
@@ -449,6 +449,17 @@
           "text": "**2026-10-15** — From S08 gate (low, cosmetic): internal/render/text.go:48,51,77 call cont() on option summaries, tradeoffs and history notes without the trailing-newline trim field() applies; a value ending in \\n prints a spaces-only line. Fold in if inbox reuses these renderers.",
           "created_at": "2026-10-15T10:11:46Z",
           "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "3464c683-5d43-4b33-b1c0-40312df33dde",
+          "kind": "",
+          "text": "**2026-10-15** — Verified: adj inbox text and JSON list open records only, oldest first (created, then ID, stable), context shown by owner decision; shared render helpers and trailing-break trim; docs/json.md example is tested; all tests green, vet and gofmt clean; decisions C97-C104.",
+          "created_at": "2026-10-15T10:35:04Z",
+          "attempt": 1,
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
@@ -475,7 +486,7 @@
         "importance": 3,
         "urgency": 2,
         "effort": 1,
-        "attempts": 0
+        "attempts": 1
       }
     },
     {
@@ -574,6 +585,17 @@
           "kind": "",
           "text": "**2026-10-15** — From S08 review: show/list record keys are omitempty (C87); pin the jsonshape test to the docs/json.md key table or to a fixture matching the example exactly.",
           "created_at": "2026-10-15T10:11:50Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "3ba8f71d-61d2-4762-b4ba-086904a986c7",
+          "kind": "",
+          "text": "**2026-10-15** — From S09 review: reuse or move docsJSONExample/jsonBlockUnder (internal/cli/inbox_test.go) into jsonshape_test.go so one convention reads the docs/json.md examples; the inbox check is byte-exact (C104).",
+          "created_at": "2026-10-15T10:35:27Z",
           "attempt": 0,
           "by": "Jon R",
           "verified_by": "",
@@ -990,7 +1012,7 @@
   "goals": "adjudicate is a small CLI (`adj`) with a plain-text store that records project decisions as a loop: an agent asks, the owner decides in batches, and every later agent reads the decision. The goal and non-goal records below come from PROJECT.md; the owner's decisions on its open questions are catalog records C23-C33, and they override PROJECT.md where it differs (name, runtime, record format, license).",
   "non_goals": "",
   "catalog": {
-    "next_id": 97,
+    "next_id": 105,
     "id_prefix": "C",
     "id_width": 2,
     "records": [
@@ -1854,6 +1876,78 @@
         "kind": "decision",
         "title": "S08 ask rejects a blank --key (exit 2)",
         "body": "ask stored a whitespace-only --key that list --key can never match (C91); like --tag it is now a usage error, while a real key is still stored as typed.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C97",
+        "kind": "decision",
+        "title": "S09 inbox arguments: adj inbox [--json] [--root DIR], no filters or positional arguments",
+        "body": "The slice asks for open questions only; a stray word or a list filter is a usage error (exit 2) rather than silently ignored (C94), and adj list --status/--tag/--key already filter records.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C98",
+        "kind": "decision",
+        "title": "S09 inbox order: created date, then ID, ascending",
+        "body": "Oldest question first answers the slice; created is a YYYY-MM-DD string so text order is date order (C41), and ID breaks ties and matches the store order. A sorted copy is made in commands, since store.List order is ID order (C92). The sort is stable, so equal records (same ID and date, C60) keep store.List order.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C99",
+        "kind": "decision",
+        "title": "S09 inbox --json: the list shape, {\"records\": [...]} of full record objects",
+        "body": "Reuses render.RecordsJSON (C86, C87) so an agent parses one record shape; options with tradeoffs and the recommendation are already keys of the record. An empty inbox gives {\"records\": []}.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C100",
+        "kind": "decision",
+        "title": "S09 inbox text layout: 'ID  title' then indented Created, Context, Options, Recommendation and Reasoning",
+        "body": "The header keeps the ID and title greppable like list lines (C93); the owner needs when it was asked (the sort key), the options with summary and tradeoffs, and the asker's recommendation to answer in one batch. Context is shown too: owner decision 2026-10-15 (review of S09), multi-line context indented like other fields and omitted when empty. Key, tags and history are left to adj show.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C101",
+        "kind": "decision",
+        "title": "S09 empty inbox prints nothing in text and an empty array in JSON, exit 0",
+        "body": "Same as an empty list (C92): an empty answer is not a failure, and a script can test for no output.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C102",
+        "kind": "decision",
+        "title": "S09 render trims trailing line breaks of option summaries, tradeoffs and history notes",
+        "body": "S08 gate note: cont() indented the empty line after a trailing newline, printing a spaces-only line; these values now go through the same trim as other fields, and a value that is only line breaks counts as unset. writeField and writeOptions are shared by show and inbox.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C103",
+        "kind": "decision",
+        "title": "S09 handler files: cli/inbox.go, commands/inbox.go, render/inbox.go, plus commands/inbox_test.go and render/inbox_test.go",
+        "body": "C82 wants one handler file per command. The slice Files list names only cli/inbox_test.go; the oldest-first tie-break is only testable on unsorted input in package commands, and the text layout is tested in render beside the other golden tests.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C104",
+        "kind": "decision",
+        "title": "S09 docs/json.md inbox example is checked by a test",
+        "body": "TestInboxJSONMatchesTheDocumentedExample runs the CLI on a seeded repo and compares its output to the first json block of the inbox section, so the documented shape cannot drift from the real output.",
         "status": "active",
         "reason": "",
         "successor": ""

@@ -2,7 +2,7 @@
 
 // Package cli dispatches the adj command line. It takes its I/O as
 // parameters so tests can run it in-process. Each command's handler is in
-// its own file: init.go, ask.go, decide.go, show.go, list.go.
+// its own file: init.go, ask.go, decide.go, show.go, list.go, inbox.go.
 package cli
 
 import (
@@ -37,6 +37,7 @@ Commands:
   adj withdraw  close an open question because no answer is needed
   adj show      print one record
   adj list      list records, optionally filtered
+  adj inbox     list open questions, oldest first, with options
 
 Run adj <command> --help for a command's flags.
 `
@@ -100,6 +101,8 @@ func RunWith(env Env, args []string, stdin io.Reader, stdout, stderr io.Writer) 
 		return c.runShow(args[1:])
 	case "list":
 		return c.runList(args[1:])
+	case "inbox":
+		return c.runInbox(args[1:])
 	default:
 		fmt.Fprintf(stderr, "adj: unknown command %q\n", args[0])
 		fmt.Fprint(stderr, usage)

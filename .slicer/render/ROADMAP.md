@@ -362,6 +362,38 @@ C82 wants one handler file per command; the slice Files list omitted these two, 
 
 ask stored a whitespace-only --key that list --key can never match (C91); like --tag it is now a usage error, while a real key is still stored as typed.
 
+### C97 S09 inbox arguments: adj inbox [--json] [--root DIR], no filters or positional arguments
+
+The slice asks for open questions only; a stray word or a list filter is a usage error (exit 2) rather than silently ignored (C94), and adj list --status/--tag/--key already filter records.
+
+### C98 S09 inbox order: created date, then ID, ascending
+
+Oldest question first answers the slice; created is a YYYY-MM-DD string so text order is date order (C41), and ID breaks ties and matches the store order. A sorted copy is made in commands, since store.List order is ID order (C92). The sort is stable, so equal records (same ID and date, C60) keep store.List order.
+
+### C99 S09 inbox --json: the list shape, {"records": [...]} of full record objects
+
+Reuses render.RecordsJSON (C86, C87) so an agent parses one record shape; options with tradeoffs and the recommendation are already keys of the record. An empty inbox gives {"records": []}.
+
+### C100 S09 inbox text layout: 'ID  title' then indented Created, Context, Options, Recommendation and Reasoning
+
+The header keeps the ID and title greppable like list lines (C93); the owner needs when it was asked (the sort key), the options with summary and tradeoffs, and the asker's recommendation to answer in one batch. Context is shown too: owner decision 2026-10-15 (review of S09), multi-line context indented like other fields and omitted when empty. Key, tags and history are left to adj show.
+
+### C101 S09 empty inbox prints nothing in text and an empty array in JSON, exit 0
+
+Same as an empty list (C92): an empty answer is not a failure, and a script can test for no output.
+
+### C102 S09 render trims trailing line breaks of option summaries, tradeoffs and history notes
+
+S08 gate note: cont() indented the empty line after a trailing newline, printing a spaces-only line; these values now go through the same trim as other fields, and a value that is only line breaks counts as unset. writeField and writeOptions are shared by show and inbox.
+
+### C103 S09 handler files: cli/inbox.go, commands/inbox.go, render/inbox.go, plus commands/inbox_test.go and render/inbox_test.go
+
+C82 wants one handler file per command. The slice Files list names only cli/inbox_test.go; the oldest-first tie-break is only testable on unsorted input in package commands, and the text layout is tested in render beside the other golden tests.
+
+### C104 S09 docs/json.md inbox example is checked by a test
+
+TestInboxJSONMatchesTheDocumentedExample runs the CLI on a seeded repo and compares its output to the first json block of the inbox section, so the documented shape cannot drift from the real output.
+
 ## Assumptions
 
 ### C14 Name: keep 'dlog' as placeholder
@@ -418,34 +450,34 @@ PENDING OWNER CONFIRMATION - not decided. Source: Dependency/licensing notes (ma
 
 *Retired: Owner decided 2026-10-15: see decision C31 (GPL-3.0-or-later)..*
 
-22 items · — 9 · done 8 · later 5
+22 items · — 8 · done 9 · later 5
 
 | # | Slice | Title | Size | Effort | Trees | Findings | Status |
 |---|---|---|---|---|---|---|---|
-| 1 | [S09](slices/S09.md) | Command: inbox | S | 1 | cli | PROJECT.md Goals 2; v1 feature tier; Milestone 3 | — |
-| 2 | [S10](slices/S10.md) | Command: check | S | 1 | cli | PROJECT.md Goals 6; v1 feature tier; Milestone 3 | — |
-| 3 | [S11](slices/S11.md) | Command: context | M | 2 | cli | PROJECT.md Goals 5; v1 feature tier; Risks (context bloat); Milestone 3 | — |
-| 4 | [S12](slices/S12.md) | Agent snippet: adj ai and JSON shape docs | S | 1 | docs | PROJECT.md v1 feature tier; Risks (adoption); acceptance (--json documented) | — |
-| 5 | [S13](slices/S13.md) | Command: supersede | S | 1 | cli | PROJECT.md Goals 4; Lifecycle; acceptance (supersede); Milestone 4 | — |
-| 6 | [S14](slices/S14.md) | Command: lint | M | 2 | cli | PROJECT.md Goals 8; acceptance (lint fixtures); Open decisions 5; Milestone 4 | — |
-| 7 | [S15](slices/S15.md) | ID collision detection and renumber | M | 2 | store | PROJECT.md Open decisions 4; Risks (merge conflicts on IDs); Milestone 4 | — |
-| 8 | [S16](slices/S16.md) | Docs and v1 acceptance round trip | S | 1 | docs | PROJECT.md v1 acceptance criteria; Milestone 5 | — |
-| 9 | [S17](slices/S17.md) | Dogfood: record adjudicate's own decisions with adj | S | 1 | docs | PROJECT.md Milestone 5; acceptance (own decisions recorded) | — |
-| 10 | [S18](slices/S18.md) | Later: cross-repo inbox | M | 2 | later | PROJECT.md Feature tiers (Later); Open decisions 6 | later |
-| 11 | [S19](slices/S19.md) | Later: TUI or static HTML inbox | M | 2 | later | PROJECT.md Feature tiers (Later) | later |
-| 12 | [S20](slices/S20.md) | Later: slicer integration | M | 2 | later | PROJECT.md Feature tiers (Later); Non-goals (not replacing slicer); Risks (overlap with slicer catalog) | later |
-| 13 | [S21](slices/S21.md) | Later: optional owner-only decide enforcement | M | 2 | later | PROJECT.md Feature tiers (Later); Open decisions 5; Non-goals | later |
-| 14 | [S22](slices/S22.md) | Later: import from ADR folders | M | 2 | later | PROJECT.md Feature tiers (Later) | later |
+| 1 | [S10](slices/S10.md) | Command: check | S | 1 | cli | PROJECT.md Goals 6; v1 feature tier; Milestone 3 | — |
+| 2 | [S11](slices/S11.md) | Command: context | M | 2 | cli | PROJECT.md Goals 5; v1 feature tier; Risks (context bloat); Milestone 3 | — |
+| 3 | [S12](slices/S12.md) | Agent snippet: adj ai and JSON shape docs | S | 1 | docs | PROJECT.md v1 feature tier; Risks (adoption); acceptance (--json documented) | — |
+| 4 | [S13](slices/S13.md) | Command: supersede | S | 1 | cli | PROJECT.md Goals 4; Lifecycle; acceptance (supersede); Milestone 4 | — |
+| 5 | [S14](slices/S14.md) | Command: lint | M | 2 | cli | PROJECT.md Goals 8; acceptance (lint fixtures); Open decisions 5; Milestone 4 | — |
+| 6 | [S15](slices/S15.md) | ID collision detection and renumber | M | 2 | store | PROJECT.md Open decisions 4; Risks (merge conflicts on IDs); Milestone 4 | — |
+| 7 | [S16](slices/S16.md) | Docs and v1 acceptance round trip | S | 1 | docs | PROJECT.md v1 acceptance criteria; Milestone 5 | — |
+| 8 | [S17](slices/S17.md) | Dogfood: record adjudicate's own decisions with adj | S | 1 | docs | PROJECT.md Milestone 5; acceptance (own decisions recorded) | — |
+| 9 | [S18](slices/S18.md) | Later: cross-repo inbox | M | 2 | later | PROJECT.md Feature tiers (Later); Open decisions 6 | later |
+| 10 | [S19](slices/S19.md) | Later: TUI or static HTML inbox | M | 2 | later | PROJECT.md Feature tiers (Later) | later |
+| 11 | [S20](slices/S20.md) | Later: slicer integration | M | 2 | later | PROJECT.md Feature tiers (Later); Non-goals (not replacing slicer); Risks (overlap with slicer catalog) | later |
+| 12 | [S21](slices/S21.md) | Later: optional owner-only decide enforcement | M | 2 | later | PROJECT.md Feature tiers (Later); Open decisions 5; Non-goals | later |
+| 13 | [S22](slices/S22.md) | Later: import from ADR folders | M | 2 | later | PROJECT.md Feature tiers (Later) | later |
 
 ---
 
 | # | Slice | Title | Size | Effort | Trees | Findings | Status |
 |---|---|---|---|---|---|---|---|
-| 15 | [S01](slices/S01.md) | Confirm open decisions | S | 1 | decisions | PROJECT.md Open decisions 1-7; Core concepts (kind); Dependency/licensing notes | done |
-| 16 | [S02](slices/S02.md) | Project scaffolding | S | 1 | scaffold | PROJECT.md Stack recommendation; Dependency/licensing notes | done |
-| 17 | [S03](slices/S03.md) | Record model and lifecycle transitions | M | 2 | model | PROJECT.md Core concepts / data model; Milestone 1 | done |
-| 18 | [S04](slices/S04.md) | Record file read and write | S | 1 | model | PROJECT.md Open decisions 3; Core concepts (Record) | done |
-| 19 | [S05](slices/S05.md) | Store, config and ID allocation | M | 2 | store | PROJECT.md Architecture sketch (ID allocation, Determinism); Open decisions 4, 6, 7 | done |
-| 20 | [S06](slices/S06.md) | Commands: init and ask | M | 2 | cli | PROJECT.md v1 feature tier; Milestone 2 | done |
-| 21 | [S07](slices/S07.md) | Commands: decide, reject, withdraw | S | 1 | cli | PROJECT.md v1 feature tier; Lifecycle; Milestone 2 | done |
-| 22 | [S08](slices/S08.md) | Commands: show and list with --json | S | 1 | cli | PROJECT.md v1 feature tier; Milestone 2; acceptance (--json) | done |
+| 14 | [S01](slices/S01.md) | Confirm open decisions | S | 1 | decisions | PROJECT.md Open decisions 1-7; Core concepts (kind); Dependency/licensing notes | done |
+| 15 | [S02](slices/S02.md) | Project scaffolding | S | 1 | scaffold | PROJECT.md Stack recommendation; Dependency/licensing notes | done |
+| 16 | [S03](slices/S03.md) | Record model and lifecycle transitions | M | 2 | model | PROJECT.md Core concepts / data model; Milestone 1 | done |
+| 17 | [S04](slices/S04.md) | Record file read and write | S | 1 | model | PROJECT.md Open decisions 3; Core concepts (Record) | done |
+| 18 | [S05](slices/S05.md) | Store, config and ID allocation | M | 2 | store | PROJECT.md Architecture sketch (ID allocation, Determinism); Open decisions 4, 6, 7 | done |
+| 19 | [S06](slices/S06.md) | Commands: init and ask | M | 2 | cli | PROJECT.md v1 feature tier; Milestone 2 | done |
+| 20 | [S07](slices/S07.md) | Commands: decide, reject, withdraw | S | 1 | cli | PROJECT.md v1 feature tier; Lifecycle; Milestone 2 | done |
+| 21 | [S08](slices/S08.md) | Commands: show and list with --json | S | 1 | cli | PROJECT.md v1 feature tier; Milestone 2; acceptance (--json) | done |
+| 22 | [S09](slices/S09.md) | Command: inbox | S | 1 | cli | PROJECT.md Goals 2; v1 feature tier; Milestone 3 | done |

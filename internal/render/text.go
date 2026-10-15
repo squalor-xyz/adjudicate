@@ -20,16 +20,7 @@ import (
 // shown; the record is not changed.
 func RecordText(w io.Writer, r model.Record) error {
 	var b strings.Builder
-	field := func(label, value string) {
-		value = strings.TrimRight(value, "\n")
-		switch {
-		case value == "":
-		case strings.Contains(value, "\n"):
-			fmt.Fprintf(&b, "%s:\n  %s\n", label, cont(value, "  "))
-		default:
-			fmt.Fprintf(&b, "%s: %s\n", label, value)
-		}
-	}
+	field := func(label, value string) { writeField(&b, "", label, value) }
 
 	fmt.Fprintf(&b, "ID: %d\n", r.ID)
 	field("Title", r.Title)
@@ -39,19 +30,7 @@ func RecordText(w io.Writer, r model.Record) error {
 	field("Asked by", r.AskedBy)
 	field("Created", r.Created)
 	field("Context", r.Context)
-	if len(r.Options) > 0 {
-		b.WriteString("Options:\n")
-		for _, o := range r.Options {
-			if o.Summary == "" {
-				fmt.Fprintf(&b, "  %s\n", o.Label)
-			} else {
-				fmt.Fprintf(&b, "  %s: %s\n", o.Label, cont(o.Summary, "    "))
-			}
-			if o.Tradeoffs != "" {
-				fmt.Fprintf(&b, "    tradeoffs: %s\n", cont(o.Tradeoffs, "      "))
-			}
-		}
-	}
+	writeOptions(&b, "", r.Options)
 	if rec := r.Recommendation; rec != nil {
 		field("Recommendation", rec.Label)
 		field("Reasoning", rec.Reasoning)
@@ -71,10 +50,10 @@ func RecordText(w io.Writer, r model.Record) error {
 	if len(r.History) > 0 {
 		b.WriteString("History:\n")
 		for _, h := range r.History {
-			if h.Note == "" {
+			if note := trimBreaks(h.Note); note == "" {
 				fmt.Fprintf(&b, "  %s %s\n", h.Date, h.Event)
 			} else {
-				fmt.Fprintf(&b, "  %s %s: %s\n", h.Date, h.Event, cont(h.Note, "    "))
+				fmt.Fprintf(&b, "  %s %s: %s\n", h.Date, h.Event, cont(note, "    "))
 			}
 		}
 	}
@@ -103,6 +82,47 @@ func RecordsText(w io.Writer, recs []model.Record) error {
 	}
 	_, err := io.WriteString(w, b.String())
 	return err
+}
+
+// trimBreaks drops the trailing line breaks of a value for display; the
+// record is not changed.
+func trimBreaks(s string) string {
+	return strings.TrimRight(s, "\n")
+}
+
+// writeField writes "label: value" at indent pad. A value with line breaks goes
+// under its label, indented two more; a value that is empty once its trailing
+// line breaks are dropped is left out.
+func writeField(b *strings.Builder, pad, label, value string) {
+	value = trimBreaks(value)
+	switch {
+	case value == "":
+	case strings.Contains(value, "\n"):
+		fmt.Fprintf(b, "%s%s:\n%s  %s\n", pad, label, pad, cont(value, pad+"  "))
+	default:
+		fmt.Fprintf(b, "%s%s: %s\n", pad, label, value)
+	}
+}
+
+// writeOptions writes an "Options:" line at indent pad and each option under
+// it, two deeper: "label: summary", then its tradeoffs, if any, two deeper
+// again. Trailing line breaks of a summary or tradeoffs are dropped. It writes
+// nothing when there are no options.
+func writeOptions(b *strings.Builder, pad string, opts []model.Option) {
+	if len(opts) == 0 {
+		return
+	}
+	fmt.Fprintf(b, "%sOptions:\n", pad)
+	for _, o := range opts {
+		if summary := trimBreaks(o.Summary); summary == "" {
+			fmt.Fprintf(b, "%s  %s\n", pad, o.Label)
+		} else {
+			fmt.Fprintf(b, "%s  %s: %s\n", pad, o.Label, cont(summary, pad+"    "))
+		}
+		if tradeoffs := trimBreaks(o.Tradeoffs); tradeoffs != "" {
+			fmt.Fprintf(b, "%s    tradeoffs: %s\n", pad, cont(tradeoffs, pad+"      "))
+		}
+	}
 }
 
 // cont indents the lines after the first of s by pad.

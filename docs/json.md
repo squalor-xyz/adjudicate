@@ -1,10 +1,11 @@
 # JSON output
 
-`adj show ID --json` and `adj list --json` print JSON for agents. The shapes
-on this page are the contract: a key keeps its name and its type. Readers
-should ignore keys they do not know, because a later release may add keys.
+`adj show ID --json`, `adj list --json` and `adj inbox --json` print JSON for
+agents. The shapes on this page are the contract: a key keeps its name and its
+type. Readers should ignore keys they do not know, because a later release may
+add keys.
 
-Both commands print the JSON with two-space indentation and HTML characters
+All three commands print the JSON with two-space indentation and HTML characters
 unescaped, end it with one newline, and print the same bytes for the same
 store.
 
@@ -102,6 +103,65 @@ the shape above, in ID order.
 ```
 
 When no record matches, the array is empty: `{"records": []}` (formatted as
+`{`, `  "records": []`, `}`).
+
+## `adj inbox --json`
+
+The open questions, oldest first (by `created`, then by `id`), in the same
+shape as `adj list --json`: one object with one key, `records`, an array of
+record objects. Only records with status `open` appear, each with every key it
+has, so its `options` (with `tradeoffs` when set) and `recommendation` are
+there for the owner to read.
+
+```json
+{
+  "records": [
+    {
+      "id": 1,
+      "title": "Pick a store",
+      "status": "open",
+      "key": "storage.engine",
+      "asked_by": "claude-opus",
+      "created": "2026-03-04",
+      "options": [
+        {
+          "label": "a",
+          "summary": "Use A",
+          "tradeoffs": "Younger project"
+        },
+        {
+          "label": "b",
+          "summary": "Use B"
+        }
+      ],
+      "recommendation": {
+        "label": "a",
+        "reasoning": "A is proven"
+      },
+      "history": [
+        {
+          "date": "2026-03-04",
+          "event": "ask"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Logging",
+      "status": "open",
+      "created": "2026-03-04",
+      "history": [
+        {
+          "date": "2026-03-04",
+          "event": "ask"
+        }
+      ]
+    }
+  ]
+}
+```
+
+When the inbox is empty, the array is empty: `{"records": []}` (formatted as
 `{`, `  "records": []`, `}`).
 
 ## Keys of a record

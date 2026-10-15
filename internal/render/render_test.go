@@ -349,3 +349,63 @@ func TestRecordTextDropsAllTrailingLineBreaksOfAField(t *testing.T) {
 		})
 	}
 }
+
+// From the S08 gate: option summaries, tradeoffs and history notes drop their
+// trailing line breaks like every other field, so no line holds only spaces
+// and a value that is only line breaks counts as unset.
+func TestRecordTextDropsTrailingLineBreaksOfOptionsAndHistory(t *testing.T) {
+	head := "ID: 1\nTitle: T\nStatus: open\nCreated: 2026-03-04\n"
+	tests := []struct {
+		name string
+		r    model.Record
+		want string
+	}{
+		{
+			name: "option summary",
+			r: model.Record{ID: 1, Title: "T", Status: model.StatusOpen, Created: "2026-03-04",
+				Options: []model.Option{{Label: "a", Summary: "first\nsecond\n\n"}}},
+			want: "Options:\n  a: first\n    second\n",
+		},
+		{
+			name: "option summary of only line breaks",
+			r: model.Record{ID: 1, Title: "T", Status: model.StatusOpen, Created: "2026-03-04",
+				Options: []model.Option{{Label: "a", Summary: "\n"}}},
+			want: "Options:\n  a\n",
+		},
+		{
+			name: "option tradeoffs",
+			r: model.Record{ID: 1, Title: "T", Status: model.StatusOpen, Created: "2026-03-04",
+				Options: []model.Option{{Label: "a", Summary: "Use A", Tradeoffs: "slow\n"}}},
+			want: "Options:\n  a: Use A\n    tradeoffs: slow\n",
+		},
+		{
+			name: "option tradeoffs of only line breaks",
+			r: model.Record{ID: 1, Title: "T", Status: model.StatusOpen, Created: "2026-03-04",
+				Options: []model.Option{{Label: "a", Summary: "Use A", Tradeoffs: "\n\n"}}},
+			want: "Options:\n  a: Use A\n",
+		},
+		{
+			name: "history note",
+			r: model.Record{ID: 1, Title: "T", Status: model.StatusOpen, Created: "2026-03-04",
+				History: []model.HistoryEntry{{Date: "2026-03-04", Event: model.EventAsk, Note: "first\nsecond\n"}}},
+			want: "History:\n  2026-03-04 ask: first\n    second\n",
+		},
+		{
+			name: "history note of only line breaks",
+			r: model.Record{ID: 1, Title: "T", Status: model.StatusOpen, Created: "2026-03-04",
+				History: []model.HistoryEntry{{Date: "2026-03-04", Event: model.EventAsk, Note: "\n"}}},
+			want: "History:\n  2026-03-04 ask\n",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var buf bytes.Buffer
+			if err := RecordText(&buf, tt.r); err != nil {
+				t.Fatal(err)
+			}
+			if got := buf.String(); got != head+tt.want {
+				t.Errorf("RecordText = %q, want %q", got, head+tt.want)
+			}
+		})
+	}
+}
