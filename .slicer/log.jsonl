@@ -263,3 +263,19 @@
 {"when": "2026-10-15T05:12:11Z", "item": "S14", "action": "note", "from": "", "to": "", "note": "From S05 review: store.scan/fileID (internal/store/store.go)", "by": "Jon R"}
 {"when": "2026-10-15T05:12:11Z", "item": "S15", "action": "note", "from": "", "to": "", "note": "From S05 review/gate: store.Get/Update already return ErrDup", "by": "Jon R"}
 {"when": "2026-10-15T05:12:11Z", "item": "S06", "action": "note", "from": "", "to": "", "note": "From S05 gate (nits): internal/store/store.go:44-45 beforeLi", "by": "Jon R"}
+{"when": "2026-10-15T05:13:45Z", "item": "S06", "action": "status", "from": "open", "to": "started", "note": "", "by": "Jon R"}
+{"when": "2026-10-15T05:19:36Z", "item": "C65", "action": "catalog", "from": "", "to": "Root selection: --root DIR on every command, plus cli.Env.Root and Env.Stop; explicit roots are never searched", "note": "add"}
+{"when": "2026-10-15T05:19:36Z", "item": "C66", "action": "catalog", "from": "", "to": "Run keeps its signature; RunWith(Env, ...) takes clock, environment, working directory and root", "note": "add"}
+{"when": "2026-10-15T05:19:37Z", "item": "C67", "action": "catalog", "from": "", "to": "Flags: one FlagSet per command; flags may follow positionals; -h/--help print the command usage to stdout (exit 0)", "note": "add"}
+{"when": "2026-10-15T05:19:37Z", "item": "C68", "action": "catalog", "from": "", "to": "adj ask --option LABEL:SUMMARY, tradeoffs as --tradeoffs LABEL:TEXT; both split at the first colon", "note": "add"}
+{"when": "2026-10-15T05:19:37Z", "item": "C69", "action": "catalog", "from": "", "to": "adj ask recommendation reasoning: --reasoning TEXT, only with --recommend", "note": "add"}
+{"when": "2026-10-15T05:19:37Z", "item": "C70", "action": "catalog", "from": "", "to": "asked_by: --by NAME, else the ADJ_ASKED_BY environment variable, else left blank", "note": "add"}
+{"when": "2026-10-15T05:19:37Z", "item": "C71", "action": "catalog", "from": "", "to": "adj ask context: --context TEXT, or --stdin to read it; both is a usage error; trailing newlines of stdin are trimmed", "note": "add"}
+{"when": "2026-10-15T05:19:37Z", "item": "C72", "action": "catalog", "from": "", "to": "adj init writes {\"store\": \"decisions\"} and creates the store directory; it acts on DIR or the cwd only, keeps an existing valid config, and prints initialized or already initialized", "note": "add"}
+{"when": "2026-10-15T05:19:37Z", "item": "C73", "action": "catalog", "from": "", "to": "Exit codes for init and ask: bad arguments exit 2 before any store access; no config (run adj init), an invalid config or a failed write exit 1", "note": "add"}
+{"when": "2026-10-15T05:19:37Z", "item": "C74", "action": "catalog", "from": "", "to": "adj ask prints the new ID as a plain integer on stdout; created is the clock's local date", "note": "add"}
+{"when": "2026-10-15T05:26:02Z", "item": "C75", "action": "catalog", "from": "", "to": "adj ask tags: trimmed, blank is a usage error, repeats are dropped (first one kept, order kept)", "note": "add"}
+{"when": "2026-10-15T05:26:02Z", "item": "C76", "action": "catalog", "from": "", "to": "adj init removes the config it just wrote if creating the store directory fails; an existing config is never removed", "note": "add"}
+{"when": "2026-10-15T05:30:33Z", "item": "S06", "action": "note", "from": "", "to": "", "note": "Verified: adj init and adj ask end to end through cli.Run; -", "by": "Jon R"}
+{"when": "2026-10-15T05:30:34Z", "item": "S06", "action": "status", "from": "started", "to": "done", "note": "adj init and adj ask implemented with flag parsing, explicit and bounded root selection, C65-C76 recorded; 317 tests, vet and gofmt clean.", "by": "Jon R"}
+{"when": "2026-10-15T05:30:47Z", "item": "S07", "action": "note", "from": "", "to": "", "note": "From S06 review/gate: (1) internal/cli/cli.go holds shared h", "by": "Jon R"}

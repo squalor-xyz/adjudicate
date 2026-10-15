@@ -234,6 +234,54 @@ The ID is the store's to allocate (C26); the ask command writes the history entr
 
 os.CreateTemp makes 0600 files, so the store sets the mode itself: 0644 for a new record (git-friendly, umask-independent) and the replaced file's bits on Update so a chosen mode survives. When the link finds the name taken (another writer after our scan), Create rescans and takes the next ID, then gives up with an error wrapping os.ErrExist that names the target file; no locking, which is the owner's design call.
 
+### C65 Root selection: --root DIR on every command, plus cli.Env.Root and Env.Stop; explicit roots are never searched
+
+Tests run in temp dirs under the repo's own .cache, where walking up from the cwd could find the repo's real .adjudicate.json. --root DIR (flag wins) or the injected Env.Root names the root as it is: init uses it as is, other commands need DIR/.adjudicate.json in it. With neither, init uses the working directory and other commands search upward from it with store.FindRoot; Env.Stop bounds that walk (store.FindRootWithin, formerly the unexported findRoot) so a discovery test cannot leave its temp dir. --root is per command, not global, so it can sit among the other flags.
+
+### C66 Run keeps its signature; RunWith(Env, ...) takes clock, environment, working directory and root
+
+C35 fixed Run(args, stdin, stdout, stderr) for main; tests need a fixed clock, a fake environment and no use of the real cwd, so Run calls RunWith with the zero Env (real time.Now, os.Getenv, os.Getwd).
+
+### C67 Flags: one FlagSet per command; flags may follow positionals; -h/--help print the command usage to stdout (exit 0)
+
+parseInterspersed splits arguments itself (a flag value is taken as the value even if it looks like a flag or is --) and then calls FlagSet.Parse once; a lone - and anything after -- are positional. Errors and usage go to stderr with exit 2, matching C36.
+
+### C68 adj ask --option LABEL:SUMMARY, tradeoffs as --tradeoffs LABEL:TEXT; both split at the first colon
+
+A separate flag keeps the PROJECT.md --option shape and keeps colons in summaries unambiguous (a third colon field in --option would not). The label must name an option and each option takes one --tradeoffs; labels and texts are trimmed; blank labels are refused.
+
+### C69 adj ask recommendation reasoning: --reasoning TEXT, only with --recommend
+
+The recommendation record has label and reasoning (C44); a flag next to --recommend is the smallest way to fill the second field, and reasoning with no recommendation is a usage error rather than silently dropped.
+
+### C70 asked_by: --by NAME, else the ADJ_ASKED_BY environment variable, else left blank
+
+Agents set one environment variable once instead of repeating a flag; a blank is better than a guessed identity (C27 treats attribution as a convention). The flag wins so one command can override.
+
+### C71 adj ask context: --context TEXT, or --stdin to read it; both is a usage error; trailing newlines of stdin are trimmed
+
+Long context is easier to pipe than to quote. Trimming only CR and LF at the end keeps leading indentation and inner blank lines, and the context field carries no stray final newline.
+
+### C72 adj init writes {"store": "decisions"} and creates the store directory; it acts on DIR or the cwd only, keeps an existing valid config, and prints initialized or already initialized
+
+Spelling the one setting out shows the owner what to change (C56, C29). init never searches upward, so running it in a subdirectory starts a new root on purpose; a second run changes nothing, and an invalid or non-regular config fails with exit 1 before anything is created.
+
+### C73 Exit codes for init and ask: bad arguments exit 2 before any store access; no config (run adj init), an invalid config or a failed write exit 1
+
+Follows C34: bad input is a usage error whatever the state of the store, and a missing store is a failed operation. ErrNoRoot is mapped to a message that says to run adj init.
+
+### C74 adj ask prints the new ID as a plain integer on stdout; created is the clock's local date
+
+One machine-readable line (1, not 0001) is easy for agents to feed to later commands; the date is time.DateOnly of the injected clock, as C41 stores dates.
+
+### C75 adj ask tags: trimmed, blank is a usage error, repeats are dropped (first one kept, order kept)
+
+An agent that repeats a tag meant the same tag, so de-duplicating is kinder than an exit 2; a blank tag is a typo and stays an error. --recommend is trimmed like option labels (C68).
+
+### C76 adj init removes the config it just wrote if creating the store directory fails; an existing config is never removed
+
+A failed init must not leave a half-initialised repo, or ask would pass the config check and then fail; a config the owner wrote is theirs and stays.
+
 ## Assumptions
 
 ### C14 Name: keep 'dlog' as placeholder
@@ -290,34 +338,34 @@ PENDING OWNER CONFIRMATION - not decided. Source: Dependency/licensing notes (ma
 
 *Retired: Owner decided 2026-10-15: see decision C31 (GPL-3.0-or-later)..*
 
-22 items · — 12 · done 5 · later 5
+22 items · — 11 · done 6 · later 5
 
 | # | Slice | Title | Size | Effort | Trees | Findings | Status |
 |---|---|---|---|---|---|---|---|
-| 1 | [S06](slices/S06.md) | Commands: init and ask | M | 2 | cli | PROJECT.md v1 feature tier; Milestone 2 | — |
-| 2 | [S07](slices/S07.md) | Commands: decide, reject, withdraw | S | 1 | cli | PROJECT.md v1 feature tier; Lifecycle; Milestone 2 | — |
-| 3 | [S08](slices/S08.md) | Commands: show and list with --json | S | 1 | cli | PROJECT.md v1 feature tier; Milestone 2; acceptance (--json) | — |
-| 4 | [S09](slices/S09.md) | Command: inbox | S | 1 | cli | PROJECT.md Goals 2; v1 feature tier; Milestone 3 | — |
-| 5 | [S10](slices/S10.md) | Command: check | S | 1 | cli | PROJECT.md Goals 6; v1 feature tier; Milestone 3 | — |
-| 6 | [S11](slices/S11.md) | Command: context | M | 2 | cli | PROJECT.md Goals 5; v1 feature tier; Risks (context bloat); Milestone 3 | — |
-| 7 | [S12](slices/S12.md) | Agent snippet: adj ai and JSON shape docs | S | 1 | docs | PROJECT.md v1 feature tier; Risks (adoption); acceptance (--json documented) | — |
-| 8 | [S13](slices/S13.md) | Command: supersede | S | 1 | cli | PROJECT.md Goals 4; Lifecycle; acceptance (supersede); Milestone 4 | — |
-| 9 | [S14](slices/S14.md) | Command: lint | M | 2 | cli | PROJECT.md Goals 8; acceptance (lint fixtures); Open decisions 5; Milestone 4 | — |
-| 10 | [S15](slices/S15.md) | ID collision detection and renumber | M | 2 | store | PROJECT.md Open decisions 4; Risks (merge conflicts on IDs); Milestone 4 | — |
-| 11 | [S16](slices/S16.md) | Docs and v1 acceptance round trip | S | 1 | docs | PROJECT.md v1 acceptance criteria; Milestone 5 | — |
-| 12 | [S17](slices/S17.md) | Dogfood: record adjudicate's own decisions with adj | S | 1 | docs | PROJECT.md Milestone 5; acceptance (own decisions recorded) | — |
-| 13 | [S18](slices/S18.md) | Later: cross-repo inbox | M | 2 | later | PROJECT.md Feature tiers (Later); Open decisions 6 | later |
-| 14 | [S19](slices/S19.md) | Later: TUI or static HTML inbox | M | 2 | later | PROJECT.md Feature tiers (Later) | later |
-| 15 | [S20](slices/S20.md) | Later: slicer integration | M | 2 | later | PROJECT.md Feature tiers (Later); Non-goals (not replacing slicer); Risks (overlap with slicer catalog) | later |
-| 16 | [S21](slices/S21.md) | Later: optional owner-only decide enforcement | M | 2 | later | PROJECT.md Feature tiers (Later); Open decisions 5; Non-goals | later |
-| 17 | [S22](slices/S22.md) | Later: import from ADR folders | M | 2 | later | PROJECT.md Feature tiers (Later) | later |
+| 1 | [S07](slices/S07.md) | Commands: decide, reject, withdraw | S | 1 | cli | PROJECT.md v1 feature tier; Lifecycle; Milestone 2 | — |
+| 2 | [S08](slices/S08.md) | Commands: show and list with --json | S | 1 | cli | PROJECT.md v1 feature tier; Milestone 2; acceptance (--json) | — |
+| 3 | [S09](slices/S09.md) | Command: inbox | S | 1 | cli | PROJECT.md Goals 2; v1 feature tier; Milestone 3 | — |
+| 4 | [S10](slices/S10.md) | Command: check | S | 1 | cli | PROJECT.md Goals 6; v1 feature tier; Milestone 3 | — |
+| 5 | [S11](slices/S11.md) | Command: context | M | 2 | cli | PROJECT.md Goals 5; v1 feature tier; Risks (context bloat); Milestone 3 | — |
+| 6 | [S12](slices/S12.md) | Agent snippet: adj ai and JSON shape docs | S | 1 | docs | PROJECT.md v1 feature tier; Risks (adoption); acceptance (--json documented) | — |
+| 7 | [S13](slices/S13.md) | Command: supersede | S | 1 | cli | PROJECT.md Goals 4; Lifecycle; acceptance (supersede); Milestone 4 | — |
+| 8 | [S14](slices/S14.md) | Command: lint | M | 2 | cli | PROJECT.md Goals 8; acceptance (lint fixtures); Open decisions 5; Milestone 4 | — |
+| 9 | [S15](slices/S15.md) | ID collision detection and renumber | M | 2 | store | PROJECT.md Open decisions 4; Risks (merge conflicts on IDs); Milestone 4 | — |
+| 10 | [S16](slices/S16.md) | Docs and v1 acceptance round trip | S | 1 | docs | PROJECT.md v1 acceptance criteria; Milestone 5 | — |
+| 11 | [S17](slices/S17.md) | Dogfood: record adjudicate's own decisions with adj | S | 1 | docs | PROJECT.md Milestone 5; acceptance (own decisions recorded) | — |
+| 12 | [S18](slices/S18.md) | Later: cross-repo inbox | M | 2 | later | PROJECT.md Feature tiers (Later); Open decisions 6 | later |
+| 13 | [S19](slices/S19.md) | Later: TUI or static HTML inbox | M | 2 | later | PROJECT.md Feature tiers (Later) | later |
+| 14 | [S20](slices/S20.md) | Later: slicer integration | M | 2 | later | PROJECT.md Feature tiers (Later); Non-goals (not replacing slicer); Risks (overlap with slicer catalog) | later |
+| 15 | [S21](slices/S21.md) | Later: optional owner-only decide enforcement | M | 2 | later | PROJECT.md Feature tiers (Later); Open decisions 5; Non-goals | later |
+| 16 | [S22](slices/S22.md) | Later: import from ADR folders | M | 2 | later | PROJECT.md Feature tiers (Later) | later |
 
 ---
 
 | # | Slice | Title | Size | Effort | Trees | Findings | Status |
 |---|---|---|---|---|---|---|---|
-| 18 | [S01](slices/S01.md) | Confirm open decisions | S | 1 | decisions | PROJECT.md Open decisions 1-7; Core concepts (kind); Dependency/licensing notes | done |
-| 19 | [S02](slices/S02.md) | Project scaffolding | S | 1 | scaffold | PROJECT.md Stack recommendation; Dependency/licensing notes | done |
-| 20 | [S03](slices/S03.md) | Record model and lifecycle transitions | M | 2 | model | PROJECT.md Core concepts / data model; Milestone 1 | done |
-| 21 | [S04](slices/S04.md) | Record file read and write | S | 1 | model | PROJECT.md Open decisions 3; Core concepts (Record) | done |
-| 22 | [S05](slices/S05.md) | Store, config and ID allocation | M | 2 | store | PROJECT.md Architecture sketch (ID allocation, Determinism); Open decisions 4, 6, 7 | done |
+| 17 | [S01](slices/S01.md) | Confirm open decisions | S | 1 | decisions | PROJECT.md Open decisions 1-7; Core concepts (kind); Dependency/licensing notes | done |
+| 18 | [S02](slices/S02.md) | Project scaffolding | S | 1 | scaffold | PROJECT.md Stack recommendation; Dependency/licensing notes | done |
+| 19 | [S03](slices/S03.md) | Record model and lifecycle transitions | M | 2 | model | PROJECT.md Core concepts / data model; Milestone 1 | done |
+| 20 | [S04](slices/S04.md) | Record file read and write | S | 1 | model | PROJECT.md Open decisions 3; Core concepts (Record) | done |
+| 21 | [S05](slices/S05.md) | Store, config and ID allocation | M | 2 | store | PROJECT.md Architecture sketch (ID allocation, Determinism); Open decisions 4, 6, 7 | done |
+| 22 | [S06](slices/S06.md) | Commands: init and ask | M | 2 | cli | PROJECT.md v1 feature tier; Milestone 2 | done |

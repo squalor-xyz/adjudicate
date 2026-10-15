@@ -279,7 +279,7 @@
       "id": "S06",
       "title": "Commands: init and ask",
       "short_title": "Commands: init and ask",
-      "status": "open",
+      "status": "done",
       "has_slice": true,
       "depends_on": [
         "S05"
@@ -291,6 +291,17 @@
           "text": "**2026-10-15** — From S05 gate (nits): internal/store/store.go:44-45 beforeLink doc says 'just before the file is linked'; it runs before writeNew (before the temp file is written) — reword. Five test trailing comments exceed 80 cols (config_test.go:84, store_test.go:127,249,335,539). FindRoot returns ErrNoRoot when no .adjudicate.json — map to the 'run adj init' message.",
           "created_at": "2026-10-15T05:12:11Z",
           "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "57c514bf-d519-4a32-a649-edac99ff0a8e",
+          "kind": "",
+          "text": "**2026-10-15** — Verified: adj init and adj ask end to end through cli.Run; --root flag and Env.Root explicit roots with bounded discovery (Env.Stop); 317 tests green, go vet and gofmt clean; decisions C65-C76.",
+          "created_at": "2026-10-15T05:30:33Z",
+          "attempt": 1,
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
@@ -317,7 +328,7 @@
         "importance": 3,
         "urgency": 2,
         "effort": 2,
-        "attempts": 0
+        "attempts": 1
       }
     },
     {
@@ -329,7 +340,19 @@
       "depends_on": [
         "S06"
       ],
-      "note_records": [],
+      "note_records": [
+        {
+          "id": "1e3e5fec-c330-473e-921c-22426c2fc7cb",
+          "kind": "",
+          "text": "**2026-10-15** — From S06 review/gate: (1) internal/cli/cli.go holds shared helpers + one handler per command; S07–S12 add 7+ handlers — consider internal/cli/<command>.go per handler with dispatch in cli.go (record as a Files deviation). (2) commands.UsageError lives in ask.go — move to a shared file (e.g. commands/errors.go) when decide/reject/withdraw reuse it. (3) Reuse the C70 --by / env pattern for decided_by. (4) Low: --recommend \"\" (explicit empty) is treated as absent (ask.go:93) while --tag \"\" exits 2 — make it a usage error via fsSet. (5) Nit: AGENTS.md:60 is a 117-col line; re-wrap.",
+          "created_at": "2026-10-15T05:30:47Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        }
+      ],
       "claim": null,
       "fields": {
         "size": "S",
@@ -909,7 +932,7 @@
   "goals": "adjudicate is a small CLI (`adj`) with a plain-text store that records project decisions as a loop: an agent asks, the owner decides in batches, and every later agent reads the decision. The goal and non-goal records below come from PROJECT.md; the owner's decisions on its open questions are catalog records C23-C33, and they override PROJECT.md where it differs (name, runtime, record format, license).",
   "non_goals": "",
   "catalog": {
-    "next_id": 65,
+    "next_id": 77,
     "id_prefix": "C",
     "id_width": 2,
     "records": [
@@ -1485,6 +1508,114 @@
         "kind": "decision",
         "title": "Permissions and retry: new records are 0644, Update keeps the old file's permission bits, and Create retries up to three times when its file name is taken",
         "body": "os.CreateTemp makes 0600 files, so the store sets the mode itself: 0644 for a new record (git-friendly, umask-independent) and the replaced file's bits on Update so a chosen mode survives. When the link finds the name taken (another writer after our scan), Create rescans and takes the next ID, then gives up with an error wrapping os.ErrExist that names the target file; no locking, which is the owner's design call.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C65",
+        "kind": "decision",
+        "title": "Root selection: --root DIR on every command, plus cli.Env.Root and Env.Stop; explicit roots are never searched",
+        "body": "Tests run in temp dirs under the repo's own .cache, where walking up from the cwd could find the repo's real .adjudicate.json. --root DIR (flag wins) or the injected Env.Root names the root as it is: init uses it as is, other commands need DIR/.adjudicate.json in it. With neither, init uses the working directory and other commands search upward from it with store.FindRoot; Env.Stop bounds that walk (store.FindRootWithin, formerly the unexported findRoot) so a discovery test cannot leave its temp dir. --root is per command, not global, so it can sit among the other flags.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C66",
+        "kind": "decision",
+        "title": "Run keeps its signature; RunWith(Env, ...) takes clock, environment, working directory and root",
+        "body": "C35 fixed Run(args, stdin, stdout, stderr) for main; tests need a fixed clock, a fake environment and no use of the real cwd, so Run calls RunWith with the zero Env (real time.Now, os.Getenv, os.Getwd).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C67",
+        "kind": "decision",
+        "title": "Flags: one FlagSet per command; flags may follow positionals; -h/--help print the command usage to stdout (exit 0)",
+        "body": "parseInterspersed splits arguments itself (a flag value is taken as the value even if it looks like a flag or is --) and then calls FlagSet.Parse once; a lone - and anything after -- are positional. Errors and usage go to stderr with exit 2, matching C36.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C68",
+        "kind": "decision",
+        "title": "adj ask --option LABEL:SUMMARY, tradeoffs as --tradeoffs LABEL:TEXT; both split at the first colon",
+        "body": "A separate flag keeps the PROJECT.md --option shape and keeps colons in summaries unambiguous (a third colon field in --option would not). The label must name an option and each option takes one --tradeoffs; labels and texts are trimmed; blank labels are refused.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C69",
+        "kind": "decision",
+        "title": "adj ask recommendation reasoning: --reasoning TEXT, only with --recommend",
+        "body": "The recommendation record has label and reasoning (C44); a flag next to --recommend is the smallest way to fill the second field, and reasoning with no recommendation is a usage error rather than silently dropped.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C70",
+        "kind": "decision",
+        "title": "asked_by: --by NAME, else the ADJ_ASKED_BY environment variable, else left blank",
+        "body": "Agents set one environment variable once instead of repeating a flag; a blank is better than a guessed identity (C27 treats attribution as a convention). The flag wins so one command can override.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C71",
+        "kind": "decision",
+        "title": "adj ask context: --context TEXT, or --stdin to read it; both is a usage error; trailing newlines of stdin are trimmed",
+        "body": "Long context is easier to pipe than to quote. Trimming only CR and LF at the end keeps leading indentation and inner blank lines, and the context field carries no stray final newline.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C72",
+        "kind": "decision",
+        "title": "adj init writes {\"store\": \"decisions\"} and creates the store directory; it acts on DIR or the cwd only, keeps an existing valid config, and prints initialized or already initialized",
+        "body": "Spelling the one setting out shows the owner what to change (C56, C29). init never searches upward, so running it in a subdirectory starts a new root on purpose; a second run changes nothing, and an invalid or non-regular config fails with exit 1 before anything is created.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C73",
+        "kind": "decision",
+        "title": "Exit codes for init and ask: bad arguments exit 2 before any store access; no config (run adj init), an invalid config or a failed write exit 1",
+        "body": "Follows C34: bad input is a usage error whatever the state of the store, and a missing store is a failed operation. ErrNoRoot is mapped to a message that says to run adj init.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C74",
+        "kind": "decision",
+        "title": "adj ask prints the new ID as a plain integer on stdout; created is the clock's local date",
+        "body": "One machine-readable line (1, not 0001) is easy for agents to feed to later commands; the date is time.DateOnly of the injected clock, as C41 stores dates.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C75",
+        "kind": "decision",
+        "title": "adj ask tags: trimmed, blank is a usage error, repeats are dropped (first one kept, order kept)",
+        "body": "An agent that repeats a tag meant the same tag, so de-duplicating is kinder than an exit 2; a blank tag is a typo and stays an error. --recommend is trimmed like option labels (C68).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C76",
+        "kind": "decision",
+        "title": "adj init removes the config it just wrote if creating the store directory fails; an existing config is never removed",
+        "body": "A failed init must not leave a half-initialised repo, or ask would pass the config check and then fail; a config the owner wrote is theirs and stays.",
         "status": "active",
         "reason": "",
         "successor": ""

@@ -19,25 +19,45 @@ library only.
 ## Layout
 
 - `cmd/adj`: `main`; calls `internal/cli.Run` and exits with its code.
-- `internal/cli`: subcommand dispatch and usage.
+- `internal/cli`: subcommand dispatch, usage and flag parsing (`flags.go`:
+  flags after positional arguments, repeatable string flags). `Run` is the
+  process entry; `RunWith(Env, ...)` takes the repo root, clock, environment
+  and working directory as parameters for tests.
+- `internal/commands`: what each command does to the store, apart from
+  parsing, output and exit codes (`init.go`, `ask.go`).
 - `internal/model`: the record type, validation, status transitions and the
   record file format; its only file I/O is `ReadFile` and `WriteFile` in
   `file.go`.
 - `internal/store`: one repo's record directory (`store.go`) and its config
   (`config.go`); see "Store and config" below.
-- `internal/commands`, `internal/query`, `internal/render`: added by later
-  slices.
+- `internal/query`, `internal/render`: added by later slices.
 - `scripts/env.sh`: Go cache and temp setup (see below).
 
 Exit codes for every command: 0 success; 1 a failed operation or failed check;
 2 a usage error (C34).
 
+## Commands
+
+- `adj init [--root DIR]`: writes `.adjudicate.json` (`{"store": "decisions"}`)
+  if it is missing and creates the store directory. It acts on DIR or the
+  working directory, never on a parent. A second successful run changes
+  nothing; a failed run removes a config it wrote.
+- `adj ask TITLE [--option LABEL:SUMMARY]... [--tradeoffs LABEL:TEXT]...
+  [--recommend LABEL] [--reasoning TEXT] [--key K] [--tag T]...
+  [--context TEXT | --stdin] [--by NAME] [--root DIR]`: creates an `open`
+  record with one `ask` history entry and prints its ID. Flags may come before
+  or after TITLE. `asked_by` is `--by`, else `$ADJ_ASKED_BY`, else blank.
+- Every command takes `--root DIR`. Without it the root is found from the
+  working directory upwards (`store.FindRoot`); with it nothing is searched
+  for, and a command other than `init` needs `DIR/.adjudicate.json`. A missing
+  config says to run `adj init`.
+
 ## Store and config
 
 - The repo root is the nearest directory, from the working directory up, that
-  holds `.adjudicate.json` (`store.FindRoot`). The file is one JSON object; its
-  only key is `store`, the store directory relative to the root (default
-  `decisions`, C29). Unknown keys, an absolute path or a path that leaves the
+  holds `.adjudicate.json` (`store.FindRoot`), unless `--root` names it (see
+  Commands). The file is one JSON object; its only key is `store`, the store
+  directory relative to the root (default `decisions`, C29). Unknown keys, an absolute path or a path that leaves the
   root are errors. With no config file `store.Open(root)` uses the defaults.
 - A record file is `<ID padded to four digits>-<slug>.md` in the store
   directory; the slug is the title's lowercase ASCII letters and digits joined
@@ -69,7 +89,11 @@ Never run `go env -w`; it writes outside the repo. Do not add a Makefile.
 - Go standard library only. A new dependency needs owner approval (C24).
 - Test-first: write the failing test, watch it fail for the stated reason, then
   write the code. Use Go `testing`, table-driven where natural. Tests use
-  `t.TempDir()` and never touch this repo's own decision store.
+  `t.TempDir()` and never touch this repo's own decision store. Temp dirs live
+  under `.cache/tmp`, inside this repo, so a CLI test passes an explicit root
+  (`cli.Env.Root`) and fails on any use of the real working directory; a test
+  of root discovery bounds the walk with `cli.Env.Stop`. No test calls
+  `os.Chdir`.
 - Only the owner makes the decide transition (`adj decide`, C27). Agents ask,
   check and read.
 - Work is tracked in slicer. Read and change tracking state only through the

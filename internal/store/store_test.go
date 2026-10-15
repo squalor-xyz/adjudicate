@@ -123,8 +123,10 @@ func TestCreateSequence(t *testing.T) {
 
 func TestNextID(t *testing.T) {
 	tests := []struct {
-		name     string
-		files    []string // empty files are written with this name; records get the ID from the name
+		name string
+		// files are the names of the empty files to write; a record's ID
+		// comes from its name.
+		files    []string
 		wantID   int
 		wantFile string
 	}{
@@ -246,7 +248,8 @@ func TestListSortedByID(t *testing.T) {
 	seed(t, dir, "0010-c.md", question(10, "C"))
 	seed(t, dir, "0001-a.md", question(1, "A"))
 	writeFile(t, filepath.Join(dir, "README.md"), "# not a record\n")
-	writeFile(t, filepath.Join(dir, "0000-zero.md"), "not a record\n") // ID 0 is not a record
+	// ID 0 is not a record.
+	writeFile(t, filepath.Join(dir, "0000-zero.md"), "not a record\n")
 	s := mustOpen(t, root)
 
 	var first []model.Record
@@ -332,7 +335,8 @@ func TestGet(t *testing.T) {
 	seed(t, dir, "0001-one.md", question(1, "One"))
 	seed(t, dir, "0002-two.md", want)
 	seed(t, dir, "9999-big.md", question(9999, "Big"))
-	writeFile(t, filepath.Join(dir, "0000-zero.md"), "not a record\n") // ID 0 is not a record
+	// ID 0 is not a record.
+	writeFile(t, filepath.Join(dir, "0000-zero.md"), "not a record\n")
 	s := mustOpen(t, root)
 
 	for _, id := range []int{0, -1, 3, 10000} {
@@ -536,7 +540,9 @@ func TestSlug(t *testing.T) {
 		{"A1 b2", "a1-b2"},
 		{"", "untitled"},
 		{"!!!", "untitled"},
-		{"\u212a\u0130 x", "x"}, // Kelvin sign and dotted I lower-case to ASCII letters; only ASCII counts
+		// The Kelvin sign and the dotted I lower-case to ASCII letters, but
+		// only ASCII letters count.
+		{"\u212a\u0130 x", "x"},
 		{strings.Repeat("x", 100), strings.Repeat("x", 60)},
 	}
 	for _, tt := range tests {

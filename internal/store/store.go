@@ -41,8 +41,9 @@ const tmpPattern = ".adj-*.tmp"
 type Store struct {
 	dir string
 
-	// beforeLink, if set, is called by Create with the target path just before
-	// the file is linked into place. Tests use it to play a second writer.
+	// beforeLink, if set, is called by Create with the target path before the
+	// temporary file is written and linked into place. Tests use it to play a
+	// second writer.
 	beforeLink func(path string)
 }
 

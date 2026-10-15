@@ -81,13 +81,14 @@ func LoadConfig(root string) (Config, error) {
 // directory, start itself or an ancestor, that holds ConfigFile as a regular
 // file. It returns an error matching ErrNoRoot if there is none.
 func FindRoot(start string) (string, error) {
-	return findRoot(start, "")
+	return FindRootWithin(start, "")
 }
 
-// findRoot is FindRoot with a limit: when stop is not empty the walk examines
-// stop last and never goes above it, and a start that is not inside stop gives
-// ErrNoRoot. Tests use it to keep the walk inside a temp directory.
-func findRoot(start, stop string) (string, error) {
+// FindRootWithin is FindRoot with a limit: when stop is not empty the walk
+// examines stop last and never goes above it, and a start that is not inside
+// stop gives ErrNoRoot. Tests use it (through cli.Env.Stop) to keep the walk
+// inside a temp directory.
+func FindRootWithin(start, stop string) (string, error) {
 	dir, err := filepath.Abs(start)
 	if err != nil {
 		return "", err

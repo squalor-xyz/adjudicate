@@ -80,11 +80,13 @@ func TestFindRoot(t *testing.T) {
 	// Every case builds its tree under its own t.TempDir() and stops the
 	// upward walk at the temp root (stop), so nothing above it is read.
 	tests := []struct {
-		name   string
-		config []string // dirs (relative to the temp root, "." for the root) holding a config file
-		start  string   // relative to the temp root
-		stop   string   // relative to the temp root; the last dir examined
-		want   string   // relative to the temp root; "" means ErrNoRoot
+		name string
+		// config lists the dirs that hold a config file, relative to the
+		// temp root ("." for the root itself).
+		config []string
+		start  string // relative to the temp root
+		stop   string // relative to the temp root; the last dir examined
+		want   string // relative to the temp root; "" means ErrNoRoot
 	}{
 		{"start dir holds the config", []string{"."}, ".", ".", "."},
 		{"ancestor holds the config", []string{"."}, "a/b/c", ".", "."},
@@ -103,7 +105,7 @@ func TestFindRoot(t *testing.T) {
 			if err := os.MkdirAll(start, 0o755); err != nil {
 				t.Fatal(err)
 			}
-			got, err := findRoot(start, filepath.Join(tmp, filepath.FromSlash(tt.stop)))
+			got, err := FindRootWithin(start, filepath.Join(tmp, filepath.FromSlash(tt.stop)))
 			if tt.want == "" {
 				if !errors.Is(err, ErrNoRoot) {
 					t.Fatalf("got %q, %v; want ErrNoRoot", got, err)
@@ -125,7 +127,7 @@ func TestFindRootIgnoresDirectoryNamedLikeConfig(t *testing.T) {
 	if err := os.MkdirAll(filepath.Join(tmp, "a", ConfigFile), 0o755); err != nil {
 		t.Fatal(err)
 	}
-	if got, err := findRoot(filepath.Join(tmp, "a"), tmp); !errors.Is(err, ErrNoRoot) {
+	if got, err := FindRootWithin(filepath.Join(tmp, "a"), tmp); !errors.Is(err, ErrNoRoot) {
 		t.Fatalf("got %q, %v; want ErrNoRoot", got, err)
 	}
 }
@@ -141,7 +143,7 @@ func TestFindRootStartMustBeInsideStop(t *testing.T) {
 	writeFile(t, filepath.Join(tmp, ConfigFile), "{}")
 	// b is not below a, so a walk from b would never meet the stop dir and
 	// would climb to tmp, where the config is. It must refuse instead.
-	if got, err := findRoot(b, a); !errors.Is(err, ErrNoRoot) {
+	if got, err := FindRootWithin(b, a); !errors.Is(err, ErrNoRoot) {
 		t.Fatalf("got %q, %v; want ErrNoRoot", got, err)
 	}
 }
