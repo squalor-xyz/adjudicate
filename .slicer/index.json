@@ -493,13 +493,25 @@
       "id": "S10",
       "title": "Command: check",
       "short_title": "Command: check",
-      "status": "open",
+      "status": "done",
       "has_slice": true,
       "depends_on": [
         "S07",
         "S08"
       ],
-      "note_records": [],
+      "note_records": [
+        {
+          "id": "0d717b6b-575e-4583-b209-f19255d6b282",
+          "kind": "",
+          "text": "**2026-10-15** — Verified: adj check reports decided, open, closed and not found (precedence in that order); a superseded match is followed through superseded_by to a decided record (bounded, cycle-safe); exit 0 for every completed check, 1 for a failed check, 2 for usage errors; docs/json.md example is checked by a test; go test, go vet and gofmt are clean; mutation checks all red for the right reason; catalog C105-C113 recorded, including owner decisions C106 and C113.",
+          "created_at": "2026-10-15T11:16:02Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        }
+      ],
       "claim": null,
       "fields": {
         "size": "S",
@@ -520,7 +532,7 @@
         "importance": 3,
         "urgency": 2,
         "effort": 1,
-        "attempts": 0
+        "attempts": 1
       }
     },
     {
@@ -533,7 +545,19 @@
         "S07",
         "S08"
       ],
-      "note_records": [],
+      "note_records": [
+        {
+          "id": "70a5abb1-428b-4798-aaed-4520733c9b36",
+          "kind": "",
+          "text": "**2026-10-15** — From S10 gate (nit): docs/json.md:5 is a 117-char line left from the S10 re-wrap; re-wrap lines 3-6 to 80 columns.",
+          "created_at": "2026-10-15T11:16:17Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        }
+      ],
       "claim": null,
       "fields": {
         "size": "M",
@@ -1012,7 +1036,7 @@
   "goals": "adjudicate is a small CLI (`adj`) with a plain-text store that records project decisions as a loop: an agent asks, the owner decides in batches, and every later agent reads the decision. The goal and non-goal records below come from PROJECT.md; the owner's decisions on its open questions are catalog records C23-C33, and they override PROJECT.md where it differs (name, runtime, record format, license).",
   "non_goals": "",
   "catalog": {
-    "next_id": 105,
+    "next_id": 114,
     "id_prefix": "C",
     "id_width": 2,
     "records": [
@@ -1948,6 +1972,87 @@
         "kind": "decision",
         "title": "S09 docs/json.md inbox example is checked by a test",
         "body": "TestInboxJSONMatchesTheDocumentedExample runs the CLI on a seeded repo and compares its output to the first json block of the inbox section, so the documented shape cannot drift from the real output.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C105",
+        "kind": "decision",
+        "title": "S10 check match rule: the trimmed query as a case-insensitive substring of title, key, any tag or the decision text",
+        "body": "The slice proposal. The rationale is not searched: the slice names titles, keys, tags and decision text, and a rationale hit would report a record that is about something else. A blank query matches nothing (query.Search) and is a usage error in the CLI (C109).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C106",
+        "kind": "decision",
+        "title": "S10 check reports every status: decided and open as such, rejected, withdrawn and superseded in a closed list",
+        "body": "Owner decision 2026-10-15 (S10 review), replacing the first rule that hid closed records. Search covers all statuses. A rejected, withdrawn or superseded match goes in the closed list, shown with its status (and superseded_by), so an agent sees that a topic was already closed and does not re-ask it. Closed records never count as decided.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C107",
+        "kind": "decision",
+        "title": "S10 check result precedence: decided, then open, then closed, then not found; both lists are always reported",
+        "body": "Result is decided if the decided list is not empty (including the decided end of a supersede chain, C113), else open, else closed (a new result word), else not found. The decided record is what an agent must follow, so it wins; the other lists are still reported so an agent sees the follow-up question or the closed history. Exit codes do not depend on the result (C108).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C108",
+        "kind": "decision",
+        "title": "S10 check exit codes: 0 for every completed check (decided, open, closed and not found), 1 a failed check, 2 a usage error",
+        "body": "The slice proposal, kept for agent scripts and confirmed by the owner in the S10 review: a non-zero exit means the check could not run (no repo, bad config, an unreadable record file), so a broken store is never mistaken for not found and then asked about. The answer is in the first line of the text or the result key of the JSON; C34's 1 and 2 are unchanged. Documented in the check usage, docs/json.md and AGENTS.md.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C109",
+        "kind": "decision",
+        "title": "S10 check arguments: exactly one QUERY; none, several or a blank one is a usage error (exit 2) before the store is read",
+        "body": "A stray word is a typo to report (C94), and several words would need a rule for joining them, so the user quotes a query with spaces; the message says so. A blank query would match everything or nothing, so it is refused like a blank tag (C75, C91).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C110",
+        "kind": "decision",
+        "title": "S10 check output: first line is the result word; JSON is {query, result, decided, open, closed} with list-shaped records",
+        "body": "Text: decided, open, closed or not found on line one, then ID  status  title per record (decided, open, then closed), with a decided record's Decision and Rationale and a superseded record's Superseded by indented under it. JSON: query (trimmed), result, and the decided, open and closed record arrays, always present and never null, so an agent reads one record shape (C86, C87). The result word is spelled the same in both: not found.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C111",
+        "kind": "decision",
+        "title": "S10 handler and render files: cli/check.go, commands/check.go, render/check.go, plus commands/check_test.go and render/check_test.go",
+        "body": "C82 wants one handler file per command. The slice Files list names only query/search.go, commands/check.go and cli/check_test.go; the text and JSON output is tested in render beside the other golden tests, and the blank-query rule in commands. render/json.go gained jsonRecords, shared with RecordsJSON.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C112",
+        "kind": "decision",
+        "title": "S10 docs/json.md check example is checked by a test",
+        "body": "TestCheckJSONMatchesTheDocumentedExample runs the CLI on a seeded repo and compares its output to the first json block of the check section, as C104 does for inbox, so the documented shape cannot drift from the real output.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C113",
+        "kind": "decision",
+        "title": "S10 check follows superseded_by from a superseded match to a decided record",
+        "body": "Owner decision 2026-10-15 (S10 review). A superseded match stays in closed; its superseded_by is followed through superseded records, bounded by visiting each record once, to the end of the chain. If the end is a decided record it is added to decided (once, in ID order, even if it also matched). A chain that stops at a missing ID, at a record that is neither superseded nor decided, or in a repeat (a loop) adds nothing. This way an agent that finds a replaced decision is led to the decision in force.",
         "status": "active",
         "reason": "",
         "successor": ""

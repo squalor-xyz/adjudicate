@@ -24,24 +24,28 @@ library only.
   process entry; `RunWith(Env, ...)` takes the repo root, clock, environment
   and working directory as parameters for tests. Each command's handler is in
   its own file (`init.go`, `ask.go`, `decide.go`, which holds decide,
-  reject and withdraw, `show.go`, `list.go` and `inbox.go`); `cli.go` holds
-  the dispatch and shared helpers.
+  reject and withdraw, `show.go`, `list.go`, `inbox.go` and `check.go`);
+  `cli.go` holds the dispatch and shared helpers.
 - `internal/commands`: what each command does to the store, apart from
   parsing, output and exit codes (`init.go`, `ask.go`, `decide.go`, `show.go`,
-  `list.go`, `inbox.go`). `errors.go` holds `UsageError`, the error that
-  exits 2.
+  `list.go`, `inbox.go`, `check.go`). `errors.go` holds `UsageError`, the error
+  that exits 2.
 - `internal/model`: the record type, validation, status transitions and the
   record file format; its only file I/O is `ReadFile` and `WriteFile` in
   `file.go`.
 - `internal/store`: one repo's record directory (`store.go`) and its config
   (`config.go`); see "Store and config" below.
-- `internal/query`: record filters, pure functions over records (`filter.go`).
-  `internal/render`: text and JSON output (`text.go`, `inbox.go`, `json.go`);
+- `internal/query`: record filters and the `check` search, pure functions over
+  records (`filter.go`, `search.go`).
+  `internal/render`: text and JSON output (`text.go`, `inbox.go`, `check.go`,
+  `json.go`);
   the JSON shapes are in `docs/json.md`.
 - `scripts/env.sh`: Go cache and temp setup (see below).
 
 Exit codes for every command: 0 success; 1 a failed operation or failed check;
-2 a usage error (C34).
+2 a usage error (C34). `adj check` is the exception that matters to scripts:
+it exits 0 for every completed search, "not found" included (see its entry
+below).
 
 ## Commands
 
@@ -87,6 +91,24 @@ Exit codes for every command: 0 success; 1 a failed operation or failed check;
   `--json` prints `{"records": [...]}`, the same record objects as `adj list`
   (`docs/json.md`). An empty inbox prints nothing (JSON: an empty array) and
   exits 0. An argument or other flag exits 2.
+- `adj check QUERY [--json] [--root DIR]`: asks whether QUERY has been decided,
+  so an agent checks before it asks the owner. QUERY (trimmed, one argument:
+  quote it if it has spaces) is one substring, not split into words; it matches
+  a record when its title, key, one of its tags or its decision text contains
+  it, ignoring case (C105). A match is listed by status: `decided`, `open`, or
+  `closed` for a rejected, withdrawn or superseded record (C106). A superseded
+  match also leads to the end of its `superseded_by` chain; if that is a decided
+  record it is listed as `decided` too (C113). The first line of the text output
+  is the result: `decided` if any decided record is listed, else `open`, else
+  `closed`, else `not found` (C107). Then one line per record, `ID  status
+  title`: decided, open, then closed ones, with a decided record's `Decision:`
+  and `Rationale:` under it and `Superseded by:` under a superseded one.
+  `--json` prints `{"query", "result", "decided", "open", "closed"}`
+  (`docs/json.md`). Exit 0 for every completed check, whatever the result
+  (including `closed` and `not found`), so a script reads the `result`; exit 1
+  means the check itself failed (no repo, an unreadable record file), which is
+  never a "not found"; exit 2 is a usage error: no QUERY, more than one, or a
+  blank one (C108, C109).
 - Every command takes `--root DIR`. Without it the root is found from the
   working directory upwards (`store.FindRoot`); with it nothing is searched
   for, and a command other than `init` needs `DIR/.adjudicate.json`. A missing

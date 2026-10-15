@@ -224,6 +224,24 @@
 <div class="prose"><p>C82 wants one handler file per command. The slice Files list names only cli/inbox_test.go; the oldest-first tie-break is only testable on unsorted input in package commands, and the text layout is tested in render beside the other golden tests.</p></div>
 <h3>C104 S09 docs/json.md inbox example is checked by a test</h3>
 <div class="prose"><p>TestInboxJSONMatchesTheDocumentedExample runs the CLI on a seeded repo and compares its output to the first json block of the inbox section, so the documented shape cannot drift from the real output.</p></div>
+<h3>C105 S10 check match rule: the trimmed query as a case-insensitive substring of title, key, any tag or the decision text</h3>
+<div class="prose"><p>The slice proposal. The rationale is not searched: the slice names titles, keys, tags and decision text, and a rationale hit would report a record that is about something else. A blank query matches nothing (query.Search) and is a usage error in the CLI (C109).</p></div>
+<h3>C106 S10 check reports every status: decided and open as such, rejected, withdrawn and superseded in a closed list</h3>
+<div class="prose"><p>Owner decision 2026-10-15 (S10 review), replacing the first rule that hid closed records. Search covers all statuses. A rejected, withdrawn or superseded match goes in the closed list, shown with its status (and superseded_by), so an agent sees that a topic was already closed and does not re-ask it. Closed records never count as decided.</p></div>
+<h3>C107 S10 check result precedence: decided, then open, then closed, then not found; both lists are always reported</h3>
+<div class="prose"><p>Result is decided if the decided list is not empty (including the decided end of a supersede chain, C113), else open, else closed (a new result word), else not found. The decided record is what an agent must follow, so it wins; the other lists are still reported so an agent sees the follow-up question or the closed history. Exit codes do not depend on the result (C108).</p></div>
+<h3>C108 S10 check exit codes: 0 for every completed check (decided, open, closed and not found), 1 a failed check, 2 a usage error</h3>
+<div class="prose"><p>The slice proposal, kept for agent scripts and confirmed by the owner in the S10 review: a non-zero exit means the check could not run (no repo, bad config, an unreadable record file), so a broken store is never mistaken for not found and then asked about. The answer is in the first line of the text or the result key of the JSON; C34&#x27;s 1 and 2 are unchanged. Documented in the check usage, docs/json.md and AGENTS.md.</p></div>
+<h3>C109 S10 check arguments: exactly one QUERY; none, several or a blank one is a usage error (exit 2) before the store is read</h3>
+<div class="prose"><p>A stray word is a typo to report (C94), and several words would need a rule for joining them, so the user quotes a query with spaces; the message says so. A blank query would match everything or nothing, so it is refused like a blank tag (C75, C91).</p></div>
+<h3>C110 S10 check output: first line is the result word; JSON is {query, result, decided, open, closed} with list-shaped records</h3>
+<div class="prose"><p>Text: decided, open, closed or not found on line one, then ID  status  title per record (decided, open, then closed), with a decided record&#x27;s Decision and Rationale and a superseded record&#x27;s Superseded by indented under it. JSON: query (trimmed), result, and the decided, open and closed record arrays, always present and never null, so an agent reads one record shape (C86, C87). The result word is spelled the same in both: not found.</p></div>
+<h3>C111 S10 handler and render files: cli/check.go, commands/check.go, render/check.go, plus commands/check_test.go and render/check_test.go</h3>
+<div class="prose"><p>C82 wants one handler file per command. The slice Files list names only query/search.go, commands/check.go and cli/check_test.go; the text and JSON output is tested in render beside the other golden tests, and the blank-query rule in commands. render/json.go gained jsonRecords, shared with RecordsJSON.</p></div>
+<h3>C112 S10 docs/json.md check example is checked by a test</h3>
+<div class="prose"><p>TestCheckJSONMatchesTheDocumentedExample runs the CLI on a seeded repo and compares its output to the first json block of the check section, as C104 does for inbox, so the documented shape cannot drift from the real output.</p></div>
+<h3>C113 S10 check follows superseded_by from a superseded match to a decided record</h3>
+<div class="prose"><p>Owner decision 2026-10-15 (S10 review). A superseded match stays in closed; its superseded_by is followed through superseded records, bounded by visiting each record once, to the end of the chain. If the end is a decided record it is added to decided (once, in ID order, even if it also matched). A chain that stops at a missing ID, at a record that is neither superseded nor decided, or in a repeat (a loop) adds nothing. This way an agent that finds a replaced decision is led to the decision in force.</p></div>
 </section>
 <section><h2>Assumptions</h2>
 <h3>C14 Name: keep &#x27;dlog&#x27; as placeholder</h3>
@@ -254,31 +272,31 @@
 <div class="prose"><p>PENDING OWNER CONFIRMATION - not decided. Source: Dependency/licensing notes (marked open there, not in the Open decisions list). Recommendation: a permissive FLOSS license such as MIT or Apache-2.0; PROJECT.md does not pick between them (owner must choose).</p></div>
 <p><em>Retired: Owner decided 2026-10-15: see decision C31 (GPL-3.0-or-later)..</em></p>
 </section>
-<p class="summary">22 items · — 8 · done 9 · later 5</p>
+<p class="summary">22 items · — 7 · done 10 · later 5</p>
 <table><thead><tr><th>#</th><th>ID</th><th>Title</th><th>Size</th><th>Effort</th><th>Trees</th><th>Findings</th><th>Status</th></tr></thead><tbody>
-<tr class="open"><td>1</td><td>S10</td><td>Command: check</td><td>S</td><td>1</td><td>cli</td><td>PROJECT.md Goals 6; v1 feature tier; Milestone 3</td><td class="status">—</td></tr>
-<tr class="open"><td>2</td><td>S11</td><td>Command: context</td><td>M</td><td>2</td><td>cli</td><td>PROJECT.md Goals 5; v1 feature tier; Risks (context bloat); Milestone 3</td><td class="status">—</td></tr>
-<tr class="open"><td>3</td><td>S12</td><td>Agent snippet: adj ai and JSON shape docs</td><td>S</td><td>1</td><td>docs</td><td>PROJECT.md v1 feature tier; Risks (adoption); acceptance (--json documented)</td><td class="status">—</td></tr>
-<tr class="open"><td>4</td><td>S13</td><td>Command: supersede</td><td>S</td><td>1</td><td>cli</td><td>PROJECT.md Goals 4; Lifecycle; acceptance (supersede); Milestone 4</td><td class="status">—</td></tr>
-<tr class="open"><td>5</td><td>S14</td><td>Command: lint</td><td>M</td><td>2</td><td>cli</td><td>PROJECT.md Goals 8; acceptance (lint fixtures); Open decisions 5; Milestone 4</td><td class="status">—</td></tr>
-<tr class="open"><td>6</td><td>S15</td><td>ID collision detection and renumber</td><td>M</td><td>2</td><td>store</td><td>PROJECT.md Open decisions 4; Risks (merge conflicts on IDs); Milestone 4</td><td class="status">—</td></tr>
-<tr class="open"><td>7</td><td>S16</td><td>Docs and v1 acceptance round trip</td><td>S</td><td>1</td><td>docs</td><td>PROJECT.md v1 acceptance criteria; Milestone 5</td><td class="status">—</td></tr>
-<tr class="open"><td>8</td><td>S17</td><td>Dogfood: record adjudicate&#x27;s own decisions with adj</td><td>S</td><td>1</td><td>docs</td><td>PROJECT.md Milestone 5; acceptance (own decisions recorded)</td><td class="status">—</td></tr>
-<tr class="other"><td>9</td><td>S18</td><td>Later: cross-repo inbox</td><td>M</td><td>2</td><td>later</td><td>PROJECT.md Feature tiers (Later); Open decisions 6</td><td class="status">later</td></tr>
-<tr class="other"><td>10</td><td>S19</td><td>Later: TUI or static HTML inbox</td><td>M</td><td>2</td><td>later</td><td>PROJECT.md Feature tiers (Later)</td><td class="status">later</td></tr>
-<tr class="other"><td>11</td><td>S20</td><td>Later: slicer integration</td><td>M</td><td>2</td><td>later</td><td>PROJECT.md Feature tiers (Later); Non-goals (not replacing slicer); Risks (overlap with slicer catalog)</td><td class="status">later</td></tr>
-<tr class="other"><td>12</td><td>S21</td><td>Later: optional owner-only decide enforcement</td><td>M</td><td>2</td><td>later</td><td>PROJECT.md Feature tiers (Later); Open decisions 5; Non-goals</td><td class="status">later</td></tr>
-<tr class="other"><td>13</td><td>S22</td><td>Later: import from ADR folders</td><td>M</td><td>2</td><td>later</td><td>PROJECT.md Feature tiers (Later)</td><td class="status">later</td></tr>
+<tr class="open"><td>1</td><td>S11</td><td>Command: context</td><td>M</td><td>2</td><td>cli</td><td>PROJECT.md Goals 5; v1 feature tier; Risks (context bloat); Milestone 3</td><td class="status">—</td></tr>
+<tr class="open"><td>2</td><td>S12</td><td>Agent snippet: adj ai and JSON shape docs</td><td>S</td><td>1</td><td>docs</td><td>PROJECT.md v1 feature tier; Risks (adoption); acceptance (--json documented)</td><td class="status">—</td></tr>
+<tr class="open"><td>3</td><td>S13</td><td>Command: supersede</td><td>S</td><td>1</td><td>cli</td><td>PROJECT.md Goals 4; Lifecycle; acceptance (supersede); Milestone 4</td><td class="status">—</td></tr>
+<tr class="open"><td>4</td><td>S14</td><td>Command: lint</td><td>M</td><td>2</td><td>cli</td><td>PROJECT.md Goals 8; acceptance (lint fixtures); Open decisions 5; Milestone 4</td><td class="status">—</td></tr>
+<tr class="open"><td>5</td><td>S15</td><td>ID collision detection and renumber</td><td>M</td><td>2</td><td>store</td><td>PROJECT.md Open decisions 4; Risks (merge conflicts on IDs); Milestone 4</td><td class="status">—</td></tr>
+<tr class="open"><td>6</td><td>S16</td><td>Docs and v1 acceptance round trip</td><td>S</td><td>1</td><td>docs</td><td>PROJECT.md v1 acceptance criteria; Milestone 5</td><td class="status">—</td></tr>
+<tr class="open"><td>7</td><td>S17</td><td>Dogfood: record adjudicate&#x27;s own decisions with adj</td><td>S</td><td>1</td><td>docs</td><td>PROJECT.md Milestone 5; acceptance (own decisions recorded)</td><td class="status">—</td></tr>
+<tr class="other"><td>8</td><td>S18</td><td>Later: cross-repo inbox</td><td>M</td><td>2</td><td>later</td><td>PROJECT.md Feature tiers (Later); Open decisions 6</td><td class="status">later</td></tr>
+<tr class="other"><td>9</td><td>S19</td><td>Later: TUI or static HTML inbox</td><td>M</td><td>2</td><td>later</td><td>PROJECT.md Feature tiers (Later)</td><td class="status">later</td></tr>
+<tr class="other"><td>10</td><td>S20</td><td>Later: slicer integration</td><td>M</td><td>2</td><td>later</td><td>PROJECT.md Feature tiers (Later); Non-goals (not replacing slicer); Risks (overlap with slicer catalog)</td><td class="status">later</td></tr>
+<tr class="other"><td>11</td><td>S21</td><td>Later: optional owner-only decide enforcement</td><td>M</td><td>2</td><td>later</td><td>PROJECT.md Feature tiers (Later); Open decisions 5; Non-goals</td><td class="status">later</td></tr>
+<tr class="other"><td>12</td><td>S22</td><td>Later: import from ADR folders</td><td>M</td><td>2</td><td>later</td><td>PROJECT.md Feature tiers (Later)</td><td class="status">later</td></tr>
 </tbody></table>
 <table><thead><tr><th>#</th><th>ID</th><th>Title</th><th>Size</th><th>Effort</th><th>Trees</th><th>Findings</th><th>Status</th></tr></thead><tbody>
-<tr class="done"><td>14</td><td>S01</td><td>Confirm open decisions</td><td>S</td><td>1</td><td>decisions</td><td>PROJECT.md Open decisions 1-7; Core concepts (kind); Dependency/licensing notes</td><td class="status">done</td></tr>
-<tr class="done"><td>15</td><td>S02</td><td>Project scaffolding</td><td>S</td><td>1</td><td>scaffold</td><td>PROJECT.md Stack recommendation; Dependency/licensing notes</td><td class="status">done</td></tr>
-<tr class="done"><td>16</td><td>S03</td><td>Record model and lifecycle transitions</td><td>M</td><td>2</td><td>model</td><td>PROJECT.md Core concepts / data model; Milestone 1</td><td class="status">done</td></tr>
-<tr class="done"><td>17</td><td>S04</td><td>Record file read and write</td><td>S</td><td>1</td><td>model</td><td>PROJECT.md Open decisions 3; Core concepts (Record)</td><td class="status">done</td></tr>
-<tr class="done"><td>18</td><td>S05</td><td>Store, config and ID allocation</td><td>M</td><td>2</td><td>store</td><td>PROJECT.md Architecture sketch (ID allocation, Determinism); Open decisions 4, 6, 7</td><td class="status">done</td></tr>
-<tr class="done"><td>19</td><td>S06</td><td>Commands: init and ask</td><td>M</td><td>2</td><td>cli</td><td>PROJECT.md v1 feature tier; Milestone 2</td><td class="status">done</td></tr>
-<tr class="done"><td>20</td><td>S07</td><td>Commands: decide, reject, withdraw</td><td>S</td><td>1</td><td>cli</td><td>PROJECT.md v1 feature tier; Lifecycle; Milestone 2</td><td class="status">done</td></tr>
-<tr class="done"><td>21</td><td>S08</td><td>Commands: show and list with --json</td><td>S</td><td>1</td><td>cli</td><td>PROJECT.md v1 feature tier; Milestone 2; acceptance (--json)</td><td class="status">done</td></tr>
-<tr class="done"><td>22</td><td>S09</td><td>Command: inbox</td><td>S</td><td>1</td><td>cli</td><td>PROJECT.md Goals 2; v1 feature tier; Milestone 3</td><td class="status">done</td></tr>
+<tr class="done"><td>13</td><td>S01</td><td>Confirm open decisions</td><td>S</td><td>1</td><td>decisions</td><td>PROJECT.md Open decisions 1-7; Core concepts (kind); Dependency/licensing notes</td><td class="status">done</td></tr>
+<tr class="done"><td>14</td><td>S02</td><td>Project scaffolding</td><td>S</td><td>1</td><td>scaffold</td><td>PROJECT.md Stack recommendation; Dependency/licensing notes</td><td class="status">done</td></tr>
+<tr class="done"><td>15</td><td>S03</td><td>Record model and lifecycle transitions</td><td>M</td><td>2</td><td>model</td><td>PROJECT.md Core concepts / data model; Milestone 1</td><td class="status">done</td></tr>
+<tr class="done"><td>16</td><td>S04</td><td>Record file read and write</td><td>S</td><td>1</td><td>model</td><td>PROJECT.md Open decisions 3; Core concepts (Record)</td><td class="status">done</td></tr>
+<tr class="done"><td>17</td><td>S05</td><td>Store, config and ID allocation</td><td>M</td><td>2</td><td>store</td><td>PROJECT.md Architecture sketch (ID allocation, Determinism); Open decisions 4, 6, 7</td><td class="status">done</td></tr>
+<tr class="done"><td>18</td><td>S06</td><td>Commands: init and ask</td><td>M</td><td>2</td><td>cli</td><td>PROJECT.md v1 feature tier; Milestone 2</td><td class="status">done</td></tr>
+<tr class="done"><td>19</td><td>S07</td><td>Commands: decide, reject, withdraw</td><td>S</td><td>1</td><td>cli</td><td>PROJECT.md v1 feature tier; Lifecycle; Milestone 2</td><td class="status">done</td></tr>
+<tr class="done"><td>20</td><td>S08</td><td>Commands: show and list with --json</td><td>S</td><td>1</td><td>cli</td><td>PROJECT.md v1 feature tier; Milestone 2; acceptance (--json)</td><td class="status">done</td></tr>
+<tr class="done"><td>21</td><td>S09</td><td>Command: inbox</td><td>S</td><td>1</td><td>cli</td><td>PROJECT.md Goals 2; v1 feature tier; Milestone 3</td><td class="status">done</td></tr>
+<tr class="done"><td>22</td><td>S10</td><td>Command: check</td><td>S</td><td>1</td><td>cli</td><td>PROJECT.md Goals 6; v1 feature tier; Milestone 3</td><td class="status">done</td></tr>
 </tbody></table>
 </body></html>

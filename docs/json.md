@@ -1,11 +1,11 @@
 # JSON output
 
-`adj show ID --json`, `adj list --json` and `adj inbox --json` print JSON for
-agents. The shapes on this page are the contract: a key keeps its name and its
-type. Readers should ignore keys they do not know, because a later release may
+`adj show ID --json`, `adj list --json`, `adj inbox --json` and
+`adj check QUERY --json` print JSON for agents. The shapes on this page are the
+contract: a key keeps its name and its type. Readers should ignore keys they do not know, because a later release may
 add keys.
 
-All three commands print the JSON with two-space indentation and HTML characters
+All four commands print the JSON with two-space indentation and HTML characters
 unescaped, end it with one newline, and print the same bytes for the same
 store.
 
@@ -163,6 +163,127 @@ there for the owner to read.
 
 When the inbox is empty, the array is empty: `{"records": []}` (formatted as
 `{`, `  "records": []`, `}`).
+
+## `adj check QUERY --json`
+
+One JSON object with five keys:
+
+| Key | Type | Meaning |
+|---|---|---|
+| `query` | string | the query, without surrounding space |
+| `result` | string | `decided`, `open`, `closed` or `not found` |
+| `decided` | array of objects | the matching records with status `decided`, and the decided record a matching superseded record was replaced by |
+| `open` | array of objects | the matching records with status `open` |
+| `closed` | array of objects | the matching records with status `rejected`, `withdrawn` or `superseded` |
+
+Each array is in ID order, always present, and empty when it has no record.
+Each record is an object in the shape above, so the decision (`decision`,
+`rationale`) is in it, and a superseded record has `superseded_by`.
+
+`result` is `decided` if `decided` is not empty, else `open` if `open` is not
+empty, else `closed` if `closed` is not empty, else `not found`. So when records
+of several kinds match, the result is the first kind that has one, and the
+other arrays still list theirs.
+
+A query matches a record when its title, key, one of its tags or its `decision`
+contains the query, ignoring case. The whole query is one substring: it is not
+split into words. Options, context, rationale and body are not searched.
+
+A matching superseded record is listed in `closed`. Its `superseded_by` is
+followed to the end of the chain, through superseded records. If the last
+record is decided, it is also listed in `decided` (once, even if it matched
+too), so a replaced decision leads to the decision in force. A chain that ends
+at a missing ID, at a record that is not decided, or in a loop adds nothing.
+
+Exit code 0 for every completed check, whatever `result` is. Exit 1 means the
+check failed (no repo, an unreadable store) and exit 2 a usage error, with
+nothing on stdout in both cases.
+
+```json
+{
+  "query": "storage",
+  "result": "decided",
+  "decided": [
+    {
+      "id": 2,
+      "title": "Cache layer",
+      "status": "decided",
+      "key": "storage.cache",
+      "tags": [
+        "infra"
+      ],
+      "decided_by": "owner",
+      "created": "2026-03-04",
+      "decided_at": "2026-03-04",
+      "options": [
+        {
+          "label": "redis",
+          "summary": "Use Redis"
+        }
+      ],
+      "decision": "redis",
+      "rationale": "fast",
+      "history": [
+        {
+          "date": "2026-03-04",
+          "event": "ask"
+        },
+        {
+          "date": "2026-03-04",
+          "event": "decide"
+        }
+      ]
+    }
+  ],
+  "open": [
+    {
+      "id": 1,
+      "title": "Pick a store",
+      "status": "open",
+      "key": "storage.engine",
+      "asked_by": "claude-opus",
+      "created": "2026-03-04",
+      "options": [
+        {
+          "label": "a",
+          "summary": "Use A"
+        }
+      ],
+      "history": [
+        {
+          "date": "2026-03-04",
+          "event": "ask"
+        }
+      ]
+    }
+  ],
+  "closed": [
+    {
+      "id": 3,
+      "title": "Storage engine v0",
+      "status": "rejected",
+      "key": "storage.v0",
+      "decided_by": "owner",
+      "created": "2026-03-04",
+      "decided_at": "2026-03-04",
+      "rationale": "too slow",
+      "history": [
+        {
+          "date": "2026-03-04",
+          "event": "ask"
+        },
+        {
+          "date": "2026-03-04",
+          "event": "reject"
+        }
+      ]
+    }
+  ]
+}
+```
+
+With no match: `{"query": "...", "result": "not found", "decided": [], "open": [],
+"closed": []}` (formatted as `{`, one key per line, empty arrays as `[]`).
 
 ## Keys of a record
 

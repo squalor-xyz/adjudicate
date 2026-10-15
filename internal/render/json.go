@@ -29,11 +29,17 @@ func RecordJSON(w io.Writer, r model.Record) error {
 // RecordsJSON writes {"records": [...]} in the order given, with an empty
 // array when there are no records.
 func RecordsJSON(w io.Writer, recs []model.Record) error {
-	out := listJSON{Records: []jsonRecord{}}
+	return encodeJSON(w, listJSON{Records: jsonRecords(recs)})
+}
+
+// jsonRecords converts recs to their JSON shape; no records is an empty,
+// non-nil slice, which encodes as [].
+func jsonRecords(recs []model.Record) []jsonRecord {
+	out := []jsonRecord{}
 	for _, r := range recs {
-		out.Records = append(out.Records, jsonRecord{Record: r, Body: r.Body})
+		out = append(out, jsonRecord{Record: r, Body: r.Body})
 	}
-	return encodeJSON(w, out)
+	return out
 }
 
 // encodeJSON writes v with two-space indent, HTML characters unescaped, and

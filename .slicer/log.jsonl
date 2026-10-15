@@ -325,3 +325,20 @@
 {"when": "2026-10-15T10:35:04Z", "item": "S09", "action": "note", "from": "", "to": "", "note": "Verified: adj inbox text and JSON list open records only, ol", "by": "Jon R"}
 {"when": "2026-10-15T10:35:06Z", "item": "S09", "action": "status", "from": "started", "to": "done", "note": "adj inbox: open questions oldest first with context, options, tradeoffs and recommendation; text and JSON; tests, vet, gofmt clean; C97-C104.", "by": "Jon R"}
 {"when": "2026-10-15T10:35:27Z", "item": "S12", "action": "note", "from": "", "to": "", "note": "From S09 review: reuse or move docsJSONExample/jsonBlockUnde", "by": "Jon R"}
+{"when": "2026-10-15T10:40:57Z", "item": "S10", "action": "status", "from": "open", "to": "started", "note": "", "by": "Jon R"}
+{"when": "2026-10-15T10:42:26Z", "item": "C105", "action": "catalog", "from": "", "to": "S10 check match rule: the trimmed query as a case-insensitive substring of title, key, any tag or the decision text", "note": "add"}
+{"when": "2026-10-15T10:42:27Z", "item": "C106", "action": "catalog", "from": "", "to": "S10 check counts only decided and open records; rejected, withdrawn and superseded never appear", "note": "add"}
+{"when": "2026-10-15T10:42:28Z", "item": "C107", "action": "catalog", "from": "", "to": "S10 check result when both match: decided wins, and both lists are reported", "note": "add"}
+{"when": "2026-10-15T10:42:30Z", "item": "C108", "action": "catalog", "from": "", "to": "S10 check exit codes: 0 for every completed check (decided, open and not found), 1 a failed check, 2 a usage error", "note": "add"}
+{"when": "2026-10-15T10:42:34Z", "item": "C109", "action": "catalog", "from": "", "to": "S10 check arguments: exactly one QUERY; none, several or a blank one is a usage error (exit 2) before the store is read", "note": "add"}
+{"when": "2026-10-15T10:42:36Z", "item": "C110", "action": "catalog", "from": "", "to": "S10 check output: first line is the result word; JSON is {query, result, decided, open} with list-shaped records", "note": "add"}
+{"when": "2026-10-15T10:42:40Z", "item": "C111", "action": "catalog", "from": "", "to": "S10 handler and render files: cli/check.go, commands/check.go, render/check.go, plus commands/check_test.go and render/check_test.go", "note": "add"}
+{"when": "2026-10-15T10:42:44Z", "item": "C112", "action": "catalog", "from": "", "to": "S10 docs/json.md check example is checked by a test", "note": "add"}
+{"when": "2026-10-15T11:12:13Z", "item": "C106", "action": "catalog", "from": "", "to": "title,body", "note": "edit"}
+{"when": "2026-10-15T11:12:13Z", "item": "C107", "action": "catalog", "from": "", "to": "title,body", "note": "edit"}
+{"when": "2026-10-15T11:12:13Z", "item": "C110", "action": "catalog", "from": "", "to": "title,body", "note": "edit"}
+{"when": "2026-10-15T11:12:13Z", "item": "C113", "action": "catalog", "from": "", "to": "S10 check follows superseded_by from a superseded match to a decided record", "note": "add"}
+{"when": "2026-10-15T11:12:44Z", "item": "C108", "action": "catalog", "from": "", "to": "title,body", "note": "edit"}
+{"when": "2026-10-15T11:16:02Z", "item": "S10", "action": "note", "from": "", "to": "", "note": "Verified: adj check reports decided, open, closed and not fo", "by": "Jon R"}
+{"when": "2026-10-15T11:16:02Z", "item": "S10", "action": "status", "from": "started", "to": "done", "note": "adj check: decided/open/closed/not found, supersede-chain following, exit 0 for completed checks, docs example tested, tests/vet/gofmt clean, C105-C113.", "by": "Jon R"}
+{"when": "2026-10-15T11:16:17Z", "item": "S11", "action": "note", "from": "", "to": "", "note": "From S10 gate (nit): docs/json.md:5 is a 117-char line left ", "by": "Jon R"}
