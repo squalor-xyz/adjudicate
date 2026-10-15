@@ -345,3 +345,16 @@
 {"when": "2026-10-15T11:16:56Z", "item": "S23", "action": "add", "from": "", "to": "open", "note": "Lock ID allocation with flock"}
 {"when": "2026-10-15T11:17:02Z", "item": "C114", "action": "catalog", "from": "", "to": "ID allocation is locked with flock", "note": "add"}
 {"when": "2026-10-15T11:17:07Z", "item": "S23", "action": "cite", "from": "", "to": "C114,C62,C64,C32,C24", "note": ""}
+{"when": "2026-10-15T11:19:56Z", "item": "S11", "action": "status", "from": "open", "to": "started", "note": "", "by": "Jon R"}
+{"when": "2026-10-15T11:24:28Z", "item": "C115", "action": "catalog", "from": "", "to": "S11 context selects status decided only, in ID order", "note": "add"}
+{"when": "2026-10-15T11:24:28Z", "item": "C116", "action": "catalog", "from": "", "to": "S11 context entry fields: id, title, key, decision, first line of the rationale", "note": "add"}
+{"when": "2026-10-15T11:24:28Z", "item": "C117", "action": "catalog", "from": "", "to": "S11 context rationale is the first non-blank line, trimmed", "note": "add"}
+{"when": "2026-10-15T11:24:28Z", "item": "C118", "action": "catalog", "from": "", "to": "S11 context --format md|json, default md, exact lowercase; any other value is a usage error", "note": "add"}
+{"when": "2026-10-15T11:24:29Z", "item": "C119", "action": "catalog", "from": "", "to": "S11 context md layout: a list entry '- ID title [key]: decision' then '  Rationale: first line'; no header; empty prints nothing", "note": "add"}
+{"when": "2026-10-15T11:24:29Z", "item": "C120", "action": "catalog", "from": "", "to": "S11 context --format json: {\"decisions\": [{id, title, key?, decision, rationale?}]}, empty is an empty array", "note": "add"}
+{"when": "2026-10-15T11:24:29Z", "item": "C121", "action": "catalog", "from": "", "to": "S11 context --tag repeats, every tag must match, trimmed; --key-prefix is a plain string prefix of the stored key as typed; blank values are usage errors", "note": "add"}
+{"when": "2026-10-15T11:24:29Z", "item": "C122", "action": "catalog", "from": "", "to": "S11 context takes no positional arguments; flags may come before or after; --json is not a context flag", "note": "add"}
+{"when": "2026-10-15T11:24:29Z", "item": "C123", "action": "catalog", "from": "", "to": "S11 handler files: cli/context.go, commands/context.go, render/context.go, plus query/filter_test.go and render/testdata/context.md, context.json", "note": "add"}
+{"when": "2026-10-15T11:29:13Z", "item": "S11", "action": "note", "from": "", "to": "", "note": "Verified: adj context prints decided records only, in ID ord", "by": "Jon R"}
+{"when": "2026-10-15T11:29:13Z", "item": "S11", "action": "status", "from": "started", "to": "done", "note": "adj context: decided records only in ID order, md/json, --tag and --key-prefix filters; docs example tested; decisions C115-C123.", "by": "Jon R"}
+{"when": "2026-10-15T11:29:23Z", "item": "S12", "action": "note", "from": "", "to": "", "note": "From S11 review/gate: (1) context's JSON comes from --format", "by": "Jon R"}

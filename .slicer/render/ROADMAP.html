@@ -244,6 +244,24 @@
 <div class="prose"><p>Owner decision 2026-10-15 (S10 review). A superseded match stays in closed; its superseded_by is followed through superseded records, bounded by visiting each record once, to the end of the chain. If the end is a decided record it is added to decided (once, in ID order, even if it also matched). A chain that stops at a missing ID, at a record that is neither superseded nor decided, or in a repeat (a loop) adds nothing. This way an agent that finds a replaced decision is led to the decision in force.</p></div>
 <h3>C114 ID allocation is locked with flock</h3>
 <div class="prose"><p>Owner decision 2026-10-15: store.Create holds an advisory flock (unix) across the ID scan and the link, so concurrent asks in one checkout cannot share an ID. Branch/clone collisions stay with lint/renumber (S14/S15). Implemented in S23, after S15.</p></div>
+<h3>C115 S11 context selects status decided only, in ID order</h3>
+<div class="prose"><p>The slice says only decided appears; superseded records are left out because their replacement is decided (C113 leads check the same way). Order is store.List order (ID, C92), so the same store gives the same bytes.</p></div>
+<h3>C116 S11 context entry fields: id, title, key, decision, first line of the rationale</h3>
+<div class="prose"><p>The slice proposal: enough to follow a decision (what and why in one line) without options, context, tags or history; adj show has the rest. key is left out when unset, as in a record (C87).</p></div>
+<h3>C117 S11 context rationale is the first non-blank line, trimmed</h3>
+<div class="prose"><p>A rationale is free text that may run to paragraphs; the first line keeps entries compact (Risks: context bloat). Leading blank lines are skipped so a rationale that starts with a line break still shows a reason. The decision text is kept whole, since it is the answer.</p></div>
+<h3>C118 S11 context --format md|json, default md, exact lowercase; any other value is a usage error</h3>
+<div class="prose"><p>The slice proposal; md is the form an agent reads or pastes. Checked before the store is read (C73), like a bad status (C91); an explicit empty value is refused too (C83), not read as the default.</p></div>
+<h3>C119 S11 context md layout: a list entry &#x27;- ID title [key]: decision&#x27; then &#x27;  Rationale: first line&#x27;; no header; empty prints nothing</h3>
+<div class="prose"><p>Compact and diff-stable: one list line per decision with the key in brackets (omitted when unset), the rationale indented under it, a multi-line decision continuing on lines indented four spaces. No header, so an empty result is no output (C101) and the caller adds its own framing. Reuses writeField and cont from text.go.</p></div>
+<h3>C120 S11 context --format json: {&quot;decisions&quot;: [{id, title, key?, decision, rationale?}]}, empty is an empty array</h3>
+<div class="prose"><p>An object with a named key lets fields be added later (C86); the key is decisions, not records, because an entry is not the full record object. docs/json.md has the shape and TestContextJSONMatchesTheDocumentedExample checks the example against real output (C104).</p></div>
+<h3>C121 S11 context --tag repeats, every tag must match, trimmed; --key-prefix is a plain string prefix of the stored key as typed; blank values are usage errors</h3>
+<div class="prose"><p>Reuses list&#x27;s rules (C89, C91): AND semantics, trimmed tags, key matched as typed. The prefix is not dot-aware (storage also matches storagex) because the slice names a key prefix and a plain prefix is the least surprising; a record with no key never matches. query.Filter gains KeyPrefix.</p></div>
+<h3>C122 S11 context takes no positional arguments; flags may come before or after; --json is not a context flag</h3>
+<div class="prose"><p>A stray word is a typo to report (C94, C97). The format flag is --format as the slice names it, so list&#x27;s --json does not carry over.</p></div>
+<h3>C123 S11 handler files: cli/context.go, commands/context.go, render/context.go, plus query/filter_test.go and render/testdata/context.md, context.json</h3>
+<div class="prose"><p>C82 wants one handler file per command. The slice Files list omits query (Filter.KeyPrefix and its test). The golden files in render/testdata are shared: render tests build the four records by hand and cli tests read the same files through a seeded store.</p></div>
 </section>
 <section><h2>Assumptions</h2>
 <h3>C14 Name: keep &#x27;dlog&#x27; as placeholder</h3>
@@ -274,32 +292,32 @@
 <div class="prose"><p>PENDING OWNER CONFIRMATION - not decided. Source: Dependency/licensing notes (marked open there, not in the Open decisions list). Recommendation: a permissive FLOSS license such as MIT or Apache-2.0; PROJECT.md does not pick between them (owner must choose).</p></div>
 <p><em>Retired: Owner decided 2026-10-15: see decision C31 (GPL-3.0-or-later)..</em></p>
 </section>
-<p class="summary">23 items · — 8 · done 10 · later 5</p>
+<p class="summary">23 items · — 7 · done 11 · later 5</p>
 <table><thead><tr><th>#</th><th>ID</th><th>Title</th><th>Size</th><th>Effort</th><th>Trees</th><th>Findings</th><th>Status</th></tr></thead><tbody>
-<tr class="open"><td>1</td><td>S11</td><td>Command: context</td><td>M</td><td>2</td><td>cli</td><td>PROJECT.md Goals 5; v1 feature tier; Risks (context bloat); Milestone 3</td><td class="status">—</td></tr>
-<tr class="open"><td>2</td><td>S12</td><td>Agent snippet: adj ai and JSON shape docs</td><td>S</td><td>1</td><td>docs</td><td>PROJECT.md v1 feature tier; Risks (adoption); acceptance (--json documented)</td><td class="status">—</td></tr>
-<tr class="open"><td>3</td><td>S13</td><td>Command: supersede</td><td>S</td><td>1</td><td>cli</td><td>PROJECT.md Goals 4; Lifecycle; acceptance (supersede); Milestone 4</td><td class="status">—</td></tr>
-<tr class="open"><td>4</td><td>S14</td><td>Command: lint</td><td>M</td><td>2</td><td>cli</td><td>PROJECT.md Goals 8; acceptance (lint fixtures); Open decisions 5; Milestone 4</td><td class="status">—</td></tr>
-<tr class="open"><td>5</td><td>S15</td><td>ID collision detection and renumber</td><td>M</td><td>2</td><td>store</td><td>PROJECT.md Open decisions 4; Risks (merge conflicts on IDs); Milestone 4</td><td class="status">—</td></tr>
-<tr class="open"><td>6</td><td>S16</td><td>Docs and v1 acceptance round trip</td><td>S</td><td>1</td><td>docs</td><td>PROJECT.md v1 acceptance criteria; Milestone 5</td><td class="status">—</td></tr>
-<tr class="open"><td>7</td><td>S17</td><td>Dogfood: record adjudicate&#x27;s own decisions with adj</td><td>S</td><td>1</td><td>docs</td><td>PROJECT.md Milestone 5; acceptance (own decisions recorded)</td><td class="status">—</td></tr>
-<tr class="other"><td>8</td><td>S18</td><td>Later: cross-repo inbox</td><td>M</td><td>2</td><td>later</td><td>PROJECT.md Feature tiers (Later); Open decisions 6</td><td class="status">later</td></tr>
-<tr class="other"><td>9</td><td>S19</td><td>Later: TUI or static HTML inbox</td><td>M</td><td>2</td><td>later</td><td>PROJECT.md Feature tiers (Later)</td><td class="status">later</td></tr>
-<tr class="other"><td>10</td><td>S20</td><td>Later: slicer integration</td><td>M</td><td>2</td><td>later</td><td>PROJECT.md Feature tiers (Later); Non-goals (not replacing slicer); Risks (overlap with slicer catalog)</td><td class="status">later</td></tr>
-<tr class="other"><td>11</td><td>S21</td><td>Later: optional owner-only decide enforcement</td><td>M</td><td>2</td><td>later</td><td>PROJECT.md Feature tiers (Later); Open decisions 5; Non-goals</td><td class="status">later</td></tr>
-<tr class="other"><td>12</td><td>S22</td><td>Later: import from ADR folders</td><td>M</td><td>2</td><td>later</td><td>PROJECT.md Feature tiers (Later)</td><td class="status">later</td></tr>
-<tr class="open"><td>13</td><td>S23</td><td>Lock ID allocation with flock</td><td>M</td><td>2</td><td>store</td><td>Owner decision 2026-10-15 (S05 review MEDIUM-2; C62, C64)</td><td class="status">—</td></tr>
+<tr class="open"><td>1</td><td>S12</td><td>Agent snippet: adj ai and JSON shape docs</td><td>S</td><td>1</td><td>docs</td><td>PROJECT.md v1 feature tier; Risks (adoption); acceptance (--json documented)</td><td class="status">—</td></tr>
+<tr class="open"><td>2</td><td>S13</td><td>Command: supersede</td><td>S</td><td>1</td><td>cli</td><td>PROJECT.md Goals 4; Lifecycle; acceptance (supersede); Milestone 4</td><td class="status">—</td></tr>
+<tr class="open"><td>3</td><td>S14</td><td>Command: lint</td><td>M</td><td>2</td><td>cli</td><td>PROJECT.md Goals 8; acceptance (lint fixtures); Open decisions 5; Milestone 4</td><td class="status">—</td></tr>
+<tr class="open"><td>4</td><td>S15</td><td>ID collision detection and renumber</td><td>M</td><td>2</td><td>store</td><td>PROJECT.md Open decisions 4; Risks (merge conflicts on IDs); Milestone 4</td><td class="status">—</td></tr>
+<tr class="open"><td>5</td><td>S16</td><td>Docs and v1 acceptance round trip</td><td>S</td><td>1</td><td>docs</td><td>PROJECT.md v1 acceptance criteria; Milestone 5</td><td class="status">—</td></tr>
+<tr class="open"><td>6</td><td>S17</td><td>Dogfood: record adjudicate&#x27;s own decisions with adj</td><td>S</td><td>1</td><td>docs</td><td>PROJECT.md Milestone 5; acceptance (own decisions recorded)</td><td class="status">—</td></tr>
+<tr class="other"><td>7</td><td>S18</td><td>Later: cross-repo inbox</td><td>M</td><td>2</td><td>later</td><td>PROJECT.md Feature tiers (Later); Open decisions 6</td><td class="status">later</td></tr>
+<tr class="other"><td>8</td><td>S19</td><td>Later: TUI or static HTML inbox</td><td>M</td><td>2</td><td>later</td><td>PROJECT.md Feature tiers (Later)</td><td class="status">later</td></tr>
+<tr class="other"><td>9</td><td>S20</td><td>Later: slicer integration</td><td>M</td><td>2</td><td>later</td><td>PROJECT.md Feature tiers (Later); Non-goals (not replacing slicer); Risks (overlap with slicer catalog)</td><td class="status">later</td></tr>
+<tr class="other"><td>10</td><td>S21</td><td>Later: optional owner-only decide enforcement</td><td>M</td><td>2</td><td>later</td><td>PROJECT.md Feature tiers (Later); Open decisions 5; Non-goals</td><td class="status">later</td></tr>
+<tr class="other"><td>11</td><td>S22</td><td>Later: import from ADR folders</td><td>M</td><td>2</td><td>later</td><td>PROJECT.md Feature tiers (Later)</td><td class="status">later</td></tr>
+<tr class="open"><td>12</td><td>S23</td><td>Lock ID allocation with flock</td><td>M</td><td>2</td><td>store</td><td>Owner decision 2026-10-15 (S05 review MEDIUM-2; C62, C64)</td><td class="status">—</td></tr>
 </tbody></table>
 <table><thead><tr><th>#</th><th>ID</th><th>Title</th><th>Size</th><th>Effort</th><th>Trees</th><th>Findings</th><th>Status</th></tr></thead><tbody>
-<tr class="done"><td>14</td><td>S01</td><td>Confirm open decisions</td><td>S</td><td>1</td><td>decisions</td><td>PROJECT.md Open decisions 1-7; Core concepts (kind); Dependency/licensing notes</td><td class="status">done</td></tr>
-<tr class="done"><td>15</td><td>S02</td><td>Project scaffolding</td><td>S</td><td>1</td><td>scaffold</td><td>PROJECT.md Stack recommendation; Dependency/licensing notes</td><td class="status">done</td></tr>
-<tr class="done"><td>16</td><td>S03</td><td>Record model and lifecycle transitions</td><td>M</td><td>2</td><td>model</td><td>PROJECT.md Core concepts / data model; Milestone 1</td><td class="status">done</td></tr>
-<tr class="done"><td>17</td><td>S04</td><td>Record file read and write</td><td>S</td><td>1</td><td>model</td><td>PROJECT.md Open decisions 3; Core concepts (Record)</td><td class="status">done</td></tr>
-<tr class="done"><td>18</td><td>S05</td><td>Store, config and ID allocation</td><td>M</td><td>2</td><td>store</td><td>PROJECT.md Architecture sketch (ID allocation, Determinism); Open decisions 4, 6, 7</td><td class="status">done</td></tr>
-<tr class="done"><td>19</td><td>S06</td><td>Commands: init and ask</td><td>M</td><td>2</td><td>cli</td><td>PROJECT.md v1 feature tier; Milestone 2</td><td class="status">done</td></tr>
-<tr class="done"><td>20</td><td>S07</td><td>Commands: decide, reject, withdraw</td><td>S</td><td>1</td><td>cli</td><td>PROJECT.md v1 feature tier; Lifecycle; Milestone 2</td><td class="status">done</td></tr>
-<tr class="done"><td>21</td><td>S08</td><td>Commands: show and list with --json</td><td>S</td><td>1</td><td>cli</td><td>PROJECT.md v1 feature tier; Milestone 2; acceptance (--json)</td><td class="status">done</td></tr>
-<tr class="done"><td>22</td><td>S09</td><td>Command: inbox</td><td>S</td><td>1</td><td>cli</td><td>PROJECT.md Goals 2; v1 feature tier; Milestone 3</td><td class="status">done</td></tr>
-<tr class="done"><td>23</td><td>S10</td><td>Command: check</td><td>S</td><td>1</td><td>cli</td><td>PROJECT.md Goals 6; v1 feature tier; Milestone 3</td><td class="status">done</td></tr>
+<tr class="done"><td>13</td><td>S01</td><td>Confirm open decisions</td><td>S</td><td>1</td><td>decisions</td><td>PROJECT.md Open decisions 1-7; Core concepts (kind); Dependency/licensing notes</td><td class="status">done</td></tr>
+<tr class="done"><td>14</td><td>S02</td><td>Project scaffolding</td><td>S</td><td>1</td><td>scaffold</td><td>PROJECT.md Stack recommendation; Dependency/licensing notes</td><td class="status">done</td></tr>
+<tr class="done"><td>15</td><td>S03</td><td>Record model and lifecycle transitions</td><td>M</td><td>2</td><td>model</td><td>PROJECT.md Core concepts / data model; Milestone 1</td><td class="status">done</td></tr>
+<tr class="done"><td>16</td><td>S04</td><td>Record file read and write</td><td>S</td><td>1</td><td>model</td><td>PROJECT.md Open decisions 3; Core concepts (Record)</td><td class="status">done</td></tr>
+<tr class="done"><td>17</td><td>S05</td><td>Store, config and ID allocation</td><td>M</td><td>2</td><td>store</td><td>PROJECT.md Architecture sketch (ID allocation, Determinism); Open decisions 4, 6, 7</td><td class="status">done</td></tr>
+<tr class="done"><td>18</td><td>S06</td><td>Commands: init and ask</td><td>M</td><td>2</td><td>cli</td><td>PROJECT.md v1 feature tier; Milestone 2</td><td class="status">done</td></tr>
+<tr class="done"><td>19</td><td>S07</td><td>Commands: decide, reject, withdraw</td><td>S</td><td>1</td><td>cli</td><td>PROJECT.md v1 feature tier; Lifecycle; Milestone 2</td><td class="status">done</td></tr>
+<tr class="done"><td>20</td><td>S08</td><td>Commands: show and list with --json</td><td>S</td><td>1</td><td>cli</td><td>PROJECT.md v1 feature tier; Milestone 2; acceptance (--json)</td><td class="status">done</td></tr>
+<tr class="done"><td>21</td><td>S09</td><td>Command: inbox</td><td>S</td><td>1</td><td>cli</td><td>PROJECT.md Goals 2; v1 feature tier; Milestone 3</td><td class="status">done</td></tr>
+<tr class="done"><td>22</td><td>S10</td><td>Command: check</td><td>S</td><td>1</td><td>cli</td><td>PROJECT.md Goals 6; v1 feature tier; Milestone 3</td><td class="status">done</td></tr>
+<tr class="done"><td>23</td><td>S11</td><td>Command: context</td><td>M</td><td>2</td><td>cli</td><td>PROJECT.md Goals 5; v1 feature tier; Risks (context bloat); Milestone 3</td><td class="status">done</td></tr>
 </tbody></table>
 </body></html>

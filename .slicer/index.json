@@ -539,7 +539,7 @@
       "id": "S11",
       "title": "Command: context",
       "short_title": "Command: context",
-      "status": "open",
+      "status": "done",
       "has_slice": true,
       "depends_on": [
         "S07",
@@ -552,6 +552,17 @@
           "text": "**2026-10-15** — From S10 gate (nit): docs/json.md:5 is a 117-char line left from the S10 re-wrap; re-wrap lines 3-6 to 80 columns.",
           "created_at": "2026-10-15T11:16:17Z",
           "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "dabe0b37-76d4-41e3-a0f1-5d81d10a08d9",
+          "kind": "",
+          "text": "**2026-10-15** — Verified: adj context prints decided records only, in ID order, as md (default) or json; --tag and --key-prefix filters combine with AND; docs/json.md example is tested against real output; all tests green, go vet and gofmt clean; decisions C115-C123; owner informed of the C116, C117 and C121 tradeoffs.",
+          "created_at": "2026-10-15T11:29:13Z",
+          "attempt": 1,
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
@@ -578,7 +589,7 @@
         "importance": 3,
         "urgency": 2,
         "effort": 2,
-        "attempts": 0
+        "attempts": 1
       }
     },
     {
@@ -620,6 +631,17 @@
           "kind": "",
           "text": "**2026-10-15** — From S09 review: reuse or move docsJSONExample/jsonBlockUnder (internal/cli/inbox_test.go) into jsonshape_test.go so one convention reads the docs/json.md examples; the inbox check is byte-exact (C104).",
           "created_at": "2026-10-15T10:35:27Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "fa1fe322-b20d-4c4b-8d85-f88976157b40",
+          "kind": "",
+          "text": "**2026-10-15** — From S11 review/gate: (1) context's JSON comes from --format json, not --json (C122); the top-level-keys test for context must run 'adj context --format json'; its docs section is already checked by TestContextJSONMatchesTheDocumentedExample. (2) Nit: docs/json.md:304 context table says 'the first line of the record's rationale'; code/C117/AGENTS.md say 'first non-blank line' — align the wording.",
+          "created_at": "2026-10-15T11:29:23Z",
           "attempt": 0,
           "by": "Jon R",
           "verified_by": "",
@@ -1073,7 +1095,7 @@
   "goals": "adjudicate is a small CLI (`adj`) with a plain-text store that records project decisions as a loop: an agent asks, the owner decides in batches, and every later agent reads the decision. The goal and non-goal records below come from PROJECT.md; the owner's decisions on its open questions are catalog records C23-C33, and they override PROJECT.md where it differs (name, runtime, record format, license).",
   "non_goals": "",
   "catalog": {
-    "next_id": 115,
+    "next_id": 124,
     "id_prefix": "C",
     "id_width": 2,
     "records": [
@@ -2099,6 +2121,87 @@
         "kind": "decision",
         "title": "ID allocation is locked with flock",
         "body": "Owner decision 2026-10-15: store.Create holds an advisory flock (unix) across the ID scan and the link, so concurrent asks in one checkout cannot share an ID. Branch/clone collisions stay with lint/renumber (S14/S15). Implemented in S23, after S15.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C115",
+        "kind": "decision",
+        "title": "S11 context selects status decided only, in ID order",
+        "body": "The slice says only decided appears; superseded records are left out because their replacement is decided (C113 leads check the same way). Order is store.List order (ID, C92), so the same store gives the same bytes.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C116",
+        "kind": "decision",
+        "title": "S11 context entry fields: id, title, key, decision, first line of the rationale",
+        "body": "The slice proposal: enough to follow a decision (what and why in one line) without options, context, tags or history; adj show has the rest. key is left out when unset, as in a record (C87).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C117",
+        "kind": "decision",
+        "title": "S11 context rationale is the first non-blank line, trimmed",
+        "body": "A rationale is free text that may run to paragraphs; the first line keeps entries compact (Risks: context bloat). Leading blank lines are skipped so a rationale that starts with a line break still shows a reason. The decision text is kept whole, since it is the answer.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C118",
+        "kind": "decision",
+        "title": "S11 context --format md|json, default md, exact lowercase; any other value is a usage error",
+        "body": "The slice proposal; md is the form an agent reads or pastes. Checked before the store is read (C73), like a bad status (C91); an explicit empty value is refused too (C83), not read as the default.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C119",
+        "kind": "decision",
+        "title": "S11 context md layout: a list entry '- ID title [key]: decision' then '  Rationale: first line'; no header; empty prints nothing",
+        "body": "Compact and diff-stable: one list line per decision with the key in brackets (omitted when unset), the rationale indented under it, a multi-line decision continuing on lines indented four spaces. No header, so an empty result is no output (C101) and the caller adds its own framing. Reuses writeField and cont from text.go.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C120",
+        "kind": "decision",
+        "title": "S11 context --format json: {\"decisions\": [{id, title, key?, decision, rationale?}]}, empty is an empty array",
+        "body": "An object with a named key lets fields be added later (C86); the key is decisions, not records, because an entry is not the full record object. docs/json.md has the shape and TestContextJSONMatchesTheDocumentedExample checks the example against real output (C104).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C121",
+        "kind": "decision",
+        "title": "S11 context --tag repeats, every tag must match, trimmed; --key-prefix is a plain string prefix of the stored key as typed; blank values are usage errors",
+        "body": "Reuses list's rules (C89, C91): AND semantics, trimmed tags, key matched as typed. The prefix is not dot-aware (storage also matches storagex) because the slice names a key prefix and a plain prefix is the least surprising; a record with no key never matches. query.Filter gains KeyPrefix.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C122",
+        "kind": "decision",
+        "title": "S11 context takes no positional arguments; flags may come before or after; --json is not a context flag",
+        "body": "A stray word is a typo to report (C94, C97). The format flag is --format as the slice names it, so list's --json does not carry over.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C123",
+        "kind": "decision",
+        "title": "S11 handler files: cli/context.go, commands/context.go, render/context.go, plus query/filter_test.go and render/testdata/context.md, context.json",
+        "body": "C82 wants one handler file per command. The slice Files list omits query (Filter.KeyPrefix and its test). The golden files in render/testdata are shared: render tests build the four records by hand and cli tests read the same files through a seeded store.",
         "status": "active",
         "reason": "",
         "successor": ""

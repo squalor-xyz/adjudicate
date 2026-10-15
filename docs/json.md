@@ -1,11 +1,12 @@
 # JSON output
 
-`adj show ID --json`, `adj list --json`, `adj inbox --json` and
-`adj check QUERY --json` print JSON for agents. The shapes on this page are the
-contract: a key keeps its name and its type. Readers should ignore keys they do not know, because a later release may
-add keys.
+`adj show ID --json`, `adj list --json`, `adj inbox --json`,
+`adj check QUERY --json` and `adj context --format json` print JSON for agents.
+The shapes on this page are the contract: a key keeps its name and its type.
+Readers should ignore keys they do not know, because a later release may add
+keys.
 
-All four commands print the JSON with two-space indentation and HTML characters
+All five commands print the JSON with two-space indentation and HTML characters
 unescaped, end it with one newline, and print the same bytes for the same
 store.
 
@@ -284,6 +285,51 @@ nothing on stdout in both cases.
 
 With no match: `{"query": "...", "result": "not found", "decided": [], "open": [],
 "closed": []}` (formatted as `{`, one key per line, empty arrays as `[]`).
+
+## `adj context --format json`
+
+The decided records as compact context for an agent. One JSON object with one
+key, `decisions`: an array of objects in ID order, one per record with status
+`decided` (open, rejected, withdrawn and superseded records are not listed, so
+a replaced decision gives way to the one that replaced it). `--tag` and
+`--key-prefix` narrow the list; every filter given must match. Unlike the
+record objects above, an entry has only these keys:
+
+| Key | Type | Meaning |
+|---|---|---|
+| `id` | integer | the record's ID |
+| `title` | string | the title, one line |
+| `key` | string | the decision key; left out when the record has none |
+| `decision` | string | the answer: an option label, or free text; trailing line breaks are dropped |
+| `rationale` | string | the first line of the record's rationale, without surrounding space; left out when empty |
+
+Use `adj show ID --json` for the whole record. When no record matches, the
+array is empty: `{"decisions": []}` (formatted as `{`, `  "decisions": []`,
+`}`).
+
+```json
+{
+  "decisions": [
+    {
+      "id": 2,
+      "title": "Cache layer",
+      "key": "storage.cache",
+      "decision": "redis",
+      "rationale": "fast"
+    },
+    {
+      "id": 3,
+      "title": "Logging format",
+      "decision": "Use JSON lines.",
+      "rationale": "easy to grep"
+    }
+  ]
+}
+```
+
+`adj context` without `--format json` prints the same entries as Markdown
+(`--format md`, the default): per record `- ID title [key]: decision`, then
+`  Rationale: first line`. It is not JSON and has no shape here.
 
 ## Keys of a record
 

@@ -1,0 +1,31 @@
+{
+  "decisions": [
+    {
+      "id": 2,
+      "title": "Cache layer",
+      "key": "storage.cache",
+      "decision": "redis",
+      "rationale": "fast"
+    },
+    {
+      "id": 6,
+      "title": "Database",
+      "key": "storage.db",
+      "decision": "sqlite",
+      "rationale": "embedded"
+    },
+    {
+      "id": 7,
+      "title": "Logging format",
+      "decision": "Use JSON lines.\nOne object per line.",
+      "rationale": "easy to grep"
+    },
+    {
+      "id": 8,
+      "title": "UI theme",
+      "key": "ui.theme",
+      "decision": "dark",
+      "rationale": "looks good"
+    }
+  ]
+}

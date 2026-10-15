@@ -24,12 +24,13 @@ library only.
   process entry; `RunWith(Env, ...)` takes the repo root, clock, environment
   and working directory as parameters for tests. Each command's handler is in
   its own file (`init.go`, `ask.go`, `decide.go`, which holds decide,
-  reject and withdraw, `show.go`, `list.go`, `inbox.go` and `check.go`);
+  reject and withdraw, `show.go`, `list.go`, `inbox.go`, `check.go` and
+  `context.go`);
   `cli.go` holds the dispatch and shared helpers.
 - `internal/commands`: what each command does to the store, apart from
   parsing, output and exit codes (`init.go`, `ask.go`, `decide.go`, `show.go`,
-  `list.go`, `inbox.go`, `check.go`). `errors.go` holds `UsageError`, the error
-  that exits 2.
+  `list.go`, `inbox.go`, `check.go`, `context.go`). `errors.go` holds
+  `UsageError`, the error that exits 2.
 - `internal/model`: the record type, validation, status transitions and the
   record file format; its only file I/O is `ReadFile` and `WriteFile` in
   `file.go`.
@@ -38,7 +39,7 @@ library only.
 - `internal/query`: record filters and the `check` search, pure functions over
   records (`filter.go`, `search.go`).
   `internal/render`: text and JSON output (`text.go`, `inbox.go`, `check.go`,
-  `json.go`);
+  `context.go`, `json.go`);
   the JSON shapes are in `docs/json.md`.
 - `scripts/env.sh`: Go cache and temp setup (see below).
 
@@ -109,6 +110,21 @@ below).
   means the check itself failed (no repo, an unreadable record file), which is
   never a "not found"; exit 2 is a usage error: no QUERY, more than one, or a
   blank one (C108, C109).
+- `adj context [--tag T]... [--key-prefix P] [--format md|json] [--root DIR]`:
+  prints the `decided` records as compact context for an agent; open, rejected,
+  withdrawn and superseded records are left out (a superseded decision gives
+  way to its replacement, which is `decided`). Every filter given must match.
+  `--tag` repeats and every tag must be on the record (trimmed); `--key-prefix`
+  is a plain string prefix of the stored key, as typed, so a record with no key
+  never matches it. Records are in ID order, so the same store gives the same
+  bytes. `--format md` (the default) prints per record `- ID title [key]:
+  decision` (no brackets without a key; a multi-line decision continues on
+  indented lines), then `  Rationale: ` and the first non-blank line of the
+  rationale. `--format json` prints `{"decisions": [...]}` with `id`, `title`,
+  `key` (when set), `decision` and `rationale` (`docs/json.md`). No decision
+  prints nothing in md and `{"decisions": []}` in JSON, exit 0. A blank `--tag`
+  or `--key-prefix`, a `--format` other than `md` or `json`, or an argument,
+  exits 2. A size budget flag is not part of v1 (owner scope call).
 - Every command takes `--root DIR`. Without it the root is found from the
   working directory upwards (`store.FindRoot`); with it nothing is searched
   for, and a command other than `init` needs `DIR/.adjudicate.json`. A missing
