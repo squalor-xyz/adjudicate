@@ -279,3 +279,16 @@
 {"when": "2026-10-15T05:30:33Z", "item": "S06", "action": "note", "from": "", "to": "", "note": "Verified: adj init and adj ask end to end through cli.Run; -", "by": "Jon R"}
 {"when": "2026-10-15T05:30:34Z", "item": "S06", "action": "status", "from": "started", "to": "done", "note": "adj init and adj ask implemented with flag parsing, explicit and bounded root selection, C65-C76 recorded; 317 tests, vet and gofmt clean.", "by": "Jon R"}
 {"when": "2026-10-15T05:30:47Z", "item": "S07", "action": "note", "from": "", "to": "", "note": "From S06 review/gate: (1) internal/cli/cli.go holds shared h", "by": "Jon R"}
+{"when": "2026-10-15T05:31:08Z", "item": "S07", "action": "status", "from": "open", "to": "started", "note": "", "by": "Jon R"}
+{"when": "2026-10-15T05:35:39Z", "item": "C77", "action": "catalog", "from": "", "to": "decided_by: --by NAME, else ADJ_DECIDED_BY, else blank", "note": "add"}
+{"when": "2026-10-15T05:35:39Z", "item": "C78", "action": "catalog", "from": "", "to": "decide takes an OPTION or --text, never both; OPTION is trimmed", "note": "add"}
+{"when": "2026-10-15T05:35:39Z", "item": "C79", "action": "catalog", "from": "", "to": "An OPTION the record does not offer is a usage error (exit 2)", "note": "add"}
+{"when": "2026-10-15T05:35:43Z", "item": "C80", "action": "catalog", "from": "", "to": "--why and --text are stored as typed; blank is a usage error", "note": "add"}
+{"when": "2026-10-15T05:35:43Z", "item": "C81", "action": "catalog", "from": "", "to": "decide, reject and withdraw print the record ID; the ID must be a positive integer", "note": "add"}
+{"when": "2026-10-15T05:35:43Z", "item": "C82", "action": "catalog", "from": "", "to": "Handlers: one file per command; UsageError moves to commands/errors.go", "note": "add"}
+{"when": "2026-10-15T05:35:44Z", "item": "C83", "action": "catalog", "from": "", "to": "An explicit empty --recommend is a usage error, as --tag \"\" is", "note": "add"}
+{"when": "2026-10-15T05:48:03Z", "item": "C84", "action": "catalog", "from": "", "to": "A record that is not open is refused before OPTION is checked", "note": "add"}
+{"when": "2026-10-15T05:48:03Z", "item": "C85", "action": "catalog", "from": "", "to": "A change to a record that is not open names its status and the change", "note": "add"}
+{"when": "2026-10-15T05:50:10Z", "item": "S07", "action": "note", "from": "", "to": "", "note": "Verified: decide, reject and withdraw (exit codes as specifi", "by": "Jon R"}
+{"when": "2026-10-15T05:50:15Z", "item": "S07", "action": "status", "from": "started", "to": "done", "note": "S07 landed: adj decide, reject and withdraw with decided_by, closed-record and duplicate-ID errors, and the handler-per-file layout; 403 tests green, vet and gofmt clean, C77-C85 recorded.", "by": "Jon R"}
+{"when": "2026-10-15T05:50:24Z", "item": "S12", "action": "note", "from": "", "to": "", "note": "From S07 gate (nit): reject/withdraw usage text describes --", "by": "Jon R"}

@@ -277,6 +277,8 @@ func TestAskRejectsBadInputAndWritesNothing(t *testing.T) {
 		{"blank tag", "", []string{"T", "--tag", " "}, "tag"},
 		{"blank recommend", "",
 			[]string{"T", "--option", "a:A", "--recommend", " "}, "--recommend"},
+		{"explicit empty recommend", "",
+			[]string{"T", "--option", "a:A", "--recommend", ""}, "--recommend"},
 		{"context and stdin", "ctx",
 			[]string{"T", "--context", "x", "--stdin"}, "--stdin"},
 		{"unknown flag", "", []string{"T", "--nope"}, "nope"},

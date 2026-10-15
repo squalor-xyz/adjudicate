@@ -22,9 +22,12 @@ library only.
 - `internal/cli`: subcommand dispatch, usage and flag parsing (`flags.go`:
   flags after positional arguments, repeatable string flags). `Run` is the
   process entry; `RunWith(Env, ...)` takes the repo root, clock, environment
-  and working directory as parameters for tests.
+  and working directory as parameters for tests. Each command's handler is in
+  its own file (`init.go`, `ask.go`, and `decide.go`, which holds decide,
+  reject and withdraw); `cli.go` holds the dispatch and shared helpers.
 - `internal/commands`: what each command does to the store, apart from
-  parsing, output and exit codes (`init.go`, `ask.go`).
+  parsing, output and exit codes (`init.go`, `ask.go`, `decide.go`).
+  `errors.go` holds `UsageError`, the error that exits 2.
 - `internal/model`: the record type, validation, status transitions and the
   record file format; its only file I/O is `ReadFile` and `WriteFile` in
   `file.go`.
@@ -47,6 +50,18 @@ Exit codes for every command: 0 success; 1 a failed operation or failed check;
   [--context TEXT | --stdin] [--by NAME] [--root DIR]`: creates an `open`
   record with one `ask` history entry and prints its ID. Flags may come before
   or after TITLE. `asked_by` is `--by`, else `$ADJ_ASKED_BY`, else blank.
+- `adj decide ID OPTION --why TEXT`, or `adj decide ID --text TEXT --why TEXT`,
+  `[--by NAME] [--root DIR]`: moves an `open` record to `decided`. OPTION
+  (trimmed) must be one of the record's option labels; `decision` is that
+  label, or the `--text` answer. `rationale` is the `--why` text, and
+  `decided_at` and one `decide` history entry are dated now. `adj reject ID
+  --why TEXT` and `adj withdraw ID --why TEXT` move an `open` record to
+  `rejected` or `withdrawn` the same way, with no decision. `decided_by` is
+  `--by`, else `$ADJ_DECIDED_BY`, else blank (C27). `--why` and `--text` are
+  kept as typed but must not be blank. All three print the record's ID. A bad
+  argument exits 2, including an OPTION the record does not offer while the
+  record is open. An unknown ID, or a record that is not `open` (checked before
+  OPTION), exits 1 and changes nothing; its message names the status.
 - Every command takes `--root DIR`. Without it the root is found from the
   working directory upwards (`store.FindRoot`); with it nothing is searched
   for, and a command other than `init` needs `DIR/.adjudicate.json`. A missing
@@ -57,8 +72,9 @@ Exit codes for every command: 0 success; 1 a failed operation or failed check;
 - The repo root is the nearest directory, from the working directory up, that
   holds `.adjudicate.json` (`store.FindRoot`), unless `--root` names it (see
   Commands). The file is one JSON object; its only key is `store`, the store
-  directory relative to the root (default `decisions`, C29). Unknown keys, an absolute path or a path that leaves the
-  root are errors. With no config file `store.Open(root)` uses the defaults.
+  directory relative to the root (default `decisions`, C29). Unknown keys, an
+  absolute path or a path that leaves the root are errors. With no config
+  file `store.Open(root)` uses the defaults.
 - A record file is `<ID padded to four digits>-<slug>.md` in the store
   directory; the slug is the title's lowercase ASCII letters and digits joined
   by `-`. Files not named like that are ignored; a file named like a record

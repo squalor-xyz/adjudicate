@@ -3,7 +3,6 @@
 package commands
 
 import (
-	"fmt"
 	"slices"
 	"strings"
 	"time"
@@ -11,16 +10,6 @@ import (
 	"github.com/squalor-xyz/adjudicate/internal/model"
 	"github.com/squalor-xyz/adjudicate/internal/store"
 )
-
-// UsageError is an error in the arguments a command was given, as opposed to
-// a failed operation. The CLI maps it to exit code 2 (C34).
-type UsageError struct{ Msg string }
-
-func (e *UsageError) Error() string { return e.Msg }
-
-func usagef(format string, args ...any) error {
-	return &UsageError{Msg: fmt.Sprintf(format, args...)}
-}
 
 // AskInput is the raw input of adj ask. Options and Tradeoffs are the flag
 // values as typed: LABEL:SUMMARY and LABEL:TEXT, split at the first colon.

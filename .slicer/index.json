@@ -335,7 +335,7 @@
       "id": "S07",
       "title": "Commands: decide, reject, withdraw",
       "short_title": "Commands: decide, reject, withdraw",
-      "status": "open",
+      "status": "done",
       "has_slice": true,
       "depends_on": [
         "S06"
@@ -347,6 +347,17 @@
           "text": "**2026-10-15** — From S06 review/gate: (1) internal/cli/cli.go holds shared helpers + one handler per command; S07–S12 add 7+ handlers — consider internal/cli/<command>.go per handler with dispatch in cli.go (record as a Files deviation). (2) commands.UsageError lives in ask.go — move to a shared file (e.g. commands/errors.go) when decide/reject/withdraw reuse it. (3) Reuse the C70 --by / env pattern for decided_by. (4) Low: --recommend \"\" (explicit empty) is treated as absent (ask.go:93) while --tag \"\" exits 2 — make it a usage error via fsSet. (5) Nit: AGENTS.md:60 is a 117-col line; re-wrap.",
           "created_at": "2026-10-15T05:30:47Z",
           "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "c94e8a13-b884-4710-a202-871de47aec21",
+          "kind": "",
+          "text": "**2026-10-15** — Verified: decide, reject and withdraw (exit codes as specified); decided_by from --by, else ADJ_DECIDED_BY, else blank; a closed record exits 1 with a status message (only an open record can be decided/rejected/withdrawn); a duplicate ID is refused with both file names; handler-per-file refactor (init.go, ask.go, decide.go; UsageError in commands/errors.go); --recommend empty is a usage error. go test ./... 403 PASS, 0 FAIL, 0 SKIP; go vet and gofmt clean; slicer render and check ok. Decisions C77-C85.",
+          "created_at": "2026-10-15T05:50:10Z",
+          "attempt": 1,
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
@@ -374,7 +385,7 @@
         "importance": 3,
         "urgency": 2,
         "effort": 1,
-        "attempts": 0
+        "attempts": 1
       }
     },
     {
@@ -522,7 +533,19 @@
         "S10",
         "S11"
       ],
-      "note_records": [],
+      "note_records": [
+        {
+          "id": "9b4e7726-3e32-4d0a-a013-331e05b4050a",
+          "kind": "",
+          "text": "**2026-10-15** — From S07 gate (nit): reject/withdraw usage text describes --by as 'who decided' (internal/cli/decide.go:35,46); reads oddly for withdraw — reword when writing the agent snippet/docs.",
+          "created_at": "2026-10-15T05:50:24Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        }
+      ],
       "claim": null,
       "fields": {
         "size": "S",
@@ -932,7 +955,7 @@
   "goals": "adjudicate is a small CLI (`adj`) with a plain-text store that records project decisions as a loop: an agent asks, the owner decides in batches, and every later agent reads the decision. The goal and non-goal records below come from PROJECT.md; the owner's decisions on its open questions are catalog records C23-C33, and they override PROJECT.md where it differs (name, runtime, record format, license).",
   "non_goals": "",
   "catalog": {
-    "next_id": 77,
+    "next_id": 86,
     "id_prefix": "C",
     "id_width": 2,
     "records": [
@@ -1616,6 +1639,87 @@
         "kind": "decision",
         "title": "adj init removes the config it just wrote if creating the store directory fails; an existing config is never removed",
         "body": "A failed init must not leave a half-initialised repo, or ask would pass the config check and then fail; a config the owner wrote is theirs and stays.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C77",
+        "kind": "decision",
+        "title": "decided_by: --by NAME, else ADJ_DECIDED_BY, else blank",
+        "body": "Reuses the C70 asked_by pattern for decide, reject and withdraw, so an agent sets one variable once; attribution only, not authentication (C27).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C78",
+        "kind": "decision",
+        "title": "decide takes an OPTION or --text, never both; OPTION is trimmed",
+        "body": "Exactly one answer, as S07 states; the positional OPTION is trimmed like ask labels (C68), so \" a \" names option a.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C79",
+        "kind": "decision",
+        "title": "An OPTION the record does not offer is a usage error (exit 2)",
+        "body": "Option labels live in the record, so this check runs after the record is read; unknown ID, not open and store failures stay exit 1 (C34).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C80",
+        "kind": "decision",
+        "title": "--why and --text are stored as typed; blank is a usage error",
+        "body": "Matches --reasoning and --context (C69, C71), which keep their text; a blank reason or answer is refused before the store is read, as blank tags are (C75).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C81",
+        "kind": "decision",
+        "title": "decide, reject and withdraw print the record ID; the ID must be a positive integer",
+        "body": "Same one-line output as adj ask (C74) so agents can chain commands; a non-number or 0 is a usage error (exit 2).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C82",
+        "kind": "decision",
+        "title": "Handlers: one file per command; UsageError moves to commands/errors.go",
+        "body": "S06 review note: cli.go held every handler. init.go, ask.go and decide.go hold the handlers (decide.go has decide, reject and withdraw, which share flags and the store path); init and ask moved as is. Deviation from the Files list (cli.go, decide_test.go).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C83",
+        "kind": "decision",
+        "title": "An explicit empty --recommend is a usage error, as --tag \"\" is",
+        "body": "S06 review note: --recommend \"\" was treated as absent; fsSet makes it exit 2 like a blank tag (C75).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C84",
+        "kind": "decision",
+        "title": "A record that is not open is refused before OPTION is checked",
+        "body": "Refines C79 (S07 review): a decided record given an unknown OPTION exits 1 with the status error, because the status is the first thing the transition checks. Exit 2 is left for an OPTION the open record does not offer.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C85",
+        "kind": "decision",
+        "title": "A change to a record that is not open names its status and the change",
+        "body": "Message: record N is S; only an open record can be V (V = decided, rejected or withdrawn), in place of the model text invalid record: transition not allowed. A notOpenError keeps the model error reachable through Unwrap, so errors.Is(err, model.ErrInvalidTransition) still holds.",
         "status": "active",
         "reason": "",
         "successor": ""
