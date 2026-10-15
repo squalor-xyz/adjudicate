@@ -160,7 +160,7 @@
       "id": "S04",
       "title": "Record file read and write",
       "short_title": "Record file read and write",
-      "status": "open",
+      "status": "done",
       "has_slice": true,
       "depends_on": [
         "S03",
@@ -173,6 +173,17 @@
           "text": "**2026-10-15** — From S03 review: internal/model gains file I/O neighbours here — update AGENTS.md:23 ('no I/O') and the package doc at internal/model/record.go:3-4 if the model package itself changes; keep model I/O-free if file code lives in internal/store. Validate now also checks history entries (C47), so S04's 'record that fails Validate' cases include bad history.",
           "created_at": "2026-10-15T04:44:59Z",
           "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "8ad57b3f-6a4d-4ced-8405-36c903556cad",
+          "kind": "",
+          "text": "**2026-10-15** — Verified: JSON-frontmatter record file read and write in internal/model/file.go (Marshal, Unmarshal, Parse, ReadFile, WriteFile); strict Unmarshal and lenient Parse; BOM and CRLF rejected with named reasons; 159 test PASS lines, 0 FAIL; go vet and gofmt clean; slicer render and check ok. Decisions C48 to C55 recorded.",
+          "created_at": "2026-10-15T04:59:15Z",
+          "attempt": 1,
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
@@ -201,7 +212,7 @@
         "importance": 3,
         "urgency": 3,
         "effort": 1,
-        "attempts": 0
+        "attempts": 1
       }
     },
     {
@@ -214,7 +225,19 @@
         "S04",
         "S01"
       ],
-      "note_records": [],
+      "note_records": [
+        {
+          "id": "8bd584d1-a122-44a5-b30d-b046b1e0bfb1",
+          "kind": "",
+          "text": "**2026-10-15** — From S04 review/gate: (1) model.WriteFile is a plain os.WriteFile (C54) — decide whether create/update need temp-file-plus-rename and record it (C32). (2) Empty non-nil slices do not round-trip DeepEqual (omitempty) — build records with nil slices or compare accordingly. (3) Nit: internal/model/file.go:26 comment says 'a file with CRLF line endings is rejected'; reword to 'a file whose frontmatter uses CRLF' (body is verbatim per C49).",
+          "created_at": "2026-10-15T04:59:31Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        }
+      ],
       "claim": null,
       "fields": {
         "size": "M",
@@ -531,6 +554,17 @@
           "verified_by": "",
           "verified_at": "",
           "stale_after": ""
+        },
+        {
+          "id": "de69f8e1-2797-479c-a90c-e4ab58d91fb4",
+          "kind": "",
+          "text": "**2026-10-15** — From S04 review: model.Parse returns Record{} on any JSON decode/type error (file.go ~76) so lint can name only the file for those cases (the json error is now reachable via errors.As). encoding/json matches keys case-insensitively and keeps the last duplicate key; lint may want a raw-key check.",
+          "created_at": "2026-10-15T04:59:31Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
         }
       ],
       "claim": null,
@@ -829,7 +863,7 @@
   "goals": "adjudicate is a small CLI (`adj`) with a plain-text store that records project decisions as a loop: an agent asks, the owner decides in batches, and every later agent reads the decision. The goal and non-goal records below come from PROJECT.md; the owner's decisions on its open questions are catalog records C23-C33, and they override PROJECT.md where it differs (name, runtime, record format, license).",
   "non_goals": "",
   "catalog": {
-    "next_id": 48,
+    "next_id": 56,
     "id_prefix": "C",
     "id_width": 2,
     "records": [
@@ -1252,6 +1286,78 @@
         "kind": "decision",
         "title": "Validate checks each history entry: a YYYY-MM-DD date and one of the five known events; blank decision and rationale text count as missing",
         "body": "A hand-edited file with a bad history date, an unknown event or whitespace-only why would otherwise load as valid; title already rejected blank text.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C48",
+        "kind": "decision",
+        "title": "Record fence: --- lines around the JSON frontmatter",
+        "body": "The file opens with a --- line and the frontmatter ends at the first later line that is exactly ---; encoding/json writes no raw newline inside a string, so a fence cannot occur in the JSON, and body lines such as --- or } pass through intact. LF only: a file that starts with a byte order mark is rejected (file starts with a byte order mark), and so is a file whose frontmatter lines end in CR (CRLF line endings are not supported); both name the reason and match ErrInvalid. A closing fence at end of file with no newline is accepted, with an empty body.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C49",
+        "kind": "decision",
+        "title": "Markdown body is Record.Body with json:\"-\", kept verbatim",
+        "body": "Each structured field lives once in the frontmatter and no field is repeated into the body, so the body is free Markdown that cannot drift from the fields.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C50",
+        "kind": "decision",
+        "title": "Marshal and Unmarshal both validate",
+        "body": "Marshal refuses a record that Validate rejects and Unmarshal never returns an invalid record, so the strict read path cannot load a file the writer would not produce.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C51",
+        "kind": "decision",
+        "title": "Parse is the exported lenient decode with no Validate",
+        "body": "Lint (S14) lives outside this package and must report invalid records rather than fail to load them; Unmarshal is Parse plus Validate.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C52",
+        "kind": "decision",
+        "title": "A non-empty body gets one final newline when it lacks one",
+        "body": "Every file ends with a newline, so output is POSIX text and stable; a body that already ends in a newline is written byte for byte.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C53",
+        "kind": "decision",
+        "title": "Malformed and invalid files match ErrInvalid",
+        "body": "Callers branch on one sentinel for every bad file, and the message still names the file.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C54",
+        "kind": "decision",
+        "title": "WriteFile uses os.WriteFile, not temp file and rename",
+        "body": "Records are small text files; an atomic replace is left to the store slice if it needs one.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C55",
+        "kind": "decision",
+        "title": "ReadFile and WriteFile live in model/file.go, so model gains I/O",
+        "body": "The slice Files list places them in model; they are the package's only file I/O, so AGENTS.md:23 and the record.go package doc change with them.",
         "status": "active",
         "reason": "",
         "successor": ""

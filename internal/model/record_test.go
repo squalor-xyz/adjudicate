@@ -41,6 +41,9 @@ func TestRecordFieldsFollowCoreConceptsTable(t *testing.T) {
 	var got []string
 	for i := 0; i < typ.NumField(); i++ {
 		name, _, _ := strings.Cut(typ.Field(i).Tag.Get("json"), ",")
+		if name == "-" {
+			continue // Body is the Markdown after the frontmatter, not a frontmatter field (file.go)
+		}
 		got = append(got, name)
 	}
 	if !reflect.DeepEqual(got, want) {

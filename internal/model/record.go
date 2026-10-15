@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-// Package model defines the adjudicate record, its validation and its
-// lifecycle transitions. It does no file I/O.
+// Package model defines the adjudicate record, its validation, its lifecycle
+// transitions and its file format. Its only file I/O is ReadFile and WriteFile
+// in file.go.
 package model
 
 import (
@@ -102,6 +103,10 @@ type Record struct {
 	SupersededBy   int             `json:"superseded_by,omitempty"`
 	Refs           []string        `json:"refs,omitempty"`
 	History        []HistoryEntry  `json:"history,omitempty"`
+
+	// Body is the Markdown after the frontmatter, kept verbatim. It is not a
+	// frontmatter field (json:"-"); see file.go.
+	Body string `json:"-"`
 }
 
 // validDate reports whether s is a YYYY-MM-DD date.

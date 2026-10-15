@@ -20,7 +20,9 @@ library only.
 
 - `cmd/adj`: `main`; calls `internal/cli.Run` and exits with its code.
 - `internal/cli`: subcommand dispatch and usage.
-- `internal/model`: the record type, validation and status transitions; no I/O.
+- `internal/model`: the record type, validation, status transitions and the
+  record file format; its only file I/O is `ReadFile` and `WriteFile` in
+  `file.go`.
 - `internal/commands`, `internal/store`, `internal/query`, `internal/render`:
   added by later slices.
 - `scripts/env.sh`: Go cache and temp setup (see below).
