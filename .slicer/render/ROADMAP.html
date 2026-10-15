@@ -92,8 +92,6 @@
 <div class="prose"><p>The workspace sandbox keeps Go inside the repo: no toolchain or module downloads, temp files under .cache/tmp, and -modcacherw lets the in-repo module cache be deleted without chmod.</p></div>
 <h3>C38 .gitignore: drop build/ and dist/, drop Python entries, add /adj, /bin/, *.test, *.out</h3>
 <div class="prose"><p>No Python and no build/ or dist/ output: Check builds to .cache/bin/adj and a bare go build writes /adj, so both are ignored.</p></div>
-<h3>C39 LICENSE is a stub until the owner supplies the full GPL-3.0 text and copyright holder</h3>
-<div class="prose"><p>No GPL-3.0 text exists in the adjudicate repo and the workspace has no network, so the stub carries the SPDX line, the or-later notice and TODO(owner) markers.</p></div>
 <h3>C40 env.sh: source from bash or zsh only; refuses to run unless the derived root has go.mod</h3>
 <div class="prose"><p>Dash and other shells that are not bash or zsh cannot report the sourced path, and a wrong root would send caches and temp files outside the repo, so the script checks go.mod before it exports or creates anything.</p></div>
 <h3>C41 Record field types: dates as YYYY-MM-DD strings, integer ids, supersedes a list, superseded_by one id</h3>
@@ -267,7 +265,7 @@
 <h3>C125 S12 the snippet is tested against the CLI: every adj command it names has --help, every flag in an adj code span is a whole word in that command&#x27;s usage, every ADJ_ variable is in a usage, at most 1800 bytes</h3>
 <div class="prose"><p>The snippet is pasted into other repos&#x27; AGENTS.md and cannot be checked there, so a rename or removed flag must fail here; the size cap keeps it token-cheap (Risks: adoption). Whole-word matching so --reason does not pass for --reasoning.</p></div>
 <h3>C126 S12 the snippet tells agents to check, read (context, show), ask and withdraw their own question, and never to run adj decide or adj reject</h3>
-<div class="prose"><p>C27 makes only the decide transition the owner&#x27;s; withdraw is the asker&#x27;s own close (its usage says so) and records no decision, so an agent can drop a stale question. adj supersede is not named: it does not exist until S13, and the drift test would fail on it.</p></div>
+<div class="prose"><p>Owner confirmed 2026-10-15: agents may withdraw their own questions (never another agent&#x27;s or the owner&#x27;s; C130). C27 makes only the decide transition the owner&#x27;s; withdraw is the asker&#x27;s own close and records no decision, so an agent can drop a stale question. adj supersede is not named until S13 adds it.</p></div>
 <h3>C127 S12 json shape test: docs/json.md first json block under each command heading is the shape; show and list are pinned by a fixture that matches their examples byte for byte; record keys must be in the Keys of a record table, which must equal model.Record json tags plus body</h3>
 <div class="prose"><p>Record keys are omitted when empty (C87), so a key list taken from output would vary; a byte-exact fixture pins show and list, the table is pinned to the model by reflection, and context entries are checked against their own table. docsJSONExample and jsonBlockUnder moved to jsonshape_test.go so one convention reads the docs (S09 review, C104).</p></div>
 <h3>C128 S12 withdraw usage describes --by as who withdrew it; docs/json.md context rationale row says the first non-blank line</h3>
@@ -276,6 +274,13 @@
 <div class="prose"><p>Review LOW: prose spans such as &#x27;or pass --by NAME&#x27; were not covered; attributing by position keeps the prose natural without moving every flag into an adj span.</p></div>
 <h3>C130 S12 snippet limits: withdraw only your own question and with --by NAME (ADJ_DECIDED_BY is the owner&#x27;s and not named); on closed read adj show ID and never re-ask a rejected question; on no repo tell the owner, do not run adj init</h3>
 <div class="prose"><p>Review MEDIUM/LOW: withdraw records decided_by, so an agent names itself with --by; a rejected question was decided against, so re-asking it wastes the owner&#x27;s batch; init is the owner&#x27;s setup step. Refines C126.</p></div>
+<h3>C131 LICENSE is the full GPL-3.0 text; NOTICE holds the Squalor LLC copyright</h3>
+<div class="prose"><p>Owner decision 2026-10-15: copyright holder is Squalor LLC. LICENSE is the verbatim GPL-3.0 text supplied by the owner (the license forbids changing it), so the copyright line and the or-later notice live in NOTICE.</p></div>
+<h3>C132 check text shows the rationale under closed records</h3>
+<div class="prose"><p>Owner decision 2026-10-15: adj check text prints the rationale under rejected, withdrawn and superseded matches, so an agent sees why a topic was closed. Implemented in S24.</p></div>
+<h3>C39 LICENSE is a stub until the owner supplies the full GPL-3.0 text and copyright holder</h3>
+<div class="prose"><p>No GPL-3.0 text exists in the adjudicate repo and the workspace has no network, so the stub carries the SPDX line, the or-later notice and TODO(owner) markers.</p></div>
+<p><em>Retired: Replaced by the full GPL-3.0 text and NOTICE (owner supplied the text and named Squalor LLC, 2026-10-15).. Successor: C131.</em></p>
 </section>
 <section><h2>Assumptions</h2>
 <h3>C14 Name: keep &#x27;dlog&#x27; as placeholder</h3>
@@ -306,7 +311,7 @@
 <div class="prose"><p>PENDING OWNER CONFIRMATION - not decided. Source: Dependency/licensing notes (marked open there, not in the Open decisions list). Recommendation: a permissive FLOSS license such as MIT or Apache-2.0; PROJECT.md does not pick between them (owner must choose).</p></div>
 <p><em>Retired: Owner decided 2026-10-15: see decision C31 (GPL-3.0-or-later)..</em></p>
 </section>
-<p class="summary">23 items · — 6 · done 12 · later 5</p>
+<p class="summary">24 items · — 7 · done 12 · later 5</p>
 <table><thead><tr><th>#</th><th>ID</th><th>Title</th><th>Size</th><th>Effort</th><th>Trees</th><th>Findings</th><th>Status</th></tr></thead><tbody>
 <tr class="open"><td>1</td><td>S13</td><td>Command: supersede</td><td>S</td><td>1</td><td>cli</td><td>PROJECT.md Goals 4; Lifecycle; acceptance (supersede); Milestone 4</td><td class="status">—</td></tr>
 <tr class="open"><td>2</td><td>S14</td><td>Command: lint</td><td>M</td><td>2</td><td>cli</td><td>PROJECT.md Goals 8; acceptance (lint fixtures); Open decisions 5; Milestone 4</td><td class="status">—</td></tr>
@@ -319,19 +324,20 @@
 <tr class="other"><td>9</td><td>S21</td><td>Later: optional owner-only decide enforcement</td><td>M</td><td>2</td><td>later</td><td>PROJECT.md Feature tiers (Later); Open decisions 5; Non-goals</td><td class="status">later</td></tr>
 <tr class="other"><td>10</td><td>S22</td><td>Later: import from ADR folders</td><td>M</td><td>2</td><td>later</td><td>PROJECT.md Feature tiers (Later)</td><td class="status">later</td></tr>
 <tr class="open"><td>11</td><td>S23</td><td>Lock ID allocation with flock</td><td>M</td><td>2</td><td>store</td><td>Owner decision 2026-10-15 (S05 review MEDIUM-2; C62, C64)</td><td class="status">—</td></tr>
+<tr class="open"><td>12</td><td>S24</td><td>Check text shows the rationale under closed records</td><td>S</td><td>1</td><td>render</td><td>Owner decision 2026-10-15 (S10 gate: closed records show only ID, status, title in text)</td><td class="status">—</td></tr>
 </tbody></table>
 <table><thead><tr><th>#</th><th>ID</th><th>Title</th><th>Size</th><th>Effort</th><th>Trees</th><th>Findings</th><th>Status</th></tr></thead><tbody>
-<tr class="done"><td>12</td><td>S01</td><td>Confirm open decisions</td><td>S</td><td>1</td><td>decisions</td><td>PROJECT.md Open decisions 1-7; Core concepts (kind); Dependency/licensing notes</td><td class="status">done</td></tr>
-<tr class="done"><td>13</td><td>S02</td><td>Project scaffolding</td><td>S</td><td>1</td><td>scaffold</td><td>PROJECT.md Stack recommendation; Dependency/licensing notes</td><td class="status">done</td></tr>
-<tr class="done"><td>14</td><td>S03</td><td>Record model and lifecycle transitions</td><td>M</td><td>2</td><td>model</td><td>PROJECT.md Core concepts / data model; Milestone 1</td><td class="status">done</td></tr>
-<tr class="done"><td>15</td><td>S04</td><td>Record file read and write</td><td>S</td><td>1</td><td>model</td><td>PROJECT.md Open decisions 3; Core concepts (Record)</td><td class="status">done</td></tr>
-<tr class="done"><td>16</td><td>S05</td><td>Store, config and ID allocation</td><td>M</td><td>2</td><td>store</td><td>PROJECT.md Architecture sketch (ID allocation, Determinism); Open decisions 4, 6, 7</td><td class="status">done</td></tr>
-<tr class="done"><td>17</td><td>S06</td><td>Commands: init and ask</td><td>M</td><td>2</td><td>cli</td><td>PROJECT.md v1 feature tier; Milestone 2</td><td class="status">done</td></tr>
-<tr class="done"><td>18</td><td>S07</td><td>Commands: decide, reject, withdraw</td><td>S</td><td>1</td><td>cli</td><td>PROJECT.md v1 feature tier; Lifecycle; Milestone 2</td><td class="status">done</td></tr>
-<tr class="done"><td>19</td><td>S08</td><td>Commands: show and list with --json</td><td>S</td><td>1</td><td>cli</td><td>PROJECT.md v1 feature tier; Milestone 2; acceptance (--json)</td><td class="status">done</td></tr>
-<tr class="done"><td>20</td><td>S09</td><td>Command: inbox</td><td>S</td><td>1</td><td>cli</td><td>PROJECT.md Goals 2; v1 feature tier; Milestone 3</td><td class="status">done</td></tr>
-<tr class="done"><td>21</td><td>S10</td><td>Command: check</td><td>S</td><td>1</td><td>cli</td><td>PROJECT.md Goals 6; v1 feature tier; Milestone 3</td><td class="status">done</td></tr>
-<tr class="done"><td>22</td><td>S11</td><td>Command: context</td><td>M</td><td>2</td><td>cli</td><td>PROJECT.md Goals 5; v1 feature tier; Risks (context bloat); Milestone 3</td><td class="status">done</td></tr>
-<tr class="done"><td>23</td><td>S12</td><td>Agent snippet: adj ai and JSON shape docs</td><td>S</td><td>1</td><td>docs</td><td>PROJECT.md v1 feature tier; Risks (adoption); acceptance (--json documented)</td><td class="status">done</td></tr>
+<tr class="done"><td>13</td><td>S01</td><td>Confirm open decisions</td><td>S</td><td>1</td><td>decisions</td><td>PROJECT.md Open decisions 1-7; Core concepts (kind); Dependency/licensing notes</td><td class="status">done</td></tr>
+<tr class="done"><td>14</td><td>S02</td><td>Project scaffolding</td><td>S</td><td>1</td><td>scaffold</td><td>PROJECT.md Stack recommendation; Dependency/licensing notes</td><td class="status">done</td></tr>
+<tr class="done"><td>15</td><td>S03</td><td>Record model and lifecycle transitions</td><td>M</td><td>2</td><td>model</td><td>PROJECT.md Core concepts / data model; Milestone 1</td><td class="status">done</td></tr>
+<tr class="done"><td>16</td><td>S04</td><td>Record file read and write</td><td>S</td><td>1</td><td>model</td><td>PROJECT.md Open decisions 3; Core concepts (Record)</td><td class="status">done</td></tr>
+<tr class="done"><td>17</td><td>S05</td><td>Store, config and ID allocation</td><td>M</td><td>2</td><td>store</td><td>PROJECT.md Architecture sketch (ID allocation, Determinism); Open decisions 4, 6, 7</td><td class="status">done</td></tr>
+<tr class="done"><td>18</td><td>S06</td><td>Commands: init and ask</td><td>M</td><td>2</td><td>cli</td><td>PROJECT.md v1 feature tier; Milestone 2</td><td class="status">done</td></tr>
+<tr class="done"><td>19</td><td>S07</td><td>Commands: decide, reject, withdraw</td><td>S</td><td>1</td><td>cli</td><td>PROJECT.md v1 feature tier; Lifecycle; Milestone 2</td><td class="status">done</td></tr>
+<tr class="done"><td>20</td><td>S08</td><td>Commands: show and list with --json</td><td>S</td><td>1</td><td>cli</td><td>PROJECT.md v1 feature tier; Milestone 2; acceptance (--json)</td><td class="status">done</td></tr>
+<tr class="done"><td>21</td><td>S09</td><td>Command: inbox</td><td>S</td><td>1</td><td>cli</td><td>PROJECT.md Goals 2; v1 feature tier; Milestone 3</td><td class="status">done</td></tr>
+<tr class="done"><td>22</td><td>S10</td><td>Command: check</td><td>S</td><td>1</td><td>cli</td><td>PROJECT.md Goals 6; v1 feature tier; Milestone 3</td><td class="status">done</td></tr>
+<tr class="done"><td>23</td><td>S11</td><td>Command: context</td><td>M</td><td>2</td><td>cli</td><td>PROJECT.md Goals 5; v1 feature tier; Risks (context bloat); Milestone 3</td><td class="status">done</td></tr>
+<tr class="done"><td>24</td><td>S12</td><td>Agent snippet: adj ai and JSON shape docs</td><td>S</td><td>1</td><td>docs</td><td>PROJECT.md v1 feature tier; Risks (adoption); acceptance (--json documented)</td><td class="status">done</td></tr>
 </tbody></table>
 </body></html>

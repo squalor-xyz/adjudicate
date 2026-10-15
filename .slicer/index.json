@@ -2,7 +2,7 @@
   "version": 8,
   "id_prefix": "S",
   "id_width": 2,
-  "next_id": 24,
+  "next_id": 25,
   "preamble": "Roadmap for **adjudicate** (CLI command `adj`; formerly the working name \"dlog\"): a Go, standard-library-only CLI that records project decisions as plain files in the repo. Owner decisions from 2026-10-15 are catalog records C23-C33.",
   "passes": [],
   "items": [
@@ -1112,13 +1112,48 @@
         "effort": 2,
         "attempts": 0
       }
+    },
+    {
+      "id": "S24",
+      "title": "Check text shows the rationale under closed records",
+      "short_title": "Check text shows the rationale under closed records",
+      "status": "open",
+      "has_slice": true,
+      "depends_on": [],
+      "note_records": [],
+      "claim": null,
+      "fields": {
+        "size": "S",
+        "flags": [],
+        "trees": [
+          "render"
+        ],
+        "trees_literal": false,
+        "findings": "Owner decision 2026-10-15 (S10 gate: closed records show only ID, status, title in text)",
+        "discovered_from": "",
+        "cites": [
+          "C132",
+          "C110",
+          "C102",
+          "C130",
+          "C32"
+        ],
+        "key": "",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 2,
+        "urgency": 2,
+        "effort": 1,
+        "attempts": 0
+      }
     }
   ],
   "epilogue": "",
   "goals": "adjudicate is a small CLI (`adj`) with a plain-text store that records project decisions as a loop: an agent asks, the owner decides in batches, and every later agent reads the decision. The goal and non-goal records below come from PROJECT.md; the owner's decisions on its open questions are catalog records C23-C33, and they override PROJECT.md where it differs (name, runtime, record format, license).",
   "non_goals": "",
   "catalog": {
-    "next_id": 131,
+    "next_id": 133,
     "id_prefix": "C",
     "id_width": 2,
     "records": [
@@ -1469,9 +1504,9 @@
         "kind": "decision",
         "title": "LICENSE is a stub until the owner supplies the full GPL-3.0 text and copyright holder",
         "body": "No GPL-3.0 text exists in the adjudicate repo and the workspace has no network, so the stub carries the SPDX line, the or-later notice and TODO(owner) markers.",
-        "status": "active",
-        "reason": "",
-        "successor": ""
+        "status": "retired",
+        "reason": "Replaced by the full GPL-3.0 text and NOTICE (owner supplied the text and named Squalor LLC, 2026-10-15).",
+        "successor": "C131"
       },
       {
         "id": "C40",
@@ -2251,7 +2286,7 @@
         "id": "C126",
         "kind": "decision",
         "title": "S12 the snippet tells agents to check, read (context, show), ask and withdraw their own question, and never to run adj decide or adj reject",
-        "body": "C27 makes only the decide transition the owner's; withdraw is the asker's own close (its usage says so) and records no decision, so an agent can drop a stale question. adj supersede is not named: it does not exist until S13, and the drift test would fail on it.",
+        "body": "Owner confirmed 2026-10-15: agents may withdraw their own questions (never another agent's or the owner's; C130). C27 makes only the decide transition the owner's; withdraw is the asker's own close and records no decision, so an agent can drop a stale question. adj supersede is not named until S13 adds it.",
         "status": "active",
         "reason": "",
         "successor": ""
@@ -2288,6 +2323,24 @@
         "kind": "decision",
         "title": "S12 snippet limits: withdraw only your own question and with --by NAME (ADJ_DECIDED_BY is the owner's and not named); on closed read adj show ID and never re-ask a rejected question; on no repo tell the owner, do not run adj init",
         "body": "Review MEDIUM/LOW: withdraw records decided_by, so an agent names itself with --by; a rejected question was decided against, so re-asking it wastes the owner's batch; init is the owner's setup step. Refines C126.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C131",
+        "kind": "decision",
+        "title": "LICENSE is the full GPL-3.0 text; NOTICE holds the Squalor LLC copyright",
+        "body": "Owner decision 2026-10-15: copyright holder is Squalor LLC. LICENSE is the verbatim GPL-3.0 text supplied by the owner (the license forbids changing it), so the copyright line and the or-later notice live in NOTICE.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C132",
+        "kind": "decision",
+        "title": "check text shows the rationale under closed records",
+        "body": "Owner decision 2026-10-15: adj check text prints the rationale under rejected, withdrawn and superseded matches, so an agent sees why a topic was closed. Implemented in S24.",
         "status": "active",
         "reason": "",
         "successor": ""

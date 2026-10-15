@@ -130,10 +130,6 @@ The workspace sandbox keeps Go inside the repo: no toolchain or module downloads
 
 No Python and no build/ or dist/ output: Check builds to .cache/bin/adj and a bare go build writes /adj, so both are ignored.
 
-### C39 LICENSE is a stub until the owner supplies the full GPL-3.0 text and copyright holder
-
-No GPL-3.0 text exists in the adjudicate repo and the workspace has no network, so the stub carries the SPDX line, the or-later notice and TODO(owner) markers.
-
 ### C40 env.sh: source from bash or zsh only; refuses to run unless the derived root has go.mod
 
 Dash and other shells that are not bash or zsh cannot report the sourced path, and a wrong root would send caches and temp files outside the repo, so the script checks go.mod before it exports or creates anything.
@@ -480,7 +476,7 @@ The snippet is pasted into other repos' AGENTS.md and cannot be checked there, s
 
 ### C126 S12 the snippet tells agents to check, read (context, show), ask and withdraw their own question, and never to run adj decide or adj reject
 
-C27 makes only the decide transition the owner's; withdraw is the asker's own close (its usage says so) and records no decision, so an agent can drop a stale question. adj supersede is not named: it does not exist until S13, and the drift test would fail on it.
+Owner confirmed 2026-10-15: agents may withdraw their own questions (never another agent's or the owner's; C130). C27 makes only the decide transition the owner's; withdraw is the asker's own close and records no decision, so an agent can drop a stale question. adj supersede is not named until S13 adds it.
 
 ### C127 S12 json shape test: docs/json.md first json block under each command heading is the shape; show and list are pinned by a fixture that matches their examples byte for byte; record keys must be in the Keys of a record table, which must equal model.Record json tags plus body
 
@@ -497,6 +493,20 @@ Review LOW: prose spans such as 'or pass --by NAME' were not covered; attributin
 ### C130 S12 snippet limits: withdraw only your own question and with --by NAME (ADJ_DECIDED_BY is the owner's and not named); on closed read adj show ID and never re-ask a rejected question; on no repo tell the owner, do not run adj init
 
 Review MEDIUM/LOW: withdraw records decided_by, so an agent names itself with --by; a rejected question was decided against, so re-asking it wastes the owner's batch; init is the owner's setup step. Refines C126.
+
+### C131 LICENSE is the full GPL-3.0 text; NOTICE holds the Squalor LLC copyright
+
+Owner decision 2026-10-15: copyright holder is Squalor LLC. LICENSE is the verbatim GPL-3.0 text supplied by the owner (the license forbids changing it), so the copyright line and the or-later notice live in NOTICE.
+
+### C132 check text shows the rationale under closed records
+
+Owner decision 2026-10-15: adj check text prints the rationale under rejected, withdrawn and superseded matches, so an agent sees why a topic was closed. Implemented in S24.
+
+### C39 LICENSE is a stub until the owner supplies the full GPL-3.0 text and copyright holder
+
+No GPL-3.0 text exists in the adjudicate repo and the workspace has no network, so the stub carries the SPDX line, the or-later notice and TODO(owner) markers.
+
+*Retired: Replaced by the full GPL-3.0 text and NOTICE (owner supplied the text and named Squalor LLC, 2026-10-15).. Successor: C131.*
 
 ## Assumptions
 
@@ -554,7 +564,7 @@ PENDING OWNER CONFIRMATION - not decided. Source: Dependency/licensing notes (ma
 
 *Retired: Owner decided 2026-10-15: see decision C31 (GPL-3.0-or-later)..*
 
-23 items · — 6 · done 12 · later 5
+24 items · — 7 · done 12 · later 5
 
 | # | Slice | Title | Size | Effort | Trees | Findings | Status |
 |---|---|---|---|---|---|---|---|
@@ -569,20 +579,21 @@ PENDING OWNER CONFIRMATION - not decided. Source: Dependency/licensing notes (ma
 | 9 | [S21](slices/S21.md) | Later: optional owner-only decide enforcement | M | 2 | later | PROJECT.md Feature tiers (Later); Open decisions 5; Non-goals | later |
 | 10 | [S22](slices/S22.md) | Later: import from ADR folders | M | 2 | later | PROJECT.md Feature tiers (Later) | later |
 | 11 | [S23](slices/S23.md) | Lock ID allocation with flock | M | 2 | store | Owner decision 2026-10-15 (S05 review MEDIUM-2; C62, C64) | — |
+| 12 | [S24](slices/S24.md) | Check text shows the rationale under closed records | S | 1 | render | Owner decision 2026-10-15 (S10 gate: closed records show only ID, status, title in text) | — |
 
 ---
 
 | # | Slice | Title | Size | Effort | Trees | Findings | Status |
 |---|---|---|---|---|---|---|---|
-| 12 | [S01](slices/S01.md) | Confirm open decisions | S | 1 | decisions | PROJECT.md Open decisions 1-7; Core concepts (kind); Dependency/licensing notes | done |
-| 13 | [S02](slices/S02.md) | Project scaffolding | S | 1 | scaffold | PROJECT.md Stack recommendation; Dependency/licensing notes | done |
-| 14 | [S03](slices/S03.md) | Record model and lifecycle transitions | M | 2 | model | PROJECT.md Core concepts / data model; Milestone 1 | done |
-| 15 | [S04](slices/S04.md) | Record file read and write | S | 1 | model | PROJECT.md Open decisions 3; Core concepts (Record) | done |
-| 16 | [S05](slices/S05.md) | Store, config and ID allocation | M | 2 | store | PROJECT.md Architecture sketch (ID allocation, Determinism); Open decisions 4, 6, 7 | done |
-| 17 | [S06](slices/S06.md) | Commands: init and ask | M | 2 | cli | PROJECT.md v1 feature tier; Milestone 2 | done |
-| 18 | [S07](slices/S07.md) | Commands: decide, reject, withdraw | S | 1 | cli | PROJECT.md v1 feature tier; Lifecycle; Milestone 2 | done |
-| 19 | [S08](slices/S08.md) | Commands: show and list with --json | S | 1 | cli | PROJECT.md v1 feature tier; Milestone 2; acceptance (--json) | done |
-| 20 | [S09](slices/S09.md) | Command: inbox | S | 1 | cli | PROJECT.md Goals 2; v1 feature tier; Milestone 3 | done |
-| 21 | [S10](slices/S10.md) | Command: check | S | 1 | cli | PROJECT.md Goals 6; v1 feature tier; Milestone 3 | done |
-| 22 | [S11](slices/S11.md) | Command: context | M | 2 | cli | PROJECT.md Goals 5; v1 feature tier; Risks (context bloat); Milestone 3 | done |
-| 23 | [S12](slices/S12.md) | Agent snippet: adj ai and JSON shape docs | S | 1 | docs | PROJECT.md v1 feature tier; Risks (adoption); acceptance (--json documented) | done |
+| 13 | [S01](slices/S01.md) | Confirm open decisions | S | 1 | decisions | PROJECT.md Open decisions 1-7; Core concepts (kind); Dependency/licensing notes | done |
+| 14 | [S02](slices/S02.md) | Project scaffolding | S | 1 | scaffold | PROJECT.md Stack recommendation; Dependency/licensing notes | done |
+| 15 | [S03](slices/S03.md) | Record model and lifecycle transitions | M | 2 | model | PROJECT.md Core concepts / data model; Milestone 1 | done |
+| 16 | [S04](slices/S04.md) | Record file read and write | S | 1 | model | PROJECT.md Open decisions 3; Core concepts (Record) | done |
+| 17 | [S05](slices/S05.md) | Store, config and ID allocation | M | 2 | store | PROJECT.md Architecture sketch (ID allocation, Determinism); Open decisions 4, 6, 7 | done |
+| 18 | [S06](slices/S06.md) | Commands: init and ask | M | 2 | cli | PROJECT.md v1 feature tier; Milestone 2 | done |
+| 19 | [S07](slices/S07.md) | Commands: decide, reject, withdraw | S | 1 | cli | PROJECT.md v1 feature tier; Lifecycle; Milestone 2 | done |
+| 20 | [S08](slices/S08.md) | Commands: show and list with --json | S | 1 | cli | PROJECT.md v1 feature tier; Milestone 2; acceptance (--json) | done |
+| 21 | [S09](slices/S09.md) | Command: inbox | S | 1 | cli | PROJECT.md Goals 2; v1 feature tier; Milestone 3 | done |
+| 22 | [S10](slices/S10.md) | Command: check | S | 1 | cli | PROJECT.md Goals 6; v1 feature tier; Milestone 3 | done |
+| 23 | [S11](slices/S11.md) | Command: context | M | 2 | cli | PROJECT.md Goals 5; v1 feature tier; Risks (context bloat); Milestone 3 | done |
+| 24 | [S12](slices/S12.md) | Agent snippet: adj ai and JSON shape docs | S | 1 | docs | PROJECT.md v1 feature tier; Risks (adoption); acceptance (--json documented) | done |

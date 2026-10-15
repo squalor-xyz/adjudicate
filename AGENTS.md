@@ -12,8 +12,9 @@ library only.
   Go with the standard library only; one Markdown file per record with JSON
   frontmatter; sequential IDs; GPL-3.0-or-later. PROJECT.md still describes the
   earlier Python/TOML draft under the name dlog; read it as background.
-- `LICENSE` is a stub until the owner supplies the full GPL-3.0 text and the
-  copyright holder (C31, C39). Each Go file starts with
+- `LICENSE` is the full GPL-3.0 text, unmodified; `NOTICE` holds the
+  copyright line (Squalor LLC) and the "or any later version" notice (C31,
+  C131). Each Go file starts with
   `// SPDX-License-Identifier: GPL-3.0-or-later`.
 
 ## Layout

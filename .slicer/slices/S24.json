@@ -1,0 +1,41 @@
+{
+  "id": "S24",
+  "title": "Check text shows the rationale under closed records",
+  "lead": [
+    "`adj check` text lists closed matches (rejected, withdrawn, superseded) as\n`ID  status  title`, with `Superseded by: N` for superseded ones, but not why\nthe record was closed. The owner decided the text should show the rationale, so\nan agent sees why a topic was closed before it considers asking again."
+  ],
+  "depends_note": null,
+  "findings_note": "Owner decision 2026-10-15 (S10 gate: closed records show only ID, status, title in text)",
+  "size": "S",
+  "flags": [],
+  "trees_note": "render",
+  "trees_plural": false,
+  "boundary": "**Not in this slice:** JSON output (it already carries `rationale`); changes to\nthe match rule, result words or exit codes (C105-C108); showing the rationale\nanywhere other than `adj check` text.",
+  "sections": [
+    {
+      "heading": "Why",
+      "body": "Owner decision 2026-10-15 after the S10 gate. The snippet (C130) tells agents to\nread a closed record before asking; printing the reason in `check` itself saves\nthat `adj show` round trip in the common case."
+    },
+    {
+      "heading": "Files",
+      "body": "- `internal/render/check.go` and `internal/render/check_test.go`.\n- `internal/cli/check_test.go` (end-to-end text golden).\n- `AGENTS.md` (check entry) and the C110 catalog text."
+    },
+    {
+      "heading": "Failing tests",
+      "body": "- A rejected match prints an indented `Rationale: <text>` line under its\n  `ID  rejected  title` line; same for withdrawn.\n- A superseded match prints `Superseded by: N` and its rationale (decide the\n  order and record it, C32).\n- Multi-line rationale uses the existing indented continuation and trailing\n  line-break trimming (C102); an empty rationale prints no line.\n- Decided and open output is byte-for-byte unchanged (existing goldens pass\n  untouched)."
+    },
+    {
+      "heading": "Implement",
+      "body": "Reuse `writeField` from `render/text.go` with the closed-record indent. The\nimplementer decides and records (C32) whether to print the full rationale or its\nfirst non-blank line (as `adj context` does, C117), and the label wording."
+    },
+    {
+      "heading": "Check",
+      "body": "Run from the repo root after `. scripts/env.sh` (C33):\n\n- `go test ./...` passes, including this slice's new tests.\n- `go vet ./...` reports nothing.\n- `gofmt -l cmd internal` prints nothing.\n- `slicer check --json` is clean."
+    },
+    {
+      "heading": "Git",
+      "body": "Worktree under `.worktrees/` on a feature branch. Commit only as the orchestrator\ndirects; no AI attribution."
+    }
+  ],
+  "notes": []
+}
