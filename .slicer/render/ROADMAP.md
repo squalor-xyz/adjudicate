@@ -2,9 +2,11 @@
 
 # Roadmap
 
+Roadmap for **adjudicate** (CLI command `adj`; formerly the working name "dlog"): a Go, standard-library-only CLI that records project decisions as plain files in the repo. Owner decisions from 2026-10-15 are catalog records C23-C33.
+
 ## Goals
 
-dlog is a small CLI with a plain-text store that records project decisions as a loop: an agent asks, the owner decides in batches, and every later agent reads the decision. The goal and non-goal records below come from PROJECT.md. Every assumption in the catalog is pending owner confirmation (see the 'Confirm open decisions' item).
+adjudicate is a small CLI (`adj`) with a plain-text store that records project decisions as a loop: an agent asks, the owner decides in batches, and every later agent reads the decision. The goal and non-goal records below come from PROJECT.md; the owner's decisions on its open questions are catalog records C23-C33, and they override PROJECT.md where it differs (name, runtime, record format, license).
 
 ### C01 Capture open questions in one command
 
@@ -46,19 +48,67 @@ v1 non-goal (PROJECT.md Non-goals).
 
 ### C10 No LLM calls
 
-dlog is a store and a workflow; agents bring their own reasoning (v1 non-goal).
+adjudicate is a store and a workflow; agents bring their own reasoning (v1 non-goal).
 
 ### C11 No cryptographic enforcement of who decided
 
-v1 non-goal; see the open decision on owner-only decide enforcement.
+v1 non-goal; owner-only decide is a convention in v1 (decision C27).
 
 ### C12 Not a slicer replacement
 
-Slicer tracks work; dlog tracks decisions. They link to each other by ID but neither depends on the other (v1 non-goal).
+Slicer tracks work; adjudicate tracks decisions. They link to each other by ID but neither depends on the other (v1 non-goal).
 
 ### C13 No sync beyond git
 
 No syncing across machines beyond what git already does (v1 non-goal).
+
+## Constraints
+
+### C33 Go caches and checks stay inside the repo
+
+Owner constraint 2026-10-15. GOCACHE, GOMODCACHE and GOPATH point at a gitignored .cache/ under the repo root. No make: the env vars are documented in AGENTS.md and set by a small scripts/env.sh or an equivalent that the scaffolding slice (S02) decides. Tests run with go test ./... and go vet ./..., plus a gofmt check (gofmt -l lists no files).
+
+## Decisions
+
+### C23 Name: adjudicate, CLI command adj
+
+Owner decision 2026-10-15. The tool is named adjudicate; the CLI command is `adj`; the Go module path is github.com/squalor-xyz/adjudicate. Replaces the working name 'dlog' (assumption C14, retired).
+
+### C24 Runtime: Go, standard library only
+
+Owner decision 2026-10-15. Go (installed: go1.27.2 via Homebrew), standard library only, for runtime and tests (the `testing` package). Not Python. Any new dependency needs owner approval. Replaces assumption C15 (retired).
+
+### C25 Record format: Markdown body with JSON frontmatter
+
+Owner decision 2026-10-15. One file per record: a Markdown body with JSON frontmatter, read and written with encoding/json. No TOML and no hand-written TOML parser or emitter. Owner's reason: the Go standard library has no TOML. The frontmatter delimiter is an implementer decision under the standing rule (C32). Replaces assumption C16 (retired).
+
+### C26 IDs: sequential, lint collision detection, renumber command
+
+Owner decision 2026-10-15 (recommendation accepted). Sequential IDs: the next free ID comes from scanning the store; lint detects collisions; a renumber command resolves them. Which record keeps a colliding ID and the renumber command's name are implementer decisions under the standing rule (C32). Replaces assumption C17 (retired).
+
+### C27 Owner-only decide: convention in v1
+
+Owner decision 2026-10-15 (recommendation accepted). Convention plus an AGENTS.md rule in v1: only the owner makes the decide transition. decided_by is recorded on each decision (attribution, not authentication); lint warns when it is missing. No git hook or signed commits in v1. Replaces assumption C18 (retired).
+
+### C28 Scope: per-repo in v1
+
+Owner decision 2026-10-15 (recommendation accepted). v1 works on one repo's store; a cross-repo inbox is Later-tier work. Replaces assumption C19 (retired).
+
+### C29 Store: decisions/ at repo root, configurable
+
+Owner decision 2026-10-15 (recommendation accepted). The store defaults to decisions/ at the repo root, and the config can change the path. Replaces assumption C20 (retired).
+
+### C30 Record kind: status alone, no kind field
+
+Owner decision 2026-10-15. Records have no kind field; status alone carries it: open = a question; decided, rejected, withdrawn and superseded = answered. Replaces assumption C21 (retired).
+
+### C31 License: GPL-3.0-or-later
+
+Owner decision 2026-10-15. The project is licensed GPL-3.0-or-later. Replaces assumption C22 (retired).
+
+### C32 Standing rule: implementer decides unfixed interface details
+
+Owner decision 2026-10-15. Interface details not fixed by PROJECT.md or the owner's decisions are decided by the slice implementer: for example the config file name and format, how options and tradeoffs are passed on the CLI, how decided_by is supplied, check's match rule and exit codes, the context fields, whether lint warnings change the exit code, which record keeps a colliding ID, and the renumber command's name. The implementer records each such choice in the slicer catalog as a decision with a one-line reason; the reviewer checks it. The owner may overrule later.
 
 ## Assumptions
 
@@ -66,61 +116,84 @@ No syncing across machines beyond what git already does (v1 non-goal).
 
 PENDING OWNER CONFIRMATION - not decided. Source: PROJECT.md Open decisions 1. 'dlog' is a working name. Recommendation: decide before the first public use; it does not block v1 internals. Alternatives: none listed in PROJECT.md (gap).
 
+*Retired: Owner decided 2026-10-15: see decision C23 (name adjudicate, CLI adj)..*
+
 ### C15 Runtime: Python 3.11+ standard library only
 
 PENDING OWNER CONFIRMATION - not decided. Source: Open decisions 2 and Stack recommendation. Recommendation: Python 3.11+ stdlib only (argparse, pathlib, json, tomllib for reading), matching the stdlib-first preference; tests with unittest. Alternative: Go single static binary - easier to hand to headless agents/machines without Python, at the cost of a second toolchain.
+
+*Retired: Owner decided 2026-10-15: see decision C24 (Go, standard library only; not Python)..*
 
 ### C16 Record format: Markdown body + TOML frontmatter
 
 PENDING OWNER CONFIRMATION - not decided. Source: Open decisions 3. Recommendation: Markdown body with TOML frontmatter, read with tomllib, written by a minimal hand-written emitter covering only the field types dlog uses. Alternatives: Markdown with JSON frontmatter; pure JSON or TOML files.
 
+*Retired: Owner decided 2026-10-15: see decision C25 (Markdown body with JSON frontmatter; no TOML)..*
+
 ### C17 IDs: sequential with lint collision detection and renumber
 
 PENDING OWNER CONFIRMATION - not decided. Source: Open decisions 4 and Architecture sketch (ID allocation). Recommendation: sequential IDs (next free ID from scanning the store) plus lint detection of collisions, with a renumber command. Alternatives: sequential IDs plus 'dlog lint --fix' to renumber collisions; sequential IDs with a merge driver (as slicer does); short random IDs.
+
+*Retired: Owner decided 2026-10-15: see decision C26 (recommendation accepted)..*
 
 ### C18 Owner-only decide: convention in v1
 
 PENDING OWNER CONFIRMATION - not decided. Source: Open decisions 5. Recommendation: convention for v1 (AGENTS.md rule), with decided_by recorded and lint warnings when it is missing. Alternatives: a git hook; signed commits.
 
+*Retired: Owner decided 2026-10-15: see decision C27 (recommendation accepted)..*
+
 ### C19 Scope: per-repo only in v1
 
 PENDING OWNER CONFIRMATION - not decided. Source: Open decisions 6. Recommendation: per-repo in v1; cross-repo inbox later. Alternative: per-repo plus a cross-repo inbox in v1.
+
+*Retired: Owner decided 2026-10-15: see decision C28 (recommendation accepted)..*
 
 ### C20 Store location: decisions/ at repo root, configurable
 
 PENDING OWNER CONFIRMATION - not decided. Source: Open decisions 7. Recommendation: decisions/ at the repo root, configurable. Alternatives: none listed in PROJECT.md (gap).
 
+*Retired: Owner decided 2026-10-15: see decision C29 (recommendation accepted)..*
+
 ### C21 Record kind: separate kind field vs status alone
 
 PENDING OWNER CONFIRMATION - not decided. Source: Core concepts table, 'kind' row (marked as an open decision there, not in the Open decisions list). Options: a 'kind' field (question/decision), or let status alone carry it. Recommendation: none given in PROJECT.md (gap; owner must choose).
+
+*Retired: Owner decided 2026-10-15: see decision C30 (status alone; no kind field)..*
 
 ### C22 License: permissive FLOSS (MIT or Apache-2.0)
 
 PENDING OWNER CONFIRMATION - not decided. Source: Dependency/licensing notes (marked open there, not in the Open decisions list). Recommendation: a permissive FLOSS license such as MIT or Apache-2.0; PROJECT.md does not pick between them (owner must choose).
 
-22 items · — 17 · later 5
+*Retired: Owner decided 2026-10-15: see decision C31 (GPL-3.0-or-later)..*
+
+22 items · — 16 · done 1 · later 5
 
 | # | Slice | Title | Size | Effort | Trees | Findings | Status |
 |---|---|---|---|---|---|---|---|
-| 1 | [S01](slices/S01.md) | Confirm open decisions | S | 1 | decisions | PROJECT.md Open decisions 1-7; Core concepts (kind); Dependency/licensing notes | — |
-| 2 | [S02](slices/S02.md) | Project scaffolding | S | 1 | scaffold | PROJECT.md Stack recommendation; Dependency/licensing notes | — |
-| 3 | [S03](slices/S03.md) | Record model and lifecycle transitions | M | 2 | model | PROJECT.md Core concepts / data model; Milestone 1 | — |
-| 4 | [S04](slices/S04.md) | Record file read and write | M | 2 | model | PROJECT.md Open decisions 3; Core concepts (Record) | — |
-| 5 | [S05](slices/S05.md) | Store, config and ID allocation | M | 2 | store | PROJECT.md Architecture sketch (ID allocation, Determinism); Open decisions 4, 6, 7 | — |
-| 6 | [S06](slices/S06.md) | Commands: init and ask | M | 2 | cli | PROJECT.md v1 feature tier; Milestone 2 | — |
-| 7 | [S07](slices/S07.md) | Commands: decide, reject, withdraw | S | 1 | cli | PROJECT.md v1 feature tier; Lifecycle; Milestone 2 | — |
-| 8 | [S08](slices/S08.md) | Commands: show and list with --json | S | 1 | cli | PROJECT.md v1 feature tier; Milestone 2; acceptance (--json) | — |
-| 9 | [S09](slices/S09.md) | Command: inbox | S | 1 | cli | PROJECT.md Goals 2; v1 feature tier; Milestone 3 | — |
-| 10 | [S10](slices/S10.md) | Command: check | S | 1 | cli | PROJECT.md Goals 6; v1 feature tier; Milestone 3 | — |
-| 11 | [S11](slices/S11.md) | Command: context | M | 2 | cli | PROJECT.md Goals 5; v1 feature tier; Risks (context bloat); Milestone 3 | — |
-| 12 | [S12](slices/S12.md) | Agent snippet: dlog ai and JSON shape docs | S | 1 | docs | PROJECT.md v1 feature tier; Risks (adoption); acceptance (--json documented) | — |
-| 13 | [S13](slices/S13.md) | Command: supersede | S | 1 | cli | PROJECT.md Goals 4; Lifecycle; acceptance (supersede); Milestone 4 | — |
-| 14 | [S14](slices/S14.md) | Command: lint | M | 2 | cli | PROJECT.md Goals 8; acceptance (lint fixtures); Open decisions 5; Milestone 4 | — |
-| 15 | [S15](slices/S15.md) | ID collision detection and renumber | M | 2 | store | PROJECT.md Open decisions 4; Risks (merge conflicts on IDs); Milestone 4 | — |
-| 16 | [S16](slices/S16.md) | Docs and v1 acceptance round trip | S | 1 | docs | PROJECT.md v1 acceptance criteria; Milestone 5 | — |
-| 17 | [S17](slices/S17.md) | Dogfood: record dlog's own decisions with dlog | S | 1 | docs | PROJECT.md Milestone 5; acceptance (own decisions recorded) | — |
-| 18 | [S18](slices/S18.md) | Later: cross-repo inbox | M | 2 | later | PROJECT.md Feature tiers (Later); Open decisions 6 | later |
-| 19 | [S19](slices/S19.md) | Later: TUI or static HTML inbox | M | 2 | later | PROJECT.md Feature tiers (Later) | later |
-| 20 | [S20](slices/S20.md) | Later: slicer integration | M | 2 | later | PROJECT.md Feature tiers (Later); Non-goals (not replacing slicer); Risks (overlap with slicer catalog) | later |
-| 21 | [S21](slices/S21.md) | Later: optional owner-only decide enforcement | M | 2 | later | PROJECT.md Feature tiers (Later); Open decisions 5; Non-goals | later |
-| 22 | [S22](slices/S22.md) | Later: import from ADR folders | M | 2 | later | PROJECT.md Feature tiers (Later) | later |
+| 1 | [S02](slices/S02.md) | Project scaffolding | S | 1 | scaffold | PROJECT.md Stack recommendation; Dependency/licensing notes | — |
+| 2 | [S03](slices/S03.md) | Record model and lifecycle transitions | M | 2 | model | PROJECT.md Core concepts / data model; Milestone 1 | — |
+| 3 | [S04](slices/S04.md) | Record file read and write | S | 1 | model | PROJECT.md Open decisions 3; Core concepts (Record) | — |
+| 4 | [S05](slices/S05.md) | Store, config and ID allocation | M | 2 | store | PROJECT.md Architecture sketch (ID allocation, Determinism); Open decisions 4, 6, 7 | — |
+| 5 | [S06](slices/S06.md) | Commands: init and ask | M | 2 | cli | PROJECT.md v1 feature tier; Milestone 2 | — |
+| 6 | [S07](slices/S07.md) | Commands: decide, reject, withdraw | S | 1 | cli | PROJECT.md v1 feature tier; Lifecycle; Milestone 2 | — |
+| 7 | [S08](slices/S08.md) | Commands: show and list with --json | S | 1 | cli | PROJECT.md v1 feature tier; Milestone 2; acceptance (--json) | — |
+| 8 | [S09](slices/S09.md) | Command: inbox | S | 1 | cli | PROJECT.md Goals 2; v1 feature tier; Milestone 3 | — |
+| 9 | [S10](slices/S10.md) | Command: check | S | 1 | cli | PROJECT.md Goals 6; v1 feature tier; Milestone 3 | — |
+| 10 | [S11](slices/S11.md) | Command: context | M | 2 | cli | PROJECT.md Goals 5; v1 feature tier; Risks (context bloat); Milestone 3 | — |
+| 11 | [S12](slices/S12.md) | Agent snippet: adj ai and JSON shape docs | S | 1 | docs | PROJECT.md v1 feature tier; Risks (adoption); acceptance (--json documented) | — |
+| 12 | [S13](slices/S13.md) | Command: supersede | S | 1 | cli | PROJECT.md Goals 4; Lifecycle; acceptance (supersede); Milestone 4 | — |
+| 13 | [S14](slices/S14.md) | Command: lint | M | 2 | cli | PROJECT.md Goals 8; acceptance (lint fixtures); Open decisions 5; Milestone 4 | — |
+| 14 | [S15](slices/S15.md) | ID collision detection and renumber | M | 2 | store | PROJECT.md Open decisions 4; Risks (merge conflicts on IDs); Milestone 4 | — |
+| 15 | [S16](slices/S16.md) | Docs and v1 acceptance round trip | S | 1 | docs | PROJECT.md v1 acceptance criteria; Milestone 5 | — |
+| 16 | [S17](slices/S17.md) | Dogfood: record adjudicate's own decisions with adj | S | 1 | docs | PROJECT.md Milestone 5; acceptance (own decisions recorded) | — |
+| 17 | [S18](slices/S18.md) | Later: cross-repo inbox | M | 2 | later | PROJECT.md Feature tiers (Later); Open decisions 6 | later |
+| 18 | [S19](slices/S19.md) | Later: TUI or static HTML inbox | M | 2 | later | PROJECT.md Feature tiers (Later) | later |
+| 19 | [S20](slices/S20.md) | Later: slicer integration | M | 2 | later | PROJECT.md Feature tiers (Later); Non-goals (not replacing slicer); Risks (overlap with slicer catalog) | later |
+| 20 | [S21](slices/S21.md) | Later: optional owner-only decide enforcement | M | 2 | later | PROJECT.md Feature tiers (Later); Open decisions 5; Non-goals | later |
+| 21 | [S22](slices/S22.md) | Later: import from ADR folders | M | 2 | later | PROJECT.md Feature tiers (Later) | later |
+
+---
+
+| # | Slice | Title | Size | Effort | Trees | Findings | Status |
+|---|---|---|---|---|---|---|---|
+| 22 | [S01](slices/S01.md) | Confirm open decisions | S | 1 | decisions | PROJECT.md Open decisions 1-7; Core concepts (kind); Dependency/licensing notes | done |

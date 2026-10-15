@@ -2,7 +2,7 @@
   "id": "S13",
   "title": "Command: supersede",
   "lead": [
-    "`dlog supersede OLD --by NEW` links two decided records and marks OLD as\n`superseded`."
+    "`adj supersede OLD --by NEW` links two decided records and marks OLD as\n`superseded`."
   ],
   "depends_note": null,
   "findings_note": "PROJECT.md Goals 4; Lifecycle; acceptance (supersede); Milestone 4",
@@ -18,19 +18,19 @@
     },
     {
       "heading": "Files",
-      "body": "The `commands` and `model` modules and CLI tests."
+      "body": "- `internal/commands/supersede.go`.\n- `internal/model/transition.go`: the decided -> superseded transition from S03\n  (extend only if needed).\n- `internal/cli/supersede_test.go`."
     },
     {
       "heading": "Failing tests",
-      "body": "- After `supersede A --by B`, A is `superseded`, A.superseded_by = B and\n  B.supersedes = A; both get history lines.\n- `context` no longer includes A; `show A` still shows A and its history\n  (acceptance criterion).\n- Superseding a record that is not `decided`, or with a NEW that is not\n  `decided`, fails."
+      "body": "End-to-end CLI tests call `cli.Run` in a fresh `t.TempDir()` store (with\n`t.Chdir`, which rules out `t.Parallel`, or a root option the implementer adds\nand records under C32), with a fixed clock where dates matter.\n\n- After `supersede A --by B`: A is `superseded`, A.superseded_by is B,\n  B.supersedes includes A, and each gets one history entry.\n- `context` no longer lists A; `show A` still prints A and its history\n  (acceptance criterion).\n- A not decided, B not decided, A equal to B, or an unknown ID exits non-zero\n  and leaves both records unchanged."
     },
     {
       "heading": "Implement",
-      "body": "Use the model's decided -> superseded transition and write both records."
+      "body": "Load both records, apply both changes in memory and validate them, then write\nboth through `store.Update`. Nothing is written unless both records pass."
     },
     {
       "heading": "Check",
-      "body": "- The project test command passes.\n- `slicer check --json` is clean."
+      "body": "Run from the repo root after `. scripts/env.sh` (the in-repo cache env, C33;\nuse the equivalent AGENTS.md names if S02 chose another):\n\n- `go test ./...` passes, including this slice's new tests.\n- `go vet ./...` reports nothing.\n- `gofmt -l cmd internal` prints nothing (not `gofmt -l .`, which also walks\n  `.cache/` and `.worktrees/`).\n- Each interface choice made in this slice is a slicer catalog decision with a\n  one-line reason (C32).\n- `slicer check --json` is clean."
     },
     {
       "heading": "Git",

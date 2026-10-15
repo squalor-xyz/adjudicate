@@ -2,7 +2,7 @@
   "id": "S14",
   "title": "Command: lint",
   "lead": [
-    "`dlog lint` exits non-zero on problems, so CI can use it."
+    "`adj lint` reports integrity problems and exits non-zero on errors, so CI can\nuse it."
   ],
   "depends_note": null,
   "findings_note": "PROJECT.md Goals 8; acceptance (lint fixtures); Open decisions 5; Milestone 4",
@@ -18,19 +18,19 @@
     },
     {
       "heading": "Files",
-      "body": "A lint module (or `query`), fixture stores under the tests directory, and CLI\ntests."
+      "body": "- `internal/lint/lint.go`: one check per defect class, each finding naming the\n  record ID and file. The Architecture sketch has no lint package; the\n  implementer may put this in `internal/query` instead and records the choice\n  (C32).\n- `internal/lint/lint_test.go` and one fixture store per case under\n  `internal/lint/testdata/<case>/`.\n- `internal/commands/lint.go` and `internal/cli/lint_test.go`.\n- `docs/json.md`: the `lint --json` shape (lint is a read command)."
     },
     {
       "heading": "Failing tests",
-      "body": "One fixture store and one test per defect class:\n- missing required fields;\n- dangling links (`supersedes`, `superseded_by` pointing at missing IDs);\n- supersede cycles;\n- two accepted decisions on the same `key`;\n- missing `decided_by` on a decided record (a warning, per C18 as recommended).\nA clean fixture store exits 0."
+      "body": "Table-driven over the fixture stores, one case per defect class:\n\n- missing required fields (the set recorded in S03);\n- dangling links (`supersedes` or `superseded_by` naming a missing ID);\n- supersede cycles (two records, and a longer cycle);\n- two `decided` records on the same `key`;\n- a decided record without `decided_by`: a warning, not an error (C27);\n- a clean store: no findings, exit 0.\n\nEnd to end: `adj lint` on each error fixture exits non-zero and names the\nrecord and file; `lint --json` matches `docs/json.md`."
     },
     {
       "heading": "Implement",
-      "body": "Implement each check and a report with record IDs. Gap: PROJECT.md does not say\nwhether warnings change the exit code; ask the owner."
+      "body": "1. Load records through the lenient decode path from S04, so a record that\n   fails `Validate` becomes a finding instead of a load error.\n2. Implement each check and a deterministic report (sorted by record ID, then\n   check).\n3. Whether warnings alone change the exit code: implementer decides and records\n   it (C32). Proposed: warnings alone exit 0."
     },
     {
       "heading": "Check",
-      "body": "- The project test command passes.\n- `dlog lint` on a clean store exits 0; on each fixture it exits non-zero.\n- `slicer check --json` is clean."
+      "body": "Run from the repo root after `. scripts/env.sh` (the in-repo cache env, C33;\nuse the equivalent AGENTS.md names if S02 chose another):\n\n- `go test ./...` passes, including this slice's new tests.\n- `go vet ./...` reports nothing.\n- `gofmt -l cmd internal` prints nothing (not `gofmt -l .`, which also walks\n  `.cache/` and `.worktrees/`).\n- Each interface choice made in this slice is a slicer catalog decision with a\n  one-line reason (C32).\n- `slicer check --json` is clean."
     },
     {
       "heading": "Git",

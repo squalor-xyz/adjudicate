@@ -2,7 +2,7 @@
   "id": "S08",
   "title": "Commands: show and list with --json",
   "lead": [
-    "`dlog show ID` and `dlog list [--status S] [--tag T] [--key K]`, each with\n`--json`."
+    "`adj show ID` and `adj list [--status S] [--tag T] [--key K]`, each with\n`--json`."
   ],
   "depends_note": null,
   "findings_note": "PROJECT.md v1 feature tier; Milestone 2; acceptance (--json)",
@@ -18,19 +18,19 @@
     },
     {
       "heading": "Files",
-      "body": "The `query` and `render` modules from the Architecture sketch, and CLI tests."
+      "body": "- `internal/query/filter.go` and `internal/query/filter_test.go`.\n- `internal/render/text.go`, `internal/render/json.go` and\n  `internal/render/render_test.go`.\n- `internal/commands/show.go` and `internal/commands/list.go`.\n- `internal/cli/show_list_test.go`.\n- `docs/json.md`: the `--json` shapes of `show` and `list`."
     },
     {
       "heading": "Failing tests",
-      "body": "- `show` prints all fields and the history; `show --json` gives the record.\n- `list` filters by status, tag and key, singly and combined.\n- The `--json` output for both commands is stable across runs (determinism)."
+      "body": "End-to-end CLI tests call `cli.Run` in a fresh `t.TempDir()` store (with\n`t.Chdir`, which rules out `t.Parallel`, or a root option the implementer adds\nand records under C32), with a fixed clock where dates matter.\n\n- `show ID` prints every set field and the history; `show ID --json` prints\n  the record with the keys documented in `docs/json.md`; an unknown ID exits\n  non-zero.\n- `list` filters by status, tag and key, singly and combined (table-driven in\n  `filter_test.go`); results are ordered by ID.\n- An invalid `--status` value is a usage error.\n- The `--json` output of both commands is byte-identical across two runs and\n  ends with a newline."
     },
     {
       "heading": "Implement",
-      "body": "Implement filtering in `query` and text/JSON output in `render`. Document the\nJSON shape of both commands where the project keeps its docs."
+      "body": "1. Filtering in `query` as pure functions over `[]model.Record`; output in\n   `render` (JSON through `json.Encoder` with `SetEscapeHTML(false)` and\n   two-space indent).\n2. Implementer decides and records (C32): the `list --json` top-level shape\n   (for example a bare array or `{\"records\": [...]}`), whether `--tag` repeats,\n   and how combined filters combine (proposed: AND).\n3. Document both shapes in `docs/json.md`."
     },
     {
       "heading": "Check",
-      "body": "- The project test command passes.\n- `slicer check --json` is clean."
+      "body": "Run from the repo root after `. scripts/env.sh` (the in-repo cache env, C33;\nuse the equivalent AGENTS.md names if S02 chose another):\n\n- `go test ./...` passes, including this slice's new tests.\n- `go vet ./...` reports nothing.\n- `gofmt -l cmd internal` prints nothing (not `gofmt -l .`, which also walks\n  `.cache/` and `.worktrees/`).\n- Each interface choice made in this slice is a slicer catalog decision with a\n  one-line reason (C32).\n- `slicer check --json` is clean."
     },
     {
       "heading": "Git",

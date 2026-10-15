@@ -2,7 +2,7 @@
   "id": "S16",
   "title": "Docs and v1 acceptance round trip",
   "lead": [
-    "User docs and one end-to-end test that walks the acceptance round trip."
+    "User docs for every v1 command, and one end-to-end test that builds `adj` and\nwalks the acceptance round trip."
   ],
   "depends_note": null,
   "findings_note": "PROJECT.md v1 acceptance criteria; Milestone 5",
@@ -14,23 +14,23 @@
   "sections": [
     {
       "heading": "Why",
-      "body": "Milestone 5 and the acceptance criteria: all v1 commands work with no\nthird-party packages, and the round trip works."
+      "body": "Milestone 5 and the acceptance criteria: all v1 commands work with no\nthird-party packages (C24), and the round trip works."
     },
     {
       "heading": "Files",
-      "body": "README or the project's docs location; one end-to-end test module."
+      "body": "- `README.md`: what adjudicate is, building `adj` with the in-repo cache env\n  (C33), usage for every v1 command, and the license (GPL-3.0-or-later, C31).\n- `cmd/adj/roundtrip_test.go`: builds the binary into `t.TempDir()` (for\n  example with `go build -o` from a `TestMain`) and runs it with `os/exec`."
     },
     {
       "heading": "Failing tests",
-      "body": "End to end in a temp dir: `ask` -> `inbox` shows it -> `decide` -> `context`\nincludes it -> `check` reports it decided; then `supersede` hides the old one\nfrom `context` and `show` keeps it."
+      "body": "In a fresh `t.TempDir()` store, running the built binary: `adj init` ->\n`adj ask` -> `adj inbox` shows it -> `adj decide` -> `adj context` includes it\n-> `adj check` reports it decided; then a second ask and decide,\n`adj supersede` of the first by the second -> `context` no longer shows the\nfirst and `show` still shows it with its history; finally `adj lint` exits 0."
     },
     {
       "heading": "Implement",
-      "body": "Write the usage docs for every v1 command and add the round-trip test."
+      "body": "Write `README.md` and add the round-trip test. The test inherits the cache env,\nso its `go build` stays inside the repo (C33)."
     },
     {
       "heading": "Check",
-      "body": "- The project test command passes in an environment with no third-party\n  packages.\n- `slicer check --json` is clean."
+      "body": "Run from the repo root after `. scripts/env.sh` (the in-repo cache env, C33):\n\n- `go test ./...` passes, including the round-trip test.\n- `go vet ./...` reports nothing; `gofmt -l cmd internal` prints nothing.\n- `go list -m all` prints only `github.com/squalor-xyz/adjudicate` (no\n  third-party modules).\n- `slicer check --json` is clean."
     },
     {
       "heading": "Git",

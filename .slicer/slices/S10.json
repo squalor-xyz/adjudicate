@@ -2,7 +2,7 @@
   "id": "S10",
   "title": "Command: check",
   "lead": [
-    "`dlog check QUERY` searches titles, keys, tags and decision text and reports\ndecided / open / not found."
+    "`adj check QUERY` searches titles, keys, tags and decision text and reports\ndecided / open / not found."
   ],
   "depends_note": null,
   "findings_note": "PROJECT.md Goals 6; v1 feature tier; Milestone 3",
@@ -18,19 +18,19 @@
     },
     {
       "heading": "Files",
-      "body": "The `query` module and CLI tests."
+      "body": "- `internal/query/search.go` and `internal/query/search_test.go`.\n- `internal/commands/check.go`.\n- `internal/cli/check_test.go`.\n- `docs/json.md`: the `check --json` shape."
     },
     {
       "heading": "Failing tests",
-      "body": "- A query matching a decided record reports `decided` with its ID.\n- A query matching only open records reports `open`.\n- No match reports `not found`.\n- Matching covers titles, keys, tags and decision text.\n- `check --json` has a stable, documented shape."
+      "body": "End-to-end CLI tests call `cli.Run` in a fresh `t.TempDir()` store (with\n`t.Chdir`, which rules out `t.Parallel`, or a root option the implementer adds\nand records under C32), with a fixed clock where dates matter.\n\n- Table-driven in `search_test.go`: a query matching a decided record reports\n  `decided` with its ID; a query matching only open records reports `open` with\n  their IDs; no match reports `not found`.\n- One case each for a match on the title, the key, a tag and the decision text.\n- Records that are rejected, withdrawn or superseded are handled by the rule\n  the implementer records (proposed: they never count as decided).\n- `check --json` is byte-identical across two runs and matches `docs/json.md`;\n  the exit code for each result follows the recorded rule."
     },
     {
       "heading": "Implement",
-      "body": "Implement the search in `query`. Gap: PROJECT.md does not define the match rule\n(substring, case, word) or the exit code per result; propose one in review."
+      "body": "Implement the search in `query`. Implementer decides and records (C32): the\nmatch rule (proposed: case-insensitive substring), what is reported when both\ndecided and open records match, and the exit code per result (proposed: 0 for\nevery completed search, with the result in the output)."
     },
     {
       "heading": "Check",
-      "body": "- The project test command passes.\n- `slicer check --json` is clean."
+      "body": "Run from the repo root after `. scripts/env.sh` (the in-repo cache env, C33;\nuse the equivalent AGENTS.md names if S02 chose another):\n\n- `go test ./...` passes, including this slice's new tests.\n- `go vet ./...` reports nothing.\n- `gofmt -l cmd internal` prints nothing (not `gofmt -l .`, which also walks\n  `.cache/` and `.worktrees/`).\n- Each interface choice made in this slice is a slicer catalog decision with a\n  one-line reason (C32).\n- `slicer check --json` is clean."
     },
     {
       "heading": "Git",

@@ -2,7 +2,7 @@
   "id": "S02",
   "title": "Project scaffolding",
   "lead": [
-    "Set up the repo layout, the test runner, a project AGENTS.md, and the license,\nusing the runtime and license the owner confirmed."
+    "Set up the Go module, the package layout, the in-repo cache env, the project\nAGENTS.md, the license notice and .gitignore for adjudicate (`adj`), per C23,\nC24, C31 and C33."
   ],
   "depends_note": null,
   "findings_note": "PROJECT.md Stack recommendation; Dependency/licensing notes",
@@ -10,27 +10,27 @@
   "flags": [],
   "trees_note": "scaffold",
   "trees_plural": false,
-  "boundary": "**Not in this slice:** any dlog command or record logic beyond an empty entry\npoint that the smoke test can call.",
+  "boundary": "**Not in this slice:** any adj command or record logic beyond an entry point\nthat prints usage; any third-party module.",
   "sections": [
     {
       "heading": "Why",
-      "body": "Every later slice is test-first and needs a known layout, one test command, and\nproject guidance for agents. PROJECT.md requires the standard library only for\nruntime and tests (`unittest` if Python is confirmed)."
+      "body": "Every later slice is test-first and needs a known layout, one set of check\ncommands, and project guidance for agents. The owner chose Go with the standard\nlibrary only (C24), Go caches inside the repo (C33), and GPL-3.0-or-later (C31).\nPROJECT.md predates these decisions (it still says dlog, Python, TOML and\nMIT/Apache), so AGENTS.md must say the catalog decisions win."
     },
     {
       "heading": "Files",
-      "body": "Exact paths depend on the confirmed runtime (C15). Expected under the\nrecommendation: a package for the modules named in the Architecture sketch\n(cli, commands, store, model, query, render), a tests directory, AGENTS.md,\nLICENSE (per C22), and .gitignore updates for the confirmed stack."
+      "body": "Proposed paths; this slice fixes the final layout and records it (C32):\n\n- `go.mod`: `module github.com/squalor-xyz/adjudicate`; the `go` line matches\n  the installed toolchain (`go version` reports go1.27.2); no `require` lines.\n- `cmd/adj/main.go`: `os.Exit(cli.Run(os.Args[1:], os.Stdin, os.Stdout, os.Stderr))`.\n- `internal/cli/cli.go`: `Run(args []string, stdin io.Reader, stdout, stderr io.Writer) int`,\n  subcommand dispatch and usage.\n- `internal/cli/cli_test.go`: the smoke tests.\n- `scripts/env.sh`: sourced with `. scripts/env.sh`; exports the cache env.\n- `AGENTS.md`, `LICENSE`, `.gitignore`.\n\nLater slices add `internal/commands`, `internal/store`, `internal/model`,\n`internal/query` and `internal/render` (the Architecture sketch); AGENTS.md\nlists that layout now."
     },
     {
       "heading": "Failing tests",
-      "body": "A smoke test that runs the CLI entry point with `--help` and expects exit 0 and\na usage line. It fails before the entry point exists."
+      "body": "In `internal/cli/cli_test.go` (Go `testing`, table-driven), written first; they\nfail before `cli.Run` exists:\n\n- `Run([]string{\"--help\"}, ...)` returns 0 and stdout contains a line starting\n  `usage: adj`.\n- No arguments, and an unknown subcommand, each return a non-zero code and\n  print usage to stderr."
     },
     {
       "heading": "Implement",
-      "body": "- Create the layout and an entry point that prints usage.\n- Add AGENTS.md with: the test command, the stdlib-only rule (any new\n  dependency needs owner approval), the test-first rule, and a pointer to slicer\n  for work tracking.\n- Add LICENSE per the confirmed C22 answer."
+      "body": "1. `go.mod` with the module path from C23 and no dependencies.\n2. `cmd/adj/main.go` and `internal/cli` using only the standard library\n   (`flag`, `fmt`, `io`, `os`). Every Go file starts with\n   `// SPDX-License-Identifier: GPL-3.0-or-later`.\n3. Exit-code convention for all commands: decide and record it once (C32).\n   Proposed: 0 success, 1 a failed operation or failed check, 2 a usage error.\n4. `scripts/env.sh`: find the repo root from the script's own location (so each\n   worktree uses its own `.cache/`), then export `GOCACHE=$root/.cache/go-build`,\n   `GOMODCACHE=$root/.cache/gomod` and `GOPATH=$root/.cache/gopath`. Proposed\n   extras, decided and recorded here (C32): `GOTOOLCHAIN=local` and\n   `GOPROXY=off` (no toolchain or module downloads), and `GOTMPDIR`/`TMPDIR`\n   under `.cache/tmp` if the sandbox blocks the system temp dir. Never use\n   `go env -w` (it writes outside the repo).\n5. `.gitignore`: keep `.cache/` and the OS/editor entries; add built binaries\n   (`/adj`, `/bin/`, `*.test`) and coverage output (`*.out`); remove the stale\n   Python entries (`__pycache__/`, `*.py[cod]`, `*.egg-info/`, `.venv/`, `venv/`).\n   Keep or drop `build/` and `dist/` and record it (C32).\n6. `LICENSE` for GPL-3.0-or-later (C31). Get the GPL-3.0 text without network,\n   only from inside the launch workspace (none was found in the adjudicate repo\n   when S01 closed). If there is no local copy, write a `LICENSE` stub that\n   states `SPDX-License-Identifier: GPL-3.0-or-later` and the standard\n   \"or (at your option) any later version\" notice, marks\n   `TODO(owner): replace with the full GPL-3.0 text`, leaves the copyright\n   holder as a flagged placeholder unless the owner names one, and says so in\n   the handoff note.\n7. `AGENTS.md` for the project, short, with:\n   - one line on what adjudicate is, and that slicer catalog decisions C23-C33\n     override PROJECT.md where they differ (name, runtime, format, license);\n   - the layout (`cmd/adj`, `internal/{cli,commands,store,model,query,render}`);\n   - setup and checks: `. scripts/env.sh`, `go test ./...`, `go vet ./...`,\n     `gofmt -l cmd internal` prints nothing; Go caches only under `.cache/` (C33);\n   - Go standard library only; any new dependency needs owner approval (C24);\n   - test-first with Go `testing`, table-driven where natural; tests use\n     `t.TempDir()`, never this repo's own store;\n   - tracking rule: work is tracked in slicer; read and change it only through\n     the slicer CLI, never by opening or editing `.slicer/`;\n   - standing rule (C32): the implementer decides interface details that\n     PROJECT.md and the owner's decisions leave open, records each as a slicer\n     catalog decision with a one-line reason, the reviewer checks it, and the\n     owner may overrule later;\n   - owner-only decide (C27): only the owner makes the `adj decide`\n     transition; agents ask, check and read;\n   - no commits unless the owner asks; no AI attribution."
     },
     {
       "heading": "Check",
-      "body": "- The test command recorded in AGENTS.md passes (under C15 as recommended:\n  `python3 -m unittest discover -s tests`).\n- No third-party packages are installed or referenced.\n- `slicer check --json` is clean."
+      "body": "Run from the repo root:\n\n- `. scripts/env.sh && go env GOCACHE GOMODCACHE GOPATH` prints three paths\n  under this checkout's `.cache/`.\n- With that env: `go test ./...` passes; `go vet ./...` reports nothing;\n  `gofmt -l cmd internal` prints nothing.\n- With that env: `go build -o .cache/bin/adj ./cmd/adj && .cache/bin/adj --help`\n  exits 0.\n- `go list -m all` prints only `github.com/squalor-xyz/adjudicate`.\n- `git check-ignore -q .cache` succeeds; `git status --short` shows no build\n  output or cache files.\n- Each choice recorded under C32 (layout, exit codes, env extras) is a catalog\n  decision with a one-line reason.\n- `slicer check --json` is clean."
     },
     {
       "heading": "Git",

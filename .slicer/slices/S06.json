@@ -2,7 +2,7 @@
   "id": "S06",
   "title": "Commands: init and ask",
   "lead": [
-    "`dlog init` creates the store and a config; `dlog ask` creates an open record."
+    "`adj init` creates the store and the config; `adj ask` creates an open record."
   ],
   "depends_note": null,
   "findings_note": "PROJECT.md v1 feature tier; Milestone 2",
@@ -18,19 +18,19 @@
     },
     {
       "heading": "Files",
-      "body": "The `cli` and `commands` modules from the Architecture sketch, and end-to-end\nCLI tests against temp directories."
+      "body": "- `internal/cli/cli.go`: register `init` and `ask`.\n- `internal/cli/flags.go`: parsing of flags placed after positional arguments,\n  and a repeatable string-list `flag.Value` (for `--option`, `--tag`).\n- `internal/commands/init.go` and `internal/commands/ask.go`.\n- `internal/cli/flags_test.go`, `internal/cli/init_test.go`,\n  `internal/cli/ask_test.go`."
     },
     {
       "heading": "Failing tests",
-      "body": "- `dlog init` in an empty temp dir creates the store and config; running it\n  again does not destroy existing records.\n- `dlog ask TITLE --option LABEL:SUMMARY ... --recommend LABEL [--key K]\n  [--tag T] [--context TEXT|--stdin]` creates one `open` record with those\n  fields and a history line.\n- `--recommend` with a label that is not one of the options fails with a\n  non-zero exit."
+      "body": "End-to-end CLI tests call `cli.Run` in a fresh `t.TempDir()` store (with\n`t.Chdir`, which rules out `t.Parallel`, or a root option the implementer adds\nand records under C32), with a fixed clock where dates matter.\n\n- `adj init` in an empty dir creates the store dir and the config and exits 0;\n  a second `adj init` exits 0 and leaves existing records byte-identical.\n- `adj ask \"Title\" --option a:\"Use A\" --option b:\"Use B\" --recommend a\n  --key storage.engine --tag t1 --tag t2 --context \"why\"` creates one `open`\n  record with those fields, `created` set from the clock and one history entry,\n  and prints its ID.\n- `--stdin` instead of `--context` reads the context from stdin.\n- Flags after the positional TITLE are parsed (Go `flag` stops at the first\n  non-flag argument, so `flags_test.go` covers this directly).\n- A `--recommend` label that is not an option, an `--option` without `:`, and a\n  duplicate option label each exit non-zero and write no file.\n- `adj ask` before `adj init` exits non-zero and says to run `adj init`.\n- `asked_by` is set from the source the implementer chose."
     },
     {
       "heading": "Implement",
-      "body": "Wire argparse subcommands to the store. Gap: PROJECT.md gives\n`--option LABEL:SUMMARY` only; it does not say how to pass `tradeoffs` from the\nCLI. Ask the owner, or leave tradeoffs to editing the file."
+      "body": "1. One `flag.FlagSet` per subcommand; a helper that parses flags interspersed\n   with positionals; the repeatable-flag type.\n2. Commands take the clock (`func() time.Time`) from `cli`, so tests fix the\n   date.\n3. Follow the exit-code convention S02 recorded.\n4. Implementer decides and records each of these (C32):\n   - how `tradeoffs` are passed (PROJECT.md gives only `--option\n     LABEL:SUMMARY`), for example `LABEL:SUMMARY:TRADEOFFS`, a separate\n     `--tradeoffs LABEL:TEXT`, or file editing only;\n   - how the recommendation's reasoning is passed, if at all;\n   - how `asked_by` is supplied (flag, config or environment);\n   - what `adj init` writes into the config."
     },
     {
       "heading": "Check",
-      "body": "- The project test command passes.\n- `slicer check --json` is clean."
+      "body": "Run from the repo root after `. scripts/env.sh` (the in-repo cache env, C33;\nuse the equivalent AGENTS.md names if S02 chose another):\n\n- `go test ./...` passes, including this slice's new tests.\n- `go vet ./...` reports nothing.\n- `gofmt -l cmd internal` prints nothing (not `gofmt -l .`, which also walks\n  `.cache/` and `.worktrees/`).\n- Each interface choice made in this slice is a slicer catalog decision with a\n  one-line reason (C32).\n- `slicer check --json` is clean."
     },
     {
       "heading": "Git",

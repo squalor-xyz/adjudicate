@@ -1,8 +1,8 @@
 {
   "id": "S17",
-  "title": "Dogfood: record dlog's own decisions with dlog",
+  "title": "Dogfood: record adjudicate's own decisions with adj",
   "lead": [
-    "Record dlog's own design decisions (the answers from \"Confirm open decisions\")\nin dlog's own store."
+    "Record adjudicate's own owner decisions (slicer catalog C23-C32, from \"Confirm\nopen decisions\") in this repo's adj store."
   ],
   "depends_note": null,
   "findings_note": "PROJECT.md Milestone 5; acceptance (own decisions recorded)",
@@ -10,15 +10,15 @@
   "flags": [],
   "trees_note": "docs",
   "trees_plural": false,
-  "boundary": "**Not in this slice:** changing the slicer catalog records or any product\nfeature.",
+  "boundary": "**Not in this slice:** changing slicer catalog records, recording the\nimplementer decisions made under C32, or any product feature.",
   "sections": [
     {
       "heading": "Why",
-      "body": "Acceptance: dlog's own design decisions are recorded with dlog."
+      "body": "Acceptance: adjudicate's own design decisions are recorded with adjudicate."
     },
     {
       "heading": "Files",
-      "body": "The store directory in this repo, created by `dlog init`."
+      "body": "The store directory (`decisions/` by default, C29) and the config, both created\nby `adj init` at the repo root."
     },
     {
       "heading": "Failing tests",
@@ -26,11 +26,11 @@
     },
     {
       "heading": "Implement",
-      "body": "Run `dlog init`, then `dlog ask` and `dlog decide` for each decision the owner\nconfirmed, with the owner's rationale. Each `decide` is the owner's\ntransition (C18); the agent prepares the questions and the owner answers."
+      "body": "1. With the cache env, build `adj` (`go build -o .cache/bin/adj ./cmd/adj`)\n   and run `adj init` at the repo root.\n2. For each owner decision C23-C32, run `adj ask` with the question as\n   PROJECT.md or the catalog states it, its options, the recommendation, and a\n   ref to the slicer catalog ID.\n3. Only the owner makes the decide transition (C27). The implementer prepares\n   the exact `adj decide` command for each record (option, the owner's\n   rationale from the catalog body, decided_by = the owner) and the owner runs\n   them, or tells the implementer in this session to run them on the owner's\n   behalf. Record which happened in the handoff note."
     },
     {
       "heading": "Check",
-      "body": "- `dlog list --status decided --json` lists one record per confirmed decision.\n- `dlog lint` exits 0.\n- `slicer check --json` is clean."
+      "body": "Run from the repo root after `. scripts/env.sh` (the in-repo cache env, C33):\n\n- `adj list --status decided --json` lists one record per decision C23-C32,\n  each with `decided_by` set to the owner.\n- `adj inbox` is empty and `adj lint` exits 0.\n- `go test ./...` still passes.\n- `slicer check --json` is clean."
     },
     {
       "heading": "Git",

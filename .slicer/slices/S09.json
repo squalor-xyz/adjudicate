@@ -2,7 +2,7 @@
   "id": "S09",
   "title": "Command: inbox",
   "lead": [
-    "`dlog inbox` lists open questions, oldest first, with options and\nrecommendations."
+    "`adj inbox` lists open questions, oldest first, with options and\nrecommendations."
   ],
   "depends_note": null,
   "findings_note": "PROJECT.md Goals 2; v1 feature tier; Milestone 3",
@@ -18,19 +18,19 @@
     },
     {
       "heading": "Files",
-      "body": "The `commands`, `query` and `render` modules, and CLI tests."
+      "body": "- `internal/commands/inbox.go`.\n- `internal/render/inbox.go` (text) next to the JSON renderer from S08.\n- `internal/cli/inbox_test.go`.\n- `docs/json.md`: the `inbox --json` shape."
     },
     {
       "heading": "Failing tests",
-      "body": "- Only `open` records appear, oldest first.\n- Each entry shows its options and the recommendation.\n- `inbox --json` gives a stable, documented shape."
+      "body": "End-to-end CLI tests call `cli.Run` in a fresh `t.TempDir()` store (with\n`t.Chdir`, which rules out `t.Parallel`, or a root option the implementer adds\nand records under C32), with a fixed clock where dates matter.\n\n- Only `open` records appear, ordered by `created`, then by ID.\n- Each entry shows its ID, title, every option (label and summary, and the\n  tradeoffs when set) and the recommendation.\n- An empty inbox exits 0 with an empty result in both text and JSON.\n- `inbox --json` is byte-identical across two runs and matches `docs/json.md`."
     },
     {
       "heading": "Implement",
-      "body": "Reuse the list query with status `open` and the oldest-first order."
+      "body": "Reuse the `query` filter with status `open`, sort oldest first, and render text\nand JSON. The text layout and the JSON shape are implementer decisions recorded\nunder C32; document the shape in `docs/json.md`."
     },
     {
       "heading": "Check",
-      "body": "- The project test command passes.\n- `slicer check --json` is clean."
+      "body": "Run from the repo root after `. scripts/env.sh` (the in-repo cache env, C33;\nuse the equivalent AGENTS.md names if S02 chose another):\n\n- `go test ./...` passes, including this slice's new tests.\n- `go vet ./...` reports nothing.\n- `gofmt -l cmd internal` prints nothing (not `gofmt -l .`, which also walks\n  `.cache/` and `.worktrees/`).\n- Each interface choice made in this slice is a slicer catalog decision with a\n  one-line reason (C32).\n- `slicer check --json` is clean."
     },
     {
       "heading": "Git",

@@ -2,7 +2,7 @@
   "id": "S07",
   "title": "Commands: decide, reject, withdraw",
   "lead": [
-    "Answer, reject or withdraw an open question."
+    "Answer, reject or withdraw an open question with `adj decide`, `adj reject`\nand `adj withdraw`."
   ],
   "depends_note": null,
   "findings_note": "PROJECT.md v1 feature tier; Lifecycle; Milestone 2",
@@ -18,19 +18,19 @@
     },
     {
       "heading": "Files",
-      "body": "The `commands` module and CLI tests."
+      "body": "- `internal/commands/decide.go`: decide, reject and withdraw.\n- `internal/cli/cli.go`: register the three subcommands.\n- `internal/cli/decide_test.go`."
     },
     {
       "heading": "Failing tests",
-      "body": "- `dlog decide ID OPTION --why TEXT` sets status `decided`, `decision`,\n  `rationale`, `decided_at`, and appends history.\n- `dlog decide ID --text TEXT --why TEXT` records a free-text decision.\n- `dlog reject ID --why` and `dlog withdraw ID --why` set their statuses.\n- Deciding a record that is not `open` fails with a non-zero exit.\n- `decided_by` is recorded (C18)."
+      "body": "End-to-end CLI tests call `cli.Run` in a fresh `t.TempDir()` store (with\n`t.Chdir`, which rules out `t.Parallel`, or a root option the implementer adds\nand records under C32), with a fixed clock where dates matter.\n\n- `adj decide ID OPTION --why TEXT` sets status `decided`, `decision` (the\n  option label), `rationale`, `decided_at` and `decided_by`, appends one\n  history entry, and rewrites the record in place.\n- `adj decide ID --text TEXT --why TEXT` records a free-text decision.\n- An OPTION that is not one of the record's options, both OPTION and `--text`,\n  neither of them, or no `--why` exits non-zero and leaves the record unchanged.\n- `adj reject ID --why TEXT` and `adj withdraw ID --why TEXT` set `rejected` /\n  `withdrawn`, record the reason, and append history.\n- Each of the three on a record that is not `open`, or on an unknown ID, exits\n  non-zero and changes nothing."
     },
     {
       "heading": "Implement",
-      "body": "Call the model transitions from the commands. Gap: PROJECT.md does not say how\n`decided_by` is supplied (flag, config or environment); ask the owner."
+      "body": "1. Call the model transitions from S03 and `store.Update` from S05.\n2. How `decided_by` is supplied (flag, config or environment): implementer\n   decides and records it (C32), reusing the `asked_by` mechanism from S06\n   where it fits. Where reject and withdraw store the reason (for example\n   `rationale`): same rule.\n3. Owner-only decide is a convention (C27): `adj` records `decided_by` and does\n   not try to block anyone."
     },
     {
       "heading": "Check",
-      "body": "- The project test command passes.\n- `slicer check --json` is clean."
+      "body": "Run from the repo root after `. scripts/env.sh` (the in-repo cache env, C33;\nuse the equivalent AGENTS.md names if S02 chose another):\n\n- `go test ./...` passes, including this slice's new tests.\n- `go vet ./...` reports nothing.\n- `gofmt -l cmd internal` prints nothing (not `gofmt -l .`, which also walks\n  `.cache/` and `.worktrees/`).\n- Each interface choice made in this slice is a slicer catalog decision with a\n  one-line reason (C32).\n- `slicer check --json` is clean."
     },
     {
       "heading": "Git",

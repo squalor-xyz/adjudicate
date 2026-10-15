@@ -2,7 +2,7 @@
   "id": "S05",
   "title": "Store, config and ID allocation",
   "lead": [
-    "Read and write record files in the store directory, load the config, and\nallocate the next ID by scanning the store."
+    "Open the store, load the config, list records in a stable order, and allocate\nthe next ID by scanning the store (C26, C28, C29)."
   ],
   "depends_note": null,
   "findings_note": "PROJECT.md Architecture sketch (ID allocation, Determinism); Open decisions 4, 6, 7",
@@ -10,7 +10,7 @@
   "flags": [],
   "trees_note": "store",
   "trees_plural": false,
-  "boundary": "**Not in this slice:** collision detection and renumbering (the ID collision\nslice), and any command other than library calls.",
+  "boundary": "**Not in this slice:** ID collision detection and renumbering (S15), and any\nCLI command.",
   "sections": [
     {
       "heading": "Why",
@@ -18,19 +18,19 @@
     },
     {
       "heading": "Files",
-      "body": "The `store` module from the Architecture sketch, the config loader, and tests\nthat use temp directories."
+      "body": "- `internal/store/store.go`: `Open(root string) (*Store, error)`, `List`,\n  `Get(id)`, `Create(Record)` (allocates the ID and writes the file) and\n  `Update(Record)`.\n- `internal/store/config.go`: config file loading and defaults.\n- `internal/store/store_test.go` and `internal/store/config_test.go`, using\n  `t.TempDir()`."
     },
     {
       "heading": "Failing tests",
-      "body": "- In an empty store the first ID is 1; the filename is `NNNN-slug.<ext>`\n  (zero-padded ID, slug from the title).\n- The next ID is one past the highest ID found by scanning the store.\n- The store path comes from the config, defaulting to `decisions/` at the repo\n  root (C20).\n- Listing records returns them in a stable, deterministic order.\n- Per-repo scope only (C19)."
+      "body": "Go `testing`, table-driven, against `t.TempDir()`:\n\n- In an empty store `Create` assigns ID 1 and writes `0001-<slug>.md`\n  (zero-padded to four digits, slug from the title). An ID above 9999 keeps all\n  its digits.\n- The next ID is one past the highest ID in the store (IDs 1, 2, 5 give 6);\n  files that are not records are ignored.\n- With no config file the store is `<root>/decisions/` (C29); a config that\n  names another path relative to the root is honoured.\n- `List` returns records sorted by ID, the same on every call; `Get` of a\n  missing ID returns an error that `errors.Is` matches to `store.ErrNotFound`.\n- `Update` rewrites an existing record at its existing path."
     },
     {
       "heading": "Implement",
-      "body": "Implement the store and config per C17, C19 and C20 as confirmed. Gap:\nPROJECT.md does not say the config file's name or format; follow the record\nformat decision or ask the owner."
+      "body": "1. Use `model.ReadFile` / `model.WriteFile` from S04 and `os.ReadDir` to scan.\n2. Config file name, format and location: implementer decides and records it\n   (C32). Proposed: `.adjudicate.json` at the repo root, read with\n   encoding/json (one format, standard library only).\n3. Root discovery (how `adj` finds the repo root from the working directory):\n   implementer decides and records it (C32). Proposed: the nearest ancestor that\n   holds the config file.\n4. Slug rule and the `.md` extension: implementer decides and records them\n   (C32). Proposed: lowercase ASCII letters and digits joined by `-`, `.md`.\n5. Per-repo only (C28): `Open` takes one root; nothing reads other repos."
     },
     {
       "heading": "Check",
-      "body": "- The project test command passes.\n- `slicer check --json` is clean."
+      "body": "Run from the repo root after `. scripts/env.sh` (the in-repo cache env, C33;\nuse the equivalent AGENTS.md names if S02 chose another):\n\n- `go test ./...` passes, including this slice's new tests.\n- `go vet ./...` reports nothing.\n- `gofmt -l cmd internal` prints nothing (not `gofmt -l .`, which also walks\n  `.cache/` and `.worktrees/`).\n- Each interface choice made in this slice is a slicer catalog decision with a\n  one-line reason (C32).\n- `slicer check --json` is clean."
     },
     {
       "heading": "Git",

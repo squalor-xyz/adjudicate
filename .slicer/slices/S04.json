@@ -2,35 +2,35 @@
   "id": "S04",
   "title": "Record file read and write",
   "lead": [
-    "Serialize records to and from the confirmed file format, one file per record."
+    "Read and write one record file: JSON frontmatter (encoding/json) followed by a\nMarkdown body (C25). No TOML and no hand-written TOML parser or emitter."
   ],
   "depends_note": null,
   "findings_note": "PROJECT.md Open decisions 3; Core concepts (Record)",
-  "size": "M",
+  "size": "S",
   "flags": [],
   "trees_note": "model",
   "trees_plural": false,
-  "boundary": "**Not in this slice:** the store directory, ID allocation, and commands.",
+  "boundary": "**Not in this slice:** the store directory, file naming, ID allocation, and\ncommands.",
   "sections": [
     {
       "heading": "Why",
-      "body": "PROJECT.md requires plain-text records that are diffable, mergeable and\nreviewable in a PR (Goals 7), and deterministic output (Architecture sketch)."
+      "body": "PROJECT.md requires plain-text records that are diffable, mergeable and\nreviewable in a PR (Goals 7, C07), and deterministic output (Architecture\nsketch). The owner chose JSON frontmatter because the Go standard library has\nno TOML (C25)."
     },
     {
       "heading": "Files",
-      "body": "A serialization module next to the model (paths set by Project scaffolding) and\nits tests."
+      "body": "- `internal/model/file.go`: `Marshal(Record) ([]byte, error)`,\n  `Unmarshal(name string, data []byte) (Record, error)`, and thin\n  `ReadFile(path)` / `WriteFile(path, Record)` wrappers.\n- `internal/model/file_test.go`.\n- `internal/model/testdata/`: a golden file for a fully populated record, and\n  malformed inputs."
     },
     {
       "heading": "Failing tests",
-      "body": "- Round trip: write then read gives an equal record, for every field type the\n  model uses (strings, lists, option lists, dates, links).\n- Writing the same record twice gives byte-identical output (determinism).\n- A malformed file gives a clear error naming the file.\n- Under C16 as recommended: the frontmatter is valid TOML read by `tomllib`,\n  and the body is Markdown."
+      "body": "Go `testing`, table-driven:\n\n- Round trip: `Marshal` then `Unmarshal` gives a `reflect.DeepEqual` record,\n  for a fully populated record and a minimal one, covering every field type:\n  strings, tag lists, option lists, dates, links (supersedes, superseded_by),\n  refs, history, and a multi-line Markdown body.\n- Determinism: marshalling the same record twice is byte-identical, matches the\n  golden file in `testdata/`, and ends with exactly one newline.\n- Readable output: `<`, `>` and `&` stay literal (no HTML escaping), JSON is\n  indented, and empty optional fields are omitted.\n- The Markdown body round-trips byte for byte, including body lines that look\n  like the frontmatter delimiter.\n- Malformed input returns an error whose message contains the file name: no\n  opening delimiter, unterminated frontmatter, invalid JSON, an unknown key\n  (including `kind`), and a record that fails `Validate`."
     },
     {
       "heading": "Implement",
-      "body": "Implement read and write for the format the owner confirmed in C16. Under the\nrecommendation, write a minimal TOML emitter covering only the field types\ndlog uses, and read with `tomllib`."
+      "body": "1. Choose the frontmatter delimiter and record it (C32): for example `---json`\n   and `---` fence lines, or a bare JSON object at the top of the file. The\n   choice must keep body lines such as `---` or `}` intact.\n2. Decide whether any field is also rendered into the Markdown body, and record\n   it (C32). Proposed: every structured field stays in the frontmatter; the\n   body is free Markdown kept verbatim.\n3. Write with `json.Encoder` (`SetEscapeHTML(false)`, `SetIndent(\"\", \"  \")`).\n   Read with `json.Decoder` (`DisallowUnknownFields`), then `Validate`.\n4. Keep the decoding step usable without `Validate` (for example an unexported\n   or a lenient variant) so lint (S14) can report invalid records instead of\n   failing to load them."
     },
     {
       "heading": "Check",
-      "body": "- The project test command passes.\n- `slicer check --json` is clean."
+      "body": "Run from the repo root after `. scripts/env.sh` (the in-repo cache env, C33;\nuse the equivalent AGENTS.md names if S02 chose another):\n\n- `go test ./...` passes, including this slice's new tests.\n- `go vet ./...` reports nothing.\n- `gofmt -l cmd internal` prints nothing (not `gofmt -l .`, which also walks\n  `.cache/` and `.worktrees/`).\n- Each interface choice made in this slice is a slicer catalog decision with a\n  one-line reason (C32).\n- `slicer check --json` is clean."
     },
     {
       "heading": "Git",

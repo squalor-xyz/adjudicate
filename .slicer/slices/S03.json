@@ -2,7 +2,7 @@
   "id": "S03",
   "title": "Record model and lifecycle transitions",
   "lead": [
-    "Define the record schema, its validation, and the status transitions, with a\ndated history line appended on every transition."
+    "Define the record type, its validation and the status transitions in\n`internal/model`, with a dated history entry appended on every transition.\nStatus alone carries the record kind; there is no `kind` field (C30)."
   ],
   "depends_note": null,
   "findings_note": "PROJECT.md Core concepts / data model; Milestone 1",
@@ -10,7 +10,7 @@
   "flags": [],
   "trees_note": "model",
   "trees_plural": false,
-  "boundary": "**Not in this slice:** reading or writing files, ID allocation, and the CLI.",
+  "boundary": "**Not in this slice:** reading or writing files (S04), the store and ID\nallocation, and the CLI.",
   "sections": [
     {
       "heading": "Why",
@@ -18,19 +18,19 @@
     },
     {
       "heading": "Files",
-      "body": "The `model` module from the Architecture sketch and its test module (paths set\nby Project scaffolding)."
+      "body": "- `internal/model/record.go`: `Record`, `Option` (`Label`, `Summary`,\n  `Tradeoffs`), the `Status` constants, and `Validate`.\n- `internal/model/transition.go`: the decide, reject, withdraw and supersede\n  transitions.\n- `internal/model/record_test.go` and `internal/model/transition_test.go`."
     },
     {
       "heading": "Failing tests",
-      "body": "- Each field from the Core concepts table is present on a record and validated\n  (required vs optional per the table; `options` as {label, summary, tradeoffs}).\n- Allowed transitions: open -> decided / rejected / withdrawn; decided ->\n  superseded. Every other transition raises a validation error.\n- Each transition appends one dated history line.\n- `created` / `decided_at` are ISO 8601 dates.\n- The `kind` handling matches the owner's answer to C21."
+      "body": "Go `testing`, table-driven:\n\n- `Record` has a field for each row of the PROJECT.md Core concepts table\n  except `kind` (C30): id, title, status, key, tags, asked_by, decided_by,\n  created, decided_at, context, options, recommendation, decision, rationale,\n  consequences, supersedes, superseded_by, refs; plus the history.\n- `Validate` accepts a minimal valid record for each status, and rejects each\n  missing required field, an unknown status, duplicate option labels, and a\n  recommendation whose label is not one of the options.\n- Transitions, one row per (from status, transition): open -> decided /\n  rejected / withdrawn and decided -> superseded succeed; every other pair\n  returns an error that `errors.Is` matches to one exported sentinel and leaves\n  the record unchanged.\n- Each successful transition appends exactly one history entry carrying the\n  date and the transition.\n- `created` and `decided_at` are ISO 8601 dates (`time.DateOnly`,\n  `YYYY-MM-DD`); transitions take the date as a parameter, so tests use a\n  fixed date."
     },
     {
       "heading": "Implement",
-      "body": "Implement the schema, validation and transition functions in the model module.\n`asked_by` / `decided_by` are free-text attribution (C18), not authentication.\nGap: PROJECT.md does not say which fields are required; propose a required set\nto the owner in the review if the tests need one."
+      "body": "1. Plain Go structs with snake_case `json` tags matching the table and\n   `omitempty` on optional fields, so S04 can encode them with encoding/json\n   directly. Keep struct field order equal to the table order (encoding/json\n   writes fields in struct order, which keeps files deterministic).\n2. Required fields: PROJECT.md does not fix them; the implementer decides and\n   records the set (C32). Proposed: id, title, status and created always;\n   decision, rationale and decided_at once decided; decided_by is never\n   required (lint warns instead, C27).\n3. History shape (for example a list of `{date, event, note}` entries in the\n   frontmatter) and how the recommendation carries its reasoning (the table\n   says \"the option label, plus reasoning\"): implementer decides with S04 in\n   mind and records both (C32).\n4. `asked_by` and `decided_by` are free-text attribution, not authentication\n   (C27)."
     },
     {
       "heading": "Check",
-      "body": "- The project test command passes, including the new model tests.\n- `slicer check --json` is clean."
+      "body": "Run from the repo root after `. scripts/env.sh` (the in-repo cache env, C33;\nuse the equivalent AGENTS.md names if S02 chose another):\n\n- `go test ./...` passes, including this slice's new tests.\n- `go vet ./...` reports nothing.\n- `gofmt -l cmd internal` prints nothing (not `gofmt -l .`, which also walks\n  `.cache/` and `.worktrees/`).\n- Each interface choice made in this slice is a slicer catalog decision with a\n  one-line reason (C32).\n- `slicer check --json` is clean."
     },
     {
       "heading": "Git",

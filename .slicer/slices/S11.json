@@ -2,7 +2,7 @@
   "id": "S11",
   "title": "Command: context",
   "lead": [
-    "`dlog context [--tag T] [--key-prefix P] [--format md|json]` gives a compact\nsummary of the accepted decisions."
+    "`adj context [--tag T] [--key-prefix P] [--format md|json]` gives a compact\nsummary of the accepted decisions."
   ],
   "depends_note": null,
   "findings_note": "PROJECT.md Goals 5; v1 feature tier; Risks (context bloat); Milestone 3",
@@ -10,7 +10,7 @@
   "flags": [],
   "trees_note": "cli",
   "trees_plural": false,
-  "boundary": "**Not in this slice:** the supersede command itself; a size budget flag (named\nonly as a Risks mitigation, not in the v1 tier; the owner decides whether to\nadd it).",
+  "boundary": "**Not in this slice:** the supersede command itself, and a size budget flag (a\nRisks mitigation in PROJECT.md, not in the v1 tier; adding it later is an owner\nscope call, not an interface detail).",
   "sections": [
     {
       "heading": "Why",
@@ -18,19 +18,19 @@
     },
     {
       "heading": "Files",
-      "body": "The `query` and `render` modules and CLI tests."
+      "body": "- `internal/commands/context.go`.\n- `internal/render/context.go`, `internal/render/context_test.go` and golden\n  files in `internal/render/testdata/`.\n- `internal/cli/context_test.go`.\n- `docs/json.md`: the `context --format json` shape."
     },
     {
       "heading": "Failing tests",
-      "body": "- Only `decided` records appear; `open`, `rejected`, `withdrawn` and\n  `superseded` records do not.\n- `--tag` and `--key-prefix` filter the output.\n- `--format md` and `--format json` both work; the JSON shape is documented.\n- Two runs on the same store give byte-identical output."
+      "body": "End-to-end CLI tests call `cli.Run` in a fresh `t.TempDir()` store (with\n`t.Chdir`, which rules out `t.Parallel`, or a root option the implementer adds\nand records under C32), with a fixed clock where dates matter.\n\n- A fixture store with one record per status: only the `decided` record\n  appears; `open`, `rejected`, `withdrawn` and `superseded` do not.\n- `--tag` and `--key-prefix` each filter the output, and combine with AND.\n- `--format md` and `--format json` match their golden files; an unknown\n  format is a usage error.\n- Two runs on the same store give byte-identical output."
     },
     {
       "heading": "Implement",
-      "body": "Select decided records, render a compact summary per record. Gap: PROJECT.md\ndoes not say which fields the compact summary carries; propose a field set in\nreview."
+      "body": "Select decided records with `query` and render a compact entry per record.\nImplementer decides and records (C32): the fields in each entry (proposed: id,\ntitle, key, decision, and the rationale's first line), the default format\n(proposed: md), and the order (proposed: by ID). Document the JSON shape in\n`docs/json.md`."
     },
     {
       "heading": "Check",
-      "body": "- The project test command passes.\n- `slicer check --json` is clean."
+      "body": "Run from the repo root after `. scripts/env.sh` (the in-repo cache env, C33;\nuse the equivalent AGENTS.md names if S02 chose another):\n\n- `go test ./...` passes, including this slice's new tests.\n- `go vet ./...` reports nothing.\n- `gofmt -l cmd internal` prints nothing (not `gofmt -l .`, which also walks\n  `.cache/` and `.worktrees/`).\n- Each interface choice made in this slice is a slicer catalog decision with a\n  one-line reason (C32).\n- `slicer check --json` is clean."
     },
     {
       "heading": "Git",

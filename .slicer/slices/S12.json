@@ -1,8 +1,8 @@
 {
   "id": "S12",
-  "title": "Agent snippet: dlog ai and JSON shape docs",
+  "title": "Agent snippet: adj ai and JSON shape docs",
   "lead": [
-    "`dlog ai` prints a short AGENTS.md snippet telling agents how to use dlog, and\nevery read command's JSON shape is documented."
+    "`adj ai` prints a short AGENTS.md snippet telling agents how to use adj, and a\ntest pins every read command's `--json` shape to `docs/json.md`."
   ],
   "depends_note": null,
   "findings_note": "PROJECT.md v1 feature tier; Risks (adoption); acceptance (--json documented)",
@@ -14,23 +14,23 @@
   "sections": [
     {
       "heading": "Why",
-      "body": "Risks: agents only use dlog if the instruction is short and the commands are\ncheap. Acceptance requires a documented, stable `--json` shape on every read\ncommand."
+      "body": "Risks: agents only use adjudicate if the instruction is short and the commands\nare cheap. Acceptance requires a documented, stable `--json` shape on every\nread command."
     },
     {
       "heading": "Files",
-      "body": "The `commands` module (snippet text) and the project's docs location; CLI tests."
+      "body": "- `internal/commands/ai.go`: the snippet, as a string constant or a file\n  embedded with the standard `embed` package (for example\n  `internal/commands/ai.md`).\n- `internal/cli/ai_test.go`.\n- `internal/cli/jsonshape_test.go`.\n- `docs/json.md`: completed for `show`, `list`, `inbox`, `check` and `context`."
     },
     {
       "heading": "Failing tests",
-      "body": "- `dlog ai` exits 0 and prints the snippet.\n- The snippet names `check`, `ask`, `inbox` and `context`.\n- A test asserts each read command's `--json` keys match the documented shape."
+      "body": "- `adj ai` exits 0 and prints the snippet.\n- The snippet names `adj check`, `adj ask`, `adj inbox` and `adj context`, and\n  says that only the owner decides (C27).\n- For each of `show`, `list`, `inbox`, `check` and `context`, the top-level\n  `--json` keys equal the shape in `docs/json.md`. How the test reads the doc\n  (for example one fenced JSON example per command) is an implementer decision\n  recorded under C32."
     },
     {
       "heading": "Implement",
-      "body": "Write the snippet and the JSON shape docs. The snippet uses the working name;\nthe final name follows C14."
+      "body": "Write the snippet using the name `adj` (C23), keep it short, and complete\n`docs/json.md`. `lint --json` lands later, in S14, which documents its own\nshape."
     },
     {
       "heading": "Check",
-      "body": "- The project test command passes.\n- `slicer check --json` is clean."
+      "body": "Run from the repo root after `. scripts/env.sh` (the in-repo cache env, C33;\nuse the equivalent AGENTS.md names if S02 chose another):\n\n- `go test ./...` passes, including this slice's new tests.\n- `go vet ./...` reports nothing.\n- `gofmt -l cmd internal` prints nothing (not `gofmt -l .`, which also walks\n  `.cache/` and `.worktrees/`).\n- Each interface choice made in this slice is a slicer catalog decision with a\n  one-line reason (C32).\n- `slicer check --json` is clean."
     },
     {
       "heading": "Git",
