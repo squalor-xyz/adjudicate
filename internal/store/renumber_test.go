@@ -48,7 +48,8 @@ func fixture(t *testing.T, name string) string {
 }
 
 // tree maps every file under dir (slash-separated, relative) to its content
-// and every directory to "dir", so a test can tell that nothing changed.
+// and every directory to "dir", so a test can tell that nothing changed. The
+// lock file is left out.
 func tree(t *testing.T, dir string) map[string]string {
 	t.Helper()
 	out := map[string]string{}
@@ -57,6 +58,9 @@ func tree(t *testing.T, dir string) map[string]string {
 			return err
 		}
 		rel, _ := filepath.Rel(dir, path)
+		if d.Name() == lockName {
+			return nil // a refusal may leave the lock file it took, which holds no data (C114)
+		}
 		if d.IsDir() {
 			out[filepath.ToSlash(rel)] = "<dir>"
 			return nil
@@ -391,6 +395,7 @@ func TestRenumberLeavesNoTemporaryFiles(t *testing.T) {
 	if _, err := s.Renumber(renumberDate, false); err != nil {
 		t.Fatal(err)
 	}
+	// names leaves out the lock file, the one dot-file that stays (C114).
 	for _, name := range names(t, s.Dir()) {
 		if strings.HasPrefix(name, ".") {
 			t.Errorf("left behind: %s", name)

@@ -53,7 +53,8 @@ const (
 	// store.List refuses (C59).
 	CheckIDMismatch = "id-mismatch"
 	// CheckDuplicateID: more than one record file has the ID in its name
-	// (two branches or two concurrent asks took the same number, C26).
+	// (two branches or clones took the same number, C26; asks in one checkout
+	// are locked against it, C114).
 	CheckDuplicateID = "duplicate-id"
 	// CheckRenumberLeftover: the file is the stale copy that an interrupted
 	// adj renumber left behind (C148): another file has the same record,

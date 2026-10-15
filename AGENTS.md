@@ -38,7 +38,8 @@ library only.
   record file format; its only file I/O is `ReadFile` and `WriteFile` in
   `file.go`.
 - `internal/store`: one repo's record directory (`store.go`), its config
-  (`config.go`) and `Renumber` (`renumber.go`); see "Store and config" below.
+  (`config.go`), `Renumber` (`renumber.go`) and the ID lock (`lock_unix.go`,
+  `lock_other.go`); see "Store and config" below.
 - `internal/query`: record filters and the `check` search, pure functions over
   records (`filter.go`, `search.go`).
 - `internal/lint`: `adj lint`'s checks (`lint.go`): reads each record file with
@@ -66,7 +67,10 @@ below). `adj lint` exits 1 when it finds an error (see its entry).
   [--context TEXT | --stdin] [--by NAME] [--root DIR]`: creates an `open`
   record with one `ask` history entry and prints its ID. Flags may come before
   or after TITLE. A blank `--key` or `--tag` exits 2; `--key` is stored as
-  typed. `asked_by` is `--by`, else `$ADJ_ASKED_BY`, else blank.
+  typed. `asked_by` is `--by`, else `$ADJ_ASKED_BY`, else blank. The ID is
+  taken under the store's lock (see "Store and config"): an `ask` that cannot
+  get the lock within 5 seconds exits 1 with an error that names `.adj.lock`
+  and creates nothing.
 - `adj decide ID OPTION --why TEXT`, or `adj decide ID --text TEXT --why TEXT`,
   `[--by NAME] [--root DIR]`: moves an `open` record to `decided`. OPTION
   (trimmed) must be one of the record's option labels; `decision` is that
@@ -173,8 +177,8 @@ below). `adj lint` exits 1 when it finds an error (see its entry).
   else 0: warnings alone exit 0 (C140). An argument exits 2. The agent snippet
   does not name it (C145).
 - `adj renumber [--keep-links] [--root DIR]` (C150): resolves record files that
-  share an ID (`adj lint` reports them as `duplicate-id`; concurrent asks and
-  merged branches make them, C26). Of the files with one ID the record `created`
+  share an ID (`adj lint` reports them as `duplicate-id`; merged branches and
+  clones make them, and so do asks on a system without the ID lock, C26, C114). Of the files with one ID the record `created`
   first keeps it, then the file name breaks a tie (C146). Each other record is
   written to a new file `<next free ID>-<same name text>.md` (next free ID: one
   past the highest in the store, colliding IDs taken in ascending order), with
@@ -189,9 +193,12 @@ below). `adj lint` exits 1 when it finds an error (see its entry).
   link); a colliding record needs a valid `created` date (C158); a record that
   moves must be valid with the ID it will get (C151); these are checked before
   the first write. A new ID is never one that a link names without a file
-  (C155). The directory is synced before the old file goes (C157). A move that
-  cannot remove the old file takes the new one away again; if that fails too the
-  error names both files. After a crash between the two, the record is in both
+  (C155). With a collision it holds the store's ID lock from reading the files
+  to the last move (see "Store and config"), so an `adj ask` cannot take an ID
+  a move is about to use; a refusal after that leaves only the empty lock file.
+  With no collision it takes no lock. The directory is synced before the old
+  file goes (C157). A move that cannot remove the old file takes the new one
+  away again; if that fails too the error names both files. After a crash between the two, the record is in both
   files and the old one is a stale copy: `adj lint` reports it as
   `renumber-leftover`, and `adj renumber` refuses (exit 1, nothing changed,
   `store.ErrStaleCopy`) until the owner deletes the old file (C156); nothing is
@@ -230,6 +237,23 @@ below). `adj lint` exits 1 when it finds an error (see its entry).
   permission bits; new files are 0644. Two files with one ID make `Get` and
   `Update` fail (`ErrDuplicateID`, naming both files); `Store.Renumber` fixes
   them (see `adj renumber`).
+- ID allocation is locked (C114, C159-C162). `Create` and `Renumber` take an
+  exclusive advisory `flock` on `<store>/.adj.lock` (`decisions/.adj.lock` by
+  default) and hold it from the scan of the IDs to the link of the new file, so
+  two `adj ask` runs on one checkout cannot take one ID. `Update` is not
+  locked. The lock file is an empty dot-file, never taken for a record, made on
+  first use and never deleted; the lock is released when the call returns or
+  the process dies. A writer waits up to 5 seconds (polling every 10 ms); if the
+  lock is still held it fails with an error that names the lock file and writes
+  nothing. `Create` also skips an ID that a `supersedes` or `superseded_by` link
+  names without a file (C155); a file it cannot read keeps its ID by name but
+  its links are not known. The lock only serialises one checkout: branches and
+  clones still collide, and `adj lint` and `adj renumber` handle that. Locking
+  needs `syscall.Flock` (darwin, linux, the BSDs, illumos); other systems have
+  no lock and only the bounded retry of C64. A team that does not want the lock
+  file in git adds `decisions/.adj.lock` (its store directory) to its
+  `.gitignore`; `adj` writes no `.gitignore`. A test that lists the store
+  directory leaves the lock file out.
 
 ## Setup and checks
 

@@ -30,7 +30,8 @@ func seed(t *testing.T, dir, name string, r model.Record) {
 	}
 }
 
-// names lists the entries of dir, sorted by os.ReadDir.
+// names lists the entries of dir, sorted by os.ReadDir, without the lock file
+// that Create and Renumber leave in a store directory (C114).
 func names(t *testing.T, dir string) []string {
 	t.Helper()
 	entries, err := os.ReadDir(dir)
@@ -39,7 +40,9 @@ func names(t *testing.T, dir string) []string {
 	}
 	var out []string
 	for _, e := range entries {
-		out = append(out, e.Name())
+		if e.Name() != lockName {
+			out = append(out, e.Name())
+		}
 	}
 	return out
 }
@@ -179,6 +182,73 @@ func TestCreateRejectsInvalidRecordAndWritesNothing(t *testing.T) {
 	}
 	if _, err := os.Stat(filepath.Join(root, "decisions")); !os.IsNotExist(err) {
 		t.Errorf("decisions/ exists after a failed Create (err = %v)", err)
+	}
+}
+
+// A link in the store to an ID that has no file must not come to resolve to
+// a new record: Create skips such IDs, as Renumber does (C155).
+func TestCreateSkipsIDsNamedByDanglingLinks(t *testing.T) {
+	tests := []struct {
+		name     string
+		link     func(r *model.Record)
+		wantID   int
+		wantFile string
+	}{
+		{"supersedes", func(r *model.Record) { r.Supersedes = []int{2} }, 3, "0003-t.md"},
+		{"superseded_by", func(r *model.Record) { r.SupersededBy = 2 }, 3, "0003-t.md"},
+		{"a run of them", func(r *model.Record) { r.Supersedes = []int{2, 3, 4} }, 5, "0005-t.md"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			root := t.TempDir()
+			dir := filepath.Join(root, "decisions")
+			a := question(1, "A")
+			tt.link(&a)
+			seed(t, dir, "0001-a.md", a)
+			got, err := mustOpen(t, root).Create(question(0, "t"))
+			if err != nil {
+				t.Fatal(err)
+			}
+			if got.ID != tt.wantID {
+				t.Errorf("ID = %d, want %d", got.ID, tt.wantID)
+			}
+			if _, err := os.Stat(filepath.Join(dir, tt.wantFile)); err != nil {
+				t.Errorf("want file %s: %v", tt.wantFile, err)
+			}
+		})
+	}
+}
+
+// A file that cannot be read still reserves its ID by name (C59), but it can
+// hold no link Create knows about; Create goes on without it, and still avoids
+// the links of the files it can read, rather than failing every ask on a store
+// with one broken file.
+func TestCreateGoesOnPastAFileThatDoesNotParse(t *testing.T) {
+	root := t.TempDir()
+	dir := filepath.Join(root, "decisions")
+	a := question(1, "A")
+	a.Supersedes = []int{3}
+	seed(t, dir, "0001-a.md", a)
+	writeFile(t, filepath.Join(dir, "0002-broken.md"), "not a record\n")
+	got, err := mustOpen(t, root).Create(question(0, "t"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got.ID != 4 {
+		t.Errorf("ID = %d, want 4 (past the broken file 0002 and the link from 0001 to 3)", got.ID)
+	}
+}
+
+// The record is checked with the ID it gets, not with a stand-in: a link to 1 is
+// fine on a record that becomes 2.
+func TestCreateChecksTheRecordWithItsRealID(t *testing.T) {
+	root := t.TempDir()
+	seed(t, filepath.Join(root, "decisions"), "0001-a.md", question(1, "A"))
+	r := question(0, "B")
+	r.Supersedes = []int{1}
+	got, err := mustOpen(t, root).Create(r)
+	if err != nil || got.ID != 2 {
+		t.Errorf("Create = %d, %v; want ID 2", got.ID, err)
 	}
 }
 

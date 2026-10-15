@@ -947,6 +947,17 @@
           "verified_by": "",
           "verified_at": "",
           "stale_after": ""
+        },
+        {
+          "id": "a54fe25b-8190-4f8a-9e24-7c49fe9e6808",
+          "kind": "",
+          "text": "**2026-10-15** — From S23 review/gate (lows): (1) store.go:269 and C162 say an invalid record writes nothing 'not even the directory or the lock file' — not true for a record invalid only with its real ID (lock() already made the dir and .adj.lock); reword. (2) AGENTS.md Store and config: say flock may fail (ENOLCK/EOPNOTSUPP → ask exits 1 naming .adj.lock) or be host-local on network file systems. (3) Optional: open .adj.lock O_RDONLY when O_RDWR gets EACCES (shared checkouts). (4) Lock-timeout text 'still held by another adj process' — say 'another process'. (5) Re-wrap: AGENTS.md adj renumber entry lines, renumber.go:296 moveFile comment, docs/json.md ~410 duplicate-id text. (6) C155 text 'Create has the same gap and is not changed here' is superseded by C162 — edit.",
+          "created_at": "2026-10-15T13:51:58Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
         }
       ],
       "claim": null,
@@ -1180,7 +1191,7 @@
       "id": "S23",
       "title": "Lock ID allocation with flock",
       "short_title": "Lock ID allocation with flock",
-      "status": "open",
+      "status": "done",
       "has_slice": true,
       "depends_on": [
         "S15"
@@ -1192,6 +1203,17 @@
           "text": "**2026-10-15** — From S15 review: Store.Renumber's moveFile (internal/store/renumber.go) also allocates an ID by scan-then-link; hold the same flock there, or a locked Create and an unlocked renumber can still take one ID with different slugs. TestRenumberLeavesNoTemporaryFiles fails on any dot-file left in the store dir, so a persistent .adj.lock must be excluded there. Also: Create has the same dangling-link-target gap renumber fixed (C155) — skip IDs named by dangling links when allocating under the lock.",
           "created_at": "2026-10-15T13:37:52Z",
           "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "c5782edb-a1b7-4b63-8c42-df15689b83ea",
+          "kind": "",
+          "text": "**2026-10-15** — Verified: flock on <store>/.adj.lock held from scan to link in Create and through Renumber when a collision exists; 5 s bounded wait (LOCK_NB, 10 ms poll) with an error naming the lock file and nothing written; non-flock systems run with no lock plus the C64 retry; Create skips IDs named by dangling links. Tests including go test -race green, vet and gofmt clean, Windows/solaris/illumos cross-vet clean. Decisions C159-C162 added; C62 and C64 rewritten.",
+          "created_at": "2026-10-15T13:51:39Z",
+          "attempt": 1,
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
@@ -1214,7 +1236,11 @@
           "C62",
           "C64",
           "C32",
-          "C24"
+          "C24",
+          "C159",
+          "C160",
+          "C161",
+          "C162"
         ],
         "key": "",
         "pass": "",
@@ -1223,7 +1249,7 @@
         "importance": 2,
         "urgency": 1,
         "effort": 2,
-        "attempts": 0
+        "attempts": 1
       }
     },
     {
@@ -1279,7 +1305,7 @@
   "goals": "adjudicate is a small CLI (`adj`) with a plain-text store that records project decisions as a loop: an agent asks, the owner decides in batches, and every later agent reads the decision. The goal and non-goal records below come from PROJECT.md; the owner's decisions on its open questions are catalog records C23-C33, and they override PROJECT.md where it differs (name, runtime, record format, license).",
   "non_goals": "",
   "catalog": {
-    "next_id": 159,
+    "next_id": 163,
     "id_prefix": "C",
     "id_width": 2,
     "records": [
@@ -1836,7 +1862,7 @@
         "id": "C62",
         "kind": "decision",
         "title": "Store writes go through a synced temp file: Update renames it over the record, Create links it into place and never replaces a file",
-        "body": "Answers C54 for the store. The record is written to a .adj-*.tmp file (names start with a dot, so never taken for records) and fsynced. Update renames it over the record; after a crash the file is the old record or the new one, but the directory is not fsynced, so which one is not guaranteed. Create links it into place, so it can never overwrite a file; the link also keeps a reader from seeing half a record. Accepted limit: os.Link fails on file systems without hard links and there is no fallback. Concurrent creates in one checkout with different titles can still both get the same ID because the scan is not locked; lint (S14) detects that and renumber (S15) fixes it (C26).",
+        "body": "Answers C54 for the store. The record is written to a .adj-*.tmp file (names start with a dot, so never taken for records) and fsynced. Update renames it over the record; after a crash the file is the old record or the new one, but the directory is not fsynced, so which one is not guaranteed. Create links it into place, so it can never overwrite a file; the link also keeps a reader from seeing half a record. Accepted limit: os.Link fails on file systems without hard links and there is no fallback. Concurrent creates in one checkout are serialised by the ID lock (C114, S23), which covers the scan and the link; collisions between branches or clones are not, and stay with lint (S14) and renumber (S15) (C26). Before S23 the scan was not locked, so two creates with different titles could both get the same ID.",
         "status": "active",
         "reason": "",
         "successor": ""
@@ -1854,7 +1880,7 @@
         "id": "C64",
         "kind": "decision",
         "title": "Permissions and retry: new records are 0644, Update keeps the old file's permission bits, and Create retries up to three times when its file name is taken",
-        "body": "os.CreateTemp makes 0600 files, so the store sets the mode itself: 0644 for a new record (git-friendly, umask-independent) and the replaced file's bits on Update so a chosen mode survives. When the link finds the name taken (another writer after our scan), Create rescans and takes the next ID, then gives up with an error wrapping os.ErrExist that names the target file; no locking, which is the owner's design call.",
+        "body": "os.CreateTemp makes 0600 files, so the store sets the mode itself: 0644 for a new record (git-friendly, umask-independent) and the replaced file's bits on Update so a chosen mode survives. When the link finds the name taken (a writer that does not take the ID lock, a directory, or a platform with no lock), Create rescans and takes the next ID, then gives up with an error wrapping os.ErrExist that names the target file. The retry stays as a second line of defence behind the ID lock (C114, S23); before S23 there was no locking, which was the owner's design call.",
         "status": "active",
         "reason": "",
         "successor": ""
@@ -2701,6 +2727,42 @@
         "kind": "decision",
         "title": "S15 renumber refuses a colliding record whose created is not a YYYY-MM-DD date",
         "body": "S15 review. The keeper is the record created first, compared as a date string (C146); a missing or malformed date would pick the keeper by accident of text order. The run stops with exit 1 naming the file and changes nothing; the owner fixes the date.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C159",
+        "kind": "decision",
+        "title": "S23 lock file is <store>/.adj.lock, a persistent dot-file; adj writes no gitignore for it",
+        "body": "Implementer decision (C32) for C114. The lock is taken on a file in the store directory (default decisions/.adj.lock), so it follows the store when the config moves it. The name starts with a dot, so the scan never takes it for a record (C59), and it is created on first use and never deleted: removing a lock file lets a waiting writer and a new one lock different files. It is empty. Tests and tools that list the store directory (names, tree, fileNames, TestRenumberLeavesNoTemporaryFiles) leave it out. Gitignore guidance: a team that does not want it in git adds <store>/.adj.lock (decisions/.adj.lock by default) to its .gitignore; committing the empty file is harmless. adj init and adj ask do not write or edit a .gitignore (out of the slice's scope), so the guidance is documented in AGENTS.md only.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C160",
+        "kind": "decision",
+        "title": "S23 lock wait is bounded: LOCK_EX|LOCK_NB polled every 10 ms for up to 5 s, then an error naming the lock file",
+        "body": "Implementer decision (C32) for C114. A blocking LOCK_EX would hang an agent's adj ask forever behind a hung process; a bounded wait fails instead. Create and Renumber try the flock without blocking, sleep 10 ms and try again until 5 s have passed, then return an error 'lock PATH: still held by another adj process after 5s; nothing was written' and write nothing (Create has not touched the directory beyond making it and the lock file; Renumber has read only). The flock goes with the file descriptor, so a process that dies releases it and no stale lock needs cleaning. Any other flock error (a file system without flock) is also an error naming the lock file. The timeout is a Store field in tests (lockTimeout), and lockBusy and beforeLink are the hooks tests use to hold one writer between scan and link; beforeLink now also runs before each Renumber link.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C161",
+        "kind": "decision",
+        "title": "S23 flock builds on the systems that have syscall.Flock; every other system runs with no lock and the C64 retry",
+        "body": "Implementer decision (C32) for C114. The slice proposed the unix build tag, but syscall.Flock does not exist on aix and solaris, which the unix tag includes (checked with go doc under GOOS=aix and GOOS=solaris; illumos has it), so the build would fail there. lock_unix.go is therefore tagged darwin || dragonfly || freebsd || illumos || linux || netbsd || openbsd, and lock_other.go (the negation) is the fallback: no lock, acquire returns a no-op. There Create keeps the bounded retry of C64, which catches two writers that choose the same file name, not two that choose the same ID with different names; lint and renumber find and fix those (C26). Windows is not locked (out of the slice). Cross-vetted with GOOS=windows, solaris and illumos to check it compiles; the fallback is not run by any test.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C162",
+        "kind": "decision",
+        "title": "S23 Create and Renumber hold the lock; Renumber only when a collision exists; Create skips IDs named by dangling links",
+        "body": "Implementer decision (C32) for C114, extending C155 and C154. Create validates the record with a stand-in ID before touching the store (an invalid record still writes nothing, not even the directory or the lock file), takes the lock, and holds it from the first scan to the link, retries included; it is validated again with the real ID. The ID is one past the highest, skipping any ID that a supersedes or superseded_by link names without a file (C155, as renumber does); a file that cannot be read keeps its ID by name but its links are unknown, so it is skipped for links rather than failing every ask. Renumber looks for collisions without the lock; with none it returns, taking no lock and making nothing. With one it takes the lock and reads the store again before it plans, and holds the lock to the last move (so a Create cannot take an ID a move is about to use). Update is not locked. Renumber that is refused after the lock leaves only the empty lock file.",
         "status": "active",
         "reason": "",
         "successor": ""

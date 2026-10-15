@@ -46,7 +46,9 @@ func run(env Env, stdin string, args ...string) result {
 }
 
 // snapshot maps every file and directory under root (slash-separated, dirs end
-// in "/") to its content, so a test can tell that nothing changed.
+// in "/") to its content, so a test can tell that nothing changed. The store's
+// lock file, which ask and renumber leave behind and which holds no data, is
+// left out (C114).
 func snapshot(t *testing.T, root string) map[string]string {
 	t.Helper()
 	out := map[string]string{}
@@ -59,6 +61,9 @@ func snapshot(t *testing.T, root string) map[string]string {
 			return err
 		}
 		rel = filepath.ToSlash(rel)
+		if d.Name() == ".adj.lock" {
+			return nil
+		}
 		if d.IsDir() {
 			out[rel+"/"] = ""
 			return nil

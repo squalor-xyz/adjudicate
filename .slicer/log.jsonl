@@ -423,3 +423,18 @@
 {"when": "2026-10-15T13:37:17Z", "item": "S15", "action": "status", "from": "started", "to": "done", "note": "ID collision detection and renumber: lint duplicate-id and renumber-leftover; adj renumber with ambiguous-link refusal, crash-safe moves and stale-copy detection (C146-C158).", "by": "Jon R"}
 {"when": "2026-10-15T13:37:52Z", "item": "S23", "action": "note", "from": "", "to": "", "note": "From S15 review: Store.Renumber's moveFile (internal/store/r", "by": "Jon R"}
 {"when": "2026-10-15T13:37:52Z", "item": "S16", "action": "note", "from": "", "to": "", "note": "From S15 gate (low/nits): (1) IsStaleCopy checks only the LA", "by": "Jon R"}
+{"when": "2026-10-15T13:40:51Z", "item": "S23", "action": "status", "from": "open", "to": "started", "note": "", "by": "Jon R"}
+{"when": "2026-10-15T13:44:46Z", "item": "C62", "action": "catalog", "from": "", "to": "body", "note": "edit"}
+{"when": "2026-10-15T13:44:46Z", "item": "C64", "action": "catalog", "from": "", "to": "body", "note": "edit"}
+{"when": "2026-10-15T13:44:58Z", "item": "C159", "action": "catalog", "from": "", "to": "S23 lock file is <store>/.adj.lock, a persistent dot-file; adj writes no gitignore for it", "note": "add"}
+{"when": "2026-10-15T13:44:58Z", "item": "C160", "action": "catalog", "from": "", "to": "S23 lock wait is bounded: LOCK_EX|LOCK_NB polled every 10 ms for up to 5 s, then an error naming the lock file", "note": "add"}
+{"when": "2026-10-15T13:44:59Z", "item": "C161", "action": "catalog", "from": "", "to": "S23 flock builds on the systems that have syscall.Flock; every other system runs with no lock and the C64 retry", "note": "add"}
+{"when": "2026-10-15T13:44:59Z", "item": "C162", "action": "catalog", "from": "", "to": "S23 Create and Renumber hold the lock; Renumber only when a collision exists; Create skips IDs named by dangling links", "note": "add"}
+{"when": "2026-10-15T13:45:22Z", "item": "S23", "action": "cite", "from": "", "to": "C159", "note": ""}
+{"when": "2026-10-15T13:45:22Z", "item": "S23", "action": "cite", "from": "", "to": "C160", "note": ""}
+{"when": "2026-10-15T13:45:22Z", "item": "S23", "action": "cite", "from": "", "to": "C161", "note": ""}
+{"when": "2026-10-15T13:45:22Z", "item": "S23", "action": "cite", "from": "", "to": "C162", "note": ""}
+{"when": "2026-10-15T13:45:48Z", "item": "C161", "action": "catalog", "from": "", "to": "body", "note": "edit"}
+{"when": "2026-10-15T13:51:39Z", "item": "S23", "action": "note", "from": "", "to": "", "note": "Verified: flock on <store>/.adj.lock held from scan to link ", "by": "Jon R"}
+{"when": "2026-10-15T13:51:39Z", "item": "S23", "action": "status", "from": "started", "to": "done", "note": "Locked ID allocation with flock in Create and Renumber; bounded wait, fallback, dangling-link IDs skipped (C159-C162).", "by": "Jon R"}
+{"when": "2026-10-15T13:51:58Z", "item": "S16", "action": "note", "from": "", "to": "", "note": "From S23 review/gate (lows): (1) store.go:269 and C162 say a", "by": "Jon R"}

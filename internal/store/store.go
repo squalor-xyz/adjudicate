@@ -12,6 +12,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/squalor-xyz/adjudicate/internal/model"
 )
@@ -41,14 +42,49 @@ const tmpPattern = ".adj-*.tmp"
 type Store struct {
 	dir string
 
-	// beforeLink, if set, is called by Create with the target path before the
-	// temporary file is written and linked into place. Tests use it to play a
-	// second writer.
+	// beforeLink, if set, is called by Create, and by Renumber for each file it
+	// writes, with the target path before the temporary file is written and
+	// linked into place; the store lock is held. Tests use it to play a second
+	// writer.
 	beforeLink func(path string)
 
 	// beforeRemove, if set, is called by Renumber after the new file is in
 	// place and before the old one is removed; an error stops the move.
 	beforeRemove func(oldPath, newPath string) error
+
+	// lockTimeout is how long lock waits for another writer; zero means
+	// defaultLockTimeout. Tests set it short.
+	lockTimeout time.Duration
+
+	// lockBusy, if set, is called each time an attempt to take the lock finds
+	// it held by someone else. Tests use it to know that a second writer is
+	// waiting.
+	lockBusy func()
+}
+
+// lockName is the lock file in the store directory (C114). The name starts
+// with "." so it is never taken for a record file.
+const lockName = ".adj.lock"
+
+// defaultLockTimeout is how long Create and Renumber wait for another writer
+// to finish its scan and link before they give up (C114).
+const defaultLockTimeout = 5 * time.Second
+
+// lock takes the store's ID-allocation lock, making the store directory first
+// if it is missing, and returns the function that releases it. It waits up to
+// lockTimeout for another writer; if the lock stays held, or cannot be taken,
+// the error names the lock file. The lock is advisory and held by the open
+// file, so it goes with the process if that dies. On a platform without file
+// locks it does nothing (lock_other.go).
+func (s *Store) lock() (unlock func(), err error) {
+	if err := os.MkdirAll(s.dir, 0o755); err != nil {
+		return nil, err
+	}
+	timeout := s.lockTimeout
+	if timeout <= 0 {
+		timeout = defaultLockTimeout
+	}
+	return acquire(filepath.Join(s.dir, lockName), timeout, s.lockBusy)
 }
 
 // Open opens the store of the repo at root: root must be an existing
@@ -234,24 +270,46 @@ const recordPerm fs.FileMode = 0o644
 //
 // Create never overwrites a file: if the name is taken it rescans and tries
 // the next ID, up to three times, then returns an error matching os.ErrExist
-// that names the file. There is no lock, so two creates running at once with
-// different titles can both succeed with the same ID; lint finds such
-// collisions and renumber fixes them (C26).
+// that names the file.
+//
+// The scan and the link happen under the store's lock (C114), which Renumber
+// takes too, so two writers on one checkout cannot take one ID. If the lock
+// stays held longer than the writer waits, Create returns an error that names
+// the lock file and writes nothing. Collisions between branches or clones are
+// out of the lock's reach; lint finds them and renumber fixes them (C26).
+//
+// The ID is never one that a supersedes or superseded_by link in the store
+// names without a file, which would make that link resolve to the new record
+// (C155). A file that cannot be read still holds its ID by name, but its links
+// are not known and are not avoided.
 func (s *Store) Create(r model.Record) (model.Record, error) {
+	// Check the record before the store directory or the lock file exists, so
+	// an invalid record writes nothing. The ID is only known under the lock;
+	// one that no link names stands in for it, and the check is made again
+	// with the real ID below.
+	probe := r
+	probe.ID = unlinkedID(r)
+	if err := probe.Validate(); err != nil {
+		return model.Record{}, err
+	}
+	unlock, err := s.lock()
+	if err != nil {
+		return model.Record{}, err
+	}
+	defer unlock()
+
 	var path string
 	for range createAttempts {
 		es, err := s.scan()
 		if err != nil {
 			return model.Record{}, err
 		}
-		r.ID = 1
+		highest := 0
 		if len(es) > 0 {
-			r.ID = es[len(es)-1].id + 1
+			highest = es[len(es)-1].id
 		}
+		r.ID = freeID(highest, 0, s.danglingIDs(es))
 		if err := r.Validate(); err != nil {
-			return model.Record{}, err
-		}
-		if err := os.MkdirAll(s.dir, 0o755); err != nil {
 			return model.Record{}, err
 		}
 		path = filepath.Join(s.dir, fmt.Sprintf("%04d-%s.md", r.ID, slug(r.Title)))
@@ -267,6 +325,38 @@ func (s *Store) Create(r model.Record) (model.Record, error) {
 		}
 	}
 	return model.Record{}, fmt.Errorf("create: gave up after %d attempts: %w", createAttempts, &fs.PathError{Op: "create", Path: path, Err: os.ErrExist})
+}
+
+// unlinkedID returns an ID that none of r's links names, so that r is not
+// taken for a record that links to itself.
+func unlinkedID(r model.Record) int {
+	id := 1
+	for _, to := range append(slices.Clone(r.Supersedes), r.SupersededBy) {
+		id = max(id, to+1)
+	}
+	return id
+}
+
+// danglingIDs returns the IDs that a supersedes or superseded_by link in the
+// record files es names although no file has them. A file that cannot be read
+// or parsed is skipped: it has no links Create can know.
+func (s *Store) danglingIDs(es []entry) map[int]bool {
+	files := make([]File, 0, len(es))
+	groups := map[int][]File{}
+	recs := map[string]model.Record{}
+	for _, e := range es {
+		f := File{ID: e.id, Name: e.name, Path: filepath.Join(s.dir, e.name)}
+		files = append(files, f)
+		groups[f.ID] = append(groups[f.ID], f)
+		data, err := os.ReadFile(f.Path)
+		if err != nil {
+			continue
+		}
+		if rec, err := model.Parse(f.Name, data); err == nil {
+			recs[f.Name] = rec
+		}
+	}
+	return linkedIDs(files, recs, groups)
 }
 
 // Update rewrites the record with r.ID at its existing path; the file is not

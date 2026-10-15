@@ -407,8 +407,9 @@ The checks:
   name's. A record whose `id` is missing or not positive gets a `fields`
   finding instead.
 - `duplicate-id` (error): more than one record file has this ID in its name,
-  as two branches or two concurrent `adj ask` calls can produce. Every file
-  with the ID gets the finding, and the message lists them all. `adj renumber`
+  as two branches or clones can produce (concurrent `adj ask` calls on one
+  checkout are serialised by a lock, where the system has file locks). Every
+  file with the ID gets the finding, and the message lists them all. `adj renumber`
   gives all but one of them a new ID. A link to such an ID is not dangling.
 - `renumber-leftover` (error): the file is the stale copy that an interrupted
   `adj renumber` left behind: another file has the same record under a new ID

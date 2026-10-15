@@ -19,7 +19,8 @@ func storeFixture(t *testing.T, name string) string {
 	return copyTree(t, filepath.Join("..", "store", "testdata", name))
 }
 
-// fileNames lists the entries of the store directory of root.
+// fileNames lists the entries of the store directory of root, without the lock
+// file (C114).
 func fileNames(t *testing.T, root string) []string {
 	t.Helper()
 	des, err := os.ReadDir(filepath.Join(root, "decisions"))
@@ -28,7 +29,9 @@ func fileNames(t *testing.T, root string) []string {
 	}
 	var out []string
 	for _, de := range des {
-		out = append(out, de.Name())
+		if de.Name() != ".adj.lock" {
+			out = append(out, de.Name())
+		}
 	}
 	return out
 }

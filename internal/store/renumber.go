@@ -109,6 +109,11 @@ func IsStaleCopy(stale, moved File, movedRec model.Record) bool {
 // the store names without a file, which would resolve that link to the moved
 // record (C155).
 //
+// With a collision, Renumber holds the store's lock (the one Create takes,
+// C114) from reading the files to the last move, so no Create can take an ID
+// that a move is about to use. If the lock stays held it returns an error that
+// names the lock file and changes nothing.
+//
 // With no collision nothing is read and nothing changes. Otherwise every record
 // file must be readable, since any of them may hold a link; a colliding record
 // must have a valid created date, which picks the keeper; no colliding file may
@@ -119,20 +124,18 @@ func IsStaleCopy(stale, moved File, movedRec model.Record) bool {
 // fails midway is undone if it can be; moves completed before it stay.
 func (s *Store) Renumber(date string, keepLinks bool) (RenumberResult, error) {
 	var res RenumberResult
-	files, err := s.Files()
+	if _, _, shared, err := s.collisions(); err != nil || len(shared) == 0 {
+		return res, err
+	}
+	unlock, err := s.lock()
 	if err != nil {
 		return res, err
 	}
-	groups := map[int][]File{}
-	var shared []int // colliding IDs, ascending
-	for _, f := range files {
-		groups[f.ID] = append(groups[f.ID], f)
-		if len(groups[f.ID]) == 2 {
-			shared = append(shared, f.ID)
-		}
-	}
-	if len(shared) == 0 {
-		return res, nil
+	defer unlock()
+	// The files are read again: another writer may have been in between.
+	files, groups, shared, err := s.collisions()
+	if err != nil || len(shared) == 0 {
+		return res, err
 	}
 
 	recs := map[string]model.Record{} // by file name
@@ -214,6 +217,23 @@ func (s *Store) Renumber(date string, keepLinks bool) (RenumberResult, error) {
 	return res, nil
 }
 
+// collisions lists the record files, groups them by ID and lists the IDs that
+// more than one file has, ascending.
+func (s *Store) collisions() (files []File, groups map[int][]File, shared []int, err error) {
+	files, err = s.Files()
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	groups = map[int][]File{}
+	for _, f := range files {
+		groups[f.ID] = append(groups[f.ID], f)
+		if len(groups[f.ID]) == 2 {
+			shared = append(shared, f.ID)
+		}
+	}
+	return files, groups, shared, nil
+}
+
 // collidingLinks lists the supersedes and superseded_by links, in any record
 // file, to an ID that more than one file has, in file order. A link listed
 // twice in one record is listed once.
@@ -273,7 +293,7 @@ func ambiguousLinks(links []Link) error {
 	return fmt.Errorf("%w: %s; renumber cannot tell which record each one means", ErrAmbiguousLinks, strings.Join(parts, "; "))
 }
 
-// moveFile writes rec, the record in file old, under the next free ID and
+// moveFile, called with the store lock held, writes rec, the record in file old, under the next free ID and
 // removes old. The new file is complete before the old one goes, so a crash
 // between the two leaves both and loses nothing (C148).
 func (s *Store) moveFile(old, kept File, rec model.Record, date string, avoid map[int]bool) (Move, error) {
@@ -302,6 +322,9 @@ func (s *Store) moveFile(old, kept File, rec model.Record, date string, avoid ma
 		}
 		newName = fmt.Sprintf("%04d-%s", newID, text)
 		newPath = filepath.Join(s.dir, newName)
+		if s.beforeLink != nil {
+			s.beforeLink(newPath)
+		}
 		err = s.writeNewMode(newPath, moved, perm)
 		if errors.Is(err, os.ErrExist) {
 			floor = newID + 1 // another writer, or a directory, has the name

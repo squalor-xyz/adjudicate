@@ -220,7 +220,7 @@ Every command needs records that satisfy the model; lint (S14) uses model.Parse 
 
 ### C62 Store writes go through a synced temp file: Update renames it over the record, Create links it into place and never replaces a file
 
-Answers C54 for the store. The record is written to a .adj-*.tmp file (names start with a dot, so never taken for records) and fsynced. Update renames it over the record; after a crash the file is the old record or the new one, but the directory is not fsynced, so which one is not guaranteed. Create links it into place, so it can never overwrite a file; the link also keeps a reader from seeing half a record. Accepted limit: os.Link fails on file systems without hard links and there is no fallback. Concurrent creates in one checkout with different titles can still both get the same ID because the scan is not locked; lint (S14) detects that and renumber (S15) fixes it (C26).
+Answers C54 for the store. The record is written to a .adj-*.tmp file (names start with a dot, so never taken for records) and fsynced. Update renames it over the record; after a crash the file is the old record or the new one, but the directory is not fsynced, so which one is not guaranteed. Create links it into place, so it can never overwrite a file; the link also keeps a reader from seeing half a record. Accepted limit: os.Link fails on file systems without hard links and there is no fallback. Concurrent creates in one checkout are serialised by the ID lock (C114, S23), which covers the scan and the link; collisions between branches or clones are not, and stay with lint (S14) and renumber (S15) (C26). Before S23 the scan was not locked, so two creates with different titles could both get the same ID.
 
 ### C63 Create ignores the ID in the record and adds no history entry; the store directory is made on first Create; a missing directory is an empty store; Update keeps the file path
 
@@ -228,7 +228,7 @@ The ID is the store's to allocate (C26); the ask command writes the history entr
 
 ### C64 Permissions and retry: new records are 0644, Update keeps the old file's permission bits, and Create retries up to three times when its file name is taken
 
-os.CreateTemp makes 0600 files, so the store sets the mode itself: 0644 for a new record (git-friendly, umask-independent) and the replaced file's bits on Update so a chosen mode survives. When the link finds the name taken (another writer after our scan), Create rescans and takes the next ID, then gives up with an error wrapping os.ErrExist that names the target file; no locking, which is the owner's design call.
+os.CreateTemp makes 0600 files, so the store sets the mode itself: 0644 for a new record (git-friendly, umask-independent) and the replaced file's bits on Update so a chosen mode survives. When the link finds the name taken (a writer that does not take the ID lock, a directory, or a platform with no lock), Create rescans and takes the next ID, then gives up with an error wrapping os.ErrExist that names the target file. The retry stays as a second line of defence behind the ID lock (C114, S23); before S23 there was no locking, which was the owner's design call.
 
 ### C65 Root selection: --root DIR on every command, plus cli.Env.Root and Env.Stop; explicit roots are never searched
 
@@ -606,6 +606,22 @@ S15 review of C148. The file is synced, but the directory entry may not be on di
 
 S15 review. The keeper is the record created first, compared as a date string (C146); a missing or malformed date would pick the keeper by accident of text order. The run stops with exit 1 naming the file and changes nothing; the owner fixes the date.
 
+### C159 S23 lock file is <store>/.adj.lock, a persistent dot-file; adj writes no gitignore for it
+
+Implementer decision (C32) for C114. The lock is taken on a file in the store directory (default decisions/.adj.lock), so it follows the store when the config moves it. The name starts with a dot, so the scan never takes it for a record (C59), and it is created on first use and never deleted: removing a lock file lets a waiting writer and a new one lock different files. It is empty. Tests and tools that list the store directory (names, tree, fileNames, TestRenumberLeavesNoTemporaryFiles) leave it out. Gitignore guidance: a team that does not want it in git adds <store>/.adj.lock (decisions/.adj.lock by default) to its .gitignore; committing the empty file is harmless. adj init and adj ask do not write or edit a .gitignore (out of the slice's scope), so the guidance is documented in AGENTS.md only.
+
+### C160 S23 lock wait is bounded: LOCK_EX|LOCK_NB polled every 10 ms for up to 5 s, then an error naming the lock file
+
+Implementer decision (C32) for C114. A blocking LOCK_EX would hang an agent's adj ask forever behind a hung process; a bounded wait fails instead. Create and Renumber try the flock without blocking, sleep 10 ms and try again until 5 s have passed, then return an error 'lock PATH: still held by another adj process after 5s; nothing was written' and write nothing (Create has not touched the directory beyond making it and the lock file; Renumber has read only). The flock goes with the file descriptor, so a process that dies releases it and no stale lock needs cleaning. Any other flock error (a file system without flock) is also an error naming the lock file. The timeout is a Store field in tests (lockTimeout), and lockBusy and beforeLink are the hooks tests use to hold one writer between scan and link; beforeLink now also runs before each Renumber link.
+
+### C161 S23 flock builds on the systems that have syscall.Flock; every other system runs with no lock and the C64 retry
+
+Implementer decision (C32) for C114. The slice proposed the unix build tag, but syscall.Flock does not exist on aix and solaris, which the unix tag includes (checked with go doc under GOOS=aix and GOOS=solaris; illumos has it), so the build would fail there. lock_unix.go is therefore tagged darwin || dragonfly || freebsd || illumos || linux || netbsd || openbsd, and lock_other.go (the negation) is the fallback: no lock, acquire returns a no-op. There Create keeps the bounded retry of C64, which catches two writers that choose the same file name, not two that choose the same ID with different names; lint and renumber find and fix those (C26). Windows is not locked (out of the slice). Cross-vetted with GOOS=windows, solaris and illumos to check it compiles; the fallback is not run by any test.
+
+### C162 S23 Create and Renumber hold the lock; Renumber only when a collision exists; Create skips IDs named by dangling links
+
+Implementer decision (C32) for C114, extending C155 and C154. Create validates the record with a stand-in ID before touching the store (an invalid record still writes nothing, not even the directory or the lock file), takes the lock, and holds it from the first scan to the link, retries included; it is validated again with the real ID. The ID is one past the highest, skipping any ID that a supersedes or superseded_by link names without a file (C155, as renumber does); a file that cannot be read keeps its ID by name but its links are unknown, so it is skipped for links rather than failing every ask. Renumber looks for collisions without the lock; with none it returns, taking no lock and making nothing. With one it takes the lock and reads the store again before it plans, and holds the lock to the last move (so a Create cannot take an ID a move is about to use). Update is not locked. Renumber that is refused after the lock leaves only the empty lock file.
+
 ### C39 LICENSE is a stub until the owner supplies the full GPL-3.0 text and copyright holder
 
 No GPL-3.0 text exists in the adjudicate repo and the workspace has no network, so the stub carries the SPDX line, the or-later notice and TODO(owner) markers.
@@ -668,7 +684,7 @@ PENDING OWNER CONFIRMATION - not decided. Source: Dependency/licensing notes (ma
 
 *Retired: Owner decided 2026-10-15: see decision C31 (GPL-3.0-or-later)..*
 
-24 items · — 3 · done 16 · later 5
+24 items · — 2 · done 17 · later 5
 
 | # | Slice | Title | Size | Effort | Trees | Findings | Status |
 |---|---|---|---|---|---|---|---|
@@ -679,25 +695,25 @@ PENDING OWNER CONFIRMATION - not decided. Source: Dependency/licensing notes (ma
 | 5 | [S20](slices/S20.md) | Later: slicer integration | M | 2 | later | PROJECT.md Feature tiers (Later); Non-goals (not replacing slicer); Risks (overlap with slicer catalog) | later |
 | 6 | [S21](slices/S21.md) | Later: optional owner-only decide enforcement | M | 2 | later | PROJECT.md Feature tiers (Later); Open decisions 5; Non-goals | later |
 | 7 | [S22](slices/S22.md) | Later: import from ADR folders | M | 2 | later | PROJECT.md Feature tiers (Later) | later |
-| 8 | [S23](slices/S23.md) | Lock ID allocation with flock | M | 2 | store | Owner decision 2026-10-15 (S05 review MEDIUM-2; C62, C64) | — |
 
 ---
 
 | # | Slice | Title | Size | Effort | Trees | Findings | Status |
 |---|---|---|---|---|---|---|---|
-| 9 | [S01](slices/S01.md) | Confirm open decisions | S | 1 | decisions | PROJECT.md Open decisions 1-7; Core concepts (kind); Dependency/licensing notes | done |
-| 10 | [S02](slices/S02.md) | Project scaffolding | S | 1 | scaffold | PROJECT.md Stack recommendation; Dependency/licensing notes | done |
-| 11 | [S03](slices/S03.md) | Record model and lifecycle transitions | M | 2 | model | PROJECT.md Core concepts / data model; Milestone 1 | done |
-| 12 | [S04](slices/S04.md) | Record file read and write | S | 1 | model | PROJECT.md Open decisions 3; Core concepts (Record) | done |
-| 13 | [S05](slices/S05.md) | Store, config and ID allocation | M | 2 | store | PROJECT.md Architecture sketch (ID allocation, Determinism); Open decisions 4, 6, 7 | done |
-| 14 | [S06](slices/S06.md) | Commands: init and ask | M | 2 | cli | PROJECT.md v1 feature tier; Milestone 2 | done |
-| 15 | [S07](slices/S07.md) | Commands: decide, reject, withdraw | S | 1 | cli | PROJECT.md v1 feature tier; Lifecycle; Milestone 2 | done |
-| 16 | [S08](slices/S08.md) | Commands: show and list with --json | S | 1 | cli | PROJECT.md v1 feature tier; Milestone 2; acceptance (--json) | done |
-| 17 | [S09](slices/S09.md) | Command: inbox | S | 1 | cli | PROJECT.md Goals 2; v1 feature tier; Milestone 3 | done |
-| 18 | [S10](slices/S10.md) | Command: check | S | 1 | cli | PROJECT.md Goals 6; v1 feature tier; Milestone 3 | done |
-| 19 | [S11](slices/S11.md) | Command: context | M | 2 | cli | PROJECT.md Goals 5; v1 feature tier; Risks (context bloat); Milestone 3 | done |
-| 20 | [S12](slices/S12.md) | Agent snippet: adj ai and JSON shape docs | S | 1 | docs | PROJECT.md v1 feature tier; Risks (adoption); acceptance (--json documented) | done |
-| 21 | [S13](slices/S13.md) | Command: supersede | S | 1 | cli | PROJECT.md Goals 4; Lifecycle; acceptance (supersede); Milestone 4 | done |
-| 22 | [S14](slices/S14.md) | Command: lint | M | 2 | cli | PROJECT.md Goals 8; acceptance (lint fixtures); Open decisions 5; Milestone 4 | done |
-| 23 | [S15](slices/S15.md) | ID collision detection and renumber | M | 2 | store | PROJECT.md Open decisions 4; Risks (merge conflicts on IDs); Milestone 4 | done |
+| 8 | [S01](slices/S01.md) | Confirm open decisions | S | 1 | decisions | PROJECT.md Open decisions 1-7; Core concepts (kind); Dependency/licensing notes | done |
+| 9 | [S02](slices/S02.md) | Project scaffolding | S | 1 | scaffold | PROJECT.md Stack recommendation; Dependency/licensing notes | done |
+| 10 | [S03](slices/S03.md) | Record model and lifecycle transitions | M | 2 | model | PROJECT.md Core concepts / data model; Milestone 1 | done |
+| 11 | [S04](slices/S04.md) | Record file read and write | S | 1 | model | PROJECT.md Open decisions 3; Core concepts (Record) | done |
+| 12 | [S05](slices/S05.md) | Store, config and ID allocation | M | 2 | store | PROJECT.md Architecture sketch (ID allocation, Determinism); Open decisions 4, 6, 7 | done |
+| 13 | [S06](slices/S06.md) | Commands: init and ask | M | 2 | cli | PROJECT.md v1 feature tier; Milestone 2 | done |
+| 14 | [S07](slices/S07.md) | Commands: decide, reject, withdraw | S | 1 | cli | PROJECT.md v1 feature tier; Lifecycle; Milestone 2 | done |
+| 15 | [S08](slices/S08.md) | Commands: show and list with --json | S | 1 | cli | PROJECT.md v1 feature tier; Milestone 2; acceptance (--json) | done |
+| 16 | [S09](slices/S09.md) | Command: inbox | S | 1 | cli | PROJECT.md Goals 2; v1 feature tier; Milestone 3 | done |
+| 17 | [S10](slices/S10.md) | Command: check | S | 1 | cli | PROJECT.md Goals 6; v1 feature tier; Milestone 3 | done |
+| 18 | [S11](slices/S11.md) | Command: context | M | 2 | cli | PROJECT.md Goals 5; v1 feature tier; Risks (context bloat); Milestone 3 | done |
+| 19 | [S12](slices/S12.md) | Agent snippet: adj ai and JSON shape docs | S | 1 | docs | PROJECT.md v1 feature tier; Risks (adoption); acceptance (--json documented) | done |
+| 20 | [S13](slices/S13.md) | Command: supersede | S | 1 | cli | PROJECT.md Goals 4; Lifecycle; acceptance (supersede); Milestone 4 | done |
+| 21 | [S14](slices/S14.md) | Command: lint | M | 2 | cli | PROJECT.md Goals 8; acceptance (lint fixtures); Open decisions 5; Milestone 4 | done |
+| 22 | [S15](slices/S15.md) | ID collision detection and renumber | M | 2 | store | PROJECT.md Open decisions 4; Risks (merge conflicts on IDs); Milestone 4 | done |
+| 23 | [S23](slices/S23.md) | Lock ID allocation with flock | M | 2 | store | Owner decision 2026-10-15 (S05 review MEDIUM-2; C62, C64) | done |
 | 24 | [S24](slices/S24.md) | Check text shows the rationale under closed records | S | 1 | render | Owner decision 2026-10-15 (S10 gate: closed records show only ID, status, title in text) | done |
