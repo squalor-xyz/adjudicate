@@ -596,7 +596,7 @@
       "id": "S12",
       "title": "Agent snippet: adj ai and JSON shape docs",
       "short_title": "Agent snippet: adj ai and JSON shape docs",
-      "status": "open",
+      "status": "done",
       "has_slice": true,
       "depends_on": [
         "S09",
@@ -647,6 +647,17 @@
           "verified_by": "",
           "verified_at": "",
           "stale_after": ""
+        },
+        {
+          "id": "bdf9922f-bcfa-4c3f-9eb8-a98bd7fb0638",
+          "kind": "",
+          "text": "**2026-10-15** — Verified outcome: adj ai snippet (1576 bytes) with drift tests (commands, whole-word flags, ADJ_ variables, size cap), check-result guidance, own-question withdraw (owner confirmed 2026-10-15), jsonshape tests pinning docs/json.md; all tests green, vet and gofmt clean; decisions C124-C130. S13 must add 'never run adj supersede' to ai.md.",
+          "created_at": "2026-10-15T11:47:55Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
         }
       ],
       "claim": null,
@@ -670,7 +681,7 @@
         "importance": 2,
         "urgency": 2,
         "effort": 1,
-        "attempts": 0
+        "attempts": 1
       }
     },
     {
@@ -683,7 +694,19 @@
         "S07",
         "S11"
       ],
-      "note_records": [],
+      "note_records": [
+        {
+          "id": "23741470-8a0d-4318-a6ed-29280419e8ea",
+          "kind": "",
+          "text": "**2026-10-15** — From S12 review/gate: when adding adj supersede, update internal/commands/ai.md: add adj supersede to the 'never run' list (it changes a decision; C27). The ai_test drift test validates names but will not force this; add a test that the snippet's never-run list names supersede.",
+          "created_at": "2026-10-15T11:48:06Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        }
+      ],
       "claim": null,
       "fields": {
         "size": "S",
@@ -1095,7 +1118,7 @@
   "goals": "adjudicate is a small CLI (`adj`) with a plain-text store that records project decisions as a loop: an agent asks, the owner decides in batches, and every later agent reads the decision. The goal and non-goal records below come from PROJECT.md; the owner's decisions on its open questions are catalog records C23-C33, and they override PROJECT.md where it differs (name, runtime, record format, license).",
   "non_goals": "",
   "catalog": {
-    "next_id": 124,
+    "next_id": 131,
     "id_prefix": "C",
     "id_width": 2,
     "records": [
@@ -2202,6 +2225,69 @@
         "kind": "decision",
         "title": "S11 handler files: cli/context.go, commands/context.go, render/context.go, plus query/filter_test.go and render/testdata/context.md, context.json",
         "body": "C82 wants one handler file per command. The slice Files list omits query (Filter.KeyPrefix and its test). The golden files in render/testdata are shared: render tests build the four records by hand and cli tests read the same files through a seeded store.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C124",
+        "kind": "decision",
+        "title": "S12 adj ai prints the embedded snippet internal/commands/ai.md and takes no flag or argument, not even --root",
+        "body": "It reads no repo, so --root would do nothing; a stray argument is a typo to report, as for inbox and context (C94, C97, C122). Markdown file via embed so the snippet reads as it will be pasted.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C125",
+        "kind": "decision",
+        "title": "S12 the snippet is tested against the CLI: every adj command it names has --help, every flag in an adj code span is a whole word in that command's usage, every ADJ_ variable is in a usage, at most 1800 bytes",
+        "body": "The snippet is pasted into other repos' AGENTS.md and cannot be checked there, so a rename or removed flag must fail here; the size cap keeps it token-cheap (Risks: adoption). Whole-word matching so --reason does not pass for --reasoning.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C126",
+        "kind": "decision",
+        "title": "S12 the snippet tells agents to check, read (context, show), ask and withdraw their own question, and never to run adj decide or adj reject",
+        "body": "C27 makes only the decide transition the owner's; withdraw is the asker's own close (its usage says so) and records no decision, so an agent can drop a stale question. adj supersede is not named: it does not exist until S13, and the drift test would fail on it.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C127",
+        "kind": "decision",
+        "title": "S12 json shape test: docs/json.md first json block under each command heading is the shape; show and list are pinned by a fixture that matches their examples byte for byte; record keys must be in the Keys of a record table, which must equal model.Record json tags plus body",
+        "body": "Record keys are omitted when empty (C87), so a key list taken from output would vary; a byte-exact fixture pins show and list, the table is pinned to the model by reflection, and context entries are checked against their own table. docsJSONExample and jsonBlockUnder moved to jsonshape_test.go so one convention reads the docs (S09 review, C104).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C128",
+        "kind": "decision",
+        "title": "S12 withdraw usage describes --by as who withdrew it; docs/json.md context rationale row says the first non-blank line",
+        "body": "S07 gate nit: who decided reads oddly for a withdrawal (reject keeps who decided); S11 gate nit: code, C117 and AGENTS.md already say first non-blank line, the docs table said first line.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C129",
+        "kind": "decision",
+        "title": "S12 snippet flag drift check: a flag in any code span is checked against the nearest preceding adj CMD span",
+        "body": "Review LOW: prose spans such as 'or pass --by NAME' were not covered; attributing by position keeps the prose natural without moving every flag into an adj span.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C130",
+        "kind": "decision",
+        "title": "S12 snippet limits: withdraw only your own question and with --by NAME (ADJ_DECIDED_BY is the owner's and not named); on closed read adj show ID and never re-ask a rejected question; on no repo tell the owner, do not run adj init",
+        "body": "Review MEDIUM/LOW: withdraw records decided_by, so an agent names itself with --by; a rejected question was decided against, so re-asking it wastes the owner's batch; init is the owner's setup step. Refines C126.",
         "status": "active",
         "reason": "",
         "successor": ""

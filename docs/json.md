@@ -301,7 +301,7 @@ record objects above, an entry has only these keys:
 | `title` | string | the title, one line |
 | `key` | string | the decision key; left out when the record has none |
 | `decision` | string | the answer: an option label, or free text; trailing line breaks are dropped |
-| `rationale` | string | the first line of the record's rationale, without surrounding space; left out when empty |
+| `rationale` | string | the first non-blank line of the record's rationale, without surrounding space; left out when empty |
 
 Use `adj show ID --json` for the whole record. When no record matches, the
 array is empty: `{"decisions": []}` (formatted as `{`, `  "decisions": []`,

@@ -3,7 +3,7 @@
 // Package cli dispatches the adj command line. It takes its I/O as
 // parameters so tests can run it in-process. Each command's handler is in
 // its own file: init.go, ask.go, decide.go, show.go, list.go, inbox.go,
-// check.go, context.go.
+// check.go, context.go, ai.go.
 package cli
 
 import (
@@ -41,6 +41,7 @@ Commands:
   adj inbox     list open questions, oldest first, with options
   adj check     find out whether a topic is decided, open or not found
   adj context   print the decided records as compact context for an agent
+  adj ai        print an AGENTS.md snippet that tells agents how to use adj
 
 Run adj <command> --help for a command's flags.
 `
@@ -110,6 +111,8 @@ func RunWith(env Env, args []string, stdin io.Reader, stdout, stderr io.Writer) 
 		return c.runCheck(args[1:])
 	case "context":
 		return c.runContext(args[1:])
+	case "ai":
+		return c.runAI(args[1:])
 	default:
 		fmt.Fprintf(stderr, "adj: unknown command %q\n", args[0])
 		fmt.Fprint(stderr, usage)

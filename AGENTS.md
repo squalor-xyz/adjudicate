@@ -24,13 +24,14 @@ library only.
   process entry; `RunWith(Env, ...)` takes the repo root, clock, environment
   and working directory as parameters for tests. Each command's handler is in
   its own file (`init.go`, `ask.go`, `decide.go`, which holds decide,
-  reject and withdraw, `show.go`, `list.go`, `inbox.go`, `check.go` and
-  `context.go`);
+  reject and withdraw, `show.go`, `list.go`, `inbox.go`, `check.go`,
+  `context.go` and `ai.go`);
   `cli.go` holds the dispatch and shared helpers.
 - `internal/commands`: what each command does to the store, apart from
   parsing, output and exit codes (`init.go`, `ask.go`, `decide.go`, `show.go`,
-  `list.go`, `inbox.go`, `check.go`, `context.go`). `errors.go` holds
-  `UsageError`, the error that exits 2.
+  `list.go`, `inbox.go`, `check.go`, `context.go`, `ai.go`). `ai.md` is the
+  agent snippet, embedded by `ai.go`. `errors.go` holds `UsageError`, the
+  error that exits 2.
 - `internal/model`: the record type, validation, status transitions and the
   record file format; its only file I/O is `ReadFile` and `WriteFile` in
   `file.go`.
@@ -40,7 +41,8 @@ library only.
   records (`filter.go`, `search.go`).
   `internal/render`: text and JSON output (`text.go`, `inbox.go`, `check.go`,
   `context.go`, `json.go`);
-  the JSON shapes are in `docs/json.md`.
+  the JSON shapes are in `docs/json.md`, and `internal/cli/jsonshape_test.go`
+  pins each read command's `--json` keys to it.
 - `scripts/env.sh`: Go cache and temp setup (see below).
 
 Exit codes for every command: 0 success; 1 a failed operation or failed check;
@@ -125,10 +127,18 @@ below).
   prints nothing in md and `{"decisions": []}` in JSON, exit 0. A blank `--tag`
   or `--key-prefix`, a `--format` other than `md` or `json`, or an argument,
   exits 2. A size budget flag is not part of v1 (owner scope call).
-- Every command takes `--root DIR`. Without it the root is found from the
-  working directory upwards (`store.FindRoot`); with it nothing is searched
-  for, and a command other than `init` needs `DIR/.adjudicate.json`. A missing
-  config says to run `adj init`.
+- `adj ai`: prints the AGENTS.md snippet in `internal/commands/ai.md` (check
+  before asking and what each result means, ask, read the decisions, withdraw
+  your own question, only the owner decides, exit codes, `ADJ_ASKED_BY`) and
+  exits 0. It reads no repo and takes no flag or argument
+  (so no `--root`); either exits 2. `internal/cli/ai_test.go` fails if the
+  snippet names a command, flag or variable that does not exist, or runs past
+  1800 bytes (C124, C125). When a command or flag an agent uses changes, change
+  the snippet.
+- Every command except `ai` takes `--root DIR`. Without it the root is found
+  from the working directory upwards (`store.FindRoot`); with it nothing is
+  searched for, and a command other than `init` needs `DIR/.adjudicate.json`.
+  A missing config says to run `adj init`.
 
 ## Store and config
 
@@ -174,7 +184,7 @@ Never run `go env -w`; it writes outside the repo. Do not add a Makefile.
   of root discovery bounds the walk with `cli.Env.Stop`. No test calls
   `os.Chdir`.
 - Only the owner makes the decide transition (`adj decide`, C27). Agents ask,
-  check and read.
+  check and read; an agent may withdraw its own question (`adj withdraw`).
 - Work is tracked in slicer. Read and change tracking state only through the
   `slicer` CLI; never open, search or edit `.slicer/`.
 - Standing rule (C32): an interface detail that PROJECT.md and the owner's

@@ -43,7 +43,7 @@ Close an open question because the asker no longer needs an answer: it becomes
 withdrawn. Prints its ID.
 
   --why TEXT     the reason (required)
-  --by NAME      who decided; default: $ADJ_DECIDED_BY, else left blank
+  --by NAME      who withdrew it; default: $ADJ_DECIDED_BY, else left blank
   --root DIR     the repo root; default: found from the working directory
                  upwards (the nearest .adjudicate.json)
 `

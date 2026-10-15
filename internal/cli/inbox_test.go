@@ -4,7 +4,6 @@ package cli
 
 import (
 	"encoding/json"
-	"fmt"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -203,56 +202,6 @@ func TestInboxOutputIsStableAndReadOnly(t *testing.T) {
 	}
 	if after := snapshot(t, root); !reflect.DeepEqual(before, after) {
 		t.Error("inbox changed the repo")
-	}
-}
-
-// docsJSONExample returns the first ```json block under the heading in
-// docs/json.md.
-func docsJSONExample(t *testing.T, heading string) string {
-	t.Helper()
-	data, err := os.ReadFile(filepath.Join("..", "..", "docs", "json.md"))
-	if err != nil {
-		t.Fatal(err)
-	}
-	block, err := jsonBlockUnder(string(data), heading)
-	if err != nil {
-		t.Fatal(err)
-	}
-	return block
-}
-
-// jsonBlockUnder returns the first ```json block of the section that starts at
-// heading and ends at the next "## " heading; a section with no block is an
-// error, not the next section's block.
-func jsonBlockUnder(doc, heading string) (string, error) {
-	_, rest, ok := strings.Cut(doc, "\n"+heading+"\n")
-	if !ok {
-		return "", fmt.Errorf("docs/json.md has no %q section", heading)
-	}
-	if next := strings.Index(rest, "\n## "); next >= 0 {
-		rest = rest[:next]
-	}
-	_, rest, ok = strings.Cut(rest, "```json\n")
-	if !ok {
-		return "", fmt.Errorf("section %q has no json block", heading)
-	}
-	block, _, ok := strings.Cut(rest, "```")
-	if !ok {
-		return "", fmt.Errorf("section %q: json block is not closed", heading)
-	}
-	return block, nil
-}
-
-func TestJSONBlockUnderStopsAtTheNextHeading(t *testing.T) {
-	doc := "# T\n\n## A\n\ntext only\n\n## B\n\n```json\n{\"b\": 1}\n```\n"
-	if _, err := jsonBlockUnder(doc, "## A"); err == nil || !strings.Contains(err.Error(), "no json block") {
-		t.Errorf("section A: err = %v, want a no json block error", err)
-	}
-	if got, err := jsonBlockUnder(doc, "## B"); err != nil || got != "{\"b\": 1}\n" {
-		t.Errorf("section B: block %q, err %v; want the block", got, err)
-	}
-	if _, err := jsonBlockUnder(doc, "## C"); err == nil || !strings.Contains(err.Error(), "no \"## C\" section") {
-		t.Errorf("section C: err = %v, want a no section error", err)
 	}
 }
 
