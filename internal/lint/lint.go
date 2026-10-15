@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 // Package lint checks a store for integrity problems: records that break the
-// model's rules, links to records that do not exist, supersede cycles, two
-// decided records on one key, and a decision with no decided_by (C08, C27).
+// model's rules, two files with one ID, links to records that do not exist,
+// supersede cycles, two decided records on one key, and a decision with no
+// decided_by (C08, C26, C27).
 // It reads the record files itself with model.Parse, so a broken or invalid
 // file becomes a finding where store.List would fail (C61).
 package lint
@@ -51,13 +52,20 @@ const (
 	// CheckIDMismatch: the record's id is not the ID in its file name, which
 	// store.List refuses (C59).
 	CheckIDMismatch = "id-mismatch"
+	// CheckDuplicateID: more than one record file has the ID in its name
+	// (two branches or two concurrent asks took the same number, C26).
+	CheckDuplicateID = "duplicate-id"
+	// CheckRenumberLeftover: the file is the stale copy that an interrupted
+	// adj renumber left behind (C148): another file has the same record,
+	// renumbered from this file's ID.
+	CheckRenumberLeftover = "renumber-leftover"
 	// CheckDecidedBy: a decided record has no decided_by (a warning, C27).
 	CheckDecidedBy = "decided-by"
 )
 
 // Checks lists every check name.
 var Checks = []string{
-	CheckParse, CheckFields, CheckIDMismatch, CheckDanglingLink,
+	CheckParse, CheckFields, CheckIDMismatch, CheckDuplicateID, CheckRenumberLeftover, CheckDanglingLink,
 	CheckSupersedeState, CheckSupersedeCycle, CheckKeyConflict, CheckDecidedBy,
 }
 
@@ -87,6 +95,7 @@ func Counts(fs []Finding) (errs, warns int) {
 // parsed is a record file that decoded.
 type parsed struct {
 	file string // slash-separated path relative to the root
+	name string // the file name
 	id   int    // the ID in the file name
 	rec  model.Record
 }
@@ -98,8 +107,8 @@ type parsed struct {
 //
 // A record's identity is the ID in its file name, as for the store (C59); a
 // link is dangling only if no file has the ID, so a link to a file that does
-// not parse is not. Two files with one ID are the collision check's business
-// (S15), not this one's.
+// not parse is not. Two files with one ID are a duplicate-id finding on each
+// of them (adj renumber fixes it, C26); a link to such an ID is not dangling.
 func Run(st *store.Store, root string) ([]Finding, error) {
 	files, err := st.Files()
 	if err != nil {
@@ -111,10 +120,17 @@ func Run(st *store.Store, root string) ([]Finding, error) {
 	}
 
 	exists := map[int]bool{}
+	sharing := map[int][]string{} // ID -> the file names that have it, in name order
+	for _, f := range files {
+		sharing[f.ID] = append(sharing[f.ID], f.Name)
+	}
 	var recs []parsed
 	for _, f := range files {
 		exists[f.ID] = true
 		rel := relPath(root, f.Path)
+		if names := sharing[f.ID]; len(names) > 1 {
+			add(f.ID, rel, SeverityError, CheckDuplicateID, "more than one file has id %d: %s", f.ID, strings.Join(names, ", "))
+		}
 		data, err := os.ReadFile(f.Path)
 		if err != nil {
 			add(f.ID, rel, SeverityError, CheckParse, "cannot read the file: %s", reason(err))
@@ -127,7 +143,7 @@ func Run(st *store.Store, root string) ([]Finding, error) {
 			add(f.ID, rel, SeverityError, CheckParse, "%s", msg)
 			continue
 		}
-		recs = append(recs, parsed{file: rel, id: f.ID, rec: rec})
+		recs = append(recs, parsed{file: rel, name: f.Name, id: f.ID, rec: rec})
 	}
 
 	for _, p := range recs {
@@ -147,7 +163,14 @@ func Run(st *store.Store, root string) ([]Finding, error) {
 		// itself) are fields findings, not dangling ones. Validate compares
 		// with the record's id, so a link to the file's own ID is reported
 		// here when the two differ.
+		// A link listed twice is reported once.
+		reported := map[string]bool{}
 		dangling := func(name string, link int) {
+			key := fmt.Sprintf("%s %d", name, link)
+			if reported[key] {
+				return
+			}
+			reported[key] = true
 			switch {
 			case link <= 0 || link == r.ID:
 			case link == p.id:
@@ -165,6 +188,7 @@ func Run(st *store.Store, root string) ([]Finding, error) {
 		}
 	}
 
+	out = append(out, leftovers(recs)...)
 	out = append(out, cycles(recs, exists)...)
 	out = append(out, keyConflicts(recs)...)
 
@@ -210,6 +234,24 @@ func problems(err error) []string {
 	out := make([]string, 0, len(errs))
 	for _, e := range errs {
 		out = append(out, strings.TrimPrefix(e.Error(), model.ErrInvalid.Error()+": "))
+	}
+	return out
+}
+
+// leftovers reports each file that an interrupted renumber left behind: its
+// record also exists under another ID, in a file with the same name text whose
+// last history entry says it was renumbered from this file's ID (C148).
+func leftovers(recs []parsed) []Finding {
+	var out []Finding
+	for _, p := range recs {
+		for _, q := range recs {
+			if store.IsStaleCopy(store.File{ID: p.id, Name: p.name}, store.File{ID: q.id, Name: q.name}, q.rec) {
+				out = append(out, Finding{
+					ID: p.id, File: p.file, Severity: SeverityError, Check: CheckRenumberLeftover,
+					Message: fmt.Sprintf("%s has this record renumbered from id %d: this file is a stale copy left by an interrupted renumber; delete it", q.name, p.id),
+				})
+			}
+		}
 	}
 	return out
 }

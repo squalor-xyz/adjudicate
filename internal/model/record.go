@@ -47,6 +47,7 @@ const (
 	EventReject    Event = "reject"
 	EventWithdraw  Event = "withdraw"
 	EventSupersede Event = "supersede"
+	EventRenumber  Event = "renumber" // a collision on the ID was resolved (C26)
 )
 
 // Option is one answer a question offers.
@@ -62,10 +63,10 @@ type Recommendation struct {
 	Reasoning string `json:"reasoning,omitempty"`
 }
 
-// Valid reports whether e is one of the five events.
+// Valid reports whether e is one of the six events.
 func (e Event) Valid() bool {
 	switch e {
-	case EventAsk, EventDecide, EventReject, EventWithdraw, EventSupersede:
+	case EventAsk, EventDecide, EventReject, EventWithdraw, EventSupersede, EventRenumber:
 		return true
 	}
 	return false

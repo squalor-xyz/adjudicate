@@ -20,6 +20,8 @@ and the check that found it; the checks are:
   fields           a record breaks the model's rules (a required field is
                    missing, a date is bad, the status is unknown)
   id-mismatch      the record's id is not the ID in its file name
+  duplicate-id     more than one file has this ID (adj renumber fixes it)
+  renumber-leftover  the stale old file of an interrupted adj renumber: delete it
   dangling-link    supersedes or superseded_by names an ID with no record file
   supersede-state  superseded_by is set on a record that is not superseded
   supersede-cycle  the record is in a loop of supersede links

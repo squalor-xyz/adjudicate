@@ -406,8 +406,17 @@ The checks:
   which the other commands refuse to load. The `id` of a finding is the file
   name's. A record whose `id` is missing or not positive gets a `fields`
   finding instead.
+- `duplicate-id` (error): more than one record file has this ID in its name,
+  as two branches or two concurrent `adj ask` calls can produce. Every file
+  with the ID gets the finding, and the message lists them all. `adj renumber`
+  gives all but one of them a new ID. A link to such an ID is not dangling.
+- `renumber-leftover` (error): the file is the stale copy that an interrupted
+  `adj renumber` left behind: another file has the same record under a new ID
+  (same file name text, last history entry `renumber` with the note `from N`
+  for this file's ID). Delete the stale file. It is reported whether or not the
+  file still shares its ID with another.
 - `dangling-link` (error): `supersedes` or `superseded_by` names an ID that no
-  record file has.
+  record file has. A link listed twice in one record is reported once.
 - `supersede-state` (error): `superseded_by` is set on a record whose status is
   not `superseded`.
 - `supersede-cycle` (error): the record is in a loop of supersede links; every
@@ -446,7 +455,10 @@ when it has a value. `id`, `title`, `status` and `created` are always present.
 | `history` | array of objects | the history, oldest first; each entry has `date`, `event`, and `note` when set |
 | `body` | string | the Markdown after the record's frontmatter, kept verbatim; present only when the record has a body |
 
-A history entry's `event` is one of `ask`, `decide`, `reject`, `withdraw` or
-`supersede`. `adj supersede` writes one `supersede` entry on each of the two
-records: the note is `by N` on the record that is replaced and `supersedes N` on
-the one that replaces it. Dates are `YYYY-MM-DD` strings, not timestamps.
+A history entry's `event` is one of `ask`, `decide`, `reject`, `withdraw`,
+`supersede` or `renumber`. `adj supersede` writes one `supersede` entry on each
+of the two records: the note is `by N` on the record that is replaced and
+`supersedes N` on the one that replaces it. `adj renumber` writes one `renumber`
+entry on each record it gives a new ID; the note is `from N`, the old ID. Notes
+that name an ID are history: nothing rewrites them. Dates are `YYYY-MM-DD`
+strings, not timestamps.

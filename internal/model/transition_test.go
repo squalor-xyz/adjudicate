@@ -287,3 +287,65 @@ func TestLinkSupersedesNeedsADecidedRecordAndRealInput(t *testing.T) {
 		})
 	}
 }
+
+// Renumber changes the ID of a record in any status and adds one history entry
+// that names the old ID (C146); nothing else about the record changes.
+func TestRenumberSetsTheIDAndAppendsOneHistoryEntry(t *testing.T) {
+	for _, status := range allStatuses {
+		t.Run(string(status), func(t *testing.T) {
+			r := validRecord(status)
+			r.ID = 3
+			r.History = []HistoryEntry{{Date: "2026-10-01", Event: EventAsk}}
+			want := r
+			want.ID = 8
+			want.History = []HistoryEntry{
+				{Date: "2026-10-01", Event: EventAsk},
+				{Date: testDate, Event: EventRenumber, Note: "from 3"},
+			}
+			if err := Renumber(&r, 8, testDate); err != nil {
+				t.Fatal(err)
+			}
+			if !reflect.DeepEqual(r, want) {
+				t.Errorf("record after Renumber\n got %+v\nwant %+v", r, want)
+			}
+		})
+	}
+}
+
+func TestRenumberRefusesBadInputAndLeavesTheRecordAlone(t *testing.T) {
+	tests := []struct {
+		name  string
+		newID int
+		date  string
+		tweak func(*Record)
+	}{
+		{"zero", 0, testDate, nil},
+		{"negative", -4, testDate, nil},
+		{"same ID", 3, testDate, nil},
+		{"bad date", 8, "yesterday", nil},
+		{"a link to the new ID", 8, testDate, func(r *Record) { r.Supersedes = []int{8} }},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r := validRecord(StatusOpen)
+			r.ID = 3
+			r.History = make([]HistoryEntry, 1, 4)
+			r.History[0] = HistoryEntry{Date: "2026-10-01", Event: EventAsk}
+			if tt.tweak != nil {
+				tt.tweak(&r)
+			}
+			before := r
+			before.History = append([]HistoryEntry(nil), r.History...)
+			err := Renumber(&r, tt.newID, tt.date)
+			if !errors.Is(err, ErrInvalid) {
+				t.Errorf("err = %v, want ErrInvalid", err)
+			}
+			if !reflect.DeepEqual(r, before) {
+				t.Errorf("record changed by a refused Renumber\n got %+v\nwant %+v", r, before)
+			}
+			if got := r.History[:2][1]; got != (HistoryEntry{}) {
+				t.Errorf("Renumber wrote into the caller's history backing array: %+v", got)
+			}
+		})
+	}
+}

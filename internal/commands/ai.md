@@ -9,4 +9,4 @@ This repo logs decisions with `adj`. Agents ask, check and read; only the owner 
 - The owner answers from `adj inbox` (open questions, oldest first). `adj list --status open` lists them too.
 - JSON for scripts: `adj show ID --json`, `adj list --json`, `adj inbox --json`, `adj check "QUERY" --json`, `adj context --format json`.
 - Exit codes: 0 success, 1 failed (no repo, unknown ID, record not open), 2 usage error.
-- If a command reports no repo, tell the owner; do not run `adj init`.
+- If a command reports no repo, tell the owner; do not run `adj init`. Likewise for a duplicate ID ("more than one record has this id"): tell the owner; do not run `adj renumber`.

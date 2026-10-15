@@ -26,18 +26,19 @@ library only.
   and working directory as parameters for tests. Each command's handler is in
   its own file (`init.go`, `ask.go`, `decide.go`, which holds decide,
   reject and withdraw, `supersede.go`, `show.go`, `list.go`, `inbox.go`,
-  `check.go`, `context.go`, `lint.go` and `ai.go`);
+  `check.go`, `context.go`, `lint.go`, `renumber.go` and `ai.go`);
   `cli.go` holds the dispatch and shared helpers.
 - `internal/commands`: what each command does to the store, apart from
   parsing, output and exit codes (`init.go`, `ask.go`, `decide.go`,
   `supersede.go`, `show.go`, `list.go`, `inbox.go`, `check.go`, `context.go`,
-  `lint.go`, `ai.go`). `ai.md` is the agent snippet, embedded by `ai.go`.
+  `lint.go`, `renumber.go`, `ai.go`). `ai.md` is the agent snippet, embedded
+  by `ai.go`.
   `errors.go` holds `UsageError`, the error that exits 2.
 - `internal/model`: the record type, validation, status transitions and the
   record file format; its only file I/O is `ReadFile` and `WriteFile` in
   `file.go`.
-- `internal/store`: one repo's record directory (`store.go`) and its config
-  (`config.go`); see "Store and config" below.
+- `internal/store`: one repo's record directory (`store.go`), its config
+  (`config.go`) and `Renumber` (`renumber.go`); see "Store and config" below.
 - `internal/query`: record filters and the `check` search, pure functions over
   records (`filter.go`, `search.go`).
 - `internal/lint`: `adj lint`'s checks (`lint.go`): reads each record file with
@@ -156,8 +157,11 @@ below). `adj lint` exits 1 when it finds an error (see its entry).
   (relative to the root) and a check: `parse` (cannot be read or decoded),
   `fields` (one per `model.Validate` rule broken, and a link to the file's own
   ID), `id-mismatch` (the record's `id` is not the ID in its file name),
-  `dangling-link` (`supersedes` or `superseded_by` names an ID no file has),
-  `supersede-state` (`superseded_by` on a record that is not superseded),
+  `duplicate-id` (more than one file has the ID; each of them gets the finding,
+  C26, C152), `renumber-leftover` (the stale old file of an interrupted `adj
+  renumber`, C156), `dangling-link` (`supersedes` or `superseded_by` names an
+  ID no file has; a link listed twice is reported once), `supersede-state`
+  (`superseded_by` on a record that is not superseded),
   `supersede-cycle` (a loop of supersede links; one finding per record in it,
   naming only records that have a file), `key-conflict` (another `decided`
   record has the same key, trimmed and case-sensitive) and `decided-by` (a
@@ -166,17 +170,44 @@ below). `adj lint` exits 1 when it finds an error (see its entry).
   by ID, check and file, then `N errors, M warnings`; a clean store prints
   nothing (C141). `--json` prints `{"errors", "warnings", "findings"}`
   (`docs/json.md`, C142). Exit 1 if there is an error or lint could not run,
-  else 0: warnings alone exit 0 (C140). An argument exits 2. Two files with one
-  ID are not linted yet (S15, C144). The agent snippet does not name it (C145).
+  else 0: warnings alone exit 0 (C140). An argument exits 2. The agent snippet
+  does not name it (C145).
+- `adj renumber [--keep-links] [--root DIR]` (C150): resolves record files that
+  share an ID (`adj lint` reports them as `duplicate-id`; concurrent asks and
+  merged branches make them, C26). Of the files with one ID the record `created`
+  first keeps it, then the file name breaks a tie (C146). Each other record is
+  written to a new file `<next free ID>-<same name text>.md` (next free ID: one
+  past the highest in the store, colliding IDs taken in ascending order), with
+  its permission bits and one `renumber` history entry (note `from N`), and the
+  old file is removed after the new one is complete (C148). Prints one line per
+  move, `OLD-FILE -> NEW-FILE (id N -> M)`; no collision prints nothing and
+  changes nothing, exit 0. Links to a colliding ID cannot be told apart, so they
+  and the history notes are never rewritten (C147, C149): if any record links to
+  one, renumber lists the links, exits 1 and changes nothing, until
+  `--keep-links` accepts that they stay with the record that keeps the ID (they
+  are listed on stderr). Every record file must be readable (it may hold a
+  link); a colliding record needs a valid `created` date (C158); a record that
+  moves must be valid with the ID it will get (C151); these are checked before
+  the first write. A new ID is never one that a link names without a file
+  (C155). The directory is synced before the old file goes (C157). A move that
+  cannot remove the old file takes the new one away again; if that fails too the
+  error names both files. After a crash between the two, the record is in both
+  files and the old one is a stale copy: `adj lint` reports it as
+  `renumber-leftover`, and `adj renumber` refuses (exit 1, nothing changed,
+  `store.ErrStaleCopy`) until the owner deletes the old file (C156); nothing is
+  deleted automatically. An argument or unknown flag exits 2. Owner-only: the
+  agent snippet tells agents to report a duplicate ID and not to run it (C153).
+  A name taken by a directory or another writer is skipped for the next ID
+  (C154).
 - `adj ai`: prints the AGENTS.md snippet in `internal/commands/ai.md` (check
   before asking and what each result means, ask, read the decisions, withdraw
   your own question, only the owner decides and never run decide, reject or
-  supersede, exit codes, `ADJ_ASKED_BY`) and
-  exits 0. It reads no repo and takes no flag or argument
-  (so no `--root`); either exits 2. `internal/cli/ai_test.go` fails if the
-  snippet names a command, flag or variable that does not exist, or runs past
-  1800 bytes (C124, C125). When a command or flag an agent uses changes, change
-  the snippet.
+  supersede, tell the owner about a duplicate ID or a missing repo instead of
+  running renumber or init, exit codes, `ADJ_ASKED_BY`) and exits 0. It reads no
+  repo and takes no flag or argument (so no `--root`); either exits 2.
+  `internal/cli/ai_test.go` fails if the snippet names a command, flag or
+  variable that does not exist, or runs past 1800 bytes (C124, C125). When a
+  command or flag an agent uses changes, change the snippet.
 - Every command except `ai` takes `--root DIR`. Without it the root is found
   from the working directory upwards (`store.FindRoot`); with it nothing is
   searched for, and a command other than `init` needs `DIR/.adjudicate.json`.
@@ -196,7 +227,9 @@ below). `adj lint` exits 1 when it finds an error (see its entry).
   that is malformed or invalid makes `List` fail (C61). `store.Files` lists
   those files (ID, name, path) without reading them. The next ID is one past
   the highest ID in the file names. `Update` keeps the file's path and
-  permission bits; new files are 0644.
+  permission bits; new files are 0644. Two files with one ID make `Get` and
+  `Update` fail (`ErrDuplicateID`, naming both files); `Store.Renumber` fixes
+  them (see `adj renumber`).
 
 ## Setup and checks
 

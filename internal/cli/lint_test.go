@@ -81,6 +81,16 @@ decisions/0002-second.md: record 2: error: supersede-cycle: supersede cycle amon
 			"decisions/0003-self-link.md: record 3: error: fields: superseded_by: 3 is not another record's id",
 			"5 errors, 0 warnings",
 		}},
+		// Two files with one ID: lint exits 1 and names both files (S15).
+		{fixture: "duplicate-id", code: 1, lines: []string{
+			"decisions/0002-first.md: record 2: error: duplicate-id: more than one file has id 2: 0002-first.md, 0002-second.md",
+			"decisions/0002-second.md: record 2: error: duplicate-id: more than one file has id 2: 0002-first.md, 0002-second.md",
+			"5 errors, 0 warnings",
+		}},
+		{fixture: "duplicate-supersedes", code: 1, lines: []string{
+			"decisions/0001-first.md: record 1: error: dangling-link: supersedes 7 names no record",
+			"1 error, 0 warnings",
+		}},
 		{fixture: "cycle-missing", code: 1, lines: []string{
 			"decisions/0001-first.md: record 1: error: supersede-cycle: supersede cycle among records 1, 2",
 			"6 errors, 0 warnings",

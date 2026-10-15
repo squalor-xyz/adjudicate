@@ -108,6 +108,30 @@ var fixtureCases = []struct {
 		finding(4, "0004-self-by-id.md", errSev, lint.CheckFields, "superseded_by: 9 is not another record's id"),
 		finding(4, "0004-self-by-id.md", errSev, lint.CheckIDMismatch, "id 9 does not match the ID 4 in the file name"),
 	}},
+	// Two files with one ID (C26): every file gets the finding, and the
+	// message names all of them. A link to the shared ID is not dangling.
+	{"duplicate-id", []lint.Finding{
+		finding(2, "0002-first.md", errSev, lint.CheckDuplicateID, "more than one file has id 2: 0002-first.md, 0002-second.md"),
+		finding(2, "0002-second.md", errSev, lint.CheckDuplicateID, "more than one file has id 2: 0002-first.md, 0002-second.md"),
+		finding(4, "0004-a.md", errSev, lint.CheckDuplicateID, "more than one file has id 4: 0004-a.md, 0004-b.md, 0004-c.md"),
+		finding(4, "0004-b.md", errSev, lint.CheckDuplicateID, "more than one file has id 4: 0004-a.md, 0004-b.md, 0004-c.md"),
+		finding(4, "0004-c.md", errSev, lint.CheckDuplicateID, "more than one file has id 4: 0004-a.md, 0004-b.md, 0004-c.md"),
+	}},
+	// A crash between writing the new file and removing the old one leaves
+	// the old file behind (C148): the record exists twice, so the stale copy is
+	// an error of its own, wherever it still collides or not.
+	{"renumber-leftover", []lint.Finding{
+		finding(2, "0002-alpha.md", errSev, lint.CheckDuplicateID, "more than one file has id 2: 0002-alpha.md, 0002-beta.md"),
+		finding(2, "0002-beta.md", errSev, lint.CheckDuplicateID, "more than one file has id 2: 0002-alpha.md, 0002-beta.md"),
+		finding(2, "0002-beta.md", errSev, lint.CheckRenumberLeftover, "0004-beta.md has this record renumbered from id 2: this file is a stale copy left by an interrupted renumber; delete it"),
+	}},
+	{"renumber-leftover-alone", []lint.Finding{
+		finding(2, "0002-beta.md", errSev, lint.CheckRenumberLeftover, "0004-beta.md has this record renumbered from id 2: this file is a stale copy left by an interrupted renumber; delete it"),
+	}},
+	// A link listed twice is one finding, not two identical ones.
+	{"duplicate-supersedes", []lint.Finding{
+		finding(1, "0001-first.md", errSev, lint.CheckDanglingLink, "supersedes 7 names no record"),
+	}},
 	// A cycle that runs through an ID with no file names only the records
 	// that exist; dangling-link reports the missing one.
 	{"cycle-missing", []lint.Finding{

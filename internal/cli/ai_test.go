@@ -47,6 +47,13 @@ func TestAISnippetNamesTheReadCommandsAndSaysOnlyTheOwnerDecides(t *testing.T) {
 			t.Errorf("snippet does not say %q:\n%s", want, snippet)
 		}
 	}
+	// Renumber rewrites record files, so it is the owner's (S15): an agent that
+	// meets a duplicate ID tells the owner instead.
+	for _, want := range []string{"duplicate ID", "tell the owner; do not run `adj renumber`"} {
+		if !strings.Contains(snippet, want) {
+			t.Errorf("snippet does not say %q:\n%s", want, snippet)
+		}
+	}
 	// The exit codes and the environment variable that attributes a question.
 	for _, want := range []string{"ADJ_ASKED_BY", "Exit codes: 0 success, 1 ", "2 usage error"} {
 		if !strings.Contains(snippet, want) {

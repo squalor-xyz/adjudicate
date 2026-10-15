@@ -45,6 +45,10 @@ type Store struct {
 	// temporary file is written and linked into place. Tests use it to play a
 	// second writer.
 	beforeLink func(path string)
+
+	// beforeRemove, if set, is called by Renumber after the new file is in
+	// place and before the old one is removed; an error stops the move.
+	beforeRemove func(oldPath, newPath string) error
 }
 
 // Open opens the store of the repo at root: root must be an existing
@@ -283,7 +287,12 @@ func (s *Store) Update(r model.Record) error {
 // and linked into place, so a reader never sees half a record and a name
 // is never taken twice. A file system without hard links is not supported.
 func (s *Store) writeNew(path string, r model.Record) error {
-	tmp, err := s.writeTemp(r, recordPerm)
+	return s.writeNewMode(path, r, recordPerm)
+}
+
+// writeNewMode is writeNew with the permission bits perm.
+func (s *Store) writeNewMode(path string, r model.Record, perm fs.FileMode) error {
+	tmp, err := s.writeTemp(r, perm)
 	if err != nil {
 		return err
 	}

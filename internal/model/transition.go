@@ -76,3 +76,24 @@ func LinkSupersedes(r *Record, old int, date string) error {
 		}
 	})
 }
+
+// Renumber gives r a new ID and appends one renumber history entry with the
+// note "from <old ID>", dated date (YYYY-MM-DD). It works on a record in any
+// status and changes nothing else, links included: renumbering resolves two
+// files with one ID (C26), and a link to the old ID cannot be told apart from
+// a link to the other record (C147). newID must be positive and differ from
+// the current ID, and date must be a YYYY-MM-DD date. The result is validated on a copy
+// (the history entry's date included), so on error r is untouched (C45).
+func Renumber(r *Record, newID int, date string) error {
+	if newID == r.ID {
+		return fmt.Errorf("%w: id: record %d is already %d", ErrInvalid, r.ID, newID)
+	}
+	next := *r
+	next.ID = newID
+	next.History = append(slices.Clip(r.History), HistoryEntry{Date: date, Event: EventRenumber, Note: fmt.Sprintf("from %d", r.ID)})
+	if err := next.Validate(); err != nil {
+		return fmt.Errorf("cannot renumber record %d: %w", r.ID, err)
+	}
+	*r = next
+	return nil
+}

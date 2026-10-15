@@ -838,7 +838,7 @@
       "id": "S15",
       "title": "ID collision detection and renumber",
       "short_title": "ID collision detection and renumber",
-      "status": "open",
+      "status": "done",
       "has_slice": true,
       "depends_on": [
         "S14",
@@ -877,6 +877,17 @@
           "verified_by": "",
           "verified_at": "",
           "stale_after": ""
+        },
+        {
+          "id": "7780b81c-0da5-4496-83ba-7de819c5548b",
+          "kind": "",
+          "text": "**2026-10-15** — Verified: lint gains duplicate-id and renumber-leftover checks and reports a link listed twice once; adj renumber keeps the ID on the record created first (file name breaks ties), refuses links to a colliding ID unless --keep-links, moves each record write-new-then-remove-old with directory sync and undo, refuses when an interrupted earlier run left a stale copy, and skips new IDs named by dangling links. All tests green, go vet and gofmt clean. Decisions C146-C158.",
+          "created_at": "2026-10-15T13:37:14Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
         }
       ],
       "claim": null,
@@ -901,7 +912,7 @@
         "importance": 2,
         "urgency": 2,
         "effort": 2,
-        "attempts": 0
+        "attempts": 1
       }
     },
     {
@@ -920,6 +931,17 @@
           "kind": "",
           "text": "**2026-10-15** — From S24 review/gate: (1) ai.md tells agents to read a closed record with 'adj show ID'; check text now prints its rationale (C138) — consider 'read the Rationale in the check output, adj show ID for the full record' (ai_test requires the 'adj show ID' text; update both). (2) Nit: AGENTS.md:125-127 check entry wraps past 80 cols; also line ~181 (env.sh) is 86 cols.",
           "created_at": "2026-10-15T12:51:34Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "16272624-7818-474d-92e7-5e451df25196",
+          "kind": "",
+          "text": "**2026-10-15** — From S15 gate (low/nits): (1) IsStaleCopy checks only the LAST history entry; match any renumber 'from N' entry so a later edit doesn't hide a stale copy. (2) Zero-padding false positive: hand-named 0003-foo.md and 00003-foo.md could make lint call the keeper a renumber-leftover; consider comparing parsed IDs/padding. (3) lint renumber-leftover message: add 'check both' before 'delete'. (4) godoc: ErrAmbiguousLinks comment sits above ErrStaleCopy. (5) AGENTS.md: say the directory sync is best effort (C157). (6) long Renumber doc comment line in model/transition.go.",
+          "created_at": "2026-10-15T13:37:52Z",
           "attempt": 0,
           "by": "Jon R",
           "verified_by": "",
@@ -1163,7 +1185,19 @@
       "depends_on": [
         "S15"
       ],
-      "note_records": [],
+      "note_records": [
+        {
+          "id": "1a3dd107-a4f8-44cc-b8e1-575a260100ee",
+          "kind": "",
+          "text": "**2026-10-15** — From S15 review: Store.Renumber's moveFile (internal/store/renumber.go) also allocates an ID by scan-then-link; hold the same flock there, or a locked Create and an unlocked renumber can still take one ID with different slugs. TestRenumberLeavesNoTemporaryFiles fails on any dot-file left in the store dir, so a persistent .adj.lock must be excluded there. Also: Create has the same dangling-link-target gap renumber fixed (C155) — skip IDs named by dangling links when allocating under the lock.",
+          "created_at": "2026-10-15T13:37:52Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        }
+      ],
       "claim": null,
       "fields": {
         "size": "M",
@@ -1245,7 +1279,7 @@
   "goals": "adjudicate is a small CLI (`adj`) with a plain-text store that records project decisions as a loop: an agent asks, the owner decides in batches, and every later agent reads the decision. The goal and non-goal records below come from PROJECT.md; the owner's decisions on its open questions are catalog records C23-C33, and they override PROJECT.md where it differs (name, runtime, record format, license).",
   "non_goals": "",
   "catalog": {
-    "next_id": 146,
+    "next_id": 159,
     "id_prefix": "C",
     "id_width": 2,
     "records": [
@@ -2550,6 +2584,123 @@
         "kind": "decision",
         "title": "S14 the agent snippet does not name adj lint",
         "body": "Lint is an owner and CI check of the record files; agents write records only through adj, so they have no use for it, and the snippet stays under 1800 bytes (C125). lint takes no argument and only --json and --root.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C146",
+        "kind": "decision",
+        "title": "S15 renumber keeper: the record created first keeps a colliding ID, the file name breaks a tie; every other record gets the next free ID",
+        "body": "The slice proposal. created is a YYYY-MM-DD string, so text order is date order (C41); the file name makes the result deterministic. Of the files sharing an ID, the others are taken in the same order and given one past the highest ID in the store, colliding IDs in ascending order, and keep their name text (0003-foo.md becomes 0008-foo.md) so the slug is not re-derived from a title that may have changed. Implemented in store.Renumber.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C147",
+        "kind": "decision",
+        "title": "S15 renumber links: never rewritten; if any record links to a colliding ID renumber lists the links and exits 1 with nothing changed, unless --keep-links, which leaves them on the record that keeps the ID and lists them on stderr",
+        "body": "A link to an ID that two files share was written for one of them and nothing in the files says which, so any rewrite is a guess; leaving them silently would change what they mean (lint would be clean afterwards). Refusing first makes the owner look, and --keep-links is the explicit acceptance; a link that meant the moved record is a one-line edit by hand. Links are found in every record file, the colliding ones included, and a link listed twice counts once.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C148",
+        "kind": "decision",
+        "title": "S15 renumber writes the new file before removing the old one, and undoes a move whose old file cannot be removed",
+        "body": "A crash between the two steps leaves both files, where rename-then-rewrite would leave a file whose id differs from its name. The new file is a synced temp file linked into place, so it never replaces anything (C62); the store directory is synced before the old file goes (C157). If the old file cannot be removed the new one is removed again; if that fails too the error names both files and says to delete the new one. Moves completed earlier stay and are printed. After a crash the old file is a stale copy: renumber refuses to run until the owner deletes it, and lint reports it as renumber-leftover (C156).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C149",
+        "kind": "decision",
+        "title": "S15 renumber leaves history notes as written; the move adds one history entry with event renumber and note 'from N'",
+        "body": "Answers the S13 note: 'by N' and 'supersedes N' record what happened at the time, and since renumber rewrites no link, rewriting the notes that name the same IDs would make them disagree with the links. The new event renumber (model.EventRenumber, model.Renumber, validated on a copy as in C45) is the only way to append a history entry, because the five events of C43 do not fit; this touches internal/model, which the slice Files list does not name, and docs/json.md lists the event.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C150",
+        "kind": "decision",
+        "title": "S15 command is adj renumber [--keep-links] [--root DIR], not lint --fix; it prints one line per move and has no --json",
+        "body": "lint is read-only (TestLintChangesNothing) and its exit code means findings, so a fix flag would blur both. The command takes no argument, prints 'OLD-FILE -> NEW-FILE (id N -> M)' per move and nothing when there is no collision (exit 0, as an empty lint or list prints nothing, C92, C141), exit 1 when it stops or fails, 2 for a usage error. No --json: the moves are for the owner to read, so there is no JSON shape to document.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C151",
+        "kind": "decision",
+        "title": "S15 renumber reads every record file when there is a collision and checks every move before writing; with no collision it reads nothing",
+        "body": "Any file may hold a link to a colliding ID, so an unreadable or unparseable file stops the run, naming it (lint tells the owner what is wrong). A moved record must stay valid under its new ID; checking all moves in memory first means a refusal changes nothing. With no shared ID, Renumber only scans file names, so a broken file elsewhere is no obstacle and the store is untouched.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C152",
+        "kind": "decision",
+        "title": "S15 lint duplicate-id: an error on every file that shares the ID, the message lists all of them; a link to such an ID is not dangling; a link listed twice is reported once",
+        "body": "The slice asks that lint name both files. One finding per file (like supersede-cycle) puts the finding on each file in the editor and CI log; the message names them all. dangling-link still means no file has the ID (C144). The repeated-link dedupe is the S14 gate note: [7,7] gave two identical findings. The raw JSON key case and duplicate check (S04 note) is still not done.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C153",
+        "kind": "decision",
+        "title": "S15 the agent snippet tells agents to report a duplicate ID to the owner and not run adj renumber",
+        "body": "Renumber rewrites and renames record files and changes which record an ID names, so it is the owner's, like decide and supersede (C27, C137). The agent may hit the collision as 'more than one record has this id' from show or check; the snippet says to tell the owner, in one added sentence (still under 1800 bytes, C125). adj lint stays unnamed (C145).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C154",
+        "kind": "decision",
+        "title": "S15 Create is unchanged; renumber skips a name taken by a non-regular entry or another writer by trying the next ID, and lint does not report non-regular entries",
+        "body": "The S05 note: a directory or symlink named like the next record file is not a record file (C59), so the scan ignores it and Create gives up after three tries (C64). Renumber takes the next ID after a taken name instead (up to 10 tries), since it must finish a repair; changing Create belongs to the locking work (C114). Lint is about record files and ignores such entries.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C155",
+        "kind": "decision",
+        "title": "S15 renumber picks new IDs that no link names without a file, and checks each move with the ID it will get",
+        "body": "S15 review. A new ID equal to the target of an existing dangling link would silently make that link resolve to the moved record, so IDs named by a supersedes or superseded_by link with no file are skipped (one past the highest, then on until free). The in-memory check before the first write uses the same sequence, one ID per move, instead of one provisional ID for all, so a refusal changes nothing. Create has the same gap and is not changed here.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C156",
+        "kind": "decision",
+        "title": "S15 an interrupted renumber's stale copy: renumber refuses (ErrStaleCopy, exit 1, nothing changed) and lint reports renumber-leftover; nothing is deleted automatically",
+        "body": "S15 review of C148. After a crash between linking the new file and removing the old one, running renumber again would move the old file to yet another ID and the record would exist twice. A file is the stale copy when another file with a different ID and the same name text has a last history entry renumber 'from N' for its ID. Renumber refuses when a colliding file is one, naming both files and saying to delete the old one; lint reports the old file as the error renumber-leftover, whether or not it still collides, so CI sees it. Deleting stays the owner's step: the tool cannot know the owner has not edited either file since.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C157",
+        "kind": "decision",
+        "title": "S15 renumber syncs the store directory after linking the new file and before removing the old one, best effort",
+        "body": "S15 review of C148. The file is synced, but the directory entry may not be on disk when the old name is removed; a crash could then lose both names. The directory sync closes that window. Errors are ignored because not every platform can sync a directory, and the effect cannot be observed in a test.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C158",
+        "kind": "decision",
+        "title": "S15 renumber refuses a colliding record whose created is not a YYYY-MM-DD date",
+        "body": "S15 review. The keeper is the record created first, compared as a date string (C146); a missing or malformed date would pick the keeper by accident of text order. The run stops with exit 1 naming the file and changes nothing; the owner fixes the date.",
         "status": "active",
         "reason": "",
         "successor": ""

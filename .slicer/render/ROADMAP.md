@@ -554,6 +554,58 @@ C59: a file that does not parse still holds its ID, so a link to a broken file i
 
 Lint is an owner and CI check of the record files; agents write records only through adj, so they have no use for it, and the snippet stays under 1800 bytes (C125). lint takes no argument and only --json and --root.
 
+### C146 S15 renumber keeper: the record created first keeps a colliding ID, the file name breaks a tie; every other record gets the next free ID
+
+The slice proposal. created is a YYYY-MM-DD string, so text order is date order (C41); the file name makes the result deterministic. Of the files sharing an ID, the others are taken in the same order and given one past the highest ID in the store, colliding IDs in ascending order, and keep their name text (0003-foo.md becomes 0008-foo.md) so the slug is not re-derived from a title that may have changed. Implemented in store.Renumber.
+
+### C147 S15 renumber links: never rewritten; if any record links to a colliding ID renumber lists the links and exits 1 with nothing changed, unless --keep-links, which leaves them on the record that keeps the ID and lists them on stderr
+
+A link to an ID that two files share was written for one of them and nothing in the files says which, so any rewrite is a guess; leaving them silently would change what they mean (lint would be clean afterwards). Refusing first makes the owner look, and --keep-links is the explicit acceptance; a link that meant the moved record is a one-line edit by hand. Links are found in every record file, the colliding ones included, and a link listed twice counts once.
+
+### C148 S15 renumber writes the new file before removing the old one, and undoes a move whose old file cannot be removed
+
+A crash between the two steps leaves both files, where rename-then-rewrite would leave a file whose id differs from its name. The new file is a synced temp file linked into place, so it never replaces anything (C62); the store directory is synced before the old file goes (C157). If the old file cannot be removed the new one is removed again; if that fails too the error names both files and says to delete the new one. Moves completed earlier stay and are printed. After a crash the old file is a stale copy: renumber refuses to run until the owner deletes it, and lint reports it as renumber-leftover (C156).
+
+### C149 S15 renumber leaves history notes as written; the move adds one history entry with event renumber and note 'from N'
+
+Answers the S13 note: 'by N' and 'supersedes N' record what happened at the time, and since renumber rewrites no link, rewriting the notes that name the same IDs would make them disagree with the links. The new event renumber (model.EventRenumber, model.Renumber, validated on a copy as in C45) is the only way to append a history entry, because the five events of C43 do not fit; this touches internal/model, which the slice Files list does not name, and docs/json.md lists the event.
+
+### C150 S15 command is adj renumber [--keep-links] [--root DIR], not lint --fix; it prints one line per move and has no --json
+
+lint is read-only (TestLintChangesNothing) and its exit code means findings, so a fix flag would blur both. The command takes no argument, prints 'OLD-FILE -> NEW-FILE (id N -> M)' per move and nothing when there is no collision (exit 0, as an empty lint or list prints nothing, C92, C141), exit 1 when it stops or fails, 2 for a usage error. No --json: the moves are for the owner to read, so there is no JSON shape to document.
+
+### C151 S15 renumber reads every record file when there is a collision and checks every move before writing; with no collision it reads nothing
+
+Any file may hold a link to a colliding ID, so an unreadable or unparseable file stops the run, naming it (lint tells the owner what is wrong). A moved record must stay valid under its new ID; checking all moves in memory first means a refusal changes nothing. With no shared ID, Renumber only scans file names, so a broken file elsewhere is no obstacle and the store is untouched.
+
+### C152 S15 lint duplicate-id: an error on every file that shares the ID, the message lists all of them; a link to such an ID is not dangling; a link listed twice is reported once
+
+The slice asks that lint name both files. One finding per file (like supersede-cycle) puts the finding on each file in the editor and CI log; the message names them all. dangling-link still means no file has the ID (C144). The repeated-link dedupe is the S14 gate note: [7,7] gave two identical findings. The raw JSON key case and duplicate check (S04 note) is still not done.
+
+### C153 S15 the agent snippet tells agents to report a duplicate ID to the owner and not run adj renumber
+
+Renumber rewrites and renames record files and changes which record an ID names, so it is the owner's, like decide and supersede (C27, C137). The agent may hit the collision as 'more than one record has this id' from show or check; the snippet says to tell the owner, in one added sentence (still under 1800 bytes, C125). adj lint stays unnamed (C145).
+
+### C154 S15 Create is unchanged; renumber skips a name taken by a non-regular entry or another writer by trying the next ID, and lint does not report non-regular entries
+
+The S05 note: a directory or symlink named like the next record file is not a record file (C59), so the scan ignores it and Create gives up after three tries (C64). Renumber takes the next ID after a taken name instead (up to 10 tries), since it must finish a repair; changing Create belongs to the locking work (C114). Lint is about record files and ignores such entries.
+
+### C155 S15 renumber picks new IDs that no link names without a file, and checks each move with the ID it will get
+
+S15 review. A new ID equal to the target of an existing dangling link would silently make that link resolve to the moved record, so IDs named by a supersedes or superseded_by link with no file are skipped (one past the highest, then on until free). The in-memory check before the first write uses the same sequence, one ID per move, instead of one provisional ID for all, so a refusal changes nothing. Create has the same gap and is not changed here.
+
+### C156 S15 an interrupted renumber's stale copy: renumber refuses (ErrStaleCopy, exit 1, nothing changed) and lint reports renumber-leftover; nothing is deleted automatically
+
+S15 review of C148. After a crash between linking the new file and removing the old one, running renumber again would move the old file to yet another ID and the record would exist twice. A file is the stale copy when another file with a different ID and the same name text has a last history entry renumber 'from N' for its ID. Renumber refuses when a colliding file is one, naming both files and saying to delete the old one; lint reports the old file as the error renumber-leftover, whether or not it still collides, so CI sees it. Deleting stays the owner's step: the tool cannot know the owner has not edited either file since.
+
+### C157 S15 renumber syncs the store directory after linking the new file and before removing the old one, best effort
+
+S15 review of C148. The file is synced, but the directory entry may not be on disk when the old name is removed; a crash could then lose both names. The directory sync closes that window. Errors are ignored because not every platform can sync a directory, and the effect cannot be observed in a test.
+
+### C158 S15 renumber refuses a colliding record whose created is not a YYYY-MM-DD date
+
+S15 review. The keeper is the record created first, compared as a date string (C146); a missing or malformed date would pick the keeper by accident of text order. The run stops with exit 1 naming the file and changes nothing; the owner fixes the date.
+
 ### C39 LICENSE is a stub until the owner supplies the full GPL-3.0 text and copyright holder
 
 No GPL-3.0 text exists in the adjudicate repo and the workspace has no network, so the stub carries the SPDX line, the or-later notice and TODO(owner) markers.
@@ -616,36 +668,36 @@ PENDING OWNER CONFIRMATION - not decided. Source: Dependency/licensing notes (ma
 
 *Retired: Owner decided 2026-10-15: see decision C31 (GPL-3.0-or-later)..*
 
-24 items · — 4 · done 15 · later 5
+24 items · — 3 · done 16 · later 5
 
 | # | Slice | Title | Size | Effort | Trees | Findings | Status |
 |---|---|---|---|---|---|---|---|
-| 1 | [S15](slices/S15.md) | ID collision detection and renumber | M | 2 | store | PROJECT.md Open decisions 4; Risks (merge conflicts on IDs); Milestone 4 | — |
-| 2 | [S16](slices/S16.md) | Docs and v1 acceptance round trip | S | 1 | docs | PROJECT.md v1 acceptance criteria; Milestone 5 | — |
-| 3 | [S17](slices/S17.md) | Dogfood: record adjudicate's own decisions with adj | S | 1 | docs | PROJECT.md Milestone 5; acceptance (own decisions recorded) | — |
-| 4 | [S18](slices/S18.md) | Later: cross-repo inbox | M | 2 | later | PROJECT.md Feature tiers (Later); Open decisions 6 | later |
-| 5 | [S19](slices/S19.md) | Later: TUI or static HTML inbox | M | 2 | later | PROJECT.md Feature tiers (Later) | later |
-| 6 | [S20](slices/S20.md) | Later: slicer integration | M | 2 | later | PROJECT.md Feature tiers (Later); Non-goals (not replacing slicer); Risks (overlap with slicer catalog) | later |
-| 7 | [S21](slices/S21.md) | Later: optional owner-only decide enforcement | M | 2 | later | PROJECT.md Feature tiers (Later); Open decisions 5; Non-goals | later |
-| 8 | [S22](slices/S22.md) | Later: import from ADR folders | M | 2 | later | PROJECT.md Feature tiers (Later) | later |
-| 9 | [S23](slices/S23.md) | Lock ID allocation with flock | M | 2 | store | Owner decision 2026-10-15 (S05 review MEDIUM-2; C62, C64) | — |
+| 1 | [S16](slices/S16.md) | Docs and v1 acceptance round trip | S | 1 | docs | PROJECT.md v1 acceptance criteria; Milestone 5 | — |
+| 2 | [S17](slices/S17.md) | Dogfood: record adjudicate's own decisions with adj | S | 1 | docs | PROJECT.md Milestone 5; acceptance (own decisions recorded) | — |
+| 3 | [S18](slices/S18.md) | Later: cross-repo inbox | M | 2 | later | PROJECT.md Feature tiers (Later); Open decisions 6 | later |
+| 4 | [S19](slices/S19.md) | Later: TUI or static HTML inbox | M | 2 | later | PROJECT.md Feature tiers (Later) | later |
+| 5 | [S20](slices/S20.md) | Later: slicer integration | M | 2 | later | PROJECT.md Feature tiers (Later); Non-goals (not replacing slicer); Risks (overlap with slicer catalog) | later |
+| 6 | [S21](slices/S21.md) | Later: optional owner-only decide enforcement | M | 2 | later | PROJECT.md Feature tiers (Later); Open decisions 5; Non-goals | later |
+| 7 | [S22](slices/S22.md) | Later: import from ADR folders | M | 2 | later | PROJECT.md Feature tiers (Later) | later |
+| 8 | [S23](slices/S23.md) | Lock ID allocation with flock | M | 2 | store | Owner decision 2026-10-15 (S05 review MEDIUM-2; C62, C64) | — |
 
 ---
 
 | # | Slice | Title | Size | Effort | Trees | Findings | Status |
 |---|---|---|---|---|---|---|---|
-| 10 | [S01](slices/S01.md) | Confirm open decisions | S | 1 | decisions | PROJECT.md Open decisions 1-7; Core concepts (kind); Dependency/licensing notes | done |
-| 11 | [S02](slices/S02.md) | Project scaffolding | S | 1 | scaffold | PROJECT.md Stack recommendation; Dependency/licensing notes | done |
-| 12 | [S03](slices/S03.md) | Record model and lifecycle transitions | M | 2 | model | PROJECT.md Core concepts / data model; Milestone 1 | done |
-| 13 | [S04](slices/S04.md) | Record file read and write | S | 1 | model | PROJECT.md Open decisions 3; Core concepts (Record) | done |
-| 14 | [S05](slices/S05.md) | Store, config and ID allocation | M | 2 | store | PROJECT.md Architecture sketch (ID allocation, Determinism); Open decisions 4, 6, 7 | done |
-| 15 | [S06](slices/S06.md) | Commands: init and ask | M | 2 | cli | PROJECT.md v1 feature tier; Milestone 2 | done |
-| 16 | [S07](slices/S07.md) | Commands: decide, reject, withdraw | S | 1 | cli | PROJECT.md v1 feature tier; Lifecycle; Milestone 2 | done |
-| 17 | [S08](slices/S08.md) | Commands: show and list with --json | S | 1 | cli | PROJECT.md v1 feature tier; Milestone 2; acceptance (--json) | done |
-| 18 | [S09](slices/S09.md) | Command: inbox | S | 1 | cli | PROJECT.md Goals 2; v1 feature tier; Milestone 3 | done |
-| 19 | [S10](slices/S10.md) | Command: check | S | 1 | cli | PROJECT.md Goals 6; v1 feature tier; Milestone 3 | done |
-| 20 | [S11](slices/S11.md) | Command: context | M | 2 | cli | PROJECT.md Goals 5; v1 feature tier; Risks (context bloat); Milestone 3 | done |
-| 21 | [S12](slices/S12.md) | Agent snippet: adj ai and JSON shape docs | S | 1 | docs | PROJECT.md v1 feature tier; Risks (adoption); acceptance (--json documented) | done |
-| 22 | [S13](slices/S13.md) | Command: supersede | S | 1 | cli | PROJECT.md Goals 4; Lifecycle; acceptance (supersede); Milestone 4 | done |
-| 23 | [S14](slices/S14.md) | Command: lint | M | 2 | cli | PROJECT.md Goals 8; acceptance (lint fixtures); Open decisions 5; Milestone 4 | done |
+| 9 | [S01](slices/S01.md) | Confirm open decisions | S | 1 | decisions | PROJECT.md Open decisions 1-7; Core concepts (kind); Dependency/licensing notes | done |
+| 10 | [S02](slices/S02.md) | Project scaffolding | S | 1 | scaffold | PROJECT.md Stack recommendation; Dependency/licensing notes | done |
+| 11 | [S03](slices/S03.md) | Record model and lifecycle transitions | M | 2 | model | PROJECT.md Core concepts / data model; Milestone 1 | done |
+| 12 | [S04](slices/S04.md) | Record file read and write | S | 1 | model | PROJECT.md Open decisions 3; Core concepts (Record) | done |
+| 13 | [S05](slices/S05.md) | Store, config and ID allocation | M | 2 | store | PROJECT.md Architecture sketch (ID allocation, Determinism); Open decisions 4, 6, 7 | done |
+| 14 | [S06](slices/S06.md) | Commands: init and ask | M | 2 | cli | PROJECT.md v1 feature tier; Milestone 2 | done |
+| 15 | [S07](slices/S07.md) | Commands: decide, reject, withdraw | S | 1 | cli | PROJECT.md v1 feature tier; Lifecycle; Milestone 2 | done |
+| 16 | [S08](slices/S08.md) | Commands: show and list with --json | S | 1 | cli | PROJECT.md v1 feature tier; Milestone 2; acceptance (--json) | done |
+| 17 | [S09](slices/S09.md) | Command: inbox | S | 1 | cli | PROJECT.md Goals 2; v1 feature tier; Milestone 3 | done |
+| 18 | [S10](slices/S10.md) | Command: check | S | 1 | cli | PROJECT.md Goals 6; v1 feature tier; Milestone 3 | done |
+| 19 | [S11](slices/S11.md) | Command: context | M | 2 | cli | PROJECT.md Goals 5; v1 feature tier; Risks (context bloat); Milestone 3 | done |
+| 20 | [S12](slices/S12.md) | Agent snippet: adj ai and JSON shape docs | S | 1 | docs | PROJECT.md v1 feature tier; Risks (adoption); acceptance (--json documented) | done |
+| 21 | [S13](slices/S13.md) | Command: supersede | S | 1 | cli | PROJECT.md Goals 4; Lifecycle; acceptance (supersede); Milestone 4 | done |
+| 22 | [S14](slices/S14.md) | Command: lint | M | 2 | cli | PROJECT.md Goals 8; acceptance (lint fixtures); Open decisions 5; Milestone 4 | done |
+| 23 | [S15](slices/S15.md) | ID collision detection and renumber | M | 2 | store | PROJECT.md Open decisions 4; Risks (merge conflicts on IDs); Milestone 4 | done |
 | 24 | [S24](slices/S24.md) | Check text shows the rationale under closed records | S | 1 | render | Owner decision 2026-10-15 (S10 gate: closed records show only ID, status, title in text) | done |

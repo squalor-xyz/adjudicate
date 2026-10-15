@@ -212,7 +212,7 @@ func TestValidateRejects(t *testing.T) {
 
 func TestValidateAcceptsEveryKnownHistoryEvent(t *testing.T) {
 	r := validRecord(StatusOpen)
-	for _, e := range []Event{EventAsk, EventDecide, EventReject, EventWithdraw, EventSupersede} {
+	for _, e := range []Event{EventAsk, EventDecide, EventReject, EventWithdraw, EventSupersede, EventRenumber} {
 		r.History = append(r.History, HistoryEntry{Date: "2026-10-01", Event: e, Note: "n"})
 	}
 	if err := r.Validate(); err != nil {
