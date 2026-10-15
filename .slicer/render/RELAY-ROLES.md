@@ -6,10 +6,10 @@
 
 | ID | Role | When | Agent | Vendor | Model | Reasoning | Note |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| r1 | Implementer | well specified, whole slice, effort 1, size S or M | Claude Code | Claude | haiku | xhigh | - |
-| r2 | Implementer | well specified, whole slice, effort 2, size S | Claude Code | Claude | haiku | xhigh | - |
+| r1 | Implementer | well specified, whole slice, effort 1, size S or M | Claude Code | Claude | sonnet | high | owner 2026-10-15: Haiku replaced after sandbox-rule breaches |
+| r2 | Implementer | well specified, whole slice, effort 2, size S | Claude Code | Claude | sonnet | high | owner 2026-10-15: Haiku replaced after sandbox-rule breaches |
 | r3 | Implementer | whole slice | Claude Code | Claude | sonnet | high | anything the rows above do not match |
-| r4 | Implementer | split part | Claude Code | Claude | haiku | xhigh | per part of a split slice |
+| r4 | Implementer | split part | Claude Code | Claude | sonnet | high | owner 2026-10-15: Haiku replaced after sandbox-rule breaches |
 | r5 | Reviewer | every slice | Claude Code | Claude | opus | medium | - |
 | r6 | Gate | every slice | Claude Code | Claude | opus | medium | - |
 | r7 | Architect | size L | Claude Code | Claude | opus | high | - |

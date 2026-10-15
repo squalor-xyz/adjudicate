@@ -23,17 +23,20 @@ library only.
   flags after positional arguments, repeatable string flags). `Run` is the
   process entry; `RunWith(Env, ...)` takes the repo root, clock, environment
   and working directory as parameters for tests. Each command's handler is in
-  its own file (`init.go`, `ask.go`, and `decide.go`, which holds decide,
-  reject and withdraw); `cli.go` holds the dispatch and shared helpers.
+  its own file (`init.go`, `ask.go`, `decide.go`, which holds decide,
+  reject and withdraw, `show.go` and `list.go`); `cli.go` holds the dispatch
+  and shared helpers.
 - `internal/commands`: what each command does to the store, apart from
-  parsing, output and exit codes (`init.go`, `ask.go`, `decide.go`).
-  `errors.go` holds `UsageError`, the error that exits 2.
+  parsing, output and exit codes (`init.go`, `ask.go`, `decide.go`, `show.go`,
+  `list.go`). `errors.go` holds `UsageError`, the error that exits 2.
 - `internal/model`: the record type, validation, status transitions and the
   record file format; its only file I/O is `ReadFile` and `WriteFile` in
   `file.go`.
 - `internal/store`: one repo's record directory (`store.go`) and its config
   (`config.go`); see "Store and config" below.
-- `internal/query`, `internal/render`: added by later slices.
+- `internal/query`: record filters, pure functions over records (`filter.go`).
+  `internal/render`: text and JSON output (`text.go`, `json.go`); the JSON
+  shapes are in `docs/json.md`.
 - `scripts/env.sh`: Go cache and temp setup (see below).
 
 Exit codes for every command: 0 success; 1 a failed operation or failed check;
@@ -49,7 +52,8 @@ Exit codes for every command: 0 success; 1 a failed operation or failed check;
   [--recommend LABEL] [--reasoning TEXT] [--key K] [--tag T]...
   [--context TEXT | --stdin] [--by NAME] [--root DIR]`: creates an `open`
   record with one `ask` history entry and prints its ID. Flags may come before
-  or after TITLE. `asked_by` is `--by`, else `$ADJ_ASKED_BY`, else blank.
+  or after TITLE. A blank `--key` or `--tag` exits 2; `--key` is stored as
+  typed. `asked_by` is `--by`, else `$ADJ_ASKED_BY`, else blank.
 - `adj decide ID OPTION --why TEXT`, or `adj decide ID --text TEXT --why TEXT`,
   `[--by NAME] [--root DIR]`: moves an `open` record to `decided`. OPTION
   (trimmed) must be one of the record's option labels; `decision` is that
@@ -62,6 +66,18 @@ Exit codes for every command: 0 success; 1 a failed operation or failed check;
   argument exits 2, including an OPTION the record does not offer while the
   record is open. An unknown ID, or a record that is not `open` (checked before
   OPTION), exits 1 and changes nothing; its message names the status.
+- `adj show ID [--json] [--root DIR]`: prints one record, each set field and
+  the history; with `--json` it prints the record object (`docs/json.md`). A
+  non-number or 0 ID, or an extra argument, exits 2; an unknown or duplicate
+  ID exits 1.
+- `adj list [--status S] [--tag T]... [--key K] [--json] [--root DIR]`: lists
+  records in ID order, one line each (ID, status, title); with `--json` it
+  prints `{"records": [...]}` (`docs/json.md`). Every filter given must match.
+  `--tag` repeats, and every tag given must be on the record. `--status` is one
+  of the five statuses; its value and each `--tag` value are trimmed, while
+  `--key` is matched as typed against the stored key. A bad status, a blank
+  `--tag` or `--key`, or an argument, exits 2. No match is not
+  an error (exit 0).
 - Every command takes `--root DIR`. Without it the root is found from the
   working directory upwards (`store.FindRoot`); with it nothing is searched
   for, and a command other than `init` needs `DIR/.adjudicate.json`. A missing

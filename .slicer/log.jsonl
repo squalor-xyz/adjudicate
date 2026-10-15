@@ -292,3 +292,22 @@
 {"when": "2026-10-15T05:50:10Z", "item": "S07", "action": "note", "from": "", "to": "", "note": "Verified: decide, reject and withdraw (exit codes as specifi", "by": "Jon R"}
 {"when": "2026-10-15T05:50:15Z", "item": "S07", "action": "status", "from": "started", "to": "done", "note": "S07 landed: adj decide, reject and withdraw with decided_by, closed-record and duplicate-ID errors, and the handler-per-file layout; 403 tests green, vet and gofmt clean, C77-C85 recorded.", "by": "Jon R"}
 {"when": "2026-10-15T05:50:24Z", "item": "S12", "action": "note", "from": "", "to": "", "note": "From S07 gate (nit): reject/withdraw usage text describes --", "by": "Jon R"}
+{"when": "2026-10-15T05:52:07Z", "item": "S08", "action": "status", "from": "open", "to": "started", "note": "", "by": "Jon R"}
+{"when": "2026-10-15T05:52:31Z", "item": "C86", "action": "catalog", "from": "", "to": "S08 list --json: one object with a records array", "note": "add"}
+{"when": "2026-10-15T05:52:31Z", "item": "C87", "action": "catalog", "from": "", "to": "S08 show --json: the record object, same shape as each list entry", "note": "add"}
+{"when": "2026-10-15T05:52:32Z", "item": "C88", "action": "catalog", "from": "", "to": "S08 show prints the body and emits it as body", "note": "add"}
+{"when": "2026-10-15T05:52:32Z", "item": "C89", "action": "catalog", "from": "", "to": "S08 list --tag repeats and every given tag must match", "note": "add"}
+{"when": "2026-10-15T05:52:32Z", "item": "C90", "action": "catalog", "from": "", "to": "S08 list filters combine with AND", "note": "add"}
+{"when": "2026-10-15T05:52:32Z", "item": "C91", "action": "catalog", "from": "", "to": "S08 filter values: known status, no blank tag or key", "note": "add"}
+{"when": "2026-10-15T05:52:32Z", "item": "C92", "action": "catalog", "from": "", "to": "S08 list order and empty results", "note": "add"}
+{"when": "2026-10-15T05:52:32Z", "item": "C93", "action": "catalog", "from": "", "to": "S08 text layout for list and show", "note": "add"}
+{"when": "2026-10-15T05:52:32Z", "item": "C94", "action": "catalog", "from": "", "to": "S08 show and list arguments", "note": "add"}
+{"when": "2026-10-15T05:52:32Z", "item": "C95", "action": "catalog", "from": "", "to": "S08 handlers in cli/show.go and cli/list.go", "note": "add"}
+{"when": "2026-10-15T09:59:27Z", "item": "relay-roles.r1", "action": "relay-roles", "from": "", "to": "model,reasoning,note", "note": "set"}
+{"when": "2026-10-15T09:59:27Z", "item": "relay-roles.r2", "action": "relay-roles", "from": "", "to": "model,reasoning,note", "note": "set"}
+{"when": "2026-10-15T09:59:28Z", "item": "relay-roles.r4", "action": "relay-roles", "from": "", "to": "model,reasoning,note", "note": "set"}
+{"when": "2026-10-15T10:08:34Z", "item": "C96", "action": "catalog", "from": "", "to": "S08 ask rejects a blank --key (exit 2)", "note": "add"}
+{"when": "2026-10-15T10:11:23Z", "item": "S08", "action": "note", "from": "", "to": "", "note": "Verified: adj show and adj list with --json (list prints {re", "by": "Jon R"}
+{"when": "2026-10-15T10:11:25Z", "item": "S08", "action": "status", "from": "started", "to": "done", "note": "show and list with --json implemented, reviewed and gated PASS; tests, vet and gofmt clean; decisions C86-C96.", "by": "Jon R"}
+{"when": "2026-10-15T10:11:46Z", "item": "S09", "action": "note", "from": "", "to": "", "note": "From S08 gate (low, cosmetic): internal/render/text.go:48,51", "by": "Jon R"}
+{"when": "2026-10-15T10:11:50Z", "item": "S12", "action": "note", "from": "", "to": "", "note": "From S08 review: show/list record keys are omitempty (C87); ", "by": "Jon R"}

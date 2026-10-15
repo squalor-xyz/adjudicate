@@ -392,12 +392,24 @@
       "id": "S08",
       "title": "Commands: show and list with --json",
       "short_title": "Commands: show and list with --json",
-      "status": "open",
+      "status": "done",
       "has_slice": true,
       "depends_on": [
         "S06"
       ],
-      "note_records": [],
+      "note_records": [
+        {
+          "id": "4e6f2ce3-b346-4b6f-ae1b-babc72b1537a",
+          "kind": "",
+          "text": "**2026-10-15** — Verified: adj show and adj list with --json (list prints {records:[...]}), query.Select filters (status, repeatable tag, key; AND), text and JSON renderers, docs/json.md examples generated from real adj output, review fixes applied (continuation indents, trailing newline trim, duplicate-ID show test, blank ask --key is exit 2), all tests green, vet and gofmt clean. Decisions C86-C96. Relay roles r1/r2/r4 switched to sonnet/high by owner.",
+          "created_at": "2026-10-15T10:11:23Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        }
+      ],
       "claim": null,
       "fields": {
         "size": "S",
@@ -418,7 +430,7 @@
         "importance": 3,
         "urgency": 2,
         "effort": 1,
-        "attempts": 0
+        "attempts": 1
       }
     },
     {
@@ -430,7 +442,19 @@
       "depends_on": [
         "S08"
       ],
-      "note_records": [],
+      "note_records": [
+        {
+          "id": "1a6732ae-8438-485b-a732-9cfb315c5914",
+          "kind": "",
+          "text": "**2026-10-15** — From S08 gate (low, cosmetic): internal/render/text.go:48,51,77 call cont() on option summaries, tradeoffs and history notes without the trailing-newline trim field() applies; a value ending in \\n prints a spaces-only line. Fold in if inbox reuses these renderers.",
+          "created_at": "2026-10-15T10:11:46Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        }
+      ],
       "claim": null,
       "fields": {
         "size": "S",
@@ -539,6 +563,17 @@
           "kind": "",
           "text": "**2026-10-15** — From S07 gate (nit): reject/withdraw usage text describes --by as 'who decided' (internal/cli/decide.go:35,46); reads oddly for withdraw — reword when writing the agent snippet/docs.",
           "created_at": "2026-10-15T05:50:24Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "036e4e92-3775-4062-b666-882cff75b2c6",
+          "kind": "",
+          "text": "**2026-10-15** — From S08 review: show/list record keys are omitempty (C87); pin the jsonshape test to the docs/json.md key table or to a fixture matching the example exactly.",
+          "created_at": "2026-10-15T10:11:50Z",
           "attempt": 0,
           "by": "Jon R",
           "verified_by": "",
@@ -955,7 +990,7 @@
   "goals": "adjudicate is a small CLI (`adj`) with a plain-text store that records project decisions as a loop: an agent asks, the owner decides in batches, and every later agent reads the decision. The goal and non-goal records below come from PROJECT.md; the owner's decisions on its open questions are catalog records C23-C33, and they override PROJECT.md where it differs (name, runtime, record format, license).",
   "non_goals": "",
   "catalog": {
-    "next_id": 86,
+    "next_id": 97,
     "id_prefix": "C",
     "id_width": 2,
     "records": [
@@ -1720,6 +1755,105 @@
         "kind": "decision",
         "title": "A change to a record that is not open names its status and the change",
         "body": "Message: record N is S; only an open record can be V (V = decided, rejected or withdrawn), in place of the model text invalid record: transition not allowed. A notOpenError keeps the model error reachable through Unwrap, so errors.Is(err, model.ErrInvalidTransition) still holds.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C86",
+        "kind": "decision",
+        "title": "S08 list --json: one object with a records array",
+        "body": "An object with a named key lets later fields such as counts be added without breaking readers, which a bare array would not; an empty store gives {\"records\": []}.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C87",
+        "kind": "decision",
+        "title": "S08 show --json: the record object, same shape as each list entry",
+        "body": "One record shape for both commands so an agent parses one format; keys are the record file JSON names and empty keys are omitted, as in the file.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C88",
+        "kind": "decision",
+        "title": "S08 show prints the body and emits it as body",
+        "body": "The body is the owner free Markdown, kept out of the frontmatter (C49) but still their text, so show prints it and JSON gives a body key only when it is non-empty.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C89",
+        "kind": "decision",
+        "title": "S08 list --tag repeats and every given tag must match",
+        "body": "Mirrors the repeatable --tag of ask; a repeat narrows the result, consistent with the AND rule for combined filters.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C90",
+        "kind": "decision",
+        "title": "S08 list filters combine with AND",
+        "body": "Each filter given must match, so every added flag narrows the result and no filter lists every record (slice proposal).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C91",
+        "kind": "decision",
+        "title": "S08 filter values: known status, no blank tag or key",
+        "body": "Bad values exit 2 before the store is read (C73); a blank value is a typo, not no filter (C75, C83); --key matches the stored key as typed, since ask stores it untrimmed.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C92",
+        "kind": "decision",
+        "title": "S08 list order and empty results",
+        "body": "List keeps store.List order (ID, then file name per C60); no match prints nothing in text and an empty records array in JSON with exit 0, because an empty answer is not a failure.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C93",
+        "kind": "decision",
+        "title": "S08 text layout for list and show",
+        "body": "List prints one aligned line per record (ID, status, title) for grep; show prints a labelled line per set field so one field is easy to find, with multi-line values indented under their label.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C94",
+        "kind": "decision",
+        "title": "S08 show and list arguments",
+        "body": "show takes one positive ID, and a bad ID is exit 2 as in decide (C81); list takes no positional arguments, since a stray word is a typo to report, not to ignore; an unknown or duplicate ID is exit 1 (C34).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C95",
+        "kind": "decision",
+        "title": "S08 handlers in cli/show.go and cli/list.go",
+        "body": "C82 wants one handler file per command; the slice Files list omitted these two, so they are added and named in AGENTS.md Layout.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C96",
+        "kind": "decision",
+        "title": "S08 ask rejects a blank --key (exit 2)",
+        "body": "ask stored a whitespace-only --key that list --key can never match (C91); like --tag it is now a usage error, while a real key is still stored as typed.",
         "status": "active",
         "reason": "",
         "successor": ""

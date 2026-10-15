@@ -48,6 +48,9 @@ func (in AskInput) build(now time.Time) (model.Record, error) {
 	if strings.ContainsAny(in.Title, "\r\n") {
 		return model.Record{}, usagef("title must be one line")
 	}
+	if in.Key != "" && strings.TrimSpace(in.Key) == "" {
+		return model.Record{}, usagef("--key must not be blank")
+	}
 	var opts []model.Option
 	index := map[string]int{}
 	for _, v := range in.Options {

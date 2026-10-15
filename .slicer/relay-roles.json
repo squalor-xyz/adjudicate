@@ -19,9 +19,9 @@
       },
       "agent": "Claude Code",
       "vendor": "Claude",
-      "model": "haiku",
-      "reasoning": "xhigh",
-      "note": ""
+      "model": "sonnet",
+      "reasoning": "high",
+      "note": "owner 2026-10-15: Haiku replaced after sandbox-rule breaches"
     },
     {
       "id": "r2",
@@ -40,9 +40,9 @@
       },
       "agent": "Claude Code",
       "vendor": "Claude",
-      "model": "haiku",
-      "reasoning": "xhigh",
-      "note": ""
+      "model": "sonnet",
+      "reasoning": "high",
+      "note": "owner 2026-10-15: Haiku replaced after sandbox-rule breaches"
     },
     {
       "id": "r3",
@@ -74,9 +74,9 @@
       },
       "agent": "Claude Code",
       "vendor": "Claude",
-      "model": "haiku",
-      "reasoning": "xhigh",
-      "note": "per part of a split slice"
+      "model": "sonnet",
+      "reasoning": "high",
+      "note": "owner 2026-10-15: Haiku replaced after sandbox-rule breaches"
     },
     {
       "id": "r5",

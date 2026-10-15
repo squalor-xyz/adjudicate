@@ -275,6 +275,7 @@ func TestAskRejectsBadInputAndWritesNothing(t *testing.T) {
 		{"two titles", "", []string{"One", "Two"}, "quote"},
 		{"multi-line title", "", []string{"One\nTwo"}, "title"},
 		{"blank tag", "", []string{"T", "--tag", " "}, "tag"},
+		{"whitespace key", "", []string{"T", "--key", "  "}, "--key must not be blank"},
 		{"blank recommend", "",
 			[]string{"T", "--option", "a:A", "--recommend", " "}, "--recommend"},
 		{"explicit empty recommend", "",
