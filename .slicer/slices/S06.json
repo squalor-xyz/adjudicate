@@ -1,0 +1,41 @@
+{
+  "id": "S06",
+  "title": "Commands: init and ask",
+  "lead": [
+    "`dlog init` creates the store and a config; `dlog ask` creates an open record."
+  ],
+  "depends_note": null,
+  "findings_note": "PROJECT.md v1 feature tier; Milestone 2",
+  "size": "M",
+  "flags": [],
+  "trees_note": "cli",
+  "trees_plural": false,
+  "boundary": "**Not in this slice:** decide, reject, withdraw, show and list.",
+  "sections": [
+    {
+      "heading": "Why",
+      "body": "Goal 1: capture an open question with options and a recommendation in one\ncommand."
+    },
+    {
+      "heading": "Files",
+      "body": "The `cli` and `commands` modules from the Architecture sketch, and end-to-end\nCLI tests against temp directories."
+    },
+    {
+      "heading": "Failing tests",
+      "body": "- `dlog init` in an empty temp dir creates the store and config; running it\n  again does not destroy existing records.\n- `dlog ask TITLE --option LABEL:SUMMARY ... --recommend LABEL [--key K]\n  [--tag T] [--context TEXT|--stdin]` creates one `open` record with those\n  fields and a history line.\n- `--recommend` with a label that is not one of the options fails with a\n  non-zero exit."
+    },
+    {
+      "heading": "Implement",
+      "body": "Wire argparse subcommands to the store. Gap: PROJECT.md gives\n`--option LABEL:SUMMARY` only; it does not say how to pass `tradeoffs` from the\nCLI. Ask the owner, or leave tradeoffs to editing the file."
+    },
+    {
+      "heading": "Check",
+      "body": "- The project test command passes.\n- `slicer check --json` is clean."
+    },
+    {
+      "heading": "Git",
+      "body": "Worktree under `.worktrees/` on a feature branch. No commit unless the owner\nasks; no AI attribution."
+    }
+  ],
+  "notes": []
+}

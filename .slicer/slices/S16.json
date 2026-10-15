@@ -1,0 +1,41 @@
+{
+  "id": "S16",
+  "title": "Docs and v1 acceptance round trip",
+  "lead": [
+    "User docs and one end-to-end test that walks the acceptance round trip."
+  ],
+  "depends_note": null,
+  "findings_note": "PROJECT.md v1 acceptance criteria; Milestone 5",
+  "size": "S",
+  "flags": [],
+  "trees_note": "docs",
+  "trees_plural": false,
+  "boundary": "**Not in this slice:** the dogfood run.",
+  "sections": [
+    {
+      "heading": "Why",
+      "body": "Milestone 5 and the acceptance criteria: all v1 commands work with no\nthird-party packages, and the round trip works."
+    },
+    {
+      "heading": "Files",
+      "body": "README or the project's docs location; one end-to-end test module."
+    },
+    {
+      "heading": "Failing tests",
+      "body": "End to end in a temp dir: `ask` -> `inbox` shows it -> `decide` -> `context`\nincludes it -> `check` reports it decided; then `supersede` hides the old one\nfrom `context` and `show` keeps it."
+    },
+    {
+      "heading": "Implement",
+      "body": "Write the usage docs for every v1 command and add the round-trip test."
+    },
+    {
+      "heading": "Check",
+      "body": "- The project test command passes in an environment with no third-party\n  packages.\n- `slicer check --json` is clean."
+    },
+    {
+      "heading": "Git",
+      "body": "Worktree under `.worktrees/` on a feature branch. No commit unless the owner\nasks; no AI attribution."
+    }
+  ],
+  "notes": []
+}

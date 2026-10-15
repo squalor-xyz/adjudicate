@@ -1,0 +1,41 @@
+{
+  "id": "S02",
+  "title": "Project scaffolding",
+  "lead": [
+    "Set up the repo layout, the test runner, a project AGENTS.md, and the license,\nusing the runtime and license the owner confirmed."
+  ],
+  "depends_note": null,
+  "findings_note": "PROJECT.md Stack recommendation; Dependency/licensing notes",
+  "size": "S",
+  "flags": [],
+  "trees_note": "scaffold",
+  "trees_plural": false,
+  "boundary": "**Not in this slice:** any dlog command or record logic beyond an empty entry\npoint that the smoke test can call.",
+  "sections": [
+    {
+      "heading": "Why",
+      "body": "Every later slice is test-first and needs a known layout, one test command, and\nproject guidance for agents. PROJECT.md requires the standard library only for\nruntime and tests (`unittest` if Python is confirmed)."
+    },
+    {
+      "heading": "Files",
+      "body": "Exact paths depend on the confirmed runtime (C15). Expected under the\nrecommendation: a package for the modules named in the Architecture sketch\n(cli, commands, store, model, query, render), a tests directory, AGENTS.md,\nLICENSE (per C22), and .gitignore updates for the confirmed stack."
+    },
+    {
+      "heading": "Failing tests",
+      "body": "A smoke test that runs the CLI entry point with `--help` and expects exit 0 and\na usage line. It fails before the entry point exists."
+    },
+    {
+      "heading": "Implement",
+      "body": "- Create the layout and an entry point that prints usage.\n- Add AGENTS.md with: the test command, the stdlib-only rule (any new\n  dependency needs owner approval), the test-first rule, and a pointer to slicer\n  for work tracking.\n- Add LICENSE per the confirmed C22 answer."
+    },
+    {
+      "heading": "Check",
+      "body": "- The test command recorded in AGENTS.md passes (under C15 as recommended:\n  `python3 -m unittest discover -s tests`).\n- No third-party packages are installed or referenced.\n- `slicer check --json` is clean."
+    },
+    {
+      "heading": "Git",
+      "body": "Worktree under `.worktrees/` on a feature branch. No commit unless the owner\nasks; no AI attribution."
+    }
+  ],
+  "notes": []
+}

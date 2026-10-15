@@ -1,0 +1,41 @@
+{
+  "id": "S03",
+  "title": "Record model and lifecycle transitions",
+  "lead": [
+    "Define the record schema, its validation, and the status transitions, with a\ndated history line appended on every transition."
+  ],
+  "depends_note": null,
+  "findings_note": "PROJECT.md Core concepts / data model; Milestone 1",
+  "size": "M",
+  "flags": [],
+  "trees_note": "model",
+  "trees_plural": false,
+  "boundary": "**Not in this slice:** reading or writing files, ID allocation, and the CLI.",
+  "sections": [
+    {
+      "heading": "Why",
+      "body": "The model is the core every command builds on. PROJECT.md acceptance requires a\ntest suite that covers the model transitions."
+    },
+    {
+      "heading": "Files",
+      "body": "The `model` module from the Architecture sketch and its test module (paths set\nby Project scaffolding)."
+    },
+    {
+      "heading": "Failing tests",
+      "body": "- Each field from the Core concepts table is present on a record and validated\n  (required vs optional per the table; `options` as {label, summary, tradeoffs}).\n- Allowed transitions: open -> decided / rejected / withdrawn; decided ->\n  superseded. Every other transition raises a validation error.\n- Each transition appends one dated history line.\n- `created` / `decided_at` are ISO 8601 dates.\n- The `kind` handling matches the owner's answer to C21."
+    },
+    {
+      "heading": "Implement",
+      "body": "Implement the schema, validation and transition functions in the model module.\n`asked_by` / `decided_by` are free-text attribution (C18), not authentication.\nGap: PROJECT.md does not say which fields are required; propose a required set\nto the owner in the review if the tests need one."
+    },
+    {
+      "heading": "Check",
+      "body": "- The project test command passes, including the new model tests.\n- `slicer check --json` is clean."
+    },
+    {
+      "heading": "Git",
+      "body": "Worktree under `.worktrees/` on a feature branch. No commit unless the owner\nasks; no AI attribution."
+    }
+  ],
+  "notes": []
+}

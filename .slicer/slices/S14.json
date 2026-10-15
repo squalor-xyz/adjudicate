@@ -1,0 +1,41 @@
+{
+  "id": "S14",
+  "title": "Command: lint",
+  "lead": [
+    "`dlog lint` exits non-zero on problems, so CI can use it."
+  ],
+  "depends_note": null,
+  "findings_note": "PROJECT.md Goals 8; acceptance (lint fixtures); Open decisions 5; Milestone 4",
+  "size": "M",
+  "flags": [],
+  "trees_note": "cli",
+  "trees_plural": false,
+  "boundary": "**Not in this slice:** ID collision detection and renumbering (next slice).",
+  "sections": [
+    {
+      "heading": "Why",
+      "body": "Goal 8 and the acceptance criterion: lint catches each defect class, with a\nfixture test for each."
+    },
+    {
+      "heading": "Files",
+      "body": "A lint module (or `query`), fixture stores under the tests directory, and CLI\ntests."
+    },
+    {
+      "heading": "Failing tests",
+      "body": "One fixture store and one test per defect class:\n- missing required fields;\n- dangling links (`supersedes`, `superseded_by` pointing at missing IDs);\n- supersede cycles;\n- two accepted decisions on the same `key`;\n- missing `decided_by` on a decided record (a warning, per C18 as recommended).\nA clean fixture store exits 0."
+    },
+    {
+      "heading": "Implement",
+      "body": "Implement each check and a report with record IDs. Gap: PROJECT.md does not say\nwhether warnings change the exit code; ask the owner."
+    },
+    {
+      "heading": "Check",
+      "body": "- The project test command passes.\n- `dlog lint` on a clean store exits 0; on each fixture it exits non-zero.\n- `slicer check --json` is clean."
+    },
+    {
+      "heading": "Git",
+      "body": "Worktree under `.worktrees/` on a feature branch. No commit unless the owner\nasks; no AI attribution."
+    }
+  ],
+  "notes": []
+}

@@ -1,0 +1,41 @@
+{
+  "id": "S05",
+  "title": "Store, config and ID allocation",
+  "lead": [
+    "Read and write record files in the store directory, load the config, and\nallocate the next ID by scanning the store."
+  ],
+  "depends_note": null,
+  "findings_note": "PROJECT.md Architecture sketch (ID allocation, Determinism); Open decisions 4, 6, 7",
+  "size": "M",
+  "flags": [],
+  "trees_note": "store",
+  "trees_plural": false,
+  "boundary": "**Not in this slice:** collision detection and renumbering (the ID collision\nslice), and any command other than library calls.",
+  "sections": [
+    {
+      "heading": "Why",
+      "body": "Milestone 1 covers read/write and ID allocation. Every command needs one store\nAPI that returns records in a stable order."
+    },
+    {
+      "heading": "Files",
+      "body": "The `store` module from the Architecture sketch, the config loader, and tests\nthat use temp directories."
+    },
+    {
+      "heading": "Failing tests",
+      "body": "- In an empty store the first ID is 1; the filename is `NNNN-slug.<ext>`\n  (zero-padded ID, slug from the title).\n- The next ID is one past the highest ID found by scanning the store.\n- The store path comes from the config, defaulting to `decisions/` at the repo\n  root (C20).\n- Listing records returns them in a stable, deterministic order.\n- Per-repo scope only (C19)."
+    },
+    {
+      "heading": "Implement",
+      "body": "Implement the store and config per C17, C19 and C20 as confirmed. Gap:\nPROJECT.md does not say the config file's name or format; follow the record\nformat decision or ask the owner."
+    },
+    {
+      "heading": "Check",
+      "body": "- The project test command passes.\n- `slicer check --json` is clean."
+    },
+    {
+      "heading": "Git",
+      "body": "Worktree under `.worktrees/` on a feature branch. No commit unless the owner\nasks; no AI attribution."
+    }
+  ],
+  "notes": []
+}

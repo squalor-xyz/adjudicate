@@ -1,0 +1,948 @@
+{
+  "version": 8,
+  "id_prefix": "S",
+  "id_width": 2,
+  "next_id": 23,
+  "preamble": "",
+  "passes": [],
+  "items": [
+    {
+      "id": "S01",
+      "title": "Confirm open decisions",
+      "short_title": "Confirm open decisions",
+      "status": "open",
+      "has_slice": true,
+      "depends_on": [],
+      "note_records": [],
+      "claim": null,
+      "fields": {
+        "size": "S",
+        "flags": [],
+        "trees": [
+          "decisions"
+        ],
+        "trees_literal": false,
+        "findings": "PROJECT.md Open decisions 1-7; Core concepts (kind); Dependency/licensing notes",
+        "discovered_from": "",
+        "cites": [
+          "C14",
+          "C15",
+          "C16",
+          "C17",
+          "C18",
+          "C19",
+          "C20",
+          "C21",
+          "C22"
+        ],
+        "key": "",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 3,
+        "urgency": 3,
+        "effort": 1,
+        "attempts": 0
+      }
+    },
+    {
+      "id": "S02",
+      "title": "Project scaffolding",
+      "short_title": "Project scaffolding",
+      "status": "open",
+      "has_slice": true,
+      "depends_on": [
+        "S01"
+      ],
+      "note_records": [],
+      "claim": null,
+      "fields": {
+        "size": "S",
+        "flags": [],
+        "trees": [
+          "scaffold"
+        ],
+        "trees_literal": false,
+        "findings": "PROJECT.md Stack recommendation; Dependency/licensing notes",
+        "discovered_from": "",
+        "cites": [
+          "C15",
+          "C22"
+        ],
+        "key": "",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 3,
+        "urgency": 3,
+        "effort": 1,
+        "attempts": 0
+      }
+    },
+    {
+      "id": "S03",
+      "title": "Record model and lifecycle transitions",
+      "short_title": "Record model and lifecycle transitions",
+      "status": "open",
+      "has_slice": true,
+      "depends_on": [
+        "S02",
+        "S01"
+      ],
+      "note_records": [],
+      "claim": null,
+      "fields": {
+        "size": "M",
+        "flags": [],
+        "trees": [
+          "model"
+        ],
+        "trees_literal": false,
+        "findings": "PROJECT.md Core concepts / data model; Milestone 1",
+        "discovered_from": "",
+        "cites": [
+          "C21",
+          "C18"
+        ],
+        "key": "",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 3,
+        "urgency": 3,
+        "effort": 2,
+        "attempts": 0
+      }
+    },
+    {
+      "id": "S04",
+      "title": "Record file read and write",
+      "short_title": "Record file read and write",
+      "status": "open",
+      "has_slice": true,
+      "depends_on": [
+        "S03",
+        "S01"
+      ],
+      "note_records": [],
+      "claim": null,
+      "fields": {
+        "size": "M",
+        "flags": [],
+        "trees": [
+          "model"
+        ],
+        "trees_literal": false,
+        "findings": "PROJECT.md Open decisions 3; Core concepts (Record)",
+        "discovered_from": "",
+        "cites": [
+          "C16",
+          "C07"
+        ],
+        "key": "",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 3,
+        "urgency": 3,
+        "effort": 2,
+        "attempts": 0
+      }
+    },
+    {
+      "id": "S05",
+      "title": "Store, config and ID allocation",
+      "short_title": "Store, config and ID allocation",
+      "status": "open",
+      "has_slice": true,
+      "depends_on": [
+        "S04",
+        "S01"
+      ],
+      "note_records": [],
+      "claim": null,
+      "fields": {
+        "size": "M",
+        "flags": [],
+        "trees": [
+          "store"
+        ],
+        "trees_literal": false,
+        "findings": "PROJECT.md Architecture sketch (ID allocation, Determinism); Open decisions 4, 6, 7",
+        "discovered_from": "",
+        "cites": [
+          "C17",
+          "C19",
+          "C20"
+        ],
+        "key": "",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 3,
+        "urgency": 3,
+        "effort": 2,
+        "attempts": 0
+      }
+    },
+    {
+      "id": "S06",
+      "title": "Commands: init and ask",
+      "short_title": "Commands: init and ask",
+      "status": "open",
+      "has_slice": true,
+      "depends_on": [
+        "S05"
+      ],
+      "note_records": [],
+      "claim": null,
+      "fields": {
+        "size": "M",
+        "flags": [],
+        "trees": [
+          "cli"
+        ],
+        "trees_literal": false,
+        "findings": "PROJECT.md v1 feature tier; Milestone 2",
+        "discovered_from": "",
+        "cites": [],
+        "key": "",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 3,
+        "urgency": 2,
+        "effort": 2,
+        "attempts": 0
+      }
+    },
+    {
+      "id": "S07",
+      "title": "Commands: decide, reject, withdraw",
+      "short_title": "Commands: decide, reject, withdraw",
+      "status": "open",
+      "has_slice": true,
+      "depends_on": [
+        "S06"
+      ],
+      "note_records": [],
+      "claim": null,
+      "fields": {
+        "size": "S",
+        "flags": [],
+        "trees": [
+          "cli"
+        ],
+        "trees_literal": false,
+        "findings": "PROJECT.md v1 feature tier; Lifecycle; Milestone 2",
+        "discovered_from": "",
+        "cites": [],
+        "key": "",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 3,
+        "urgency": 2,
+        "effort": 1,
+        "attempts": 0
+      }
+    },
+    {
+      "id": "S08",
+      "title": "Commands: show and list with --json",
+      "short_title": "Commands: show and list with --json",
+      "status": "open",
+      "has_slice": true,
+      "depends_on": [
+        "S06"
+      ],
+      "note_records": [],
+      "claim": null,
+      "fields": {
+        "size": "S",
+        "flags": [],
+        "trees": [
+          "cli"
+        ],
+        "trees_literal": false,
+        "findings": "PROJECT.md v1 feature tier; Milestone 2; acceptance (--json)",
+        "discovered_from": "",
+        "cites": [],
+        "key": "",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 3,
+        "urgency": 2,
+        "effort": 1,
+        "attempts": 0
+      }
+    },
+    {
+      "id": "S09",
+      "title": "Command: inbox",
+      "short_title": "Command: inbox",
+      "status": "open",
+      "has_slice": true,
+      "depends_on": [
+        "S08"
+      ],
+      "note_records": [],
+      "claim": null,
+      "fields": {
+        "size": "S",
+        "flags": [],
+        "trees": [
+          "cli"
+        ],
+        "trees_literal": false,
+        "findings": "PROJECT.md Goals 2; v1 feature tier; Milestone 3",
+        "discovered_from": "",
+        "cites": [],
+        "key": "",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 3,
+        "urgency": 2,
+        "effort": 1,
+        "attempts": 0
+      }
+    },
+    {
+      "id": "S10",
+      "title": "Command: check",
+      "short_title": "Command: check",
+      "status": "open",
+      "has_slice": true,
+      "depends_on": [
+        "S07",
+        "S08"
+      ],
+      "note_records": [],
+      "claim": null,
+      "fields": {
+        "size": "S",
+        "flags": [],
+        "trees": [
+          "cli"
+        ],
+        "trees_literal": false,
+        "findings": "PROJECT.md Goals 6; v1 feature tier; Milestone 3",
+        "discovered_from": "",
+        "cites": [],
+        "key": "",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 3,
+        "urgency": 2,
+        "effort": 1,
+        "attempts": 0
+      }
+    },
+    {
+      "id": "S11",
+      "title": "Command: context",
+      "short_title": "Command: context",
+      "status": "open",
+      "has_slice": true,
+      "depends_on": [
+        "S07",
+        "S08"
+      ],
+      "note_records": [],
+      "claim": null,
+      "fields": {
+        "size": "M",
+        "flags": [],
+        "trees": [
+          "cli"
+        ],
+        "trees_literal": false,
+        "findings": "PROJECT.md Goals 5; v1 feature tier; Risks (context bloat); Milestone 3",
+        "discovered_from": "",
+        "cites": [],
+        "key": "",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 3,
+        "urgency": 2,
+        "effort": 2,
+        "attempts": 0
+      }
+    },
+    {
+      "id": "S12",
+      "title": "Agent snippet: dlog ai and JSON shape docs",
+      "short_title": "Agent snippet: dlog ai and JSON shape docs",
+      "status": "open",
+      "has_slice": true,
+      "depends_on": [
+        "S09",
+        "S10",
+        "S11"
+      ],
+      "note_records": [],
+      "claim": null,
+      "fields": {
+        "size": "S",
+        "flags": [],
+        "trees": [
+          "docs"
+        ],
+        "trees_literal": false,
+        "findings": "PROJECT.md v1 feature tier; Risks (adoption); acceptance (--json documented)",
+        "discovered_from": "",
+        "cites": [
+          "C14"
+        ],
+        "key": "",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 2,
+        "urgency": 2,
+        "effort": 1,
+        "attempts": 0
+      }
+    },
+    {
+      "id": "S13",
+      "title": "Command: supersede",
+      "short_title": "Command: supersede",
+      "status": "open",
+      "has_slice": true,
+      "depends_on": [
+        "S07",
+        "S11"
+      ],
+      "note_records": [],
+      "claim": null,
+      "fields": {
+        "size": "S",
+        "flags": [],
+        "trees": [
+          "cli"
+        ],
+        "trees_literal": false,
+        "findings": "PROJECT.md Goals 4; Lifecycle; acceptance (supersede); Milestone 4",
+        "discovered_from": "",
+        "cites": [],
+        "key": "",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 3,
+        "urgency": 2,
+        "effort": 1,
+        "attempts": 0
+      }
+    },
+    {
+      "id": "S14",
+      "title": "Command: lint",
+      "short_title": "Command: lint",
+      "status": "open",
+      "has_slice": true,
+      "depends_on": [
+        "S13",
+        "S01"
+      ],
+      "note_records": [],
+      "claim": null,
+      "fields": {
+        "size": "M",
+        "flags": [],
+        "trees": [
+          "cli"
+        ],
+        "trees_literal": false,
+        "findings": "PROJECT.md Goals 8; acceptance (lint fixtures); Open decisions 5; Milestone 4",
+        "discovered_from": "",
+        "cites": [
+          "C18",
+          "C08"
+        ],
+        "key": "",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 3,
+        "urgency": 2,
+        "effort": 2,
+        "attempts": 0
+      }
+    },
+    {
+      "id": "S15",
+      "title": "ID collision detection and renumber",
+      "short_title": "ID collision detection and renumber",
+      "status": "open",
+      "has_slice": true,
+      "depends_on": [
+        "S14",
+        "S01"
+      ],
+      "note_records": [],
+      "claim": null,
+      "fields": {
+        "size": "M",
+        "flags": [],
+        "trees": [
+          "store"
+        ],
+        "trees_literal": false,
+        "findings": "PROJECT.md Open decisions 4; Risks (merge conflicts on IDs); Milestone 4",
+        "discovered_from": "",
+        "cites": [
+          "C17"
+        ],
+        "key": "",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 2,
+        "urgency": 2,
+        "effort": 2,
+        "attempts": 0
+      }
+    },
+    {
+      "id": "S16",
+      "title": "Docs and v1 acceptance round trip",
+      "short_title": "Docs and v1 acceptance round trip",
+      "status": "open",
+      "has_slice": true,
+      "depends_on": [
+        "S12",
+        "S15"
+      ],
+      "note_records": [],
+      "claim": null,
+      "fields": {
+        "size": "S",
+        "flags": [],
+        "trees": [
+          "docs"
+        ],
+        "trees_literal": false,
+        "findings": "PROJECT.md v1 acceptance criteria; Milestone 5",
+        "discovered_from": "",
+        "cites": [],
+        "key": "",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 2,
+        "urgency": 1,
+        "effort": 1,
+        "attempts": 0
+      }
+    },
+    {
+      "id": "S17",
+      "title": "Dogfood: record dlog's own decisions with dlog",
+      "short_title": "Dogfood: record dlog's own decisions with dlog",
+      "status": "open",
+      "has_slice": true,
+      "depends_on": [
+        "S16"
+      ],
+      "note_records": [],
+      "claim": null,
+      "fields": {
+        "size": "S",
+        "flags": [],
+        "trees": [
+          "docs"
+        ],
+        "trees_literal": false,
+        "findings": "PROJECT.md Milestone 5; acceptance (own decisions recorded)",
+        "discovered_from": "",
+        "cites": [
+          "C18"
+        ],
+        "key": "",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 2,
+        "urgency": 1,
+        "effort": 1,
+        "attempts": 0
+      }
+    },
+    {
+      "id": "S18",
+      "title": "Later: cross-repo inbox",
+      "short_title": "Later: cross-repo inbox",
+      "status": "later",
+      "has_slice": true,
+      "depends_on": [
+        "S09",
+        "S01"
+      ],
+      "note_records": [],
+      "claim": null,
+      "fields": {
+        "size": "M",
+        "flags": [],
+        "trees": [
+          "later"
+        ],
+        "trees_literal": false,
+        "findings": "PROJECT.md Feature tiers (Later); Open decisions 6",
+        "discovered_from": "",
+        "cites": [
+          "C19"
+        ],
+        "key": "",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 1,
+        "urgency": 1,
+        "effort": 2,
+        "attempts": 0
+      }
+    },
+    {
+      "id": "S19",
+      "title": "Later: TUI or static HTML inbox",
+      "short_title": "Later: TUI or static HTML inbox",
+      "status": "later",
+      "has_slice": true,
+      "depends_on": [
+        "S09"
+      ],
+      "note_records": [],
+      "claim": null,
+      "fields": {
+        "size": "M",
+        "flags": [],
+        "trees": [
+          "later"
+        ],
+        "trees_literal": false,
+        "findings": "PROJECT.md Feature tiers (Later)",
+        "discovered_from": "",
+        "cites": [],
+        "key": "",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 1,
+        "urgency": 1,
+        "effort": 2,
+        "attempts": 0
+      }
+    },
+    {
+      "id": "S20",
+      "title": "Later: slicer integration",
+      "short_title": "Later: slicer integration",
+      "status": "later",
+      "has_slice": true,
+      "depends_on": [
+        "S08"
+      ],
+      "note_records": [],
+      "claim": null,
+      "fields": {
+        "size": "M",
+        "flags": [],
+        "trees": [
+          "later"
+        ],
+        "trees_literal": false,
+        "findings": "PROJECT.md Feature tiers (Later); Non-goals (not replacing slicer); Risks (overlap with slicer catalog)",
+        "discovered_from": "",
+        "cites": [],
+        "key": "",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 1,
+        "urgency": 1,
+        "effort": 2,
+        "attempts": 0
+      }
+    },
+    {
+      "id": "S21",
+      "title": "Later: optional owner-only decide enforcement",
+      "short_title": "Later: optional owner-only decide enforcement",
+      "status": "later",
+      "has_slice": true,
+      "depends_on": [
+        "S07",
+        "S01"
+      ],
+      "note_records": [],
+      "claim": null,
+      "fields": {
+        "size": "M",
+        "flags": [],
+        "trees": [
+          "later"
+        ],
+        "trees_literal": false,
+        "findings": "PROJECT.md Feature tiers (Later); Open decisions 5; Non-goals",
+        "discovered_from": "",
+        "cites": [
+          "C18",
+          "C11"
+        ],
+        "key": "",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 1,
+        "urgency": 1,
+        "effort": 2,
+        "attempts": 0
+      }
+    },
+    {
+      "id": "S22",
+      "title": "Later: import from ADR folders",
+      "short_title": "Later: import from ADR folders",
+      "status": "later",
+      "has_slice": true,
+      "depends_on": [
+        "S05"
+      ],
+      "note_records": [],
+      "claim": null,
+      "fields": {
+        "size": "M",
+        "flags": [],
+        "trees": [
+          "later"
+        ],
+        "trees_literal": false,
+        "findings": "PROJECT.md Feature tiers (Later)",
+        "discovered_from": "",
+        "cites": [],
+        "key": "",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 1,
+        "urgency": 1,
+        "effort": 2,
+        "attempts": 0
+      }
+    }
+  ],
+  "epilogue": "",
+  "goals": "dlog is a small CLI with a plain-text store that records project decisions as a loop: an agent asks, the owner decides in batches, and every later agent reads the decision. The goal and non-goal records below come from PROJECT.md. Every assumption in the catalog is pending owner confirmation (see the 'Confirm open decisions' item).",
+  "non_goals": "",
+  "catalog": {
+    "next_id": 23,
+    "id_prefix": "C",
+    "id_width": 2,
+    "records": [
+      {
+        "id": "C01",
+        "kind": "goal",
+        "title": "Capture open questions in one command",
+        "body": "Capture open questions with options and a recommendation in one command (PROJECT.md Goals 1).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C02",
+        "kind": "goal",
+        "title": "One inbox for batch answering",
+        "body": "Show every open question in one inbox so the owner can answer them in a batch (Goals 2).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C03",
+        "kind": "goal",
+        "title": "Record decisions with rationale",
+        "body": "Record a decision with a rationale and a link to the question it answers (Goals 3).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C04",
+        "kind": "goal",
+        "title": "Supersede with history",
+        "body": "Supersede a decision while keeping its history (Goals 4).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C05",
+        "kind": "goal",
+        "title": "Compact agent context export",
+        "body": "Export the accepted decisions as compact, token-cheap context, optionally filtered by tag or scope (Goals 5).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C06",
+        "kind": "goal",
+        "title": "Check before asking",
+        "body": "Let an agent ask \"has X been decided?\" (check) before it asks the owner (Goals 6).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C07",
+        "kind": "goal",
+        "title": "Plain text in the repo",
+        "body": "Store everything as plain text in the repo: diffable, mergeable, reviewable in a PR (Goals 7).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C08",
+        "kind": "goal",
+        "title": "Lint the log",
+        "body": "Lint the log: missing fields, dangling links, supersede cycles, conflicting accepted decisions on the same key (Goals 8).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C09",
+        "kind": "non_goal",
+        "title": "No hosted service, database server, or web UI",
+        "body": "v1 non-goal (PROJECT.md Non-goals).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C10",
+        "kind": "non_goal",
+        "title": "No LLM calls",
+        "body": "dlog is a store and a workflow; agents bring their own reasoning (v1 non-goal).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C11",
+        "kind": "non_goal",
+        "title": "No cryptographic enforcement of who decided",
+        "body": "v1 non-goal; see the open decision on owner-only decide enforcement.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C12",
+        "kind": "non_goal",
+        "title": "Not a slicer replacement",
+        "body": "Slicer tracks work; dlog tracks decisions. They link to each other by ID but neither depends on the other (v1 non-goal).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C13",
+        "kind": "non_goal",
+        "title": "No sync beyond git",
+        "body": "No syncing across machines beyond what git already does (v1 non-goal).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C14",
+        "kind": "assumption",
+        "title": "Name: keep 'dlog' as placeholder",
+        "body": "PENDING OWNER CONFIRMATION - not decided. Source: PROJECT.md Open decisions 1. 'dlog' is a working name. Recommendation: decide before the first public use; it does not block v1 internals. Alternatives: none listed in PROJECT.md (gap).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C15",
+        "kind": "assumption",
+        "title": "Runtime: Python 3.11+ standard library only",
+        "body": "PENDING OWNER CONFIRMATION - not decided. Source: Open decisions 2 and Stack recommendation. Recommendation: Python 3.11+ stdlib only (argparse, pathlib, json, tomllib for reading), matching the stdlib-first preference; tests with unittest. Alternative: Go single static binary - easier to hand to headless agents/machines without Python, at the cost of a second toolchain.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C16",
+        "kind": "assumption",
+        "title": "Record format: Markdown body + TOML frontmatter",
+        "body": "PENDING OWNER CONFIRMATION - not decided. Source: Open decisions 3. Recommendation: Markdown body with TOML frontmatter, read with tomllib, written by a minimal hand-written emitter covering only the field types dlog uses. Alternatives: Markdown with JSON frontmatter; pure JSON or TOML files.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C17",
+        "kind": "assumption",
+        "title": "IDs: sequential with lint collision detection and renumber",
+        "body": "PENDING OWNER CONFIRMATION - not decided. Source: Open decisions 4 and Architecture sketch (ID allocation). Recommendation: sequential IDs (next free ID from scanning the store) plus lint detection of collisions, with a renumber command. Alternatives: sequential IDs plus 'dlog lint --fix' to renumber collisions; sequential IDs with a merge driver (as slicer does); short random IDs.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C18",
+        "kind": "assumption",
+        "title": "Owner-only decide: convention in v1",
+        "body": "PENDING OWNER CONFIRMATION - not decided. Source: Open decisions 5. Recommendation: convention for v1 (AGENTS.md rule), with decided_by recorded and lint warnings when it is missing. Alternatives: a git hook; signed commits.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C19",
+        "kind": "assumption",
+        "title": "Scope: per-repo only in v1",
+        "body": "PENDING OWNER CONFIRMATION - not decided. Source: Open decisions 6. Recommendation: per-repo in v1; cross-repo inbox later. Alternative: per-repo plus a cross-repo inbox in v1.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C20",
+        "kind": "assumption",
+        "title": "Store location: decisions/ at repo root, configurable",
+        "body": "PENDING OWNER CONFIRMATION - not decided. Source: Open decisions 7. Recommendation: decisions/ at the repo root, configurable. Alternatives: none listed in PROJECT.md (gap).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C21",
+        "kind": "assumption",
+        "title": "Record kind: separate kind field vs status alone",
+        "body": "PENDING OWNER CONFIRMATION - not decided. Source: Core concepts table, 'kind' row (marked as an open decision there, not in the Open decisions list). Options: a 'kind' field (question/decision), or let status alone carry it. Recommendation: none given in PROJECT.md (gap; owner must choose).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C22",
+        "kind": "assumption",
+        "title": "License: permissive FLOSS (MIT or Apache-2.0)",
+        "body": "PENDING OWNER CONFIRMATION - not decided. Source: Dependency/licensing notes (marked open there, not in the Open decisions list). Recommendation: a permissive FLOSS license such as MIT or Apache-2.0; PROJECT.md does not pick between them (owner must choose).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      }
+    ]
+  }
+}

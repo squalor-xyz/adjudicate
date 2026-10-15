@@ -1,0 +1,41 @@
+{
+  "id": "S07",
+  "title": "Commands: decide, reject, withdraw",
+  "lead": [
+    "Answer, reject or withdraw an open question."
+  ],
+  "depends_note": null,
+  "findings_note": "PROJECT.md v1 feature tier; Lifecycle; Milestone 2",
+  "size": "S",
+  "flags": [],
+  "trees_note": "cli",
+  "trees_plural": false,
+  "boundary": "**Not in this slice:** supersede.",
+  "sections": [
+    {
+      "heading": "Why",
+      "body": "Goal 3: record a decision with a rationale and a link to the question it\nanswers."
+    },
+    {
+      "heading": "Files",
+      "body": "The `commands` module and CLI tests."
+    },
+    {
+      "heading": "Failing tests",
+      "body": "- `dlog decide ID OPTION --why TEXT` sets status `decided`, `decision`,\n  `rationale`, `decided_at`, and appends history.\n- `dlog decide ID --text TEXT --why TEXT` records a free-text decision.\n- `dlog reject ID --why` and `dlog withdraw ID --why` set their statuses.\n- Deciding a record that is not `open` fails with a non-zero exit.\n- `decided_by` is recorded (C18)."
+    },
+    {
+      "heading": "Implement",
+      "body": "Call the model transitions from the commands. Gap: PROJECT.md does not say how\n`decided_by` is supplied (flag, config or environment); ask the owner."
+    },
+    {
+      "heading": "Check",
+      "body": "- The project test command passes.\n- `slicer check --json` is clean."
+    },
+    {
+      "heading": "Git",
+      "body": "Worktree under `.worktrees/` on a feature branch. No commit unless the owner\nasks; no AI attribution."
+    }
+  ],
+  "notes": []
+}

@@ -1,0 +1,41 @@
+{
+  "id": "S19",
+  "title": "Later: TUI or static HTML inbox",
+  "lead": [
+    "A TUI or a local static HTML page for clearing the inbox faster."
+  ],
+  "depends_note": null,
+  "findings_note": "PROJECT.md Feature tiers (Later)",
+  "size": "M",
+  "flags": [],
+  "trees_note": "later",
+  "trees_plural": false,
+  "boundary": "**Not in this slice:** a hosted service or web server (v1 non-goal).",
+  "sections": [
+    {
+      "heading": "Why",
+      "body": "Listed in the Later tier to speed up batch answering."
+    },
+    {
+      "heading": "Files",
+      "body": "Not specified in PROJECT.md (gap)."
+    },
+    {
+      "heading": "Failing tests",
+      "body": "Gap: no acceptance criteria in PROJECT.md. Choose TUI or HTML with the owner\nfirst, then write tests for that surface."
+    },
+    {
+      "heading": "Implement",
+      "body": "Gap: PROJECT.md leaves the choice between TUI and HTML open. Plan with the\nowner before starting."
+    },
+    {
+      "heading": "Check",
+      "body": "- The project test command passes.\n- `slicer check --json` is clean."
+    },
+    {
+      "heading": "Git",
+      "body": "Worktree under `.worktrees/` on a feature branch. No commit unless the owner\nasks; no AI attribution."
+    }
+  ],
+  "notes": []
+}

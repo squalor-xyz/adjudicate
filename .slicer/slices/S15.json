@@ -1,0 +1,41 @@
+{
+  "id": "S15",
+  "title": "ID collision detection and renumber",
+  "lead": [
+    "Handle two branches that each allocated the same ID, per the scheme the owner\nconfirmed in C17."
+  ],
+  "depends_note": null,
+  "findings_note": "PROJECT.md Open decisions 4; Risks (merge conflicts on IDs); Milestone 4",
+  "size": "M",
+  "flags": [],
+  "trees_note": "store",
+  "trees_plural": false,
+  "boundary": "**Not in this slice:** a git merge driver, unless C17 picks that option.",
+  "sections": [
+    {
+      "heading": "Why",
+      "body": "Concurrent `ask` calls on different branches produce colliding IDs (Risks)."
+    },
+    {
+      "heading": "Files",
+      "body": "The `store` module, lint, a renumber command, and fixture tests."
+    },
+    {
+      "heading": "Failing tests",
+      "body": "Under C17 as recommended:\n- A fixture with two records sharing an ID makes `lint` exit non-zero naming\n  both files.\n- The renumber command gives one of them the next free ID, renames its file,\n  and rewrites links that point at it.\n- After renumbering, `lint` exits 0."
+    },
+    {
+      "heading": "Implement",
+      "body": "Implement the option the owner chose in C17. Gap: PROJECT.md does not say which\nrecord keeps the ID or the renumber command's name; ask the owner."
+    },
+    {
+      "heading": "Check",
+      "body": "- The project test command passes.\n- `slicer check --json` is clean."
+    },
+    {
+      "heading": "Git",
+      "body": "Worktree under `.worktrees/` on a feature branch. No commit unless the owner\nasks; no AI attribution."
+    }
+  ],
+  "notes": []
+}

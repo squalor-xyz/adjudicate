@@ -1,0 +1,41 @@
+{
+  "id": "S04",
+  "title": "Record file read and write",
+  "lead": [
+    "Serialize records to and from the confirmed file format, one file per record."
+  ],
+  "depends_note": null,
+  "findings_note": "PROJECT.md Open decisions 3; Core concepts (Record)",
+  "size": "M",
+  "flags": [],
+  "trees_note": "model",
+  "trees_plural": false,
+  "boundary": "**Not in this slice:** the store directory, ID allocation, and commands.",
+  "sections": [
+    {
+      "heading": "Why",
+      "body": "PROJECT.md requires plain-text records that are diffable, mergeable and\nreviewable in a PR (Goals 7), and deterministic output (Architecture sketch)."
+    },
+    {
+      "heading": "Files",
+      "body": "A serialization module next to the model (paths set by Project scaffolding) and\nits tests."
+    },
+    {
+      "heading": "Failing tests",
+      "body": "- Round trip: write then read gives an equal record, for every field type the\n  model uses (strings, lists, option lists, dates, links).\n- Writing the same record twice gives byte-identical output (determinism).\n- A malformed file gives a clear error naming the file.\n- Under C16 as recommended: the frontmatter is valid TOML read by `tomllib`,\n  and the body is Markdown."
+    },
+    {
+      "heading": "Implement",
+      "body": "Implement read and write for the format the owner confirmed in C16. Under the\nrecommendation, write a minimal TOML emitter covering only the field types\ndlog uses, and read with `tomllib`."
+    },
+    {
+      "heading": "Check",
+      "body": "- The project test command passes.\n- `slicer check --json` is clean."
+    },
+    {
+      "heading": "Git",
+      "body": "Worktree under `.worktrees/` on a feature branch. No commit unless the owner\nasks; no AI attribution."
+    }
+  ],
+  "notes": []
+}

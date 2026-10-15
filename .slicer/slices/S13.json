@@ -1,0 +1,41 @@
+{
+  "id": "S13",
+  "title": "Command: supersede",
+  "lead": [
+    "`dlog supersede OLD --by NEW` links two decided records and marks OLD as\n`superseded`."
+  ],
+  "depends_note": null,
+  "findings_note": "PROJECT.md Goals 4; Lifecycle; acceptance (supersede); Milestone 4",
+  "size": "S",
+  "flags": [],
+  "trees_note": "cli",
+  "trees_plural": false,
+  "boundary": "**Not in this slice:** lint for supersede cycles.",
+  "sections": [
+    {
+      "heading": "Why",
+      "body": "Goal 4: supersede a decision while keeping its history."
+    },
+    {
+      "heading": "Files",
+      "body": "The `commands` and `model` modules and CLI tests."
+    },
+    {
+      "heading": "Failing tests",
+      "body": "- After `supersede A --by B`, A is `superseded`, A.superseded_by = B and\n  B.supersedes = A; both get history lines.\n- `context` no longer includes A; `show A` still shows A and its history\n  (acceptance criterion).\n- Superseding a record that is not `decided`, or with a NEW that is not\n  `decided`, fails."
+    },
+    {
+      "heading": "Implement",
+      "body": "Use the model's decided -> superseded transition and write both records."
+    },
+    {
+      "heading": "Check",
+      "body": "- The project test command passes.\n- `slicer check --json` is clean."
+    },
+    {
+      "heading": "Git",
+      "body": "Worktree under `.worktrees/` on a feature branch. No commit unless the owner\nasks; no AI attribution."
+    }
+  ],
+  "notes": []
+}

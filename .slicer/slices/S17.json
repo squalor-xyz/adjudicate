@@ -1,0 +1,41 @@
+{
+  "id": "S17",
+  "title": "Dogfood: record dlog's own decisions with dlog",
+  "lead": [
+    "Record dlog's own design decisions (the answers from \"Confirm open decisions\")\nin dlog's own store."
+  ],
+  "depends_note": null,
+  "findings_note": "PROJECT.md Milestone 5; acceptance (own decisions recorded)",
+  "size": "S",
+  "flags": [],
+  "trees_note": "docs",
+  "trees_plural": false,
+  "boundary": "**Not in this slice:** changing the slicer catalog records or any product\nfeature.",
+  "sections": [
+    {
+      "heading": "Why",
+      "body": "Acceptance: dlog's own design decisions are recorded with dlog."
+    },
+    {
+      "heading": "Files",
+      "body": "The store directory in this repo, created by `dlog init`."
+    },
+    {
+      "heading": "Failing tests",
+      "body": "None new: this is a usage run. The check below is the gate."
+    },
+    {
+      "heading": "Implement",
+      "body": "Run `dlog init`, then `dlog ask` and `dlog decide` for each decision the owner\nconfirmed, with the owner's rationale. Each `decide` is the owner's\ntransition (C18); the agent prepares the questions and the owner answers."
+    },
+    {
+      "heading": "Check",
+      "body": "- `dlog list --status decided --json` lists one record per confirmed decision.\n- `dlog lint` exits 0.\n- `slicer check --json` is clean."
+    },
+    {
+      "heading": "Git",
+      "body": "Worktree under `.worktrees/` on a feature branch. No commit unless the owner\nasks; no AI attribution."
+    }
+  ],
+  "notes": []
+}

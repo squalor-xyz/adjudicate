@@ -1,0 +1,41 @@
+{
+  "id": "S10",
+  "title": "Command: check",
+  "lead": [
+    "`dlog check QUERY` searches titles, keys, tags and decision text and reports\ndecided / open / not found."
+  ],
+  "depends_note": null,
+  "findings_note": "PROJECT.md Goals 6; v1 feature tier; Milestone 3",
+  "size": "S",
+  "flags": [],
+  "trees_note": "cli",
+  "trees_plural": false,
+  "boundary": "**Not in this slice:** context export.",
+  "sections": [
+    {
+      "heading": "Why",
+      "body": "Goal 6: an agent asks \"has X been decided?\" before it asks the owner."
+    },
+    {
+      "heading": "Files",
+      "body": "The `query` module and CLI tests."
+    },
+    {
+      "heading": "Failing tests",
+      "body": "- A query matching a decided record reports `decided` with its ID.\n- A query matching only open records reports `open`.\n- No match reports `not found`.\n- Matching covers titles, keys, tags and decision text.\n- `check --json` has a stable, documented shape."
+    },
+    {
+      "heading": "Implement",
+      "body": "Implement the search in `query`. Gap: PROJECT.md does not define the match rule\n(substring, case, word) or the exit code per result; propose one in review."
+    },
+    {
+      "heading": "Check",
+      "body": "- The project test command passes.\n- `slicer check --json` is clean."
+    },
+    {
+      "heading": "Git",
+      "body": "Worktree under `.worktrees/` on a feature branch. No commit unless the owner\nasks; no AI attribution."
+    }
+  ],
+  "notes": []
+}

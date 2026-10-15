@@ -1,0 +1,41 @@
+{
+  "id": "S12",
+  "title": "Agent snippet: dlog ai and JSON shape docs",
+  "lead": [
+    "`dlog ai` prints a short AGENTS.md snippet telling agents how to use dlog, and\nevery read command's JSON shape is documented."
+  ],
+  "depends_note": null,
+  "findings_note": "PROJECT.md v1 feature tier; Risks (adoption); acceptance (--json documented)",
+  "size": "S",
+  "flags": [],
+  "trees_note": "docs",
+  "trees_plural": false,
+  "boundary": "**Not in this slice:** the user-facing README and the dogfood run.",
+  "sections": [
+    {
+      "heading": "Why",
+      "body": "Risks: agents only use dlog if the instruction is short and the commands are\ncheap. Acceptance requires a documented, stable `--json` shape on every read\ncommand."
+    },
+    {
+      "heading": "Files",
+      "body": "The `commands` module (snippet text) and the project's docs location; CLI tests."
+    },
+    {
+      "heading": "Failing tests",
+      "body": "- `dlog ai` exits 0 and prints the snippet.\n- The snippet names `check`, `ask`, `inbox` and `context`.\n- A test asserts each read command's `--json` keys match the documented shape."
+    },
+    {
+      "heading": "Implement",
+      "body": "Write the snippet and the JSON shape docs. The snippet uses the working name;\nthe final name follows C14."
+    },
+    {
+      "heading": "Check",
+      "body": "- The project test command passes.\n- `slicer check --json` is clean."
+    },
+    {
+      "heading": "Git",
+      "body": "Worktree under `.worktrees/` on a feature branch. No commit unless the owner\nasks; no AI attribution."
+    }
+  ],
+  "notes": []
+}

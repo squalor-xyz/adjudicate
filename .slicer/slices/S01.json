@@ -1,0 +1,41 @@
+{
+  "id": "S01",
+  "title": "Confirm open decisions",
+  "lead": [
+    "The owner confirms or changes each assumption recorded in the slicer catalog\n(C14-C22). Nothing here is decided until the owner says so. Slices that rely on\none of these assumptions depend on this item."
+  ],
+  "depends_note": null,
+  "findings_note": "PROJECT.md Open decisions 1-7; Core concepts (kind); Dependency/licensing notes",
+  "size": "S",
+  "flags": [],
+  "trees_note": "decisions",
+  "trees_plural": false,
+  "boundary": "**Not in this slice:** any code, repo layout, or implementation; recording the\ndecisions inside dlog itself (that is the dogfood slice).",
+  "sections": [
+    {
+      "heading": "Why",
+      "body": "PROJECT.md lists open decisions, each with a recommendation. Under the owner's\nrule they are architecture decisions that belong to the owner, so every later\nslice that relies on one waits for an explicit answer instead of quietly taking\nthe recommended default."
+    },
+    {
+      "heading": "Files",
+      "body": "No source files. Tracking only, changed through the slicer CLI (catalog records\nC14-C22)."
+    },
+    {
+      "heading": "Failing tests",
+      "body": "None: this item has no code. The check below is the gate."
+    },
+    {
+      "heading": "Implement",
+      "body": "Present each assumption to the owner in one batch, with its recommendation and\nalternatives, and record each answer:\n\n1. C14 Name - recommendation: keep \"dlog\" as a placeholder; decide before the\n   first public use (does not block v1 internals). No alternatives listed.\n2. C15 Language/runtime - recommendation: Python 3.11+ standard library only.\n   Alternative: Go single static binary.\n3. C16 Record file format - recommendation: Markdown body + TOML frontmatter\n   with a minimal hand-written emitter. Alternatives: Markdown + JSON\n   frontmatter; pure JSON or TOML files.\n4. C17 ID scheme under concurrent branches - recommendation: sequential IDs\n   plus lint collision detection and a renumber command. Alternatives:\n   sequential + `lint --fix` renumber; sequential + merge driver; short random IDs.\n5. C18 Owner-only decide enforcement - recommendation: convention + AGENTS.md\n   rule in v1, `decided_by` recorded, lint warns when missing. Alternatives:\n   git hook; signed commits.\n6. C19 Scope - recommendation: per-repo in v1, cross-repo inbox later.\n   Alternative: cross-repo inbox in v1.\n7. C20 Store location - recommendation: `decisions/` at the repo root,\n   configurable. No alternatives listed.\n8. C21 Record `kind` field vs status alone - no recommendation in PROJECT.md;\n   the owner must choose.\n9. C22 License - recommendation: a permissive FLOSS license (MIT or\n   Apache-2.0); PROJECT.md does not pick one, so the owner must choose.\n\nFor each confirmed or changed answer, add a `decision` catalog record with the\nowner's choice and rationale, and retire the matching assumption. If an answer\nchanges a later slice's scope, edit that slice with `slicer edit`."
+    },
+    {
+      "heading": "Check",
+      "body": "- `slicer catalog list --kind assumption --json --lean` returns no active\n  record among C14-C22 (each is retired after its answer).\n- `slicer catalog list --kind decision --json --lean` has one record per\n  answered assumption, carrying the owner's choice.\n- `slicer check --json` is clean."
+    },
+    {
+      "heading": "Git",
+      "body": "Tracking-only change in a worktree under `.worktrees/` on a feature branch.\nNo commit unless the owner asks; no AI attribution in commit messages."
+    }
+  ],
+  "notes": []
+}

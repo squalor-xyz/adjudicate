@@ -1,0 +1,41 @@
+{
+  "id": "S09",
+  "title": "Command: inbox",
+  "lead": [
+    "`dlog inbox` lists open questions, oldest first, with options and\nrecommendations."
+  ],
+  "depends_note": null,
+  "findings_note": "PROJECT.md Goals 2; v1 feature tier; Milestone 3",
+  "size": "S",
+  "flags": [],
+  "trees_note": "cli",
+  "trees_plural": false,
+  "boundary": "**Not in this slice:** a TUI or HTML inbox, and a cross-repo inbox (Later tier).",
+  "sections": [
+    {
+      "heading": "Why",
+      "body": "Goal 2: the owner answers every open question in one batch."
+    },
+    {
+      "heading": "Files",
+      "body": "The `commands`, `query` and `render` modules, and CLI tests."
+    },
+    {
+      "heading": "Failing tests",
+      "body": "- Only `open` records appear, oldest first.\n- Each entry shows its options and the recommendation.\n- `inbox --json` gives a stable, documented shape."
+    },
+    {
+      "heading": "Implement",
+      "body": "Reuse the list query with status `open` and the oldest-first order."
+    },
+    {
+      "heading": "Check",
+      "body": "- The project test command passes.\n- `slicer check --json` is clean."
+    },
+    {
+      "heading": "Git",
+      "body": "Worktree under `.worktrees/` on a feature branch. No commit unless the owner\nasks; no AI attribution."
+    }
+  ],
+  "notes": []
+}

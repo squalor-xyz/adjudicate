@@ -1,0 +1,56 @@
+{"when": "2026-10-15T03:56:49Z", "item": "C01", "action": "catalog", "from": "", "to": "Capture open questions in one command", "note": "add"}
+{"when": "2026-10-15T03:56:49Z", "item": "C02", "action": "catalog", "from": "", "to": "One inbox for batch answering", "note": "add"}
+{"when": "2026-10-15T03:56:49Z", "item": "C03", "action": "catalog", "from": "", "to": "Record decisions with rationale", "note": "add"}
+{"when": "2026-10-15T03:56:49Z", "item": "C04", "action": "catalog", "from": "", "to": "Supersede with history", "note": "add"}
+{"when": "2026-10-15T03:56:49Z", "item": "C05", "action": "catalog", "from": "", "to": "Compact agent context export", "note": "add"}
+{"when": "2026-10-15T03:56:49Z", "item": "C06", "action": "catalog", "from": "", "to": "Check before asking", "note": "add"}
+{"when": "2026-10-15T03:56:50Z", "item": "C07", "action": "catalog", "from": "", "to": "Plain text in the repo", "note": "add"}
+{"when": "2026-10-15T03:56:50Z", "item": "C08", "action": "catalog", "from": "", "to": "Lint the log", "note": "add"}
+{"when": "2026-10-15T03:56:50Z", "item": "C09", "action": "catalog", "from": "", "to": "No hosted service, database server, or web UI", "note": "add"}
+{"when": "2026-10-15T03:56:50Z", "item": "C10", "action": "catalog", "from": "", "to": "No LLM calls", "note": "add"}
+{"when": "2026-10-15T03:56:50Z", "item": "C11", "action": "catalog", "from": "", "to": "No cryptographic enforcement of who decided", "note": "add"}
+{"when": "2026-10-15T03:56:51Z", "item": "C12", "action": "catalog", "from": "", "to": "Not a slicer replacement", "note": "add"}
+{"when": "2026-10-15T03:56:51Z", "item": "C13", "action": "catalog", "from": "", "to": "No sync beyond git", "note": "add"}
+{"when": "2026-10-15T03:57:02Z", "item": "C14", "action": "catalog", "from": "", "to": "Name: keep 'dlog' as placeholder", "note": "add"}
+{"when": "2026-10-15T03:57:03Z", "item": "C15", "action": "catalog", "from": "", "to": "Runtime: Python 3.11+ standard library only", "note": "add"}
+{"when": "2026-10-15T03:57:03Z", "item": "C16", "action": "catalog", "from": "", "to": "Record format: Markdown body + TOML frontmatter", "note": "add"}
+{"when": "2026-10-15T03:57:03Z", "item": "C17", "action": "catalog", "from": "", "to": "IDs: sequential with lint collision detection and renumber", "note": "add"}
+{"when": "2026-10-15T03:57:03Z", "item": "C18", "action": "catalog", "from": "", "to": "Owner-only decide: convention in v1", "note": "add"}
+{"when": "2026-10-15T03:57:03Z", "item": "C19", "action": "catalog", "from": "", "to": "Scope: per-repo only in v1", "note": "add"}
+{"when": "2026-10-15T03:57:04Z", "item": "C20", "action": "catalog", "from": "", "to": "Store location: decisions/ at repo root, configurable", "note": "add"}
+{"when": "2026-10-15T03:57:04Z", "item": "C21", "action": "catalog", "from": "", "to": "Record kind: separate kind field vs status alone", "note": "add"}
+{"when": "2026-10-15T03:57:04Z", "item": "C22", "action": "catalog", "from": "", "to": "License: permissive FLOSS (MIT or Apache-2.0)", "note": "add"}
+{"when": "2026-10-15T03:57:04Z", "item": "goals", "action": "prose", "from": "", "to": "", "note": "edit"}
+{"when": "2026-10-15T03:59:07Z", "item": "S01", "action": "add", "from": "", "to": "open", "note": "Confirm open decisions"}
+{"when": "2026-10-15T03:59:07Z", "item": "S02", "action": "add", "from": "", "to": "open", "note": "Project scaffolding"}
+{"when": "2026-10-15T03:59:07Z", "item": "S03", "action": "add", "from": "", "to": "open", "note": "Record model and lifecycle transitions"}
+{"when": "2026-10-15T03:59:07Z", "item": "S04", "action": "add", "from": "", "to": "open", "note": "Record file read and write"}
+{"when": "2026-10-15T03:59:07Z", "item": "S05", "action": "add", "from": "", "to": "open", "note": "Store, config and ID allocation"}
+{"when": "2026-10-15T03:59:07Z", "item": "S06", "action": "add", "from": "", "to": "open", "note": "Commands: init and ask"}
+{"when": "2026-10-15T03:59:07Z", "item": "S07", "action": "add", "from": "", "to": "open", "note": "Commands: decide, reject, withdraw"}
+{"when": "2026-10-15T03:59:07Z", "item": "S08", "action": "add", "from": "", "to": "open", "note": "Commands: show and list with --json"}
+{"when": "2026-10-15T03:59:07Z", "item": "S09", "action": "add", "from": "", "to": "open", "note": "Command: inbox"}
+{"when": "2026-10-15T03:59:07Z", "item": "S10", "action": "add", "from": "", "to": "open", "note": "Command: check"}
+{"when": "2026-10-15T03:59:07Z", "item": "S11", "action": "add", "from": "", "to": "open", "note": "Command: context"}
+{"when": "2026-10-15T03:59:07Z", "item": "S12", "action": "add", "from": "", "to": "open", "note": "Agent snippet: dlog ai and JSON shape docs"}
+{"when": "2026-10-15T03:59:07Z", "item": "S13", "action": "add", "from": "", "to": "open", "note": "Command: supersede"}
+{"when": "2026-10-15T03:59:07Z", "item": "S14", "action": "add", "from": "", "to": "open", "note": "Command: lint"}
+{"when": "2026-10-15T03:59:07Z", "item": "S15", "action": "add", "from": "", "to": "open", "note": "ID collision detection and renumber"}
+{"when": "2026-10-15T03:59:07Z", "item": "S16", "action": "add", "from": "", "to": "open", "note": "Docs and v1 acceptance round trip"}
+{"when": "2026-10-15T03:59:07Z", "item": "S17", "action": "add", "from": "", "to": "open", "note": "Dogfood: record dlog's own decisions with dlog"}
+{"when": "2026-10-15T03:59:07Z", "item": "S18", "action": "add", "from": "", "to": "later", "note": "Later: cross-repo inbox"}
+{"when": "2026-10-15T03:59:07Z", "item": "S19", "action": "add", "from": "", "to": "later", "note": "Later: TUI or static HTML inbox"}
+{"when": "2026-10-15T03:59:07Z", "item": "S20", "action": "add", "from": "", "to": "later", "note": "Later: slicer integration"}
+{"when": "2026-10-15T03:59:07Z", "item": "S21", "action": "add", "from": "", "to": "later", "note": "Later: optional owner-only decide enforcement"}
+{"when": "2026-10-15T03:59:07Z", "item": "S22", "action": "add", "from": "", "to": "later", "note": "Later: import from ADR folders"}
+{"when": "2026-10-15T03:59:12Z", "item": "S01", "action": "cite", "from": "", "to": "C14,C15,C16,C17,C18,C19,C20,C21,C22", "note": ""}
+{"when": "2026-10-15T03:59:12Z", "item": "S02", "action": "cite", "from": "", "to": "C15,C22", "note": ""}
+{"when": "2026-10-15T03:59:12Z", "item": "S03", "action": "cite", "from": "", "to": "C21,C18", "note": ""}
+{"when": "2026-10-15T03:59:12Z", "item": "S04", "action": "cite", "from": "", "to": "C16,C07", "note": ""}
+{"when": "2026-10-15T03:59:12Z", "item": "S05", "action": "cite", "from": "", "to": "C17,C19,C20", "note": ""}
+{"when": "2026-10-15T03:59:13Z", "item": "S12", "action": "cite", "from": "", "to": "C14", "note": ""}
+{"when": "2026-10-15T03:59:13Z", "item": "S14", "action": "cite", "from": "", "to": "C18,C08", "note": ""}
+{"when": "2026-10-15T03:59:13Z", "item": "S15", "action": "cite", "from": "", "to": "C17", "note": ""}
+{"when": "2026-10-15T03:59:13Z", "item": "S17", "action": "cite", "from": "", "to": "C18", "note": ""}
+{"when": "2026-10-15T03:59:13Z", "item": "S18", "action": "cite", "from": "", "to": "C19", "note": ""}
+{"when": "2026-10-15T03:59:13Z", "item": "S21", "action": "cite", "from": "", "to": "C18,C11", "note": ""}

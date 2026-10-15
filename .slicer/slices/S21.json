@@ -1,0 +1,41 @@
+{
+  "id": "S21",
+  "title": "Later: optional owner-only decide enforcement",
+  "lead": [
+    "A git hook or signed-commit check that `decide` transitions are made by the\nowner."
+  ],
+  "depends_note": null,
+  "findings_note": "PROJECT.md Feature tiers (Later); Open decisions 5; Non-goals",
+  "size": "M",
+  "flags": [],
+  "trees_note": "later",
+  "trees_plural": false,
+  "boundary": "**Not in this slice:** cryptographic enforcement in v1 (non-goal).",
+  "sections": [
+    {
+      "heading": "Why",
+      "body": "Listed in the Later tier; C18 recommends convention only for v1."
+    },
+    {
+      "heading": "Files",
+      "body": "Not specified in PROJECT.md (gap)."
+    },
+    {
+      "heading": "Failing tests",
+      "body": "Gap: no acceptance criteria in PROJECT.md. Choose hook vs signed commits with\nthe owner first."
+    },
+    {
+      "heading": "Implement",
+      "body": "Gap: mechanism not chosen. Plan with the owner before starting."
+    },
+    {
+      "heading": "Check",
+      "body": "- The project test command passes.\n- `slicer check --json` is clean."
+    },
+    {
+      "heading": "Git",
+      "body": "Worktree under `.worktrees/` on a feature branch. No commit unless the owner\nasks; no AI attribution."
+    }
+  ],
+  "notes": []
+}

@@ -1,0 +1,41 @@
+{
+  "id": "S22",
+  "title": "Later: import from ADR folders",
+  "lead": [
+    "Import records from existing ADR folders."
+  ],
+  "depends_note": null,
+  "findings_note": "PROJECT.md Feature tiers (Later)",
+  "size": "M",
+  "flags": [],
+  "trees_note": "later",
+  "trees_plural": false,
+  "boundary": "**Not in this slice:** exporting to ADR format (not mentioned in PROJECT.md).",
+  "sections": [
+    {
+      "heading": "Why",
+      "body": "Listed in the Later tier."
+    },
+    {
+      "heading": "Files",
+      "body": "Not specified in PROJECT.md (gap)."
+    },
+    {
+      "heading": "Failing tests",
+      "body": "Gap: no acceptance criteria and no ADR source format named in PROJECT.md. At\nminimum, importing a fixture ADR folder creates one decided record per ADR."
+    },
+    {
+      "heading": "Implement",
+      "body": "Gap: which ADR template(s) to support is not specified. Plan with the owner\nbefore starting."
+    },
+    {
+      "heading": "Check",
+      "body": "- The project test command passes.\n- `slicer check --json` is clean."
+    },
+    {
+      "heading": "Git",
+      "body": "Worktree under `.worktrees/` on a feature branch. No commit unless the owner\nasks; no AI attribution."
+    }
+  ],
+  "notes": []
+}

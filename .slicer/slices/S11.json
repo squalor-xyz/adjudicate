@@ -1,0 +1,41 @@
+{
+  "id": "S11",
+  "title": "Command: context",
+  "lead": [
+    "`dlog context [--tag T] [--key-prefix P] [--format md|json]` gives a compact\nsummary of the accepted decisions."
+  ],
+  "depends_note": null,
+  "findings_note": "PROJECT.md Goals 5; v1 feature tier; Risks (context bloat); Milestone 3",
+  "size": "M",
+  "flags": [],
+  "trees_note": "cli",
+  "trees_plural": false,
+  "boundary": "**Not in this slice:** the supersede command itself; a size budget flag (named\nonly as a Risks mitigation, not in the v1 tier; the owner decides whether to\nadd it).",
+  "sections": [
+    {
+      "heading": "Why",
+      "body": "Goal 5: token-cheap context for agents. Output must be deterministic so\n`context` diffs are stable."
+    },
+    {
+      "heading": "Files",
+      "body": "The `query` and `render` modules and CLI tests."
+    },
+    {
+      "heading": "Failing tests",
+      "body": "- Only `decided` records appear; `open`, `rejected`, `withdrawn` and\n  `superseded` records do not.\n- `--tag` and `--key-prefix` filter the output.\n- `--format md` and `--format json` both work; the JSON shape is documented.\n- Two runs on the same store give byte-identical output."
+    },
+    {
+      "heading": "Implement",
+      "body": "Select decided records, render a compact summary per record. Gap: PROJECT.md\ndoes not say which fields the compact summary carries; propose a field set in\nreview."
+    },
+    {
+      "heading": "Check",
+      "body": "- The project test command passes.\n- `slicer check --json` is clean."
+    },
+    {
+      "heading": "Git",
+      "body": "Worktree under `.worktrees/` on a feature branch. No commit unless the owner\nasks; no AI attribution."
+    }
+  ],
+  "notes": []
+}

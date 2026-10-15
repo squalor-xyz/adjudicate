@@ -1,0 +1,41 @@
+{
+  "id": "S08",
+  "title": "Commands: show and list with --json",
+  "lead": [
+    "`dlog show ID` and `dlog list [--status S] [--tag T] [--key K]`, each with\n`--json`."
+  ],
+  "depends_note": null,
+  "findings_note": "PROJECT.md v1 feature tier; Milestone 2; acceptance (--json)",
+  "size": "S",
+  "flags": [],
+  "trees_note": "cli",
+  "trees_plural": false,
+  "boundary": "**Not in this slice:** inbox, check and context.",
+  "sections": [
+    {
+      "heading": "Why",
+      "body": "Agents and the owner need to read records; every read command needs `--json`\nwith a stable shape (acceptance criteria)."
+    },
+    {
+      "heading": "Files",
+      "body": "The `query` and `render` modules from the Architecture sketch, and CLI tests."
+    },
+    {
+      "heading": "Failing tests",
+      "body": "- `show` prints all fields and the history; `show --json` gives the record.\n- `list` filters by status, tag and key, singly and combined.\n- The `--json` output for both commands is stable across runs (determinism)."
+    },
+    {
+      "heading": "Implement",
+      "body": "Implement filtering in `query` and text/JSON output in `render`. Document the\nJSON shape of both commands where the project keeps its docs."
+    },
+    {
+      "heading": "Check",
+      "body": "- The project test command passes.\n- `slicer check --json` is clean."
+    },
+    {
+      "heading": "Git",
+      "body": "Worktree under `.worktrees/` on a feature branch. No commit unless the owner\nasks; no AI attribution."
+    }
+  ],
+  "notes": []
+}
