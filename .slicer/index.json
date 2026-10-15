@@ -101,7 +101,7 @@
       "id": "S03",
       "title": "Record model and lifecycle transitions",
       "short_title": "Record model and lifecycle transitions",
-      "status": "open",
+      "status": "done",
       "has_slice": true,
       "depends_on": [
         "S02",
@@ -114,6 +114,17 @@
           "text": "**2026-10-15** — From S02 gate (non-blocking, fold in here): internal/cli/cli.go:12 comment cites C32 for exit codes; should cite C34. AGENTS.md:42-44 and scripts/env.sh:9 say plain sh fails; on macOS /bin/sh is bash (POSIX mode) and works — reword to 'dash and other non-bash/zsh shells'.",
           "created_at": "2026-10-15T04:36:49Z",
           "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "3394e7d1-64e8-408e-b8a3-0104850f068f",
+          "kind": "",
+          "text": "**2026-10-15** — Verified: internal/model record type, Validate and decide/reject/withdraw/supersede transitions with dated history; 114 tests green, go vet and gofmt clean; interface decisions C41-C47 recorded.",
+          "created_at": "2026-10-15T04:44:46Z",
+          "attempt": 1,
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
@@ -142,7 +153,7 @@
         "importance": 3,
         "urgency": 3,
         "effort": 2,
-        "attempts": 0
+        "attempts": 1
       }
     },
     {
@@ -155,7 +166,19 @@
         "S03",
         "S01"
       ],
-      "note_records": [],
+      "note_records": [
+        {
+          "id": "1a85ce22-f9f1-432f-b077-a9349096dd69",
+          "kind": "",
+          "text": "**2026-10-15** — From S03 review: internal/model gains file I/O neighbours here — update AGENTS.md:23 ('no I/O') and the package doc at internal/model/record.go:3-4 if the model package itself changes; keep model I/O-free if file code lives in internal/store. Validate now also checks history entries (C47), so S04's 'record that fails Validate' cases include bad history.",
+          "created_at": "2026-10-15T04:44:59Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        }
+      ],
       "claim": null,
       "fields": {
         "size": "S",
@@ -497,7 +520,19 @@
         "S13",
         "S01"
       ],
-      "note_records": [],
+      "note_records": [
+        {
+          "id": "4d94ddc0-a68e-40a9-a5b4-6d3afc4bd304",
+          "kind": "",
+          "text": "**2026-10-15** — From S03 review: model.Validate accepts superseded_by set on a record whose status is not superseded (record.go ~159). Lint should flag it as a consistency problem. Validate returns errors.Join, so lint can split problems via Unwrap() []error.",
+          "created_at": "2026-10-15T04:44:59Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        }
+      ],
       "claim": null,
       "fields": {
         "size": "M",
@@ -794,7 +829,7 @@
   "goals": "adjudicate is a small CLI (`adj`) with a plain-text store that records project decisions as a loop: an agent asks, the owner decides in batches, and every later agent reads the decision. The goal and non-goal records below come from PROJECT.md; the owner's decisions on its open questions are catalog records C23-C33, and they override PROJECT.md where it differs (name, runtime, record format, license).",
   "non_goals": "",
   "catalog": {
-    "next_id": 41,
+    "next_id": 48,
     "id_prefix": "C",
     "id_width": 2,
     "records": [
@@ -1153,7 +1188,70 @@
         "id": "C40",
         "kind": "decision",
         "title": "env.sh: source from bash or zsh only; refuses to run unless the derived root has go.mod",
-        "body": "Plain sh and dash cannot report the sourced path, and a wrong root would send caches and temp files outside the repo, so the script checks go.mod before it exports or creates anything.",
+        "body": "Dash and other shells that are not bash or zsh cannot report the sourced path, and a wrong root would send caches and temp files outside the repo, so the script checks go.mod before it exports or creates anything.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C41",
+        "kind": "decision",
+        "title": "Record field types: dates as YYYY-MM-DD strings, integer ids, supersedes a list, superseded_by one id",
+        "body": "A string in time.DateOnly form encodes as itself with encoding/json and keeps files deterministic. An old record is superseded by exactly one record, while a new record may replace several, so supersedes is []int and superseded_by is int (0 omitted).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C42",
+        "kind": "decision",
+        "title": "Required fields: id>0, title, status, created always; rationale and decided_at once answered; decision once decided or superseded; superseded_by once superseded",
+        "body": "Rejected and withdrawn records need a why (PROJECT.md reject/withdraw --why) and a date but no decision text. decided_by is never required because lint warns instead (C27).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C43",
+        "kind": "decision",
+        "title": "History entry shape: {date, event, note}; event is the transition verb (ask, decide, reject, withdraw, supersede)",
+        "body": "A flat list of three small fields stays readable in JSON frontmatter. Supersede puts 'by N' in note; creation (ask) is written by the code that creates the record, since model transitions start from open.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C44",
+        "kind": "decision",
+        "title": "Recommendation shape: {label, reasoning}, label must be one of the options",
+        "body": "The table says the option label plus reasoning; two named fields keep the label machine-checkable and the reasoning free text.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C45",
+        "kind": "decision",
+        "title": "Transition API: Decide, Reject, Withdraw and Supersede mutate the record in place, take the date as a YYYY-MM-DD string, and leave the record untouched on error",
+        "body": "Each builds and validates a copy before storing it, so a failed transition changes nothing, appends no history and never writes into the caller's slice. Errors match ErrInvalid; a status mismatch also matches ErrInvalidTransition.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C46",
+        "kind": "decision",
+        "title": "Supersede changes only the old record; setting the new record's supersedes link is the caller's job",
+        "body": "The slice scopes a transition to one record and one history entry; linking the pair across two files belongs to the supersede command and store.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C47",
+        "kind": "decision",
+        "title": "Validate checks each history entry: a YYYY-MM-DD date and one of the five known events; blank decision and rationale text count as missing",
+        "body": "A hand-edited file with a bad history date, an unknown event or whitespace-only why would otherwise load as valid; title already rejected blank text.",
         "status": "active",
         "reason": "",
         "successor": ""

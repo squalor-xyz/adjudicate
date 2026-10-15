@@ -6,7 +6,8 @@
 # The repo root is derived from this script's own path, so each worktree uses
 # its own .cache/. Nothing is exported or created unless that root holds go.mod
 # and scripts/env.sh; otherwise the script prints an error and returns 1.
-# Plain sh and dash cannot report the sourced path, so they fail that way.
+# Dash and other shells that are not bash or zsh cannot report the sourced
+# path, so they fail that way.
 # Go is told to use only the local toolchain and no module proxy.
 # Never use `go env -w`: it writes outside the repo.
 

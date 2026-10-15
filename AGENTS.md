@@ -20,8 +20,9 @@ library only.
 
 - `cmd/adj`: `main`; calls `internal/cli.Run` and exits with its code.
 - `internal/cli`: subcommand dispatch and usage.
-- `internal/commands`, `internal/store`, `internal/model`, `internal/query`,
-  `internal/render`: added by later slices.
+- `internal/model`: the record type, validation and status transitions; no I/O.
+- `internal/commands`, `internal/store`, `internal/query`, `internal/render`:
+  added by later slices.
 - `scripts/env.sh`: Go cache and temp setup (see below).
 
 Exit codes for every command: 0 success; 1 a failed operation or failed check;
@@ -39,9 +40,9 @@ gofmt -l cmd internal              # must print nothing
 go build -o .cache/bin/adj ./cmd/adj
 ```
 
-`scripts/env.sh` must be sourced from bash or zsh (C40). Plain sh or dash cannot
-report the sourced path, so there it prints an error, returns 1, and sets and
-creates nothing.
+`scripts/env.sh` must be sourced from bash or zsh (C40). Dash and other shells
+that are not bash or zsh cannot report the sourced path, so there it prints an
+error, returns 1, and sets and creates nothing.
 
 Never run `go env -w`; it writes outside the repo. Do not add a Makefile.
 

@@ -9,7 +9,7 @@ import (
 	"io"
 )
 
-// Exit codes shared by every adj command (C32).
+// Exit codes shared by every adj command (C34).
 const (
 	exitOK    = 0 // success
 	exitFail  = 1 // a failed operation or a failed check
