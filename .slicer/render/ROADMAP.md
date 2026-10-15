@@ -110,6 +110,34 @@ Owner decision 2026-10-15. The project is licensed GPL-3.0-or-later. Replaces as
 
 Owner decision 2026-10-15. Interface details not fixed by PROJECT.md or the owner's decisions are decided by the slice implementer: for example the config file name and format, how options and tradeoffs are passed on the CLI, how decided_by is supplied, check's match rule and exit codes, the context fields, whether lint warnings change the exit code, which record keeps a colliding ID, and the renumber command's name. The implementer records each such choice in the slicer catalog as a decision with a one-line reason; the reviewer checks it. The owner may overrule later.
 
+### C34 Exit codes: 0 success, 1 failed operation or check, 2 usage error
+
+Matches slicer's exit codes (1 failed check, 2 usage or validation error), so agents read both tools the same way.
+
+### C35 CLI layout: cmd/adj calls internal/cli.Run with injected I/O
+
+Run takes args, stdin, stdout and stderr and returns the exit code, so tests run the CLI in-process with buffers and main stays one line.
+
+### C36 Help flags: --help and -h print usage to stdout with exit 0; usage errors go to stderr with exit 2
+
+Help is requested output on stdout; a missing or unknown command is an error, so its usage goes to stderr.
+
+### C37 env.sh extras: GOTOOLCHAIN=local, GOPROXY=off, GOFLAGS=-modcacherw, GOTMPDIR and TMPDIR under .cache/tmp
+
+The workspace sandbox keeps Go inside the repo: no toolchain or module downloads, temp files under .cache/tmp, and -modcacherw lets the in-repo module cache be deleted without chmod.
+
+### C38 .gitignore: drop build/ and dist/, drop Python entries, add /adj, /bin/, *.test, *.out
+
+No Python and no build/ or dist/ output: Check builds to .cache/bin/adj and a bare go build writes /adj, so both are ignored.
+
+### C39 LICENSE is a stub until the owner supplies the full GPL-3.0 text and copyright holder
+
+No GPL-3.0 text exists in the adjudicate repo and the workspace has no network, so the stub carries the SPDX line, the or-later notice and TODO(owner) markers.
+
+### C40 env.sh: source from bash or zsh only; refuses to run unless the derived root has go.mod
+
+Plain sh and dash cannot report the sourced path, and a wrong root would send caches and temp files outside the repo, so the script checks go.mod before it exports or creates anything.
+
 ## Assumptions
 
 ### C14 Name: keep 'dlog' as placeholder
@@ -166,34 +194,34 @@ PENDING OWNER CONFIRMATION - not decided. Source: Dependency/licensing notes (ma
 
 *Retired: Owner decided 2026-10-15: see decision C31 (GPL-3.0-or-later)..*
 
-22 items · — 16 · done 1 · later 5
+22 items · — 15 · done 2 · later 5
 
 | # | Slice | Title | Size | Effort | Trees | Findings | Status |
 |---|---|---|---|---|---|---|---|
-| 1 | [S02](slices/S02.md) | Project scaffolding | S | 1 | scaffold | PROJECT.md Stack recommendation; Dependency/licensing notes | — |
-| 2 | [S03](slices/S03.md) | Record model and lifecycle transitions | M | 2 | model | PROJECT.md Core concepts / data model; Milestone 1 | — |
-| 3 | [S04](slices/S04.md) | Record file read and write | S | 1 | model | PROJECT.md Open decisions 3; Core concepts (Record) | — |
-| 4 | [S05](slices/S05.md) | Store, config and ID allocation | M | 2 | store | PROJECT.md Architecture sketch (ID allocation, Determinism); Open decisions 4, 6, 7 | — |
-| 5 | [S06](slices/S06.md) | Commands: init and ask | M | 2 | cli | PROJECT.md v1 feature tier; Milestone 2 | — |
-| 6 | [S07](slices/S07.md) | Commands: decide, reject, withdraw | S | 1 | cli | PROJECT.md v1 feature tier; Lifecycle; Milestone 2 | — |
-| 7 | [S08](slices/S08.md) | Commands: show and list with --json | S | 1 | cli | PROJECT.md v1 feature tier; Milestone 2; acceptance (--json) | — |
-| 8 | [S09](slices/S09.md) | Command: inbox | S | 1 | cli | PROJECT.md Goals 2; v1 feature tier; Milestone 3 | — |
-| 9 | [S10](slices/S10.md) | Command: check | S | 1 | cli | PROJECT.md Goals 6; v1 feature tier; Milestone 3 | — |
-| 10 | [S11](slices/S11.md) | Command: context | M | 2 | cli | PROJECT.md Goals 5; v1 feature tier; Risks (context bloat); Milestone 3 | — |
-| 11 | [S12](slices/S12.md) | Agent snippet: adj ai and JSON shape docs | S | 1 | docs | PROJECT.md v1 feature tier; Risks (adoption); acceptance (--json documented) | — |
-| 12 | [S13](slices/S13.md) | Command: supersede | S | 1 | cli | PROJECT.md Goals 4; Lifecycle; acceptance (supersede); Milestone 4 | — |
-| 13 | [S14](slices/S14.md) | Command: lint | M | 2 | cli | PROJECT.md Goals 8; acceptance (lint fixtures); Open decisions 5; Milestone 4 | — |
-| 14 | [S15](slices/S15.md) | ID collision detection and renumber | M | 2 | store | PROJECT.md Open decisions 4; Risks (merge conflicts on IDs); Milestone 4 | — |
-| 15 | [S16](slices/S16.md) | Docs and v1 acceptance round trip | S | 1 | docs | PROJECT.md v1 acceptance criteria; Milestone 5 | — |
-| 16 | [S17](slices/S17.md) | Dogfood: record adjudicate's own decisions with adj | S | 1 | docs | PROJECT.md Milestone 5; acceptance (own decisions recorded) | — |
-| 17 | [S18](slices/S18.md) | Later: cross-repo inbox | M | 2 | later | PROJECT.md Feature tiers (Later); Open decisions 6 | later |
-| 18 | [S19](slices/S19.md) | Later: TUI or static HTML inbox | M | 2 | later | PROJECT.md Feature tiers (Later) | later |
-| 19 | [S20](slices/S20.md) | Later: slicer integration | M | 2 | later | PROJECT.md Feature tiers (Later); Non-goals (not replacing slicer); Risks (overlap with slicer catalog) | later |
-| 20 | [S21](slices/S21.md) | Later: optional owner-only decide enforcement | M | 2 | later | PROJECT.md Feature tiers (Later); Open decisions 5; Non-goals | later |
-| 21 | [S22](slices/S22.md) | Later: import from ADR folders | M | 2 | later | PROJECT.md Feature tiers (Later) | later |
+| 1 | [S03](slices/S03.md) | Record model and lifecycle transitions | M | 2 | model | PROJECT.md Core concepts / data model; Milestone 1 | — |
+| 2 | [S04](slices/S04.md) | Record file read and write | S | 1 | model | PROJECT.md Open decisions 3; Core concepts (Record) | — |
+| 3 | [S05](slices/S05.md) | Store, config and ID allocation | M | 2 | store | PROJECT.md Architecture sketch (ID allocation, Determinism); Open decisions 4, 6, 7 | — |
+| 4 | [S06](slices/S06.md) | Commands: init and ask | M | 2 | cli | PROJECT.md v1 feature tier; Milestone 2 | — |
+| 5 | [S07](slices/S07.md) | Commands: decide, reject, withdraw | S | 1 | cli | PROJECT.md v1 feature tier; Lifecycle; Milestone 2 | — |
+| 6 | [S08](slices/S08.md) | Commands: show and list with --json | S | 1 | cli | PROJECT.md v1 feature tier; Milestone 2; acceptance (--json) | — |
+| 7 | [S09](slices/S09.md) | Command: inbox | S | 1 | cli | PROJECT.md Goals 2; v1 feature tier; Milestone 3 | — |
+| 8 | [S10](slices/S10.md) | Command: check | S | 1 | cli | PROJECT.md Goals 6; v1 feature tier; Milestone 3 | — |
+| 9 | [S11](slices/S11.md) | Command: context | M | 2 | cli | PROJECT.md Goals 5; v1 feature tier; Risks (context bloat); Milestone 3 | — |
+| 10 | [S12](slices/S12.md) | Agent snippet: adj ai and JSON shape docs | S | 1 | docs | PROJECT.md v1 feature tier; Risks (adoption); acceptance (--json documented) | — |
+| 11 | [S13](slices/S13.md) | Command: supersede | S | 1 | cli | PROJECT.md Goals 4; Lifecycle; acceptance (supersede); Milestone 4 | — |
+| 12 | [S14](slices/S14.md) | Command: lint | M | 2 | cli | PROJECT.md Goals 8; acceptance (lint fixtures); Open decisions 5; Milestone 4 | — |
+| 13 | [S15](slices/S15.md) | ID collision detection and renumber | M | 2 | store | PROJECT.md Open decisions 4; Risks (merge conflicts on IDs); Milestone 4 | — |
+| 14 | [S16](slices/S16.md) | Docs and v1 acceptance round trip | S | 1 | docs | PROJECT.md v1 acceptance criteria; Milestone 5 | — |
+| 15 | [S17](slices/S17.md) | Dogfood: record adjudicate's own decisions with adj | S | 1 | docs | PROJECT.md Milestone 5; acceptance (own decisions recorded) | — |
+| 16 | [S18](slices/S18.md) | Later: cross-repo inbox | M | 2 | later | PROJECT.md Feature tiers (Later); Open decisions 6 | later |
+| 17 | [S19](slices/S19.md) | Later: TUI or static HTML inbox | M | 2 | later | PROJECT.md Feature tiers (Later) | later |
+| 18 | [S20](slices/S20.md) | Later: slicer integration | M | 2 | later | PROJECT.md Feature tiers (Later); Non-goals (not replacing slicer); Risks (overlap with slicer catalog) | later |
+| 19 | [S21](slices/S21.md) | Later: optional owner-only decide enforcement | M | 2 | later | PROJECT.md Feature tiers (Later); Open decisions 5; Non-goals | later |
+| 20 | [S22](slices/S22.md) | Later: import from ADR folders | M | 2 | later | PROJECT.md Feature tiers (Later) | later |
 
 ---
 
 | # | Slice | Title | Size | Effort | Trees | Findings | Status |
 |---|---|---|---|---|---|---|---|
-| 22 | [S01](slices/S01.md) | Confirm open decisions | S | 1 | decisions | PROJECT.md Open decisions 1-7; Core concepts (kind); Dependency/licensing notes | done |
+| 21 | [S01](slices/S01.md) | Confirm open decisions | S | 1 | decisions | PROJECT.md Open decisions 1-7; Core concepts (kind); Dependency/licensing notes | done |
+| 22 | [S02](slices/S02.md) | Project scaffolding | S | 1 | scaffold | PROJECT.md Stack recommendation; Dependency/licensing notes | done |

@@ -82,6 +82,20 @@
 <div class="prose"><p>Owner decision 2026-10-15. The project is licensed GPL-3.0-or-later. Replaces assumption C22 (retired).</p></div>
 <h3>C32 Standing rule: implementer decides unfixed interface details</h3>
 <div class="prose"><p>Owner decision 2026-10-15. Interface details not fixed by PROJECT.md or the owner&#x27;s decisions are decided by the slice implementer: for example the config file name and format, how options and tradeoffs are passed on the CLI, how decided_by is supplied, check&#x27;s match rule and exit codes, the context fields, whether lint warnings change the exit code, which record keeps a colliding ID, and the renumber command&#x27;s name. The implementer records each such choice in the slicer catalog as a decision with a one-line reason; the reviewer checks it. The owner may overrule later.</p></div>
+<h3>C34 Exit codes: 0 success, 1 failed operation or check, 2 usage error</h3>
+<div class="prose"><p>Matches slicer&#x27;s exit codes (1 failed check, 2 usage or validation error), so agents read both tools the same way.</p></div>
+<h3>C35 CLI layout: cmd/adj calls internal/cli.Run with injected I/O</h3>
+<div class="prose"><p>Run takes args, stdin, stdout and stderr and returns the exit code, so tests run the CLI in-process with buffers and main stays one line.</p></div>
+<h3>C36 Help flags: --help and -h print usage to stdout with exit 0; usage errors go to stderr with exit 2</h3>
+<div class="prose"><p>Help is requested output on stdout; a missing or unknown command is an error, so its usage goes to stderr.</p></div>
+<h3>C37 env.sh extras: GOTOOLCHAIN=local, GOPROXY=off, GOFLAGS=-modcacherw, GOTMPDIR and TMPDIR under .cache/tmp</h3>
+<div class="prose"><p>The workspace sandbox keeps Go inside the repo: no toolchain or module downloads, temp files under .cache/tmp, and -modcacherw lets the in-repo module cache be deleted without chmod.</p></div>
+<h3>C38 .gitignore: drop build/ and dist/, drop Python entries, add /adj, /bin/, *.test, *.out</h3>
+<div class="prose"><p>No Python and no build/ or dist/ output: Check builds to .cache/bin/adj and a bare go build writes /adj, so both are ignored.</p></div>
+<h3>C39 LICENSE is a stub until the owner supplies the full GPL-3.0 text and copyright holder</h3>
+<div class="prose"><p>No GPL-3.0 text exists in the adjudicate repo and the workspace has no network, so the stub carries the SPDX line, the or-later notice and TODO(owner) markers.</p></div>
+<h3>C40 env.sh: source from bash or zsh only; refuses to run unless the derived root has go.mod</h3>
+<div class="prose"><p>Plain sh and dash cannot report the sourced path, and a wrong root would send caches and temp files outside the repo, so the script checks go.mod before it exports or creates anything.</p></div>
 </section>
 <section><h2>Assumptions</h2>
 <h3>C14 Name: keep &#x27;dlog&#x27; as placeholder</h3>
@@ -112,31 +126,31 @@
 <div class="prose"><p>PENDING OWNER CONFIRMATION - not decided. Source: Dependency/licensing notes (marked open there, not in the Open decisions list). Recommendation: a permissive FLOSS license such as MIT or Apache-2.0; PROJECT.md does not pick between them (owner must choose).</p></div>
 <p><em>Retired: Owner decided 2026-10-15: see decision C31 (GPL-3.0-or-later)..</em></p>
 </section>
-<p class="summary">22 items · — 16 · done 1 · later 5</p>
+<p class="summary">22 items · — 15 · done 2 · later 5</p>
 <table><thead><tr><th>#</th><th>ID</th><th>Title</th><th>Size</th><th>Effort</th><th>Trees</th><th>Findings</th><th>Status</th></tr></thead><tbody>
-<tr class="open"><td>1</td><td>S02</td><td>Project scaffolding</td><td>S</td><td>1</td><td>scaffold</td><td>PROJECT.md Stack recommendation; Dependency/licensing notes</td><td class="status">—</td></tr>
-<tr class="open"><td>2</td><td>S03</td><td>Record model and lifecycle transitions</td><td>M</td><td>2</td><td>model</td><td>PROJECT.md Core concepts / data model; Milestone 1</td><td class="status">—</td></tr>
-<tr class="open"><td>3</td><td>S04</td><td>Record file read and write</td><td>S</td><td>1</td><td>model</td><td>PROJECT.md Open decisions 3; Core concepts (Record)</td><td class="status">—</td></tr>
-<tr class="open"><td>4</td><td>S05</td><td>Store, config and ID allocation</td><td>M</td><td>2</td><td>store</td><td>PROJECT.md Architecture sketch (ID allocation, Determinism); Open decisions 4, 6, 7</td><td class="status">—</td></tr>
-<tr class="open"><td>5</td><td>S06</td><td>Commands: init and ask</td><td>M</td><td>2</td><td>cli</td><td>PROJECT.md v1 feature tier; Milestone 2</td><td class="status">—</td></tr>
-<tr class="open"><td>6</td><td>S07</td><td>Commands: decide, reject, withdraw</td><td>S</td><td>1</td><td>cli</td><td>PROJECT.md v1 feature tier; Lifecycle; Milestone 2</td><td class="status">—</td></tr>
-<tr class="open"><td>7</td><td>S08</td><td>Commands: show and list with --json</td><td>S</td><td>1</td><td>cli</td><td>PROJECT.md v1 feature tier; Milestone 2; acceptance (--json)</td><td class="status">—</td></tr>
-<tr class="open"><td>8</td><td>S09</td><td>Command: inbox</td><td>S</td><td>1</td><td>cli</td><td>PROJECT.md Goals 2; v1 feature tier; Milestone 3</td><td class="status">—</td></tr>
-<tr class="open"><td>9</td><td>S10</td><td>Command: check</td><td>S</td><td>1</td><td>cli</td><td>PROJECT.md Goals 6; v1 feature tier; Milestone 3</td><td class="status">—</td></tr>
-<tr class="open"><td>10</td><td>S11</td><td>Command: context</td><td>M</td><td>2</td><td>cli</td><td>PROJECT.md Goals 5; v1 feature tier; Risks (context bloat); Milestone 3</td><td class="status">—</td></tr>
-<tr class="open"><td>11</td><td>S12</td><td>Agent snippet: adj ai and JSON shape docs</td><td>S</td><td>1</td><td>docs</td><td>PROJECT.md v1 feature tier; Risks (adoption); acceptance (--json documented)</td><td class="status">—</td></tr>
-<tr class="open"><td>12</td><td>S13</td><td>Command: supersede</td><td>S</td><td>1</td><td>cli</td><td>PROJECT.md Goals 4; Lifecycle; acceptance (supersede); Milestone 4</td><td class="status">—</td></tr>
-<tr class="open"><td>13</td><td>S14</td><td>Command: lint</td><td>M</td><td>2</td><td>cli</td><td>PROJECT.md Goals 8; acceptance (lint fixtures); Open decisions 5; Milestone 4</td><td class="status">—</td></tr>
-<tr class="open"><td>14</td><td>S15</td><td>ID collision detection and renumber</td><td>M</td><td>2</td><td>store</td><td>PROJECT.md Open decisions 4; Risks (merge conflicts on IDs); Milestone 4</td><td class="status">—</td></tr>
-<tr class="open"><td>15</td><td>S16</td><td>Docs and v1 acceptance round trip</td><td>S</td><td>1</td><td>docs</td><td>PROJECT.md v1 acceptance criteria; Milestone 5</td><td class="status">—</td></tr>
-<tr class="open"><td>16</td><td>S17</td><td>Dogfood: record adjudicate&#x27;s own decisions with adj</td><td>S</td><td>1</td><td>docs</td><td>PROJECT.md Milestone 5; acceptance (own decisions recorded)</td><td class="status">—</td></tr>
-<tr class="other"><td>17</td><td>S18</td><td>Later: cross-repo inbox</td><td>M</td><td>2</td><td>later</td><td>PROJECT.md Feature tiers (Later); Open decisions 6</td><td class="status">later</td></tr>
-<tr class="other"><td>18</td><td>S19</td><td>Later: TUI or static HTML inbox</td><td>M</td><td>2</td><td>later</td><td>PROJECT.md Feature tiers (Later)</td><td class="status">later</td></tr>
-<tr class="other"><td>19</td><td>S20</td><td>Later: slicer integration</td><td>M</td><td>2</td><td>later</td><td>PROJECT.md Feature tiers (Later); Non-goals (not replacing slicer); Risks (overlap with slicer catalog)</td><td class="status">later</td></tr>
-<tr class="other"><td>20</td><td>S21</td><td>Later: optional owner-only decide enforcement</td><td>M</td><td>2</td><td>later</td><td>PROJECT.md Feature tiers (Later); Open decisions 5; Non-goals</td><td class="status">later</td></tr>
-<tr class="other"><td>21</td><td>S22</td><td>Later: import from ADR folders</td><td>M</td><td>2</td><td>later</td><td>PROJECT.md Feature tiers (Later)</td><td class="status">later</td></tr>
+<tr class="open"><td>1</td><td>S03</td><td>Record model and lifecycle transitions</td><td>M</td><td>2</td><td>model</td><td>PROJECT.md Core concepts / data model; Milestone 1</td><td class="status">—</td></tr>
+<tr class="open"><td>2</td><td>S04</td><td>Record file read and write</td><td>S</td><td>1</td><td>model</td><td>PROJECT.md Open decisions 3; Core concepts (Record)</td><td class="status">—</td></tr>
+<tr class="open"><td>3</td><td>S05</td><td>Store, config and ID allocation</td><td>M</td><td>2</td><td>store</td><td>PROJECT.md Architecture sketch (ID allocation, Determinism); Open decisions 4, 6, 7</td><td class="status">—</td></tr>
+<tr class="open"><td>4</td><td>S06</td><td>Commands: init and ask</td><td>M</td><td>2</td><td>cli</td><td>PROJECT.md v1 feature tier; Milestone 2</td><td class="status">—</td></tr>
+<tr class="open"><td>5</td><td>S07</td><td>Commands: decide, reject, withdraw</td><td>S</td><td>1</td><td>cli</td><td>PROJECT.md v1 feature tier; Lifecycle; Milestone 2</td><td class="status">—</td></tr>
+<tr class="open"><td>6</td><td>S08</td><td>Commands: show and list with --json</td><td>S</td><td>1</td><td>cli</td><td>PROJECT.md v1 feature tier; Milestone 2; acceptance (--json)</td><td class="status">—</td></tr>
+<tr class="open"><td>7</td><td>S09</td><td>Command: inbox</td><td>S</td><td>1</td><td>cli</td><td>PROJECT.md Goals 2; v1 feature tier; Milestone 3</td><td class="status">—</td></tr>
+<tr class="open"><td>8</td><td>S10</td><td>Command: check</td><td>S</td><td>1</td><td>cli</td><td>PROJECT.md Goals 6; v1 feature tier; Milestone 3</td><td class="status">—</td></tr>
+<tr class="open"><td>9</td><td>S11</td><td>Command: context</td><td>M</td><td>2</td><td>cli</td><td>PROJECT.md Goals 5; v1 feature tier; Risks (context bloat); Milestone 3</td><td class="status">—</td></tr>
+<tr class="open"><td>10</td><td>S12</td><td>Agent snippet: adj ai and JSON shape docs</td><td>S</td><td>1</td><td>docs</td><td>PROJECT.md v1 feature tier; Risks (adoption); acceptance (--json documented)</td><td class="status">—</td></tr>
+<tr class="open"><td>11</td><td>S13</td><td>Command: supersede</td><td>S</td><td>1</td><td>cli</td><td>PROJECT.md Goals 4; Lifecycle; acceptance (supersede); Milestone 4</td><td class="status">—</td></tr>
+<tr class="open"><td>12</td><td>S14</td><td>Command: lint</td><td>M</td><td>2</td><td>cli</td><td>PROJECT.md Goals 8; acceptance (lint fixtures); Open decisions 5; Milestone 4</td><td class="status">—</td></tr>
+<tr class="open"><td>13</td><td>S15</td><td>ID collision detection and renumber</td><td>M</td><td>2</td><td>store</td><td>PROJECT.md Open decisions 4; Risks (merge conflicts on IDs); Milestone 4</td><td class="status">—</td></tr>
+<tr class="open"><td>14</td><td>S16</td><td>Docs and v1 acceptance round trip</td><td>S</td><td>1</td><td>docs</td><td>PROJECT.md v1 acceptance criteria; Milestone 5</td><td class="status">—</td></tr>
+<tr class="open"><td>15</td><td>S17</td><td>Dogfood: record adjudicate&#x27;s own decisions with adj</td><td>S</td><td>1</td><td>docs</td><td>PROJECT.md Milestone 5; acceptance (own decisions recorded)</td><td class="status">—</td></tr>
+<tr class="other"><td>16</td><td>S18</td><td>Later: cross-repo inbox</td><td>M</td><td>2</td><td>later</td><td>PROJECT.md Feature tiers (Later); Open decisions 6</td><td class="status">later</td></tr>
+<tr class="other"><td>17</td><td>S19</td><td>Later: TUI or static HTML inbox</td><td>M</td><td>2</td><td>later</td><td>PROJECT.md Feature tiers (Later)</td><td class="status">later</td></tr>
+<tr class="other"><td>18</td><td>S20</td><td>Later: slicer integration</td><td>M</td><td>2</td><td>later</td><td>PROJECT.md Feature tiers (Later); Non-goals (not replacing slicer); Risks (overlap with slicer catalog)</td><td class="status">later</td></tr>
+<tr class="other"><td>19</td><td>S21</td><td>Later: optional owner-only decide enforcement</td><td>M</td><td>2</td><td>later</td><td>PROJECT.md Feature tiers (Later); Open decisions 5; Non-goals</td><td class="status">later</td></tr>
+<tr class="other"><td>20</td><td>S22</td><td>Later: import from ADR folders</td><td>M</td><td>2</td><td>later</td><td>PROJECT.md Feature tiers (Later)</td><td class="status">later</td></tr>
 </tbody></table>
 <table><thead><tr><th>#</th><th>ID</th><th>Title</th><th>Size</th><th>Effort</th><th>Trees</th><th>Findings</th><th>Status</th></tr></thead><tbody>
-<tr class="done"><td>22</td><td>S01</td><td>Confirm open decisions</td><td>S</td><td>1</td><td>decisions</td><td>PROJECT.md Open decisions 1-7; Core concepts (kind); Dependency/licensing notes</td><td class="status">done</td></tr>
+<tr class="done"><td>21</td><td>S01</td><td>Confirm open decisions</td><td>S</td><td>1</td><td>decisions</td><td>PROJECT.md Open decisions 1-7; Core concepts (kind); Dependency/licensing notes</td><td class="status">done</td></tr>
+<tr class="done"><td>22</td><td>S02</td><td>Project scaffolding</td><td>S</td><td>1</td><td>scaffold</td><td>PROJECT.md Stack recommendation; Dependency/licensing notes</td><td class="status">done</td></tr>
 </tbody></table>
 </body></html>

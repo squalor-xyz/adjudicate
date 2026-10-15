@@ -51,12 +51,24 @@
       "id": "S02",
       "title": "Project scaffolding",
       "short_title": "Project scaffolding",
-      "status": "open",
+      "status": "done",
       "has_slice": true,
       "depends_on": [
         "S01"
       ],
-      "note_records": [],
+      "note_records": [
+        {
+          "id": "b0039967-652a-48bb-bd10-b928c80bfc78",
+          "kind": "",
+          "text": "**2026-10-15** — Built the Go module, cmd/adj and internal/cli (--help and -h exit 0; no args or unknown command exit 2 with usage on stderr), scripts/env.sh (bash and zsh only, guarded by go.mod, caches under .cache), .gitignore and AGENTS.md. Checks green: go test ./... (2 tests, 4 subtests), go vet ./..., gofmt -l cmd internal empty. env.sh probe matrix run (bash, zsh incl. no_function_argzero, sh, dash and ksh fail loudly, CDPATH, guard); no directories created outside the worktree. Decisions C34-C40 recorded. OWNER FLAG: LICENSE is a stub; the full GPL-3.0 text and the copyright holder are still needed (C39).",
+          "created_at": "2026-10-15T04:36:32Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        }
+      ],
       "claim": null,
       "fields": {
         "size": "S",
@@ -82,7 +94,7 @@
         "importance": 3,
         "urgency": 3,
         "effort": 1,
-        "attempts": 0
+        "attempts": 1
       }
     },
     {
@@ -95,7 +107,19 @@
         "S02",
         "S01"
       ],
-      "note_records": [],
+      "note_records": [
+        {
+          "id": "d533d341-3090-42dc-82bb-d13580677ab3",
+          "kind": "",
+          "text": "**2026-10-15** — From S02 gate (non-blocking, fold in here): internal/cli/cli.go:12 comment cites C32 for exit codes; should cite C34. AGENTS.md:42-44 and scripts/env.sh:9 say plain sh fails; on macOS /bin/sh is bash (POSIX mode) and works — reword to 'dash and other non-bash/zsh shells'.",
+          "created_at": "2026-10-15T04:36:49Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        }
+      ],
       "claim": null,
       "fields": {
         "size": "M",
@@ -770,7 +794,7 @@
   "goals": "adjudicate is a small CLI (`adj`) with a plain-text store that records project decisions as a loop: an agent asks, the owner decides in batches, and every later agent reads the decision. The goal and non-goal records below come from PROJECT.md; the owner's decisions on its open questions are catalog records C23-C33, and they override PROJECT.md where it differs (name, runtime, record format, license).",
   "non_goals": "",
   "catalog": {
-    "next_id": 34,
+    "next_id": 41,
     "id_prefix": "C",
     "id_width": 2,
     "records": [
@@ -1067,6 +1091,69 @@
         "kind": "constraint",
         "title": "Go caches and checks stay inside the repo",
         "body": "Owner constraint 2026-10-15. GOCACHE, GOMODCACHE and GOPATH point at a gitignored .cache/ under the repo root. No make: the env vars are documented in AGENTS.md and set by a small scripts/env.sh or an equivalent that the scaffolding slice (S02) decides. Tests run with go test ./... and go vet ./..., plus a gofmt check (gofmt -l lists no files).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C34",
+        "kind": "decision",
+        "title": "Exit codes: 0 success, 1 failed operation or check, 2 usage error",
+        "body": "Matches slicer's exit codes (1 failed check, 2 usage or validation error), so agents read both tools the same way.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C35",
+        "kind": "decision",
+        "title": "CLI layout: cmd/adj calls internal/cli.Run with injected I/O",
+        "body": "Run takes args, stdin, stdout and stderr and returns the exit code, so tests run the CLI in-process with buffers and main stays one line.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C36",
+        "kind": "decision",
+        "title": "Help flags: --help and -h print usage to stdout with exit 0; usage errors go to stderr with exit 2",
+        "body": "Help is requested output on stdout; a missing or unknown command is an error, so its usage goes to stderr.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C37",
+        "kind": "decision",
+        "title": "env.sh extras: GOTOOLCHAIN=local, GOPROXY=off, GOFLAGS=-modcacherw, GOTMPDIR and TMPDIR under .cache/tmp",
+        "body": "The workspace sandbox keeps Go inside the repo: no toolchain or module downloads, temp files under .cache/tmp, and -modcacherw lets the in-repo module cache be deleted without chmod.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C38",
+        "kind": "decision",
+        "title": ".gitignore: drop build/ and dist/, drop Python entries, add /adj, /bin/, *.test, *.out",
+        "body": "No Python and no build/ or dist/ output: Check builds to .cache/bin/adj and a bare go build writes /adj, so both are ignored.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C39",
+        "kind": "decision",
+        "title": "LICENSE is a stub until the owner supplies the full GPL-3.0 text and copyright holder",
+        "body": "No GPL-3.0 text exists in the adjudicate repo and the workspace has no network, so the stub carries the SPDX line, the or-later notice and TODO(owner) markers.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C40",
+        "kind": "decision",
+        "title": "env.sh: source from bash or zsh only; refuses to run unless the derived root has go.mod",
+        "body": "Plain sh and dash cannot report the sourced path, and a wrong root would send caches and temp files outside the repo, so the script checks go.mod before it exports or creates anything.",
         "status": "active",
         "reason": "",
         "successor": ""

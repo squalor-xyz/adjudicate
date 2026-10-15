@@ -6,12 +6,9 @@ Thumbs.db
 .idea/
 .vscode/
 
-# Build / cache
-__pycache__/
-*.py[cod]
+# Build / cache (Go caches and build output live under .cache/, C33)
 .cache/
-build/
-dist/
-*.egg-info/
-.venv/
-venv/
+/adj
+/bin/
+*.test
+*.out
