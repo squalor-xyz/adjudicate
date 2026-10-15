@@ -640,3 +640,43 @@ func TestCreateGivesUpAfterThreeAttempts(t *testing.T) {
 		t.Errorf("files = %v, want %v (no leftovers)", names(t, s.Dir()), want)
 	}
 }
+
+// Files lists the record files by name (C59), in ID then file-name order: a
+// file that does not parse keeps its ID, two files may share one, and what is
+// not named like a record is left out.
+func TestFiles(t *testing.T) {
+	root := t.TempDir()
+	dir := filepath.Join(root, "decisions")
+	seed(t, dir, "0002-b.md", question(2, "B"))
+	seed(t, dir, "0001-a.md", question(1, "A"))
+	seed(t, dir, "0003-y.md", question(3, "Y"))
+	seed(t, dir, "0003-x.md", question(3, "X"))
+	writeFile(t, filepath.Join(dir, "0004-broken.md"), "not a record\n")
+	for _, ignored := range []string{"notes.md", "0005.md", "005-x.md", "0000-zero.md", "0006-x.txt", ".0007-x.md"} {
+		writeFile(t, filepath.Join(dir, ignored), "x\n")
+	}
+	if err := os.Mkdir(filepath.Join(dir, "0008-dir.md"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	s := mustOpen(t, root)
+
+	got, err := s.Files()
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := []File{
+		{1, "0001-a.md", filepath.Join(dir, "0001-a.md")},
+		{2, "0002-b.md", filepath.Join(dir, "0002-b.md")},
+		{3, "0003-x.md", filepath.Join(dir, "0003-x.md")},
+		{3, "0003-y.md", filepath.Join(dir, "0003-y.md")},
+		{4, "0004-broken.md", filepath.Join(dir, "0004-broken.md")},
+	}
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("Files = %+v\nwant %+v", got, want)
+	}
+
+	// A missing store directory is an empty store, as for List.
+	if got, err := mustOpen(t, t.TempDir()).Files(); err != nil || len(got) != 0 {
+		t.Errorf("Files of a missing store dir = %v, %v; want none and no error", got, err)
+	}
+}

@@ -390,3 +390,17 @@
 {"when": "2026-10-15T12:51:22Z", "item": "S24", "action": "note", "from": "", "to": "", "note": "Check text shows the full Rationale under rejected, withdraw", "by": "Jon R"}
 {"when": "2026-10-15T12:51:22Z", "item": "S24", "action": "status", "from": "started", "to": "done", "note": "Check text shows the full rationale under closed records (C132, C138); C110 updated.", "by": "Jon R"}
 {"when": "2026-10-15T12:51:34Z", "item": "S16", "action": "note", "from": "", "to": "", "note": "From S24 review/gate: (1) ai.md tells agents to read a close", "by": "Jon R"}
+{"when": "2026-10-15T12:56:28Z", "item": "S14", "action": "status", "from": "open", "to": "started", "note": "", "by": "Jon R"}
+{"when": "2026-10-15T12:58:08Z", "item": "C139", "action": "catalog", "from": "", "to": "S14 lint lives in internal/lint, with handler files cli/lint.go, commands/lint.go, render/lint.go; store gains Files()", "note": "add"}
+{"when": "2026-10-15T12:58:08Z", "item": "C140", "action": "catalog", "from": "", "to": "S14 lint exit codes: 1 if any finding is an error or lint could not run, 0 otherwise (warnings alone exit 0); findings go to stdout", "note": "add"}
+{"when": "2026-10-15T12:58:08Z", "item": "C141", "action": "catalog", "from": "", "to": "S14 lint text output: one line per finding 'FILE: record ID: SEVERITY: CHECK: MESSAGE', then 'N errors, M warnings'; a clean store prints nothing", "note": "add"}
+{"when": "2026-10-15T12:58:08Z", "item": "C142", "action": "catalog", "from": "", "to": "S14 lint --json: {errors, warnings, findings: [{id, file, severity, check, message}]}, findings always an array", "note": "add"}
+{"when": "2026-10-15T12:58:09Z", "item": "C143", "action": "catalog", "from": "", "to": "S14 lint checks: parse, fields, dangling-link, supersede-state, supersede-cycle, key-conflict (errors) and decided-by (warning)", "note": "add"}
+{"when": "2026-10-15T12:58:09Z", "item": "C144", "action": "catalog", "from": "", "to": "S14 lint identifies a record by the ID in its file name, and a link dangles only if no file has that ID", "note": "add"}
+{"when": "2026-10-15T12:58:09Z", "item": "C145", "action": "catalog", "from": "", "to": "S14 the agent snippet does not name adj lint", "note": "add"}
+{"when": "2026-10-15T13:06:38Z", "item": "C143", "action": "catalog", "from": "", "to": "title,body", "note": "edit"}
+{"when": "2026-10-15T13:06:39Z", "item": "C144", "action": "catalog", "from": "", "to": "body", "note": "edit"}
+{"when": "2026-10-15T13:09:47Z", "item": "C143", "action": "catalog", "from": "", "to": "body", "note": "edit"}
+{"when": "2026-10-15T13:09:47Z", "item": "S14", "action": "note", "from": "", "to": "", "note": "adj lint implemented with 8 checks (parse, fields, id-mismat", "by": "Jon R"}
+{"when": "2026-10-15T13:09:47Z", "item": "S14", "action": "status", "from": "started", "to": "done", "note": "adj lint: 8 integrity checks, text and --json output, store.Files, fixtures per defect class; gate PASS.", "by": "Jon R"}
+{"when": "2026-10-15T13:10:00Z", "item": "S15", "action": "note", "from": "", "to": "", "note": "From S14 gate: (1) lint has no duplicate-file-ID check yet (", "by": "Jon R"}

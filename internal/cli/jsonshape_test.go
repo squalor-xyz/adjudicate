@@ -200,6 +200,7 @@ func TestJSONTopLevelKeysMatchTheDocs(t *testing.T) {
 		{"check", "## `adj check QUERY --json`", []string{"check", "--json", "storage"},
 			[]string{"closed", "decided", "open", "query", "result"}},
 		{"context", "## `adj context --format json`", []string{"context", "--format", "json"}, []string{"decisions"}},
+		{"lint", "## `adj lint --json`", []string{"lint", "--json"}, []string{"errors", "findings", "warnings"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

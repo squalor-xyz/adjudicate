@@ -756,7 +756,7 @@
       "id": "S14",
       "title": "Command: lint",
       "short_title": "Command: lint",
-      "status": "open",
+      "status": "done",
       "has_slice": true,
       "depends_on": [
         "S13",
@@ -795,6 +795,17 @@
           "verified_by": "",
           "verified_at": "",
           "stale_after": ""
+        },
+        {
+          "id": "34421918-97e9-4343-ad66-b6f6ad1d6fdd",
+          "kind": "",
+          "text": "**2026-10-15** — adj lint implemented with 8 checks (parse, fields, id-mismatch, dangling-link, supersede-state, supersede-cycle, key-conflict, decided-by); works on stores where List fails; exit 1 on errors, 0 on warnings only; --json documented in docs/json.md and tested; go test, vet and gofmt clean; decisions C139-C145.",
+          "created_at": "2026-10-15T13:09:47Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
         }
       ],
       "claim": null,
@@ -820,7 +831,7 @@
         "importance": 3,
         "urgency": 2,
         "effort": 2,
-        "attempts": 0
+        "attempts": 1
       }
     },
     {
@@ -850,6 +861,17 @@
           "kind": "",
           "text": "**2026-10-15** — From S13 review: supersede history notes embed record IDs as text ('by N', 'supersedes N'; internal/model/transition.go). When renumber rewrites supersedes/superseded_by links, decide (C32) whether these notes are rewritten or left as historical text, and record it.",
           "created_at": "2026-10-15T12:46:58Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "4ffa73ac-476d-4eac-9ba7-ef78d48ab243",
+          "kind": "",
+          "text": "**2026-10-15** — From S14 gate: (1) lint has no duplicate-file-ID check yet (C144) — add it here with the collision work; store.Files() returns (id,name,path) incl. duplicates. (2) A duplicate entry in supersedes (e.g. [7,7]) yields two identical dangling-link findings (lint.go ~159-161); dedupe while touching lint. (3) Raw JSON key case/duplicate check from the S04 note is still unlinted — owner may add later.",
+          "created_at": "2026-10-15T13:10:00Z",
           "attempt": 0,
           "by": "Jon R",
           "verified_by": "",
@@ -1223,7 +1245,7 @@
   "goals": "adjudicate is a small CLI (`adj`) with a plain-text store that records project decisions as a loop: an agent asks, the owner decides in batches, and every later agent reads the decision. The goal and non-goal records below come from PROJECT.md; the owner's decisions on its open questions are catalog records C23-C33, and they override PROJECT.md where it differs (name, runtime, record format, license).",
   "non_goals": "",
   "catalog": {
-    "next_id": 139,
+    "next_id": 146,
     "id_prefix": "C",
     "id_width": 2,
     "records": [
@@ -2465,6 +2487,69 @@
         "kind": "decision",
         "title": "S24 check text closed records: full rationale, after Superseded by",
         "body": "Closed records print the whole rationale through writeField (multi-line under the label, trailing breaks trimmed, empty omitted), not the first line as adj context does (C117): context is a compact export of settled answers, while a closed record's reason is the thing check exists to show, and the slice requires the C102 continuation. The label is Rationale, as for decided records. A superseded record prints Superseded by first, then Rationale: the pointer to the decision in force leads, the old reason follows. Implements C132.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C139",
+        "kind": "decision",
+        "title": "S14 lint lives in internal/lint, with handler files cli/lint.go, commands/lint.go, render/lint.go; store gains Files()",
+        "body": "The slice allows internal/lint or internal/query; lint reads files and checks records across a store, which query (pure functions over records) does not. Files() returns (ID, name, path) from the C59 name rule so lint does not copy it (S05 note); C82 wants one handler file per command, and render/lint.go holds the text and JSON output.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C140",
+        "kind": "decision",
+        "title": "S14 lint exit codes: 1 if any finding is an error or lint could not run, 0 otherwise (warnings alone exit 0); findings go to stdout",
+        "body": "The slice proposal: a missing decided_by is advice (C27), so CI that runs lint is not failed by it. Exit 1 covers a failed check as in C34; a run that could not start (no repo, unreadable store directory) also exits 1 with stderr only, so a script reads stdout for the findings. Usage errors exit 2.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C141",
+        "kind": "decision",
+        "title": "S14 lint text output: one line per finding 'FILE: record ID: SEVERITY: CHECK: MESSAGE', then 'N errors, M warnings'; a clean store prints nothing",
+        "body": "Compiler-style lines are greppable and clickable in CI logs, the count line tells a human how bad it is, and an empty answer prints nothing as for an empty list or inbox (C92, C101). Findings are sorted by record ID, then check, then file; File is relative to the repo root with slashes.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C142",
+        "kind": "decision",
+        "title": "S14 lint --json: {errors, warnings, findings: [{id, file, severity, check, message}]}, findings always an array",
+        "body": "An object with named keys leaves room for more fields (C86); the counts save a reader from counting, and a clean store is an empty array, not null. docs/json.md has the shape and TestLintJSONMatchesTheDocumentedExample checks its example against real output (C104); lint is added to the top-level key test.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C143",
+        "kind": "decision",
+        "title": "S14 lint checks: parse, fields, id-mismatch, dangling-link, supersede-state, supersede-cycle, key-conflict (errors) and decided-by (warning)",
+        "body": "Defect classes of C08 plus the S03 note and the S14 review: fields is one finding per model.Validate rule, and also a link to the file's own ID when the record's id differs (Validate compares with the id); id-mismatch flags a record whose id is not the ID in its file name, which store.List refuses (not raised when the id is missing or not positive: fields says that); supersede-state flags superseded_by on a non-superseded record (Validate lets it through); a cycle is a strongly connected set in a directed graph built from both link fields: superseded_by gives an edge old to new, and each supersedes entry X on a record gives an edge X to that record (so 'both directions' means both fields, not an undirected graph); one finding per member, naming only records that have a file (dangling-link reports a missing ID); key-conflict covers decided records only, key trimmed, case-sensitive (superseded, open, rejected and withdrawn do not conflict). decided-by warns for status decided only (C27); reject and withdraw record who acted, not a decision. id-mismatch is its own check so a script can tell it from a missing field.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C144",
+        "kind": "decision",
+        "title": "S14 lint identifies a record by the ID in its file name, and a link dangles only if no file has that ID",
+        "body": "C59: a file that does not parse still holds its ID, so a link to a broken file is not dangling and a parse finding carries the ID. A record whose id differs from its file name is an id-mismatch error (S14 review). Not done, left for S15 or the owner: two files with one ID, and a raw check for case-variant or duplicate JSON keys (S04 note).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C145",
+        "kind": "decision",
+        "title": "S14 the agent snippet does not name adj lint",
+        "body": "Lint is an owner and CI check of the record files; agents write records only through adj, so they have no use for it, and the snippet stays under 1800 bytes (C125). lint takes no argument and only --json and --root.",
         "status": "active",
         "reason": "",
         "successor": ""

@@ -99,6 +99,30 @@ func (s *Store) scan() ([]entry, error) {
 	return out, nil
 }
 
+// File is a record file found by name (C59).
+type File struct {
+	ID   int    // the ID in the file name
+	Name string // the file name
+	Path string // the store directory joined with Name
+}
+
+// Files lists the record files in the store directory in ID order, and by file
+// name if two files share an ID, without reading them: the ID comes from the
+// file name, so a file that does not parse is listed with its ID (C59). Lint
+// uses it to read each file itself, because List stops at the first bad one
+// (C61). A missing store directory is an empty store.
+func (s *Store) Files() ([]File, error) {
+	es, err := s.scan()
+	if err != nil {
+		return nil, err
+	}
+	out := make([]File, 0, len(es))
+	for _, e := range es {
+		out = append(out, File{ID: e.id, Name: e.name, Path: filepath.Join(s.dir, e.name)})
+	}
+	return out, nil
+}
+
 // fileID returns the ID in a record file name, or false if name is not one.
 func fileID(name string) (int, bool) {
 	rest, ok := strings.CutSuffix(name, ".md")

@@ -526,6 +526,34 @@ Superseding changes a decision, so it is owner-only like decide and reject (C27,
 
 Closed records print the whole rationale through writeField (multi-line under the label, trailing breaks trimmed, empty omitted), not the first line as adj context does (C117): context is a compact export of settled answers, while a closed record's reason is the thing check exists to show, and the slice requires the C102 continuation. The label is Rationale, as for decided records. A superseded record prints Superseded by first, then Rationale: the pointer to the decision in force leads, the old reason follows. Implements C132.
 
+### C139 S14 lint lives in internal/lint, with handler files cli/lint.go, commands/lint.go, render/lint.go; store gains Files()
+
+The slice allows internal/lint or internal/query; lint reads files and checks records across a store, which query (pure functions over records) does not. Files() returns (ID, name, path) from the C59 name rule so lint does not copy it (S05 note); C82 wants one handler file per command, and render/lint.go holds the text and JSON output.
+
+### C140 S14 lint exit codes: 1 if any finding is an error or lint could not run, 0 otherwise (warnings alone exit 0); findings go to stdout
+
+The slice proposal: a missing decided_by is advice (C27), so CI that runs lint is not failed by it. Exit 1 covers a failed check as in C34; a run that could not start (no repo, unreadable store directory) also exits 1 with stderr only, so a script reads stdout for the findings. Usage errors exit 2.
+
+### C141 S14 lint text output: one line per finding 'FILE: record ID: SEVERITY: CHECK: MESSAGE', then 'N errors, M warnings'; a clean store prints nothing
+
+Compiler-style lines are greppable and clickable in CI logs, the count line tells a human how bad it is, and an empty answer prints nothing as for an empty list or inbox (C92, C101). Findings are sorted by record ID, then check, then file; File is relative to the repo root with slashes.
+
+### C142 S14 lint --json: {errors, warnings, findings: [{id, file, severity, check, message}]}, findings always an array
+
+An object with named keys leaves room for more fields (C86); the counts save a reader from counting, and a clean store is an empty array, not null. docs/json.md has the shape and TestLintJSONMatchesTheDocumentedExample checks its example against real output (C104); lint is added to the top-level key test.
+
+### C143 S14 lint checks: parse, fields, id-mismatch, dangling-link, supersede-state, supersede-cycle, key-conflict (errors) and decided-by (warning)
+
+Defect classes of C08 plus the S03 note and the S14 review: fields is one finding per model.Validate rule, and also a link to the file's own ID when the record's id differs (Validate compares with the id); id-mismatch flags a record whose id is not the ID in its file name, which store.List refuses (not raised when the id is missing or not positive: fields says that); supersede-state flags superseded_by on a non-superseded record (Validate lets it through); a cycle is a strongly connected set in a directed graph built from both link fields: superseded_by gives an edge old to new, and each supersedes entry X on a record gives an edge X to that record (so 'both directions' means both fields, not an undirected graph); one finding per member, naming only records that have a file (dangling-link reports a missing ID); key-conflict covers decided records only, key trimmed, case-sensitive (superseded, open, rejected and withdrawn do not conflict). decided-by warns for status decided only (C27); reject and withdraw record who acted, not a decision. id-mismatch is its own check so a script can tell it from a missing field.
+
+### C144 S14 lint identifies a record by the ID in its file name, and a link dangles only if no file has that ID
+
+C59: a file that does not parse still holds its ID, so a link to a broken file is not dangling and a parse finding carries the ID. A record whose id differs from its file name is an id-mismatch error (S14 review). Not done, left for S15 or the owner: two files with one ID, and a raw check for case-variant or duplicate JSON keys (S04 note).
+
+### C145 S14 the agent snippet does not name adj lint
+
+Lint is an owner and CI check of the record files; agents write records only through adj, so they have no use for it, and the snippet stays under 1800 bytes (C125). lint takes no argument and only --json and --root.
+
 ### C39 LICENSE is a stub until the owner supplies the full GPL-3.0 text and copyright holder
 
 No GPL-3.0 text exists in the adjudicate repo and the workspace has no network, so the stub carries the SPDX line, the or-later notice and TODO(owner) markers.
@@ -588,36 +616,36 @@ PENDING OWNER CONFIRMATION - not decided. Source: Dependency/licensing notes (ma
 
 *Retired: Owner decided 2026-10-15: see decision C31 (GPL-3.0-or-later)..*
 
-24 items · — 5 · done 14 · later 5
+24 items · — 4 · done 15 · later 5
 
 | # | Slice | Title | Size | Effort | Trees | Findings | Status |
 |---|---|---|---|---|---|---|---|
-| 1 | [S14](slices/S14.md) | Command: lint | M | 2 | cli | PROJECT.md Goals 8; acceptance (lint fixtures); Open decisions 5; Milestone 4 | — |
-| 2 | [S15](slices/S15.md) | ID collision detection and renumber | M | 2 | store | PROJECT.md Open decisions 4; Risks (merge conflicts on IDs); Milestone 4 | — |
-| 3 | [S16](slices/S16.md) | Docs and v1 acceptance round trip | S | 1 | docs | PROJECT.md v1 acceptance criteria; Milestone 5 | — |
-| 4 | [S17](slices/S17.md) | Dogfood: record adjudicate's own decisions with adj | S | 1 | docs | PROJECT.md Milestone 5; acceptance (own decisions recorded) | — |
-| 5 | [S18](slices/S18.md) | Later: cross-repo inbox | M | 2 | later | PROJECT.md Feature tiers (Later); Open decisions 6 | later |
-| 6 | [S19](slices/S19.md) | Later: TUI or static HTML inbox | M | 2 | later | PROJECT.md Feature tiers (Later) | later |
-| 7 | [S20](slices/S20.md) | Later: slicer integration | M | 2 | later | PROJECT.md Feature tiers (Later); Non-goals (not replacing slicer); Risks (overlap with slicer catalog) | later |
-| 8 | [S21](slices/S21.md) | Later: optional owner-only decide enforcement | M | 2 | later | PROJECT.md Feature tiers (Later); Open decisions 5; Non-goals | later |
-| 9 | [S22](slices/S22.md) | Later: import from ADR folders | M | 2 | later | PROJECT.md Feature tiers (Later) | later |
-| 10 | [S23](slices/S23.md) | Lock ID allocation with flock | M | 2 | store | Owner decision 2026-10-15 (S05 review MEDIUM-2; C62, C64) | — |
+| 1 | [S15](slices/S15.md) | ID collision detection and renumber | M | 2 | store | PROJECT.md Open decisions 4; Risks (merge conflicts on IDs); Milestone 4 | — |
+| 2 | [S16](slices/S16.md) | Docs and v1 acceptance round trip | S | 1 | docs | PROJECT.md v1 acceptance criteria; Milestone 5 | — |
+| 3 | [S17](slices/S17.md) | Dogfood: record adjudicate's own decisions with adj | S | 1 | docs | PROJECT.md Milestone 5; acceptance (own decisions recorded) | — |
+| 4 | [S18](slices/S18.md) | Later: cross-repo inbox | M | 2 | later | PROJECT.md Feature tiers (Later); Open decisions 6 | later |
+| 5 | [S19](slices/S19.md) | Later: TUI or static HTML inbox | M | 2 | later | PROJECT.md Feature tiers (Later) | later |
+| 6 | [S20](slices/S20.md) | Later: slicer integration | M | 2 | later | PROJECT.md Feature tiers (Later); Non-goals (not replacing slicer); Risks (overlap with slicer catalog) | later |
+| 7 | [S21](slices/S21.md) | Later: optional owner-only decide enforcement | M | 2 | later | PROJECT.md Feature tiers (Later); Open decisions 5; Non-goals | later |
+| 8 | [S22](slices/S22.md) | Later: import from ADR folders | M | 2 | later | PROJECT.md Feature tiers (Later) | later |
+| 9 | [S23](slices/S23.md) | Lock ID allocation with flock | M | 2 | store | Owner decision 2026-10-15 (S05 review MEDIUM-2; C62, C64) | — |
 
 ---
 
 | # | Slice | Title | Size | Effort | Trees | Findings | Status |
 |---|---|---|---|---|---|---|---|
-| 11 | [S01](slices/S01.md) | Confirm open decisions | S | 1 | decisions | PROJECT.md Open decisions 1-7; Core concepts (kind); Dependency/licensing notes | done |
-| 12 | [S02](slices/S02.md) | Project scaffolding | S | 1 | scaffold | PROJECT.md Stack recommendation; Dependency/licensing notes | done |
-| 13 | [S03](slices/S03.md) | Record model and lifecycle transitions | M | 2 | model | PROJECT.md Core concepts / data model; Milestone 1 | done |
-| 14 | [S04](slices/S04.md) | Record file read and write | S | 1 | model | PROJECT.md Open decisions 3; Core concepts (Record) | done |
-| 15 | [S05](slices/S05.md) | Store, config and ID allocation | M | 2 | store | PROJECT.md Architecture sketch (ID allocation, Determinism); Open decisions 4, 6, 7 | done |
-| 16 | [S06](slices/S06.md) | Commands: init and ask | M | 2 | cli | PROJECT.md v1 feature tier; Milestone 2 | done |
-| 17 | [S07](slices/S07.md) | Commands: decide, reject, withdraw | S | 1 | cli | PROJECT.md v1 feature tier; Lifecycle; Milestone 2 | done |
-| 18 | [S08](slices/S08.md) | Commands: show and list with --json | S | 1 | cli | PROJECT.md v1 feature tier; Milestone 2; acceptance (--json) | done |
-| 19 | [S09](slices/S09.md) | Command: inbox | S | 1 | cli | PROJECT.md Goals 2; v1 feature tier; Milestone 3 | done |
-| 20 | [S10](slices/S10.md) | Command: check | S | 1 | cli | PROJECT.md Goals 6; v1 feature tier; Milestone 3 | done |
-| 21 | [S11](slices/S11.md) | Command: context | M | 2 | cli | PROJECT.md Goals 5; v1 feature tier; Risks (context bloat); Milestone 3 | done |
-| 22 | [S12](slices/S12.md) | Agent snippet: adj ai and JSON shape docs | S | 1 | docs | PROJECT.md v1 feature tier; Risks (adoption); acceptance (--json documented) | done |
-| 23 | [S13](slices/S13.md) | Command: supersede | S | 1 | cli | PROJECT.md Goals 4; Lifecycle; acceptance (supersede); Milestone 4 | done |
+| 10 | [S01](slices/S01.md) | Confirm open decisions | S | 1 | decisions | PROJECT.md Open decisions 1-7; Core concepts (kind); Dependency/licensing notes | done |
+| 11 | [S02](slices/S02.md) | Project scaffolding | S | 1 | scaffold | PROJECT.md Stack recommendation; Dependency/licensing notes | done |
+| 12 | [S03](slices/S03.md) | Record model and lifecycle transitions | M | 2 | model | PROJECT.md Core concepts / data model; Milestone 1 | done |
+| 13 | [S04](slices/S04.md) | Record file read and write | S | 1 | model | PROJECT.md Open decisions 3; Core concepts (Record) | done |
+| 14 | [S05](slices/S05.md) | Store, config and ID allocation | M | 2 | store | PROJECT.md Architecture sketch (ID allocation, Determinism); Open decisions 4, 6, 7 | done |
+| 15 | [S06](slices/S06.md) | Commands: init and ask | M | 2 | cli | PROJECT.md v1 feature tier; Milestone 2 | done |
+| 16 | [S07](slices/S07.md) | Commands: decide, reject, withdraw | S | 1 | cli | PROJECT.md v1 feature tier; Lifecycle; Milestone 2 | done |
+| 17 | [S08](slices/S08.md) | Commands: show and list with --json | S | 1 | cli | PROJECT.md v1 feature tier; Milestone 2; acceptance (--json) | done |
+| 18 | [S09](slices/S09.md) | Command: inbox | S | 1 | cli | PROJECT.md Goals 2; v1 feature tier; Milestone 3 | done |
+| 19 | [S10](slices/S10.md) | Command: check | S | 1 | cli | PROJECT.md Goals 6; v1 feature tier; Milestone 3 | done |
+| 20 | [S11](slices/S11.md) | Command: context | M | 2 | cli | PROJECT.md Goals 5; v1 feature tier; Risks (context bloat); Milestone 3 | done |
+| 21 | [S12](slices/S12.md) | Agent snippet: adj ai and JSON shape docs | S | 1 | docs | PROJECT.md v1 feature tier; Risks (adoption); acceptance (--json documented) | done |
+| 22 | [S13](slices/S13.md) | Command: supersede | S | 1 | cli | PROJECT.md Goals 4; Lifecycle; acceptance (supersede); Milestone 4 | done |
+| 23 | [S14](slices/S14.md) | Command: lint | M | 2 | cli | PROJECT.md Goals 8; acceptance (lint fixtures); Open decisions 5; Milestone 4 | done |
 | 24 | [S24](slices/S24.md) | Check text shows the rationale under closed records | S | 1 | render | Owner decision 2026-10-15 (S10 gate: closed records show only ID, status, title in text) | done |

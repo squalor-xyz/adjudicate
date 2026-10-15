@@ -1,12 +1,13 @@
 # JSON output
 
 `adj show ID --json`, `adj list --json`, `adj inbox --json`,
-`adj check QUERY --json` and `adj context --format json` print JSON for agents.
+`adj check QUERY --json`, `adj context --format json` and `adj lint --json` print
+JSON for agents.
 The shapes on this page are the contract: a key keeps its name and its type.
 Readers should ignore keys they do not know, because a later release may add
 keys.
 
-All five commands print the JSON with two-space indentation and HTML characters
+All six commands print the JSON with two-space indentation and HTML characters
 unescaped, end it with one newline, and print the same bytes for the same
 store.
 
@@ -330,6 +331,92 @@ array is empty: `{"decisions": []}` (formatted as `{`, `  "decisions": []`,
 `adj context` without `--format json` prints the same entries as Markdown
 (`--format md`, the default): per record `- ID title [key]: decision`, then
 `  Rationale: first line`. It is not JSON and has no shape here.
+
+## `adj lint --json`
+
+The integrity problems of the store. One JSON object with three keys:
+
+| Key | Type | Meaning |
+|---|---|---|
+| `errors` | integer | how many findings have severity `error` |
+| `warnings` | integer | how many findings have severity `warning` |
+| `findings` | array of objects | the findings, sorted by record `id`, then `check`, then `file`; empty when the store is clean |
+
+Each finding is an object in the shape under "Keys of a lint finding". Exit code
+1 if `errors` is above 0, else 0: warnings alone exit 0. Exit 1 also means lint
+could not run (no repo, an unreadable store directory), with nothing on stdout;
+exit 2 is a usage error.
+
+```json
+{
+  "errors": 2,
+  "warnings": 1,
+  "findings": [
+    {
+      "id": 1,
+      "file": "decisions/0001-pick-a-store.md",
+      "severity": "warning",
+      "check": "decided-by",
+      "message": "decided_by is missing"
+    },
+    {
+      "id": 2,
+      "file": "decisions/0002-cache-layer.md",
+      "severity": "error",
+      "check": "fields",
+      "message": "rationale: is required once decided"
+    },
+    {
+      "id": 3,
+      "file": "decisions/0003-old-queue.md",
+      "severity": "error",
+      "check": "dangling-link",
+      "message": "superseded_by 9 names no record"
+    }
+  ]
+}
+```
+
+A clean store is `{"errors": 0, "warnings": 0, "findings": []}` (formatted as
+`{`, one key per line, `[]` for the empty array). `adj lint` without `--json`
+prints one line per finding, `FILE: record ID: SEVERITY: CHECK: MESSAGE`, then
+a count such as `2 errors, 1 warning`; a clean store prints nothing.
+
+## Keys of a lint finding
+
+| Key | Type | Meaning |
+|---|---|---|
+| `id` | integer | the record's ID, taken from its file name, so a file that cannot be decoded has one too |
+| `file` | string | the record file, relative to the repo root with `/` separators |
+| `severity` | string | `error` or `warning` |
+| `check` | string | the check that found it, one of the names below |
+| `message` | string | what is wrong, in one line |
+
+The checks:
+
+- `parse` (error): the file cannot be read or decoded, for example it has no
+  opening `---` line, its JSON is bad or it has an unknown key. Nothing else is
+  checked for that file; its ID still counts as taken.
+- `fields` (error): the record breaks a rule of the model, one finding per
+  rule: a missing required field (`id`, `title`, `status`, `created`; `rationale`
+  and `decided_at` once answered; `decision` once decided or superseded;
+  `superseded_by` once superseded), a bad date, an unknown status or history
+  event, a bad option or recommendation, a link to the record itself.
+- `id-mismatch` (error): the record's `id` is not the ID in its file name,
+  which the other commands refuse to load. The `id` of a finding is the file
+  name's. A record whose `id` is missing or not positive gets a `fields`
+  finding instead.
+- `dangling-link` (error): `supersedes` or `superseded_by` names an ID that no
+  record file has.
+- `supersede-state` (error): `superseded_by` is set on a record whose status is
+  not `superseded`.
+- `supersede-cycle` (error): the record is in a loop of supersede links; every
+  record in the loop gets the finding, and the message lists them. A loop that
+  runs through an ID with no file names only the records that have one.
+- `key-conflict` (error): another `decided` record has the same `key` (compared
+  without surrounding space, case-sensitive; records without a key never
+  conflict). Superseded, open, rejected and withdrawn records do not count.
+- `decided-by` (warning): a `decided` record has no `decided_by`.
 
 ## Keys of a record
 

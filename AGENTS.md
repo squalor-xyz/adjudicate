@@ -26,13 +26,13 @@ library only.
   and working directory as parameters for tests. Each command's handler is in
   its own file (`init.go`, `ask.go`, `decide.go`, which holds decide,
   reject and withdraw, `supersede.go`, `show.go`, `list.go`, `inbox.go`,
-  `check.go`, `context.go` and `ai.go`);
+  `check.go`, `context.go`, `lint.go` and `ai.go`);
   `cli.go` holds the dispatch and shared helpers.
 - `internal/commands`: what each command does to the store, apart from
   parsing, output and exit codes (`init.go`, `ask.go`, `decide.go`,
   `supersede.go`, `show.go`, `list.go`, `inbox.go`, `check.go`, `context.go`,
-  `ai.go`). `ai.md` is the agent snippet, embedded by `ai.go`. `errors.go`
-  holds `UsageError`, the error that exits 2.
+  `lint.go`, `ai.go`). `ai.md` is the agent snippet, embedded by `ai.go`.
+  `errors.go` holds `UsageError`, the error that exits 2.
 - `internal/model`: the record type, validation, status transitions and the
   record file format; its only file I/O is `ReadFile` and `WriteFile` in
   `file.go`.
@@ -40,8 +40,11 @@ library only.
   (`config.go`); see "Store and config" below.
 - `internal/query`: record filters and the `check` search, pure functions over
   records (`filter.go`, `search.go`).
-  `internal/render`: text and JSON output (`text.go`, `inbox.go`, `check.go`,
-  `context.go`, `json.go`);
+- `internal/lint`: `adj lint`'s checks (`lint.go`): reads each record file with
+  `model.Parse` through `store.Files`, so it works on a store that `List`
+  refuses, and returns findings; see the `adj lint` entry below.
+- `internal/render`: text and JSON output (`text.go`, `inbox.go`, `check.go`,
+  `context.go`, `lint.go`, `json.go`);
   the JSON shapes are in `docs/json.md`, and `internal/cli/jsonshape_test.go`
   pins each read command's `--json` keys to it.
 - `scripts/env.sh`: Go cache and temp setup (see below).
@@ -49,7 +52,7 @@ library only.
 Exit codes for every command: 0 success; 1 a failed operation or failed check;
 2 a usage error (C34). `adj check` is the exception that matters to scripts:
 it exits 0 for every completed search, "not found" included (see its entry
-below).
+below). `adj lint` exits 1 when it finds an error (see its entry).
 
 ## Commands
 
@@ -90,7 +93,7 @@ below).
   reported before a status problem; then OLD's status is checked before NEW's,
   and the message names the status.
   Only the owner supersedes, as for decide (C27): the agent snippet lists it
-  among the commands never to run (C137). Supersede cycles are not linted yet.
+  among the commands never to run (C137). `adj lint` finds supersede cycles.
 - `adj show ID [--json] [--root DIR]`: prints one record, each set field and
   the history; with `--json` it prints the record object (`docs/json.md`). A
   non-number or 0 ID, or an extra argument, exits 2; an unknown or duplicate
@@ -146,6 +149,25 @@ below).
   prints nothing in md and `{"decisions": []}` in JSON, exit 0. A blank `--tag`
   or `--key-prefix`, a `--format` other than `md` or `json`, or an argument,
   exits 2. A size budget flag is not part of v1 (owner scope call).
+- `adj lint [--json] [--root DIR]`: checks the store for integrity problems
+  (C08). It reads the record files itself (`store.Files`, `model.Parse`), so a
+  broken or invalid file is a finding where `list` and `check` would fail (C61).
+  Each finding names the record (the ID in its file name, C59), its file
+  (relative to the root) and a check: `parse` (cannot be read or decoded),
+  `fields` (one per `model.Validate` rule broken, and a link to the file's own
+  ID), `id-mismatch` (the record's `id` is not the ID in its file name),
+  `dangling-link` (`supersedes` or `superseded_by` names an ID no file has),
+  `supersede-state` (`superseded_by` on a record that is not superseded),
+  `supersede-cycle` (a loop of supersede links; one finding per record in it,
+  naming only records that have a file), `key-conflict` (another `decided`
+  record has the same key, trimmed and case-sensitive) and `decided-by` (a
+  `decided` record without `decided_by`, a warning, C27); the rest are errors
+  (C143). Text: per finding `FILE: record ID: SEVERITY: CHECK: MESSAGE`, sorted
+  by ID, check and file, then `N errors, M warnings`; a clean store prints
+  nothing (C141). `--json` prints `{"errors", "warnings", "findings"}`
+  (`docs/json.md`, C142). Exit 1 if there is an error or lint could not run,
+  else 0: warnings alone exit 0 (C140). An argument exits 2. Two files with one
+  ID are not linted yet (S15, C144). The agent snippet does not name it (C145).
 - `adj ai`: prints the AGENTS.md snippet in `internal/commands/ai.md` (check
   before asking and what each result means, ask, read the decisions, withdraw
   your own question, only the owner decides and never run decide, reject or
@@ -171,7 +193,8 @@ below).
 - A record file is `<ID padded to four digits>-<slug>.md` in the store
   directory; the slug is the title's lowercase ASCII letters and digits joined
   by `-`. Files not named like that are ignored; a file named like a record
-  that is malformed or invalid makes `List` fail (C61). The next ID is one past
+  that is malformed or invalid makes `List` fail (C61). `store.Files` lists
+  those files (ID, name, path) without reading them. The next ID is one past
   the highest ID in the file names. `Update` keeps the file's path and
   permission bits; new files are 0644.
 
