@@ -2,7 +2,7 @@
   "version": 8,
   "id_prefix": "S",
   "id_width": 2,
-  "next_id": 23,
+  "next_id": 24,
   "preamble": "Roadmap for **adjudicate** (CLI command `adj`; formerly the working name \"dlog\"): a Go, standard-library-only CLI that records project decisions as plain files in the repo. Owner decisions from 2026-10-15 are catalog records C23-C33.",
   "passes": [],
   "items": [
@@ -1030,13 +1030,50 @@
         "effort": 2,
         "attempts": 0
       }
+    },
+    {
+      "id": "S23",
+      "title": "Lock ID allocation with flock",
+      "short_title": "Lock ID allocation with flock",
+      "status": "open",
+      "has_slice": true,
+      "depends_on": [
+        "S15"
+      ],
+      "note_records": [],
+      "claim": null,
+      "fields": {
+        "size": "M",
+        "flags": [],
+        "trees": [
+          "store"
+        ],
+        "trees_literal": false,
+        "findings": "Owner decision 2026-10-15 (S05 review MEDIUM-2; C62, C64)",
+        "discovered_from": "",
+        "cites": [
+          "C114",
+          "C62",
+          "C64",
+          "C32",
+          "C24"
+        ],
+        "key": "",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 2,
+        "urgency": 1,
+        "effort": 2,
+        "attempts": 0
+      }
     }
   ],
   "epilogue": "",
   "goals": "adjudicate is a small CLI (`adj`) with a plain-text store that records project decisions as a loop: an agent asks, the owner decides in batches, and every later agent reads the decision. The goal and non-goal records below come from PROJECT.md; the owner's decisions on its open questions are catalog records C23-C33, and they override PROJECT.md where it differs (name, runtime, record format, license).",
   "non_goals": "",
   "catalog": {
-    "next_id": 114,
+    "next_id": 115,
     "id_prefix": "C",
     "id_width": 2,
     "records": [
@@ -2053,6 +2090,15 @@
         "kind": "decision",
         "title": "S10 check follows superseded_by from a superseded match to a decided record",
         "body": "Owner decision 2026-10-15 (S10 review). A superseded match stays in closed; its superseded_by is followed through superseded records, bounded by visiting each record once, to the end of the chain. If the end is a decided record it is added to decided (once, in ID order, even if it also matched). A chain that stops at a missing ID, at a record that is neither superseded nor decided, or in a repeat (a loop) adds nothing. This way an agent that finds a replaced decision is led to the decision in force.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C114",
+        "kind": "decision",
+        "title": "ID allocation is locked with flock",
+        "body": "Owner decision 2026-10-15: store.Create holds an advisory flock (unix) across the ID scan and the link, so concurrent asks in one checkout cannot share an ID. Branch/clone collisions stay with lint/renumber (S14/S15). Implemented in S23, after S15.",
         "status": "active",
         "reason": "",
         "successor": ""

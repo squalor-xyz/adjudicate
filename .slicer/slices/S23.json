@@ -1,0 +1,41 @@
+{
+  "id": "S23",
+  "title": "Lock ID allocation with flock",
+  "lead": [
+    "Two `adj ask` runs at the same instant in one checkout, with different titles,\ncan both take the same ID (C62/C64). The owner decided to close that window with\nan advisory `flock` held across \"scan IDs, then link the file\" in\n`store.Create`."
+  ],
+  "depends_note": null,
+  "findings_note": "Owner decision 2026-10-15 (S05 review MEDIUM-2; C62, C64)",
+  "size": "M",
+  "flags": [],
+  "trees_note": "store",
+  "trees_plural": false,
+  "boundary": "**Not in this slice:** collisions from separate branches or clones (lint and\nrenumber, S14/S15, handle those; a lock cannot); Windows locking beyond a\ndocumented fallback; locking `Update` (it rewrites one existing file by rename\nand needs no ID).",
+  "sections": [
+    {
+      "heading": "Why",
+      "body": "Owner decision 2026-10-15 after the S05 review: the bounded retry (C64) only\ncatches same-path collisions, so concurrent creates with different slugs still\nproduce duplicate IDs. A lock serialises ID allocation inside one checkout."
+    },
+    {
+      "heading": "Files",
+      "body": "- `internal/store/lock_unix.go` (build tag `unix`): acquire and release an\n  exclusive `syscall.Flock` on a lock file in the store directory.\n- `internal/store/lock_other.go` (build tag `!unix`): the fallback the\n  implementer decides and records (C32), for example no lock plus the existing\n  retry, documented.\n- `internal/store/store.go`: `Create` holds the lock from the ID scan through\n  the link.\n- `internal/store/lock_test.go`.\n- `AGENTS.md` (Store and config) and the C62/C64 catalog text."
+    },
+    {
+      "heading": "Failing tests",
+      "body": "- Two goroutines (or two `Store` values on one directory) each call `Create`\n  with different titles while a test hook (like `beforeLink`, C64) holds the\n  first one between scan and link: the second blocks until the first finishes,\n  and the two records get different IDs. Without the lock the hook shows both\n  taking the same ID.\n- The lock file is created inside the store directory, is not a record (scan\n  ignores it, C59) and is not left holding the lock after `Create` returns,\n  including when `Create` fails (invalid record, link error).\n- A lock that cannot be taken in time returns an error naming the lock file\n  (the timeout or non-blocking behaviour is the implementer's choice, C32), and\n  writes no record.\n- Tests stay inside `t.TempDir()` stores and use no real concurrency beyond\n  what the hook controls; no sleeps longer than the test needs."
+    },
+    {
+      "heading": "Implement",
+      "body": "Implementer decides and records each of these (C32):\n\n- lock file name (proposed `.adj.lock`, a dot-file so scan ignores it, and\n  whether to add it to the store's gitignore guidance);\n- blocking `LOCK_EX` versus `LOCK_EX|LOCK_NB` with a bounded retry or timeout;\n- the non-unix fallback;\n- whether `beforeLink`-style hooks extend to the lock for tests.\n\nKeep the bounded retry from C64 as a second line of defence. Go standard library\nonly (C24): `syscall.Flock` under a `unix` build tag."
+    },
+    {
+      "heading": "Check",
+      "body": "Run from the repo root after `. scripts/env.sh` (C33):\n\n- `go test ./...` passes, including this slice's new tests; also\n  `go test -race ./internal/store/...`.\n- `go vet ./...` reports nothing.\n- `gofmt -l cmd internal` prints nothing.\n- `slicer check --json` is clean."
+    },
+    {
+      "heading": "Git",
+      "body": "Worktree under `.worktrees/` on a feature branch. Commit only as the orchestrator\ndirects; no AI attribution."
+    }
+  ],
+  "notes": []
+}
