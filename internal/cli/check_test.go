@@ -45,7 +45,8 @@ func seedCheck(t *testing.T) string {
 			t.Fatalf("%v: exit %d: %s", args, r.code, r.stderr)
 		}
 	}
-	// There is no supersede command yet: move record 5 through the model.
+	// Supersede through the model so the check tests pin the one-sided link
+	// shape (record 6 has no supersedes entry).
 	st, err := store.Open(root)
 	if err != nil {
 		t.Fatal(err)

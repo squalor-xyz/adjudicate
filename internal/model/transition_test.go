@@ -211,3 +211,79 @@ func TestSupersededIsTerminalAndDecidedCannotBeRejected(t *testing.T) {
 		}
 	}
 }
+
+func TestLinkSupersedesAddsTheOldIDAndOneHistoryEntry(t *testing.T) {
+	r := validRecord(StatusDecided)
+	r.ID = 7
+	if err := LinkSupersedes(&r, 3, testDate); err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(r.Supersedes, []int{3}) {
+		t.Errorf("supersedes = %v, want [3]", r.Supersedes)
+	}
+	want := HistoryEntry{Date: testDate, Event: EventSupersede, Note: "supersedes 3"}
+	if len(r.History) != 1 || r.History[0] != want {
+		t.Errorf("history = %+v, want [%+v]", r.History, want)
+	}
+	if r.Status != StatusDecided || r.Decision != "files" || r.SupersededBy != 0 {
+		t.Errorf("the record is no longer a plain decided one: %+v", r)
+	}
+	// A second link keeps the first and adds one entry more.
+	if err := LinkSupersedes(&r, 5, testDate); err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(r.Supersedes, []int{3, 5}) || len(r.History) != 2 {
+		t.Errorf("supersedes = %v, history = %+v; want [3 5] and 2 entries", r.Supersedes, r.History)
+	}
+}
+
+func TestLinkSupersedesListsAnIDOnce(t *testing.T) {
+	r := validRecord(StatusDecided)
+	r.ID = 7
+	r.Supersedes = []int{3}
+	if err := LinkSupersedes(&r, 3, testDate); err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(r.Supersedes, []int{3}) {
+		t.Errorf("supersedes = %v, want [3] once", r.Supersedes)
+	}
+}
+
+func TestLinkSupersedesNeedsADecidedRecordAndRealInput(t *testing.T) {
+	for _, from := range allStatuses {
+		if from == StatusDecided {
+			continue
+		}
+		r := validRecord(from)
+		before := validRecord(from)
+		if err := LinkSupersedes(&r, 7, testDate); !errors.Is(err, ErrInvalidTransition) {
+			t.Errorf("link from %s = %v, want ErrInvalidTransition", from, err)
+		}
+		if !reflect.DeepEqual(r, before) {
+			t.Errorf("record changed by a refused link from %s: %+v", from, r)
+		}
+	}
+	tests := []struct {
+		name string
+		old  int
+		date string
+	}{
+		{"zero", 0, testDate},
+		{"negative", -2, testDate},
+		{"itself", 1, testDate},
+		{"bad date", 7, "yesterday"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r := validRecord(StatusDecided)
+			before := validRecord(StatusDecided)
+			err := LinkSupersedes(&r, tt.old, tt.date)
+			if !errors.Is(err, ErrInvalid) || errors.Is(err, ErrInvalidTransition) {
+				t.Errorf("err = %v, want ErrInvalid and not ErrInvalidTransition", err)
+			}
+			if !reflect.DeepEqual(r, before) {
+				t.Errorf("record changed: %+v", r)
+			}
+		})
+	}
+}

@@ -1,5 +1,5 @@
 {
-  "version": 8,
+  "version": 9,
   "id_prefix": "S",
   "id_width": 2,
   "next_id": 25,
@@ -24,6 +24,7 @@
         "trees_literal": false,
         "findings": "PROJECT.md Open decisions 1-7; Core concepts (kind); Dependency/licensing notes",
         "discovered_from": "",
+        "parent": "",
         "cites": [
           "C23",
           "C24",
@@ -79,6 +80,7 @@
         "trees_literal": false,
         "findings": "PROJECT.md Stack recommendation; Dependency/licensing notes",
         "discovered_from": "",
+        "parent": "",
         "cites": [
           "C23",
           "C24",
@@ -141,6 +143,7 @@
         "trees_literal": false,
         "findings": "PROJECT.md Core concepts / data model; Milestone 1",
         "discovered_from": "",
+        "parent": "",
         "cites": [
           "C30",
           "C27",
@@ -200,6 +203,7 @@
         "trees_literal": false,
         "findings": "PROJECT.md Open decisions 3; Core concepts (Record)",
         "discovered_from": "",
+        "parent": "",
         "cites": [
           "C07",
           "C25",
@@ -259,6 +263,7 @@
         "trees_literal": false,
         "findings": "PROJECT.md Architecture sketch (ID allocation, Determinism); Open decisions 4, 6, 7",
         "discovered_from": "",
+        "parent": "",
         "cites": [
           "C26",
           "C28",
@@ -318,6 +323,7 @@
         "trees_literal": false,
         "findings": "PROJECT.md v1 feature tier; Milestone 2",
         "discovered_from": "",
+        "parent": "",
         "cites": [
           "C32"
         ],
@@ -374,6 +380,7 @@
         "trees_literal": false,
         "findings": "PROJECT.md v1 feature tier; Lifecycle; Milestone 2",
         "discovered_from": "",
+        "parent": "",
         "cites": [
           "C27",
           "C32"
@@ -420,6 +427,7 @@
         "trees_literal": false,
         "findings": "PROJECT.md v1 feature tier; Milestone 2; acceptance (--json)",
         "discovered_from": "",
+        "parent": "",
         "cites": [
           "C32"
         ],
@@ -476,6 +484,7 @@
         "trees_literal": false,
         "findings": "PROJECT.md Goals 2; v1 feature tier; Milestone 3",
         "discovered_from": "",
+        "parent": "",
         "cites": [
           "C32"
         ],
@@ -522,6 +531,7 @@
         "trees_literal": false,
         "findings": "PROJECT.md Goals 6; v1 feature tier; Milestone 3",
         "discovered_from": "",
+        "parent": "",
         "cites": [
           "C32"
         ],
@@ -579,6 +589,7 @@
         "trees_literal": false,
         "findings": "PROJECT.md Goals 5; v1 feature tier; Risks (context bloat); Milestone 3",
         "discovered_from": "",
+        "parent": "",
         "cites": [
           "C32"
         ],
@@ -670,6 +681,7 @@
         "trees_literal": false,
         "findings": "PROJECT.md v1 feature tier; Risks (adoption); acceptance (--json documented)",
         "discovered_from": "",
+        "parent": "",
         "cites": [
           "C23",
           "C32"
@@ -688,7 +700,7 @@
       "id": "S13",
       "title": "Command: supersede",
       "short_title": "Command: supersede",
-      "status": "open",
+      "status": "done",
       "has_slice": true,
       "depends_on": [
         "S07",
@@ -705,6 +717,17 @@
           "verified_by": "",
           "verified_at": "",
           "stale_after": ""
+        },
+        {
+          "id": "e474ee0a-588a-4164-b53b-9d18a3d469ca",
+          "kind": "",
+          "text": "**2026-10-15** — Verified: adj supersede OLD --by NEW links both records and validates both before writing; OLD is written first with rollback if NEW fails; the agent snippet's never-run list names supersede; all tests green, vet and gofmt clean. Decisions C133-C137.",
+          "created_at": "2026-10-15T12:46:46Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
         }
       ],
       "claim": null,
@@ -717,6 +740,7 @@
         "trees_literal": false,
         "findings": "PROJECT.md Goals 4; Lifecycle; acceptance (supersede); Milestone 4",
         "discovered_from": "",
+        "parent": "",
         "cites": [],
         "key": "",
         "pass": "",
@@ -725,7 +749,7 @@
         "importance": 3,
         "urgency": 2,
         "effort": 1,
-        "attempts": 0
+        "attempts": 1
       }
     },
     {
@@ -783,6 +807,7 @@
         "trees_literal": false,
         "findings": "PROJECT.md Goals 8; acceptance (lint fixtures); Open decisions 5; Milestone 4",
         "discovered_from": "",
+        "parent": "",
         "cites": [
           "C08",
           "C27",
@@ -819,6 +844,17 @@
           "verified_by": "",
           "verified_at": "",
           "stale_after": ""
+        },
+        {
+          "id": "ef79da3d-489e-4ed7-bfd6-395beb194c05",
+          "kind": "",
+          "text": "**2026-10-15** — From S13 review: supersede history notes embed record IDs as text ('by N', 'supersedes N'; internal/model/transition.go). When renumber rewrites supersedes/superseded_by links, decide (C32) whether these notes are rewritten or left as historical text, and record it.",
+          "created_at": "2026-10-15T12:46:58Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
         }
       ],
       "claim": null,
@@ -831,6 +867,7 @@
         "trees_literal": false,
         "findings": "PROJECT.md Open decisions 4; Risks (merge conflicts on IDs); Milestone 4",
         "discovered_from": "",
+        "parent": "",
         "cites": [
           "C26",
           "C32"
@@ -866,6 +903,7 @@
         "trees_literal": false,
         "findings": "PROJECT.md v1 acceptance criteria; Milestone 5",
         "discovered_from": "",
+        "parent": "",
         "cites": [
           "C24",
           "C33"
@@ -900,6 +938,7 @@
         "trees_literal": false,
         "findings": "PROJECT.md Milestone 5; acceptance (own decisions recorded)",
         "discovered_from": "",
+        "parent": "",
         "cites": [
           "C27",
           "C23"
@@ -935,6 +974,7 @@
         "trees_literal": false,
         "findings": "PROJECT.md Feature tiers (Later); Open decisions 6",
         "discovered_from": "",
+        "parent": "",
         "cites": [
           "C28"
         ],
@@ -968,6 +1008,7 @@
         "trees_literal": false,
         "findings": "PROJECT.md Feature tiers (Later)",
         "discovered_from": "",
+        "parent": "",
         "cites": [],
         "key": "",
         "pass": "",
@@ -999,6 +1040,7 @@
         "trees_literal": false,
         "findings": "PROJECT.md Feature tiers (Later); Non-goals (not replacing slicer); Risks (overlap with slicer catalog)",
         "discovered_from": "",
+        "parent": "",
         "cites": [],
         "key": "",
         "pass": "",
@@ -1031,6 +1073,7 @@
         "trees_literal": false,
         "findings": "PROJECT.md Feature tiers (Later); Open decisions 5; Non-goals",
         "discovered_from": "",
+        "parent": "",
         "cites": [
           "C11",
           "C27"
@@ -1065,6 +1108,7 @@
         "trees_literal": false,
         "findings": "PROJECT.md Feature tiers (Later)",
         "discovered_from": "",
+        "parent": "",
         "cites": [],
         "key": "",
         "pass": "",
@@ -1096,6 +1140,7 @@
         "trees_literal": false,
         "findings": "Owner decision 2026-10-15 (S05 review MEDIUM-2; C62, C64)",
         "discovered_from": "",
+        "parent": "",
         "cites": [
           "C114",
           "C62",
@@ -1131,6 +1176,7 @@
         "trees_literal": false,
         "findings": "Owner decision 2026-10-15 (S10 gate: closed records show only ID, status, title in text)",
         "discovered_from": "",
+        "parent": "",
         "cites": [
           "C132",
           "C110",
@@ -1153,7 +1199,7 @@
   "goals": "adjudicate is a small CLI (`adj`) with a plain-text store that records project decisions as a loop: an agent asks, the owner decides in batches, and every later agent reads the decision. The goal and non-goal records below come from PROJECT.md; the owner's decisions on its open questions are catalog records C23-C33, and they override PROJECT.md where it differs (name, runtime, record format, license).",
   "non_goals": "",
   "catalog": {
-    "next_id": 133,
+    "next_id": 138,
     "id_prefix": "C",
     "id_width": 2,
     "records": [
@@ -2341,6 +2387,51 @@
         "kind": "decision",
         "title": "check text shows the rationale under closed records",
         "body": "Owner decision 2026-10-15: adj check text prints the rationale under rejected, withdrawn and superseded matches, so an agent sees why a topic was closed. Implemented in S24.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C133",
+        "kind": "decision",
+        "title": "S13 adj supersede OLD --by NEW [--root DIR]: --by is the replacing record's ID, there is no --why and no who flag",
+        "body": "The slice names OLD --by NEW. --by here is an ID, not an author as in decide, so the owner's name is not recorded: model.Supersede takes no rationale or actor and the old record keeps its own rationale. Extra arguments, a missing --by, and a --by that is not a positive integer are usage errors (exit 2).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C134",
+        "kind": "decision",
+        "title": "S13 supersede prints OLD's ID and exits 0; OLD equal to NEW is a usage error (2); unknown ID or a record that is not decided is exit 1, OLD checked first",
+        "body": "Like decide, reject and withdraw it prints the ID of the record it changed (C74). Equal IDs are bad input that needs no record, so they exit 2 before the store is looked for (C73); a missing or not-decided record is a failed operation (C34), and the message names the status, as decide's does.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C135",
+        "kind": "decision",
+        "title": "S13 model.LinkSupersedes(r, old, date) is the new record's half of a supersede: adds old to supersedes once, appends one supersede history entry with note 'supersedes N'",
+        "body": "C46 leaves the new record's link to the caller; apply is unexported, so a model function keeps the same validate-a-copy, record-untouched-on-error guarantee (C45) instead of duplicating it in the command. The history event is supersede, the five events of C43 stay unchanged, and the note mirrors 'by N' on the old record. The slice allows extending transition.go only if needed; this is why.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C136",
+        "kind": "decision",
+        "title": "S13 supersede validates both records in memory, writes OLD first, and if NEW then fails puts OLD back; if that fails too the error says the store is inconsistent",
+        "body": "Two files cannot be written atomically (C62 is per file). OLD first because the worst leftover, OLD superseded and NEW decided without its link back, still leaves one decision in force (check and context agree); NEW first could leave two decided records that contradict each other. The restore makes the common failure leave both records unchanged; the error names the leftover state when it cannot.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C137",
+        "kind": "decision",
+        "title": "S13 the agent snippet's never-run list gains adj supersede",
+        "body": "Superseding changes a decision, so it is owner-only like decide and reject (C27, C126). The S12 gate note asked for it; ai_test checks the list names it, as the drift test only checks that named commands exist.",
         "status": "active",
         "reason": "",
         "successor": ""

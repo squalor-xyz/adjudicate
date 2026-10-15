@@ -25,14 +25,14 @@ library only.
   process entry; `RunWith(Env, ...)` takes the repo root, clock, environment
   and working directory as parameters for tests. Each command's handler is in
   its own file (`init.go`, `ask.go`, `decide.go`, which holds decide,
-  reject and withdraw, `show.go`, `list.go`, `inbox.go`, `check.go`,
-  `context.go` and `ai.go`);
+  reject and withdraw, `supersede.go`, `show.go`, `list.go`, `inbox.go`,
+  `check.go`, `context.go` and `ai.go`);
   `cli.go` holds the dispatch and shared helpers.
 - `internal/commands`: what each command does to the store, apart from
-  parsing, output and exit codes (`init.go`, `ask.go`, `decide.go`, `show.go`,
-  `list.go`, `inbox.go`, `check.go`, `context.go`, `ai.go`). `ai.md` is the
-  agent snippet, embedded by `ai.go`. `errors.go` holds `UsageError`, the
-  error that exits 2.
+  parsing, output and exit codes (`init.go`, `ask.go`, `decide.go`,
+  `supersede.go`, `show.go`, `list.go`, `inbox.go`, `check.go`, `context.go`,
+  `ai.go`). `ai.md` is the agent snippet, embedded by `ai.go`. `errors.go`
+  holds `UsageError`, the error that exits 2.
 - `internal/model`: the record type, validation, status transitions and the
   record file format; its only file I/O is `ReadFile` and `WriteFile` in
   `file.go`.
@@ -75,6 +75,22 @@ below).
   argument exits 2, including an OPTION the record does not offer while the
   record is open. An unknown ID, or a record that is not `open` (checked before
   OPTION), exits 1 and changes nothing; its message names the status.
+- `adj supersede OLD --by NEW [--root DIR]`: replaces a decided record with
+  another decided one. OLD becomes `superseded` with `superseded_by` NEW and
+  one `supersede` history entry (note `by NEW`); NEW stays `decided`, lists OLD
+  in `supersedes` and gets one `supersede` entry (note `supersedes OLD`). Both
+  are validated in memory first, so a refused supersede writes nothing. OLD is
+  written first (C136); if NEW then cannot be written, OLD is put back, and if
+  that fails too the error says OLD is left superseded and NEW has no link back
+  (the decision in force is still NEW). OLD stays readable with `adj show` and
+  leaves `adj context`; `adj check` leads from it to NEW. Prints OLD's ID
+  (C134). A missing or non-positive ID, a missing `--by`, OLD equal to NEW or an
+  extra argument exits 2; an unknown ID, or a record that is not `decided`,
+  exits 1 and changes nothing. Both IDs are looked up first, so an unknown ID is
+  reported before a status problem; then OLD's status is checked before NEW's,
+  and the message names the status.
+  Only the owner supersedes, as for decide (C27): the agent snippet lists it
+  among the commands never to run (C137). Supersede cycles are not linted yet.
 - `adj show ID [--json] [--root DIR]`: prints one record, each set field and
   the history; with `--json` it prints the record object (`docs/json.md`). A
   non-number or 0 ID, or an extra argument, exits 2; an unknown or duplicate
@@ -130,7 +146,8 @@ below).
   exits 2. A size budget flag is not part of v1 (owner scope call).
 - `adj ai`: prints the AGENTS.md snippet in `internal/commands/ai.md` (check
   before asking and what each result means, ask, read the decisions, withdraw
-  your own question, only the owner decides, exit codes, `ADJ_ASKED_BY`) and
+  your own question, only the owner decides and never run decide, reject or
+  supersede, exit codes, `ADJ_ASKED_BY`) and
   exits 0. It reads no repo and takes no flag or argument
   (so no `--root`); either exits 2. `internal/cli/ai_test.go` fails if the
   snippet names a command, flag or variable that does not exist, or runs past
@@ -184,8 +201,9 @@ Never run `go env -w`; it writes outside the repo. Do not add a Makefile.
   (`cli.Env.Root`) and fails on any use of the real working directory; a test
   of root discovery bounds the walk with `cli.Env.Stop`. No test calls
   `os.Chdir`.
-- Only the owner makes the decide transition (`adj decide`, C27). Agents ask,
-  check and read; an agent may withdraw its own question (`adj withdraw`).
+- Only the owner makes the decide transition (`adj decide`, C27) and the
+  supersede transition (`adj supersede`). Agents ask, check and read; an agent
+  may withdraw its own question (`adj withdraw`).
 - Work is tracked in slicer. Read and change tracking state only through the
   `slicer` CLI; never open, search or edit `.slicer/`.
 - Standing rule (C32): an interface detail that PROJECT.md and the owner's

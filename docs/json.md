@@ -360,4 +360,6 @@ when it has a value. `id`, `title`, `status` and `created` are always present.
 | `body` | string | the Markdown after the record's frontmatter, kept verbatim; present only when the record has a body |
 
 A history entry's `event` is one of `ask`, `decide`, `reject`, `withdraw` or
-`supersede`. Dates are `YYYY-MM-DD` strings, not timestamps.
+`supersede`. `adj supersede` writes one `supersede` entry on each of the two
+records: the note is `by N` on the record that is replaced and `supersedes N` on
+the one that replaces it. Dates are `YYYY-MM-DD` strings, not timestamps.

@@ -63,3 +63,16 @@ func Supersede(r *Record, by int, date string) error {
 		n.SupersededBy = by
 	})
 }
+
+// LinkSupersedes records on r, a decided record, that it replaces the record
+// with ID old: it adds old to Supersedes (once) and appends one supersede
+// history entry with the note "supersedes <old>", dated date (YYYY-MM-DD). r
+// stays decided (C135). It is the other half of Supersede, which changes only the
+// old record (C46); the supersede command applies both.
+func LinkSupersedes(r *Record, old int, date string) error {
+	return apply(r, StatusDecided, StatusDecided, EventSupersede, date, fmt.Sprintf("supersedes %d", old), func(n *Record) {
+		if !slices.Contains(n.Supersedes, old) {
+			n.Supersedes = append(slices.Clip(n.Supersedes), old)
+		}
+	})
+}

@@ -1,6 +1,6 @@
 ## Decisions (adj)
 
-This repo logs decisions with `adj`. Agents ask, check and read; only the owner decides, so never run `adj decide` or `adj reject`.
+This repo logs decisions with `adj`. Agents ask, check and read; only the owner decides, so never run `adj decide`, `adj reject` or `adj supersede`.
 
 - Before you ask or choose, check: `adj check "storage.engine"`. The query is one quoted substring of a title, key, tag or decision, any case. Line 1 of the output is `decided`, `open`, `closed` or `not found`; the exit code is 0 for all four. If `decided`, follow it. If `open`, the question is already waiting: do not ask again. If `closed` (rejected, withdrawn or superseded), read it with `adj show ID` before asking, and do not re-ask a rejected question. If `not found`, ask.
 - Read the decisions in force: `adj context --key-prefix storage` (also `--tag T`, `--format json`). One record in full: `adj show ID`.
