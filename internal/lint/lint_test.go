@@ -128,6 +128,24 @@ var fixtureCases = []struct {
 	{"renumber-leftover-alone", []lint.Finding{
 		finding(2, "0002-beta.md", errSev, lint.CheckRenumberLeftover, "0004-beta.md has this record renumbered from id 2: this file is a stale copy left by an interrupted renumber; check both, delete it"),
 	}},
+	// The moved record may be edited after the crash (here it is decided):
+	// the old file is still the stale copy.
+	{"renumber-leftover-edited", []lint.Finding{
+		finding(2, "0002-beta.md", errSev, lint.CheckRenumberLeftover, "0004-beta.md has this record renumbered from id 2: this file is a stale copy left by an interrupted renumber; check both, delete it"),
+	}},
+	// A stale file written by hand or an older version (empty arrays, no final
+	// newline in the body) is the same record as the canonical moved file.
+	{"renumber-leftover-noncanonical", []lint.Finding{
+		finding(2, "0002-beta.md", errSev, lint.CheckRenumberLeftover, "0004-beta.md has this record renumbered from id 2: this file is a stale copy left by an interrupted renumber; check both, delete it"),
+	}},
+	{"renumber-leftover-noncanonical-edited", []lint.Finding{
+		finding(2, "0002-beta.md", errSev, lint.CheckRenumberLeftover, "0004-beta.md has this record renumbered from id 2: this file is a stale copy left by an interrupted renumber; check both, delete it"),
+	}},
+	// 0003-foo.md and 0005-foo.md share the name text and the record in 0005
+	// was renumbered from 3, but it is another record than the one in
+	// 0003-foo.md (two hand-named files, 0003-foo.md and 00003-foo.md, once
+	// collided and one was moved): the keeper is live, not a stale copy.
+	{"renumber-keeper", nil},
 	// A link listed twice is one finding, not two identical ones.
 	{"duplicate-supersedes", []lint.Finding{
 		finding(1, "0001-first.md", errSev, lint.CheckDanglingLink, "supersedes 7 names no record"),

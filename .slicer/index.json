@@ -2,7 +2,7 @@
   "version": 9,
   "id_prefix": "S",
   "id_width": 2,
-  "next_id": 25,
+  "next_id": 26,
   "preamble": "Roadmap for **adjudicate** (CLI command `adj`; formerly the working name \"dlog\"): a Go, standard-library-only CLI that records project decisions as plain files in the repo. Owner decisions from 2026-10-15 are catalog records C23-C33.",
   "passes": [],
   "items": [
@@ -1005,7 +1005,19 @@
       "depends_on": [
         "S16"
       ],
-      "note_records": [],
+      "note_records": [
+        {
+          "id": "de245748-f135-47ec-8e00-a49e44b58732",
+          "kind": "",
+          "text": "**2026-10-16** — From S25 review: adj lint's renumber-leftover now compares content (C163). Known limits to watch while dogfooding: a moved file hand-edited without a history entry, or a stale file hand-edited after the crash, is not recognised as a stale copy (adj renumber could move it again; check for a renumber entry in duplicate-id files first); two identical records flag the keeper; the edited-since comparison skips the body. docs/json.md and C163 name only the moved-file case; the gate suggested adding 'either file changed by hand'.",
+          "created_at": "2026-10-16T03:27:51Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        }
+      ],
       "claim": null,
       "fields": {
         "size": "S",
@@ -1175,7 +1187,19 @@
       "depends_on": [
         "S05"
       ],
-      "note_records": [],
+      "note_records": [
+        {
+          "id": "10482a81-2da3-44b5-9d87-d81e04b87ff0",
+          "kind": "",
+          "text": "**2026-10-16** — From S25 review: imported (ADR) record files will often not be in the form model.Marshal writes (empty arrays, no final newline in the body). C163 compares stale copies as stored for that reason; keep any importer or new comparison on the same footing.",
+          "created_at": "2026-10-16T03:27:51Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        }
+      ],
       "claim": null,
       "fields": {
         "size": "M",
@@ -1310,13 +1334,57 @@
         "effort": 1,
         "attempts": 1
       }
+    },
+    {
+      "id": "S25",
+      "title": "Fix stale-copy false positive that flags a live record",
+      "short_title": "Fix stale-copy false positive that flags a live record",
+      "status": "done",
+      "has_slice": true,
+      "depends_on": [],
+      "note_records": [
+        {
+          "id": "c67bac29-b5ea-4693-84a2-9ff79864a8c8",
+          "kind": "",
+          "text": "**2026-10-16** — IsStaleCopy now also requires the same record (C163): unedited moved record equals the stale one in every field and the body; if edited since, the history before the renumber entry is the stale record's whole history and the ask fields (title, key, tags, asked_by, created, context, options, recommendation) are equal; compared as stored so a non-canonical stale file (empty arrays, no final newline) still matches. A live record sharing ID and name text with a moved one is no longer flagged by lint or refused by renumber. Help text of adj lint and adj renumber says check both, then delete. Lock: an existing read-only .adj.lock is locked through an O_RDONLY open on EACCES (C164). Catalog edits: C155 (Create gap closed by C162), C162 (invalid-only-with-real-ID wording), C156 (renumber entry at any position, same content, check both then delete). Tests: new store, lint fixture, cli help and lock tests, each red before the change; all new assertions mutation-checked. Known limits (C163): a moved file hand-edited without a history entry is not recognised; identical records are a contrived case where the keeper is flagged; edited-since comparison skips the body. Gate PASS after one review round with one blocker (non-canonical stale file) fixed.",
+          "created_at": "2026-10-16T03:27:42Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        }
+      ],
+      "claim": null,
+      "fields": {
+        "size": "M",
+        "flags": [],
+        "trees": [
+          "store",
+          "lint",
+          "cli"
+        ],
+        "trees_literal": false,
+        "findings": "S15 gate note (2) on S16; reproduced in the S16 run; S23 review notes (3), (6) on S16",
+        "discovered_from": "",
+        "parent": "",
+        "cites": [],
+        "key": "",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 3,
+        "urgency": 3,
+        "effort": 2,
+        "attempts": 1
+      }
     }
   ],
   "epilogue": "",
   "goals": "adjudicate is a small CLI (`adj`) with a plain-text store that records project decisions as a loop: an agent asks, the owner decides in batches, and every later agent reads the decision. The goal and non-goal records below come from PROJECT.md; the owner's decisions on its open questions are catalog records C23-C33, and they override PROJECT.md where it differs (name, runtime, record format, license).",
   "non_goals": "",
   "catalog": {
-    "next_id": 163,
+    "next_id": 165,
     "id_prefix": "C",
     "id_width": 2,
     "records": [
@@ -2710,7 +2778,7 @@
         "id": "C155",
         "kind": "decision",
         "title": "S15 renumber picks new IDs that no link names without a file, and checks each move with the ID it will get",
-        "body": "S15 review. A new ID equal to the target of an existing dangling link would silently make that link resolve to the moved record, so IDs named by a supersedes or superseded_by link with no file are skipped (one past the highest, then on until free). The in-memory check before the first write uses the same sequence, one ID per move, instead of one provisional ID for all, so a refusal changes nothing. Create has the same gap and is not changed here.",
+        "body": "S15 review. A new ID equal to the target of an existing dangling link would silently make that link resolve to the moved record, so IDs named by a supersedes or superseded_by link with no file are skipped (one past the highest, then on until free). The in-memory check before the first write uses the same sequence, one ID per move, instead of one provisional ID for all, so a refusal changes nothing. Create had the same gap; C162 closed it (S23).",
         "status": "active",
         "reason": "",
         "successor": ""
@@ -2719,7 +2787,7 @@
         "id": "C156",
         "kind": "decision",
         "title": "S15 an interrupted renumber's stale copy: renumber refuses (ErrStaleCopy, exit 1, nothing changed) and lint reports renumber-leftover; nothing is deleted automatically",
-        "body": "S15 review of C148. After a crash between linking the new file and removing the old one, running renumber again would move the old file to yet another ID and the record would exist twice. A file is the stale copy when another file with a different ID and the same name text has a last history entry renumber 'from N' for its ID. Renumber refuses when a colliding file is one, naming both files and saying to delete the old one; lint reports the old file as the error renumber-leftover, whether or not it still collides, so CI sees it. Deleting stays the owner's step: the tool cannot know the owner has not edited either file since.",
+        "body": "S15 review of C148. After a crash between linking the new file and removing the old one, running renumber again would move the old file to yet another ID and the record would exist twice. A file is the stale copy when another file with a different ID and the same name text has a renumber history entry 'from N' for its ID at any position and holds the same record (C163). Renumber refuses when a colliding file is one, naming both files and saying to check both, then delete the old one; lint reports the old file as the error renumber-leftover, whether or not it still collides, so CI sees it. Deleting stays the owner's step: the tool cannot know the owner has not edited either file since.",
         "status": "active",
         "reason": "",
         "successor": ""
@@ -2773,7 +2841,25 @@
         "id": "C162",
         "kind": "decision",
         "title": "S23 Create and Renumber hold the lock; Renumber only when a collision exists; Create skips IDs named by dangling links",
-        "body": "Implementer decision (C32) for C114, extending C155 and C154. Create validates the record with a stand-in ID before touching the store (an invalid record still writes nothing, not even the directory or the lock file), takes the lock, and holds it from the first scan to the link, retries included; it is validated again with the real ID. The ID is one past the highest, skipping any ID that a supersedes or superseded_by link names without a file (C155, as renumber does); a file that cannot be read keeps its ID by name but its links are unknown, so it is skipped for links rather than failing every ask. Renumber looks for collisions without the lock; with none it returns, taking no lock and making nothing. With one it takes the lock and reads the store again before it plans, and holds the lock to the last move (so a Create cannot take an ID a move is about to use). Update is not locked. Renumber that is refused after the lock leaves only the empty lock file.",
+        "body": "Implementer decision (C32) for C114, extending C155 and C154. Create validates the record with a stand-in ID before touching the store (a record that is invalid whatever its ID writes nothing, not even the directory or the lock file; one that is invalid only with its real ID fails after the lock made the directory and the lock file, so those exist but no record does), takes the lock, and holds it from the first scan to the link, retries included; it is validated again with the real ID. The ID is one past the highest, skipping any ID that a supersedes or superseded_by link names without a file (C155, as renumber does); a file that cannot be read keeps its ID by name but its links are unknown, so it is skipped for links rather than failing every ask. Renumber looks for collisions without the lock; with none it returns, taking no lock and making nothing. With one it takes the lock and reads the store again before it plans, and holds the lock to the last move (so a Create cannot take an ID a move is about to use). Update is not locked. Renumber that is refused after the lock leaves only the empty lock file.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C163",
+        "kind": "decision",
+        "title": "S25 a stale copy must also hold the same record: IsStaleCopy compares the content, so a live record that shares the ID and name text with a moved one is not flagged",
+        "body": "Implementer decision (C32), refining C156. Name text plus a renumber entry 'from N' is not enough: two hand-named files with one ID and name text (0003-foo.md, 00003-foo.md) collide, one is moved to 0005-foo.md 'from 3', and the keeper 0003-foo.md then matched as its copy, so lint and renumber told the owner to delete a live record. IsStaleCopy(stale, staleRec, moved, movedRec) now also requires the same record, tested at a renumber entry 'from stale.ID' (any position in the history, as since S16). If that entry is the moved record's last, the moved record without it and with the stale ID must equal the stale record in every field and in the body. If entries follow it, the record was edited after the crash (adj decide or supersede, or by hand), so status, decision, rationale, links, body and so on may differ; it is then told apart from a keeper by what an edit cannot change: the history before the renumber entry must equal the stale record's whole history (an edit only appends), and title, key, tags, asked_by, created, context, options and recommendation (which only adj ask sets) must be equal. A keeper is another record, so its history or those fields differ. The record's id field is ignored on both sides (C59). The edited-since comparison covers the ask fields, not the body: body edits after the crash are allowed. Known limits: a moved file changed by hand without any history entry is no longer recognised and renumber would move it again, so before running renumber on duplicate-id files the owner checks whether one holds a renumber entry; and two files with identical records (contrived) leave the keeper flagged. Records are compared as stored (json of the frontmatter, body with its final newline), because the stale file may not be in the form Marshal writes (empty arrays, no final newline) while the moved file is. The reason for choosing this over a looser match is that a finding that tells the owner to delete a live record costs more than a missed leftover.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C164",
+        "kind": "decision",
+        "title": "S25 the ID lock opens an existing read-only .adj.lock read-only when the read-write open fails with EACCES",
+        "body": "Implementer decision (C32), refining C114. flock needs no write access, so a lock file that exists but cannot be opened for writing (checked out of git by another user, chmod 444) must not stop every ask. acquire opens O_RDWR|O_CREATE as before; only on EACCES it opens the same path O_RDONLY (without O_CREATE, so only a file that exists) and flocks that. If the file is missing (a read-only directory) or the read-only open fails too, the error of the first open stands, so behaviour is as before; every other error is unchanged. The lock file is never written, so its mode and content stay. The lock still excludes: a second writer finds it held.",
         "status": "active",
         "reason": "",
         "successor": ""

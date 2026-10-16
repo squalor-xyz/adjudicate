@@ -32,8 +32,8 @@ created date, and a record that moves must be valid with its new ID; if not,
 renumber stops with nothing changed. A new ID is never one that a link names
 without a file. If a run was interrupted after a new file was written but
 before the old one was removed, the record exists twice: adj lint reports the
-old file as renumber-leftover and renumber refuses to run until you delete that
-file.
+old file as renumber-leftover and renumber refuses to run until you check both,
+then delete that file.
 
 Exit codes: 0 on success, 1 if renumber stopped or failed, 2 for a usage error.
 

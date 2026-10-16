@@ -3,7 +3,9 @@
 package store
 
 import (
+	"bytes"
 	"cmp"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -82,12 +84,81 @@ func RenumberedFrom(r model.Record, id int) bool {
 	return false
 }
 
-// IsStaleCopy reports whether stale is the old file of a renumber that was
-// interrupted before it was removed: moved, a file with another ID and the
-// same name text, holds a record with a renumber history entry that says it
-// was renumbered from stale's ID (C148).
-func IsStaleCopy(stale, moved File, movedRec model.Record) bool {
-	return moved.ID != stale.ID && NameText(moved.Name) == NameText(stale.Name) && RenumberedFrom(movedRec, stale.ID)
+// IsStaleCopy reports whether stale (a file, holding staleRec) is the old file
+// of a renumber that was interrupted before it was removed (C148): moved, a
+// file with another ID and the same name text, holds a record with a renumber
+// history entry that says it was renumbered from stale's ID, and that record is
+// the same one as staleRec. Name text and entry alone are not enough: two live
+// records can share an ID and name text (0003-foo.md, 00003-foo.md), one is
+// moved, and the one that kept the ID would look like its copy.
+//
+// The same record means one of two things. If the renumber entry is the last
+// history entry, the moved record without it and with stale's ID equals
+// staleRec in every field and in the body. If entries follow it, the record
+// was edited after the crash (adj decide, adj supersede or an edit by hand add
+// entries), so the status, decision, links and body may differ; then the
+// history before the renumber entry must be staleRec's whole history, and the
+// fields that only adj ask sets (title, key, tags, asked_by, created, context,
+// options, recommendation) must be equal; the body is not compared. Records are
+// compared as stored, so a stale file that is not in the form model.Marshal
+// writes (empty arrays, no final newline in the body) still matches. The
+// record's id field is ignored on both sides: the ID in the file name is its
+// identity (C59).
+func IsStaleCopy(stale File, staleRec model.Record, moved File, movedRec model.Record) bool {
+	if moved.ID == stale.ID || NameText(moved.Name) != NameText(stale.Name) {
+		return false
+	}
+	for i, h := range movedRec.History {
+		if h.Event != model.EventRenumber || h.Note != fmt.Sprintf("from %d", stale.ID) {
+			continue
+		}
+		if sameRecord(staleRec, movedRec, i) {
+			return true
+		}
+	}
+	return false
+}
+
+// sameRecord reports whether moved is stale continued: the history of moved
+// before entry i, its renumber entry, is stale's whole history, and either the
+// entry is the last one and the records are equal otherwise, or entries follow
+// it and the fields that adj ask sets are equal (see IsStaleCopy). Records are
+// compared as the file format stores them: the stale file may not be in the
+// form model.Marshal writes (an empty array that omitempty drops, a body
+// without its final newline), while the moved file was written by it.
+func sameRecord(stale, moved model.Record, i int) bool {
+	if !slices.Equal(moved.History[:i], stale.History) {
+		return false
+	}
+	moved.ID = stale.ID
+	if i == len(moved.History)-1 {
+		moved.History = stale.History // the equal prefix; drops the entry
+		return sameStored(stale, moved) && withNewline(stale.Body) == withNewline(moved.Body)
+	}
+	return sameStored(asked(stale), asked(moved))
+}
+
+// asked returns r with only the fields that adj ask sets.
+func asked(r model.Record) model.Record {
+	return model.Record{Title: r.Title, Key: r.Key, Tags: r.Tags, AskedBy: r.AskedBy, Created: r.Created,
+		Context: r.Context, Options: r.Options, Recommendation: r.Recommendation}
+}
+
+// sameStored reports whether a and b have the same frontmatter once encoded:
+// omitempty makes nil and empty slices the same.
+func sameStored(a, b model.Record) bool {
+	ja, _ := json.Marshal(a) // cannot fail for a Record
+	jb, _ := json.Marshal(b)
+	return bytes.Equal(ja, jb)
+}
+
+// withNewline is body as model.Marshal writes it: a non-empty body ends in a
+// newline.
+func withNewline(body string) string {
+	if body != "" && !strings.HasSuffix(body, "\n") {
+		return body + "\n"
+	}
+	return body
 }
 
 // Renumber resolves every ID that more than one record file has (C26). Of the
@@ -118,7 +189,9 @@ func IsStaleCopy(stale, moved File, movedRec model.Record) bool {
 // file must be readable, since any of them may hold a link; a colliding record
 // must have a valid created date, which picks the keeper; no colliding file may
 // be the stale copy of an interrupted earlier Renumber (ErrStaleCopy: Renumber
-// would move it again and the record would exist twice, C148); and every record
+// would move it again and the record would exist twice, C148; IsStaleCopy has
+// the rule, which compares the content so a live record is not refused);
+// and every record
 // that moves must be valid with the ID it will get. All of that is checked
 // before the first file is written, so a refusal changes nothing. A move that
 // fails midway is undone if it can be; moves completed before it stay.
@@ -154,7 +227,7 @@ func (s *Store) Renumber(date string, keepLinks bool) (RenumberResult, error) {
 	for _, id := range shared {
 		for _, f := range groups[id] {
 			for _, g := range files {
-				if IsStaleCopy(f, g, recs[g.Name]) {
+				if IsStaleCopy(f, recs[f.Name], g, recs[g.Name]) {
 					return res, fmt.Errorf("renumber: %w: %s has the same record renumbered from id %d, so %s is the "+
 						"stale copy; check both, delete %s, then run again", ErrStaleCopy, g.Name, f.ID, f.Name, f.Name)
 				}

@@ -415,9 +415,16 @@ The checks:
 - `renumber-leftover` (error): the file is the stale copy that an interrupted
   `adj renumber` left behind: another file has the same record under a new ID
   (same file name text, a `renumber` history entry with the note `from N` for
-  this file's ID, wherever it sits in the history). Check both files, then
-  delete the stale one. It is reported whether or not the file still shares its
-  ID with another.
+  this file's ID, wherever it sits in the history, and the same content: the
+  moved record without that entry equals this one, or, if it was edited since,
+  its history before the entry is this record's history and the fields `adj
+  ask` sets are equal). A live record that only shares the ID and the name text
+  with a moved one is not reported; the body of an edited moved record is not
+  compared. A moved file changed by hand without a `renumber` entry or any other
+  history entry is not recognised: before `adj renumber`, check whether one of
+  the files that `duplicate-id` reports holds a `renumber` entry. Check both
+  files, then delete the stale one. It is reported whether or not the file still
+  shares its ID with another.
 - `dangling-link` (error): `supersedes` or `superseded_by` names an ID that no
   record file has. A link listed twice in one record is reported once.
 - `supersede-state` (error): `superseded_by` is set on a record whose status is

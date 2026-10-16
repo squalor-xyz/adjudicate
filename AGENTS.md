@@ -165,19 +165,18 @@ below). `adj lint` exits 1 when it finds an error (see its entry).
   ID), `id-mismatch` (the record's `id` is not the ID in its file name),
   `duplicate-id` (more than one file has the ID; each of them gets the finding,
   C26, C152), `renumber-leftover` (the stale old file of an interrupted `adj
-  renumber`, C156), `dangling-link` (`supersedes` or `superseded_by` names an
-  ID no file has; a link listed twice is reported once), `supersede-state`
-  (`superseded_by` on a record that is not superseded),
-  `supersede-cycle` (a loop of supersede links; one finding per record in it,
-  naming only records that have a file), `key-conflict` (another `decided`
-  record has the same key, trimmed and case-sensitive) and `decided-by` (a
-  `decided` record without `decided_by`, a warning, C27); the rest are errors
-  (C143). Text: per finding `FILE: record ID: SEVERITY: CHECK: MESSAGE`, sorted
-  by ID, check and file, then `N errors, M warnings`; a clean store prints
-  nothing (C141). `--json` prints `{"errors", "warnings", "findings"}`
-  (`docs/json.md`, C142). Exit 1 if there is an error or lint could not run,
-  else 0: warnings alone exit 0 (C140). An argument exits 2. The agent snippet
-  does not name it (C145).
+  renumber`, C156, C163), `dangling-link` (`supersedes` or `superseded_by` names
+  an ID no file has; a link listed twice is reported once), `supersede-state`
+  (`superseded_by` on a record that is not superseded), `supersede-cycle` (a
+  loop of supersede links; one finding per record in it, naming only records
+  that have a file), `key-conflict` (another `decided` record has the same key,
+  trimmed and case-sensitive) and `decided-by` (a `decided` record without
+  `decided_by`, a warning, C27); the rest are errors (C143). Text: per finding
+  `FILE: record ID: SEVERITY: CHECK: MESSAGE`, sorted by ID, check and file,
+  then `N errors, M warnings`; a clean store prints nothing (C141). `--json`
+  prints `{"errors", "warnings", "findings"}` (`docs/json.md`, C142). Exit 1 if
+  there is an error or lint could not run, else 0: warnings alone exit 0 (C140).
+  An argument exits 2. The agent snippet does not name it (C145).
 - `adj renumber [--keep-links] [--root DIR]` (C150): resolves record files that
   share an ID (`adj lint` reports them as `duplicate-id`; merged branches and
   clones make them, and so do asks on a system without the ID lock, C26, C114).
@@ -205,12 +204,20 @@ below). `adj lint` exits 1 when it finds an error (see its entry).
   After a crash between the two, the record is in both files and the old one is
   a stale copy: `adj lint` reports it as `renumber-leftover` (the new file has a
   `renumber` history entry `from N` for the old file's ID, wherever it sits in
-  the history), and `adj renumber` refuses (exit 1, nothing changed,
-  `store.ErrStaleCopy`) until the owner checks both files and deletes the old
-  one (C156); nothing is deleted automatically. An argument or unknown flag
-  exits 2. Owner-only: the agent snippet tells agents to report a duplicate ID
-  and not to run it (C153). A name taken by a directory or another writer is
-  skipped for the next ID (C154).
+  the history, and holds the same record: equal to the old file apart from the
+  entry, or, if edited since, with the old file's whole history before the entry
+  and the same title, key, tags, asked_by, created, context, options and
+  recommendation, not the body, C163; a live record that only shares the ID and
+  name text with a moved one is not a stale copy), and `adj renumber` refuses
+  (exit 1, nothing changed, `store.ErrStaleCopy`) until the owner checks both
+  files and deletes the old one (C156); nothing is deleted automatically. Known
+  limit (C163): a moved file that was changed by hand without a history entry is
+  not recognised, so before running `adj renumber` on files that `adj lint`
+  reports as `duplicate-id`, check whether one holds a `renumber` entry; two
+  files with identical records (contrived) flag the keeper. An argument or
+  unknown flag exits 2. Owner-only: the agent snippet tells agents to report a
+  duplicate ID and not to run it (C153). A name taken by a directory or another
+  writer is skipped for the next ID (C154).
 - `adj ai`: prints the AGENTS.md snippet in `internal/commands/ai.md` (check
   before asking and what each result means, ask, read the decisions, withdraw
   your own question, only the owner decides and never run decide, reject or
@@ -248,20 +255,24 @@ below). `adj lint` exits 1 when it finds an error (see its entry).
   two `adj ask` runs on one checkout cannot take one ID. `Update` is not locked.
   The lock file is an empty dot-file, never taken for a record, made on first
   use and never deleted; the lock is released when the call returns or the
-  process dies. A writer waits up to 5 seconds (polling every 10 ms); if the
-  lock is still held it fails with an error that names the lock file and writes
-  no record. If `flock` itself fails (ENOLCK or EOPNOTSUPP, as on some network
-  file systems), `adj ask` exits 1 with an error that names `.adj.lock` and
-  writes no record. On a network file system the lock may be local to each host,
-  so asks from two hosts can still take one ID. `Create` also skips an ID that a
-  `supersedes` or `superseded_by` link names without a file (C155); a file it
-  cannot read keeps its ID by name but its links are not known. The lock only
-  serialises one checkout: branches and clones still collide, and `adj lint` and
-  `adj renumber` handle that. Locking needs `syscall.Flock` (darwin, linux, the
-  BSDs, illumos); other systems have no lock and only the bounded retry of C64.
-  A team that does not want the lock file in git adds `decisions/.adj.lock` (its
-  store directory) to its `.gitignore`; `adj` writes no `.gitignore`. A test
-  that lists the store directory leaves the lock file out.
+  process dies. If the lock file exists and cannot be opened for writing
+  (EACCES; read-only mode, or another user's checkout), it is locked through a
+  read-only open, since `flock` needs no write access; if it is missing and
+  cannot be made, the error is the permission error (C164). A writer waits up to
+  5 seconds (polling every 10 ms); if the lock is still held it fails with an
+  error that names the lock file and writes no record. If `flock` itself fails
+  (ENOLCK or EOPNOTSUPP, as on some network file systems), `adj ask` exits 1
+  with an error that names `.adj.lock` and writes no record. On a network file
+  system the lock may be local to each host, so asks from two hosts can still
+  take one ID. `Create` also skips an ID that a `supersedes` or `superseded_by`
+  link names without a file (C155); a file it cannot read keeps its ID by name
+  but its links are not known. The lock only serialises one checkout: branches
+  and clones still collide, and `adj lint` and `adj renumber` handle that.
+  Locking needs `syscall.Flock` (darwin, linux, the BSDs, illumos); other
+  systems have no lock and only the bounded retry of C64. A team that does not
+  want the lock file in git adds `decisions/.adj.lock` (its store directory) to
+  its `.gitignore`; `adj` writes no `.gitignore`. A test that lists the store
+  directory leaves the lock file out.
 
 ## Setup and checks
 

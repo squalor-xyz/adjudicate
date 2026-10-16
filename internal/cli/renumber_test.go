@@ -181,6 +181,13 @@ func TestRenumberHelpAndBadArguments(t *testing.T) {
 			t.Errorf("renumber usage does not describe the flag on a line of its own starting %q:\n%s", flag, help)
 		}
 	}
+	// The leftover rule can be wrong about which file is the copy, so the
+	// owner is told to check both files before deleting one.
+	_, leftover, _ := strings.Cut(help, "renumber-leftover")
+	leftover = strings.Join(strings.Fields(leftover), " ") // the usage wraps
+	if check, del := strings.Index(leftover, "check both"), strings.Index(leftover, "delete"); check < 0 || del < 0 || check > del {
+		t.Errorf("renumber usage must say \"check both\" before \"delete\" where it names renumber-leftover:\n%s", leftover)
+	}
 	tests := []struct {
 		name    string
 		args    []string

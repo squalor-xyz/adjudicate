@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"slices"
 	"strings"
 	"testing"
 
@@ -592,13 +593,216 @@ Beta body.
 		{Event: model.EventDecide},
 	}}
 	stale, moved := File{ID: 2, Name: "0002-beta.md"}, File{ID: 4, Name: "0004-beta.md"}
-	if !IsStaleCopy(stale, moved, rec) {
+	staleRec := model.Record{ID: 2, History: []model.HistoryEntry{{Event: model.EventAsk}}}
+	if !IsStaleCopy(stale, staleRec, moved, rec) {
 		t.Error("IsStaleCopy = false for a record renumbered from 2 and edited since")
 	}
 	// A renumber entry for another ID anywhere in the history is no match.
 	rec.History[1].Note = "from 9"
-	if IsStaleCopy(stale, moved, rec) {
+	if IsStaleCopy(stale, staleRec, moved, rec) {
 		t.Error("IsStaleCopy = true for a record renumbered from 9")
+	}
+}
+
+// askedRecord is a question as ask makes it, with the fields IsStaleCopy
+// compares set to something, so a test can change one of them at a time.
+func askedRecord(id int) model.Record {
+	return model.Record{
+		ID: id, Title: "Foo", Status: model.StatusOpen, Key: "k", Tags: []string{"t"}, AskedBy: "agent",
+		Created: "2026-10-02", Context: "ctx", Options: []model.Option{{Label: "a", Summary: "A"}},
+		Recommendation: &model.Recommendation{Label: "a", Reasoning: "why"},
+		History:        []model.HistoryEntry{{Date: "2026-10-02", Event: model.EventAsk}},
+		Body:           "Body.\n",
+	}
+}
+
+// movedBy returns what Renumber writes for r: the record under newID with one
+// renumber entry "from r.ID". The result shares nothing with r.
+func movedBy(t *testing.T, r model.Record, newID int) model.Record {
+	t.Helper()
+	r.Tags, r.Options, r.History = slices.Clone(r.Tags), slices.Clone(r.Options), slices.Clone(r.History)
+	if r.Recommendation != nil {
+		rec := *r.Recommendation
+		r.Recommendation = &rec
+	}
+	if err := model.Renumber(&r, newID, renumberDate); err != nil {
+		t.Fatal(err)
+	}
+	return r
+}
+
+// IsStaleCopy needs the content to match, not only the name text and the
+// renumber entry: a live record that has the same ID and name text as a moved
+// one (hand-named 0003-foo.md and 00003-foo.md) is not its stale copy. A stale
+// copy whose moved record was edited since is still one: the moved record's
+// history before the renumber entry is the stale record's whole history and
+// the fields the ask set are the same; any edit adds history entries after it.
+func TestIsStaleCopyComparesTheContent(t *testing.T) {
+	stale, moved := File{ID: 3, Name: "0003-foo.md"}, File{ID: 5, Name: "0005-foo.md"}
+	staleRec := askedRecord(3)
+	edit := func(f func(*model.Record)) model.Record { // the moved record, then changed by f
+		r := movedBy(t, staleRec, 5)
+		f(&r)
+		return r
+	}
+	decided := func(r *model.Record) { // what adj decide does after the crash
+		r.Status, r.Decision, r.Rationale, r.DecidedAt, r.DecidedBy = model.StatusDecided, "a", "because", "2026-11-03", "owner"
+		r.History = append(r.History, model.HistoryEntry{Date: "2026-11-03", Event: model.EventDecide})
+	}
+	tests := []struct {
+		name  string
+		moved model.Record
+		want  bool
+	}{
+		{"the interrupted move itself", movedBy(t, staleRec, 5), true},
+		{"the same record, decided since", edit(decided), true},
+		{"another record: context differs", edit(func(r *model.Record) { r.Context = "other" }), false},
+		{"another record: body differs", edit(func(r *model.Record) { r.Body = "Other.\n" }), false},
+		{"another record: decision differs, no edit since", edit(func(r *model.Record) { r.Decision = "x" }), false},
+		{"edited since, but another title", edit(func(r *model.Record) { decided(r); r.Title = "Foo?" }), false},
+		{"edited since, but another created date", edit(func(r *model.Record) { decided(r); r.Created = "2026-10-05" }), false},
+		{"edited since, but other options", edit(func(r *model.Record) { decided(r); r.Options[0].Summary = "B" }), false},
+		{"edited since, but another recommendation", edit(func(r *model.Record) { decided(r); r.Recommendation.Reasoning = "no" }), false},
+		{"edited since, but another key", edit(func(r *model.Record) { decided(r); r.Key = "other" }), false},
+		{"edited since, but another asked_by", edit(func(r *model.Record) { decided(r); r.AskedBy = "someone" }), false},
+		{"edited since, but another context", edit(func(r *model.Record) { decided(r); r.Context = "other" }), false},
+		{"edited since, but other tags", edit(func(r *model.Record) { decided(r); r.Tags = []string{"u"} }), false},
+		{"edited since, but history before the renumber differs", edit(func(r *model.Record) {
+			decided(r)
+			r.History[0].Date = "2026-10-03"
+		}), false},
+		{"edited since, but the renumber entry is from another ID", edit(func(r *model.Record) {
+			decided(r)
+			r.History[1].Note = "from 9"
+		}), false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := IsStaleCopy(stale, staleRec, moved, tt.moved); got != tt.want {
+				t.Errorf("IsStaleCopy = %v, want %v", got, tt.want)
+			}
+		})
+	}
+
+	// The stale record may have been renumbered itself once: its earlier
+	// renumber entry is part of the history the moved record continues.
+	again := staleRec
+	again.History = append(slices.Clone(staleRec.History), model.HistoryEntry{Date: "2026-10-09", Event: model.EventRenumber, Note: "from 1"})
+	if !IsStaleCopy(stale, again, moved, movedBy(t, again, 5)) {
+		t.Error("IsStaleCopy = false for a stale record that was renumbered once before")
+	}
+	// A file is not the stale copy of one with its own ID or other name text.
+	if IsStaleCopy(stale, staleRec, File{ID: 3, Name: "00003-foo.md"}, movedBy(t, staleRec, 5)) {
+		t.Error("IsStaleCopy = true for a file with the same ID")
+	}
+	if IsStaleCopy(stale, staleRec, File{ID: 5, Name: "0005-bar.md"}, movedBy(t, staleRec, 5)) {
+		t.Error("IsStaleCopy = true for a file with other name text")
+	}
+}
+
+// A stale file need not be in the form model.Marshal writes: it may come from
+// an older version or a hand edit, with a body that lacks its final newline or
+// empty arrays (`"tags":[]`) that omitempty would drop. The moved file was
+// written by Marshal, so the same record must still be found.
+const nonCanonicalStale = `---
+{"id":3,"title":"Foo","status":"open","tags":[],"created":"2026-10-02","options":[],"supersedes":[],"refs":[],"history":[{"date":"2026-10-02","event":"ask"}]}
+---
+Body without a final newline.`
+
+func TestIsStaleCopyIgnoresHowTheStaleFileIsWritten(t *testing.T) {
+	stale, moved := File{ID: 3, Name: "0003-foo.md"}, File{ID: 5, Name: "0005-foo.md"}
+	staleRec, err := model.Parse(stale.Name, []byte(nonCanonicalStale))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if staleRec.Tags == nil || staleRec.Body != "Body without a final newline." {
+		t.Fatalf("the stale record is not in the non-canonical form the test needs: %+v", staleRec)
+	}
+	// What Renumber writes and a later read gives: the canonical form.
+	asWritten := func(r model.Record) model.Record {
+		data, err := model.Marshal(r)
+		if err != nil {
+			t.Fatal(err)
+		}
+		got, err := model.Parse(moved.Name, data)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return got
+	}
+	unedited := asWritten(movedBy(t, staleRec, 5))
+	if !IsStaleCopy(stale, staleRec, moved, unedited) {
+		t.Error("IsStaleCopy = false for a stale file that is not in canonical form")
+	}
+	edited := movedBy(t, staleRec, 5)
+	edited.Status, edited.Decision, edited.Rationale, edited.DecidedAt = model.StatusDecided, "a", "because", "2026-11-03"
+	edited.History = append(edited.History, model.HistoryEntry{Date: "2026-11-03", Event: model.EventDecide})
+	if !IsStaleCopy(stale, staleRec, moved, asWritten(edited)) {
+		t.Error("IsStaleCopy = false for a stale file in non-canonical form whose record was edited since")
+	}
+	// Still a different record when the content differs.
+	other := movedBy(t, staleRec, 5)
+	other.Context = "other"
+	if IsStaleCopy(stale, staleRec, moved, asWritten(other)) {
+		t.Error("IsStaleCopy = true for another record, stale file in non-canonical form")
+	}
+}
+
+// The same at the level of Renumber: the stale file with empty arrays and a
+// body without a final newline is still refused as a stale copy.
+func TestRenumberRefusesAStaleCopyThatIsNotInCanonicalForm(t *testing.T) {
+	for _, edited := range []bool{false, true} {
+		root := fixture(t, "collision-interrupted")
+		writeFile(t, filepath.Join(root, "decisions", "0002-beta.md"), `---
+{"id":2,"title":"Beta","status":"open","tags":[],"created":"2026-10-02","options":[],"supersedes":[],"refs":[],"history":[{"date":"2026-10-02","event":"ask"}]}
+---
+Beta body.`)
+		if edited {
+			writeFile(t, filepath.Join(root, "decisions", "0004-beta.md"), `---
+{"id":4,"title":"Beta","status":"decided","created":"2026-10-02","decided_at":"2026-11-03","decision":"b","rationale":"because","history":[{"date":"2026-10-02","event":"ask"},{"date":"2026-11-02","event":"renumber","note":"from 2"},{"date":"2026-11-03","event":"decide"}]}
+---
+Beta body.
+`)
+		}
+		before := tree(t, root)
+		got, err := mustOpen(t, root).Renumber(renumberDate, false)
+		if !errors.Is(err, ErrStaleCopy) {
+			t.Errorf("edited=%v: Renumber = %+v, %v; want ErrStaleCopy", edited, got.Moves, err)
+		}
+		if !reflect.DeepEqual(tree(t, root), before) {
+			t.Errorf("edited=%v: a refused Renumber changed the store", edited)
+		}
+	}
+}
+
+// Two hand-named files with one ID and name text (0003-foo.md, 00003-foo.md)
+// collide; the first Renumber moves one to 0005-foo.md. When 0003-foo.md then
+// collides again (a merge brings 0003-bar.md), it is a live record, not the
+// stale copy of 0005-foo.md, and Renumber must not refuse (ErrStaleCopy)
+// with advice to delete it.
+func TestRenumberDoesNotTakeAKeeperForAStaleCopy(t *testing.T) {
+	root := t.TempDir()
+	dir := filepath.Join(root, "decisions")
+	keeper := askedRecord(3) // asked on the same day as the moved record, so only the content differs
+	keeper.Context = "the keeper"
+	seed(t, dir, "0003-foo.md", keeper)
+	other := askedRecord(3)
+	other.Title, other.Created = "Bar", "2026-10-03"
+	seed(t, dir, "0003-bar.md", other)
+	movedFoo := askedRecord(3)
+	movedFoo.Context = "the moved one"
+	seed(t, dir, "0005-foo.md", movedBy(t, movedFoo, 5))
+	s := mustOpen(t, root)
+
+	got, err := s.Renumber(renumberDate, false)
+	if err != nil {
+		t.Fatalf("Renumber = %+v, %v; want the move of 0003-bar.md", got.Moves, err)
+	}
+	if len(got.Moves) != 1 || got.Moves[0].OldName != "0003-bar.md" || got.Moves[0].NewName != "0006-bar.md" {
+		t.Errorf("moves = %+v, want 0003-bar.md to 0006-bar.md", got.Moves)
+	}
+	if _, err := os.Stat(filepath.Join(dir, "0003-foo.md")); err != nil {
+		t.Errorf("the keeper is gone: %v", err)
 	}
 }
 

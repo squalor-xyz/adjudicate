@@ -1,0 +1,41 @@
+{
+  "id": "S25",
+  "title": "Fix stale-copy false positive that flags a live record",
+  "lead": [
+    "`adj lint` and `adj renumber` call a live record a stale renumber copy and tell\nthe owner to delete it. Two hand-named files with the same ID and name text\n(`0003-foo.md`, `00003-foo.md`) collide; renumber moves one to `0005-foo.md`\nwith history \"from 3\"; from then on `IsStaleCopy` matches the keeper\n`0003-foo.md` against `0005-foo.md` (other ID, same name text, renumbered from\n3) and lint reports the keeper as renumber-leftover."
+  ],
+  "depends_note": null,
+  "findings_note": "S15 gate note (2) on S16; reproduced in the S16 run; S23 review notes (3), (6) on S16",
+  "size": "M",
+  "flags": [],
+  "trees_note": "store, lint, cli",
+  "trees_plural": true,
+  "boundary": "**Not in this slice:** other lint checks, renumber's planning or keeper rule\n(C146), S17 dogfooding.",
+  "sections": [
+    {
+      "heading": "Why",
+      "body": "A lint finding that tells the owner to delete a live record is data loss\nwaiting to happen, and S17 (dogfood) needs `adj lint` to be trustworthy. The\nsame pass folds in the queued wording notes and the optional lock fallback."
+    },
+    {
+      "heading": "Files",
+      "body": "- `internal/store/renumber.go` (`IsStaleCopy`, its doc comment, renumber's\n  refusal) and `internal/store/renumber_test.go`.\n- `internal/lint/lint.go` (`leftovers`), `internal/lint/lint_test.go`, a new\n  fixture under `internal/lint/testdata/`.\n- `internal/cli/lint.go`, `internal/cli/renumber.go` help text and their tests.\n- `internal/store/lock_unix.go` and `internal/store/lock_test.go`.\n- Docs that describe the leftover rule or the lock (AGENTS.md, docs/, README)\n  where they change."
+    },
+    {
+      "heading": "Failing tests",
+      "body": "- store: a keeper with the same ID and name text as a moved record (padding\n  differs) and different content is not a stale copy; the existing\n  stale-copy tests (renumbered from 2 and edited since; renumbered from 9)\n  still hold.\n- lint: a fixture with the keeper `0003-foo.md` and a moved `0005-foo.md`\n  (renumbered from 3, different content) reports no renumber-leftover; the\n  existing renumber-leftover fixtures still report it.\n- renumber: the same store is not refused with ErrStaleCopy.\n- cli help: `adj lint --help` and `adj renumber --help` say \"check both\" before\n  \"delete\".\n- lock: when `.adj.lock` exists and opening it read-write fails with EACCES,\n  the lock is taken through a read-only open (skip on platforms or as a user\n  where the permission cannot be denied)."
+    },
+    {
+      "heading": "Implement",
+      "body": "1. `IsStaleCopy` also requires the content to match: the moved record, without\n   its renumber entry and with the stale ID, equals the stale file's record\n   (the comparison and which fields count are the implementer's call; record it\n   as a catalog decision with a one-line reason, C32). A stale copy whose\n   moved record was edited after the crash must still be found; say in the\n   decision how that case is told apart from a keeper.\n2. `leftovers` and Renumber's refusal use the new rule; both still say \"check\n   both\" before \"delete\".\n3. Help text of `adj lint` (renumber-leftover line) and `adj renumber`: \"check\n   both, then delete\".\n4. Catalog wording: C155's \"Create has the same gap and is not changed here\" is\n   superseded by C162; C162's \"an invalid record still writes nothing, not even\n   the directory or the lock file\" is untrue for a record invalid only with its\n   real ID. Correct both through slicer catalog commands.\n5. Lock: if opening `.adj.lock` O_RDWR|O_CREATE fails with EACCES and the file\n   exists, open it O_RDONLY and flock that; any other error behaves as today.\n   Record as a catalog decision."
+    },
+    {
+      "heading": "Check",
+      "body": "- `. scripts/env.sh`, then `go test ./...`, `go vet ./...`, `gofmt -l .`\n  prints nothing.\n- Each new test was red before the change and is mutation-checked.\n- `slicer catalog list --kind decision --json --lean` has the new decisions;\n  C155 and C162 read correctly.\n- `slicer check --json` is clean."
+    },
+    {
+      "heading": "Git",
+      "body": "Worktree `.worktrees/s25` on branch `s25`. Commit and land on local main when\nthe owner asks; no AI attribution."
+    }
+  ],
+  "notes": []
+}

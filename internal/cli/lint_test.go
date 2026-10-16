@@ -218,6 +218,22 @@ func TestLintDocsAndUsageNameEveryCheck(t *testing.T) {
 	}
 }
 
+// The renumber-leftover line of adj lint --help tells the owner to check both
+// files before deleting one: the finding can be wrong about which is the copy.
+func TestLintHelpSaysCheckBothBeforeDelete(t *testing.T) {
+	help := run(testEnv(t.TempDir()), "", "lint", "--help").stdout
+	_, rest, ok := strings.Cut(help, "renumber-leftover")
+	if !ok {
+		t.Fatalf("adj lint --help does not name renumber-leftover:\n%s", help)
+	}
+	line, _, _ := strings.Cut(rest, "\n  dangling-link")
+	line = strings.Join(strings.Fields(line), " ") // the entry wraps
+	check, del := strings.Index(line, "check both"), strings.Index(line, "delete")
+	if check < 0 || del < 0 || check > del {
+		t.Errorf("the renumber-leftover entry of adj lint --help must say \"check both\" before \"delete\":\n%s", line)
+	}
+}
+
 // copyTree copies the directory src to a new temp dir and returns it.
 func copyTree(t *testing.T, src string) string {
 	t.Helper()

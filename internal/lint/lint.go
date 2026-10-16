@@ -58,7 +58,7 @@ const (
 	CheckDuplicateID = "duplicate-id"
 	// CheckRenumberLeftover: the file is the stale copy that an interrupted
 	// adj renumber left behind (C148): another file has the same record,
-	// renumbered from this file's ID.
+	// renumbered from this file's ID (the content must match, C163).
 	CheckRenumberLeftover = "renumber-leftover"
 	// CheckDecidedBy: a decided record has no decided_by (a warning, C27).
 	CheckDecidedBy = "decided-by"
@@ -241,13 +241,14 @@ func problems(err error) []string {
 
 // leftovers reports each file that an interrupted renumber left behind: its
 // record also exists under another ID, in a file with the same name text and a
-// renumber history entry that says it was renumbered from this file's ID
-// (C148).
+// renumber history entry that says it was renumbered from this file's ID, and
+// the same content (C148; store.IsStaleCopy has the rule). A live record that
+// only shares the ID and name text with a moved one is not reported.
 func leftovers(recs []parsed) []Finding {
 	var out []Finding
 	for _, p := range recs {
 		for _, q := range recs {
-			if store.IsStaleCopy(store.File{ID: p.id, Name: p.name}, store.File{ID: q.id, Name: q.name}, q.rec) {
+			if store.IsStaleCopy(store.File{ID: p.id, Name: p.name}, p.rec, store.File{ID: q.id, Name: q.name}, q.rec) {
 				out = append(out, Finding{
 					ID: p.id, File: p.file, Severity: SeverityError, Check: CheckRenumberLeftover,
 					Message: fmt.Sprintf("%s has this record renumbered from id %d: this file is a stale copy left by an interrupted renumber; check both, delete it", q.name, p.id),
