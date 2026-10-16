@@ -12,3 +12,6 @@ Thumbs.db
 /bin/
 *.test
 *.out
+
+# adj runtime lock in the store directory (see AGENTS.md)
+/decisions/.adj.lock
