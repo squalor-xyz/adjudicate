@@ -1000,7 +1000,7 @@
       "id": "S17",
       "title": "Dogfood: record adjudicate's own decisions with adj",
       "short_title": "Dogfood: record adjudicate's own decisions with adj",
-      "status": "open",
+      "status": "done",
       "has_slice": true,
       "depends_on": [
         "S16"
@@ -1012,6 +1012,17 @@
           "text": "**2026-10-16** — From S25 review: adj lint's renumber-leftover now compares content (C163). Known limits to watch while dogfooding: a moved file hand-edited without a history entry, or a stale file hand-edited after the crash, is not recognised as a stale copy (adj renumber could move it again; check for a renumber entry in duplicate-id files first); two identical records flag the keeper; the edited-since comparison skips the body. docs/json.md and C163 name only the moved-file case; the gate suggested adding 'either file changed by hand'.",
           "created_at": "2026-10-16T03:27:51Z",
           "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "44ac59e2-09ed-466b-a89c-cc74e301bcff",
+          "kind": "",
+          "text": "**2026-10-16** — Owner delegated the adj decide runs for C23-C32 to the agent in session (decided_by = owner). adj store created (.adjudicate.json, decisions/0001-0010 = C23-C32 in order, tags c23-c32 and context 'Slicer catalog CNN' as refs, decided_by Jon R, asked_by S17 implementer). Checks green: adj list --status decided = 10 records, adj inbox empty, adj lint exit 0, go test and go vet pass, gofmt clean, slicer check ok. decisions/.adj.lock is left untracked and not ignored for the owner to decide (ignore vs commit). No implementer decisions recorded in the adj store; no catalog changes.",
+          "created_at": "2026-10-16T03:36:12Z",
+          "attempt": 1,
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
@@ -1040,7 +1051,7 @@
         "importance": 2,
         "urgency": 1,
         "effort": 1,
-        "attempts": 0
+        "attempts": 1
       }
     },
     {
@@ -1119,7 +1130,30 @@
       "depends_on": [
         "S08"
       ],
-      "note_records": [],
+      "note_records": [
+        {
+          "id": "8f8c274c-bf1a-4a77-93b3-21bdfa7b43e8",
+          "kind": "",
+          "text": "**2026-10-16** — **2026-10-16** — From S17 dogfood review (adj store C23-C32 recorded as adj #1-#10): (1) The record schema has a refs field (internal/model/record.go:105) but adj ask has no flag to set it, so the slicer catalog ID lives only in free-text context plus a lowercase tag (c23). Consider a structured ref flag. (2) Tag case: tags are lowercase (c23) while catalog IDs are C23; adj check matches case-insensitively. Convention call for the owner. (3) No record sets a key, though check and conflict detection use keys; owner may want keys (e.g. project.license) in the dogfood store. (4) adj cannot express a recommendation that is not among the options (the label must be an option, docs/json.md:458), so C26 (adj #4) needed the recommendation added as a fourth option. (5) decided_at is the run date, so a backdated decision cannot record its real date. (6) adj has no way to correct a record after ask/decide beyond reject, withdraw or supersede; a slightly-off tradeoffs text on #2 (C24 Python tradeoffs repeat the recommendation reasoning) stays as is. (7) Flags must follow the subcommand: adj --root DIR list exits 2 with unknown command; adj list --root DIR works (documented, but easy to trip on).",
+          "created_at": "2026-10-16T03:36:32Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "958f9f72-4b25-49b2-8fe3-1b5d7e98b63c",
+          "kind": "",
+          "text": "**2026-10-16** — **2026-10-16** — Owner question from S17: decisions/.adj.lock (empty) is untracked and not git-ignored in the adjudicate repo; AGENTS.md says adj writes no .gitignore. Decide whether this repo ignores it or commits it. The S17 commit left it out (untracked).",
+          "created_at": "2026-10-16T03:36:32Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        }
+      ],
       "claim": null,
       "fields": {
         "size": "M",
@@ -1152,7 +1186,19 @@
         "S07",
         "S01"
       ],
-      "note_records": [],
+      "note_records": [
+        {
+          "id": "fb7e0bf7-5644-4b5c-99ff-4ab901aa173c",
+          "kind": "",
+          "text": "**2026-10-16** — **2026-10-16** — From S17: the ten decisions C23-C32 were decided by the agent in session on the owner's delegated instruction (decided_by = Jon R, attribution only, C27). The store cannot tell a delegated decide from an owner-run one; relevant to optional enforcement.",
+          "created_at": "2026-10-16T03:36:32Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        }
+      ],
       "claim": null,
       "fields": {
         "size": "M",

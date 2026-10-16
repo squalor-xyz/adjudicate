@@ -455,3 +455,9 @@
 {"when": "2026-10-16T03:27:42Z", "item": "S25", "action": "status", "from": "started", "to": "done", "note": "Fix stale-copy false positive: content check in IsStaleCopy (C163), check both then delete help text, read-only lock fallback (C164), C155/C156/C162 wording. Gate PASS after one review round.", "by": "Jon R"}
 {"when": "2026-10-16T03:27:51Z", "item": "S17", "action": "note", "from": "", "to": "", "note": "From S25 review: adj lint's renumber-leftover now compares c", "by": "Jon R"}
 {"when": "2026-10-16T03:27:51Z", "item": "S22", "action": "note", "from": "", "to": "", "note": "From S25 review: imported (ADR) record files will often not ", "by": "Jon R"}
+{"when": "2026-10-16T03:30:43Z", "item": "S17", "action": "status", "from": "open", "to": "started", "note": "", "by": "Jon R"}
+{"when": "2026-10-16T03:36:12Z", "item": "S17", "action": "note", "from": "", "to": "", "note": "Owner delegated the adj decide runs for C23-C32 to the agent", "by": "Jon R"}
+{"when": "2026-10-16T03:36:15Z", "item": "S17", "action": "status", "from": "started", "to": "done", "note": "Recorded adjudicate's own owner decisions C23-C32 as adj records 1-10 (decided_by Jon R); adj list decided = 10, inbox empty, lint exit 0, tests, vet, gofmt and slicer check green.", "by": "Jon R"}
+{"when": "2026-10-16T03:36:32Z", "item": "S20", "action": "note", "from": "", "to": "", "note": "**2026-10-16** — From S17 dogfood review (adj store C23-C32 ", "by": "Jon R"}
+{"when": "2026-10-16T03:36:32Z", "item": "S20", "action": "note", "from": "", "to": "", "note": "**2026-10-16** — Owner question from S17: decisions/.adj.loc", "by": "Jon R"}
+{"when": "2026-10-16T03:36:32Z", "item": "S21", "action": "note", "from": "", "to": "", "note": "**2026-10-16** — From S17: the ten decisions C23-C32 were de", "by": "Jon R"}
