@@ -660,11 +660,11 @@ Recommendation gains Text (JSON text, omitempty); Label becomes omitempty so exi
 
 ### C173 S28: --recommend-text is kept as typed and shown on the Recommendation line
 
-Like decide --text and --reasoning, the text is stored as typed and only a blank one exits 2. show and inbox print it after 'Recommendation:' in place of the label (a multi-line text goes under the label, as for other fields). adj check text output is unchanged (an open record has no detail lines, C106); check --json carries the record, text included. Reason: no new wording to learn, parity with how a label recommendation already shows.
+Like decide --text and --reasoning, the text is stored as typed and only a blank one exits 2. show and inbox print it after 'Recommendation:' in place of the label (a multi-line text goes under the label, as for other fields). adj check text output is unchanged (an open record has no detail lines, C106); check --json carries the record, text included. Reason: no new wording to learn, parity with how a label recommendation already shows. Owner confirmed 2026-10-17: check text stays as built; C106 stands.
 
 ### C174 S28: the agent snippet names --recommend-text in one sentence
 
-internal/commands/ai.md says 'If no option fits, pass --recommend-text instead of --recommend', and drops the '(also --tag T, --format json)' aside on the context line to stay under the 1800-byte cap (C125). Reason: the friction came from agents that had no option to recommend.
+internal/commands/ai.md says 'No option fits? Use --recommend-text "Text".', drops the '(also --tag T, --format json)' aside on the context line, and (after the merge with S27) shortens the --ref sentence to 'Repeat --ref ID for slice or catalog references.' (the word 'opaque' dropped; AGENTS.md still says refs are opaque strings), to stay under the 1800-byte cap (C125). Reason: the friction came from agents that had no option to recommend.
 
 ### C171 Ask refs in search and active views
 

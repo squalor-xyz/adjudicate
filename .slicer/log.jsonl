@@ -510,3 +510,7 @@
 {"when": "2026-10-17T13:33:17Z", "item": "C176", "action": "catalog", "from": "", "to": "S29 labels a backdated decide history entry", "note": "add"}
 {"when": "2026-10-17T13:36:44Z", "item": "S29", "action": "cite", "from": "", "to": "C175,C176", "note": ""}
 {"when": "2026-10-17T13:39:42Z", "item": "S29", "action": "status", "from": "started", "to": "done", "note": "Implemented and verified adj decide --decided-at: effective dates backdate while history retains the run date; tests, vet, gofmt, and build pass.", "by": "Jon R"}
+{"when": "2026-10-17T13:53:32Z", "item": "C173", "action": "catalog", "from": "", "to": "body", "note": "edit"}
+{"when": "2026-10-17T13:53:33Z", "item": "C174", "action": "catalog", "from": "", "to": "body", "note": "edit"}
+{"when": "2026-10-17T13:53:33Z", "item": "S30", "action": "note", "from": "", "to": "", "note": "From S28: a recommendation has exactly one of label or text ", "by": "Jon R"}
+{"when": "2026-10-17T13:53:34Z", "item": "S32", "action": "note", "from": "", "to": "", "note": "From S28: recommendation.label is optional since S28; a reco", "by": "Jon R"}
