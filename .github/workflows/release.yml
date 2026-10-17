@@ -1,0 +1,70 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# Publishes a GitHub release for a pushed vX.Y.Z tag (C193): checks, builds adj
+# for linux, darwin and freebsd on amd64 and arm64 with plain go build, and
+# uploads the archives and SHA256SUMS with gh. The release notes are the tag's
+# section of CHANGELOG.md.
+
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Release notes from CHANGELOG.md
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          awk -v want="## ${version} " '
+            index($0, want) == 1 { found = 1; next }
+            found && /^## / { exit }
+            found { print }
+          ' CHANGELOG.md > "$RUNNER_TEMP/notes.md"
+          if ! grep -q '[^[:space:]]' "$RUNNER_TEMP/notes.md"; then
+            echo "CHANGELOG.md has no section '## ${version} ...' for tag ${GITHUB_REF_NAME}"
+            exit 1
+          fi
+
+      - name: Checks
+        run: |
+          go vet ./...
+          test -z "$(gofmt -l cmd internal)"
+          go test ./...
+
+      - name: Build
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          mkdir -p dist
+          for goos in linux darwin freebsd; do
+            for goarch in amd64 arm64; do
+              name="adj_${version}_${goos}_${goarch}"
+              mkdir -p "build/$name"
+              CGO_ENABLED=0 GOOS="$goos" GOARCH="$goarch" go build -trimpath \
+                -ldflags "-s -w -X github.com/squalor-xyz/adjudicate/internal/cli.versionOverride=${GITHUB_REF_NAME}" \
+                -o "build/$name/adj" ./cmd/adj
+              cp LICENSE NOTICE README.md CHANGELOG.md "build/$name/"
+              tar -C build -czf "dist/$name.tar.gz" "$name"
+            done
+          done
+          (cd dist && sha256sum *.tar.gz > SHA256SUMS)
+          cat dist/SHA256SUMS
+
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" dist/*.tar.gz dist/SHA256SUMS \
+            --verify-tag \
+            --title "adjudicate ${GITHUB_REF_NAME#v}" \
+            --notes-file "$RUNNER_TEMP/notes.md"

@@ -10,11 +10,11 @@ import (
 
 const versionUsage = `usage: adj version [--root DIR]
 
-Print the version from Go build information. A local release build can override
+Print the version from Go build information. A release build can override
 it with -ldflags -X.
 `
 
-// versionOverride is set by local release builds with -ldflags -X.
+// versionOverride is set by release builds with -ldflags -X (release.yml).
 var versionOverride string
 
 // readBuildInfo is a seam for testing build metadata without building a new

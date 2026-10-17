@@ -7,8 +7,7 @@ but never renames, removes or retypes an existing key.
 
 ## 0.1.0 - 2026-10-17
 
-The first release, an annotated tag `v0.1.0` on local main (C165). Nothing is
-published.
+The first release, tagged `v0.1.0` and published on GitHub (C165, C193).
 
 ### Commands
 
@@ -57,6 +56,13 @@ published.
   [docs/json.md](docs/json.md). A recommendation has exactly one of `label` or
   `text`.
 
+### Install
+
+- Release archives for linux, darwin and freebsd on amd64 and arm64, with
+  `SHA256SUMS`, on the GitHub release page; or
+  `go install github.com/squalor-xyz/adjudicate/cmd/adj@v0.1.0`. See the
+  README.
+
 ### Project
 
 - Go standard library only.
@@ -68,4 +74,3 @@ published.
 - A cross-repo inbox, a TUI or static HTML inbox, a slicer integration,
   enforcement of owner-only decide, and import from ADR folders.
 - A size budget flag for `adj context`.
-- Publishing: no remote, no push, no `go install` from a module path (C165).

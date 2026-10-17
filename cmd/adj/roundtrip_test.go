@@ -32,7 +32,7 @@ func buildAdj(dir string) (string, error) {
 }
 
 // buildAdjWithVersion builds adj with the same ldflags override used for a
-// local release build.
+// release build (.github/workflows/release.yml).
 func buildAdjWithVersion(dir, version string) (string, error) {
 	bin := filepath.Join(dir, "adj")
 	cmd := exec.Command("go", "build", "-ldflags", "-X github.com/squalor-xyz/adjudicate/internal/cli.versionOverride="+version, "-o", bin, "./cmd/adj")

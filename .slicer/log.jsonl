@@ -561,3 +561,4 @@
 {"when": "2026-10-17T16:47:26Z", "item": "S33", "action": "handoff", "from": "started", "to": "review", "note": "claim Jon R cleared", "by": "Jon R"}
 {"when": "2026-10-17T20:57:23Z", "item": "S33", "action": "note", "from": "", "to": "", "note": "Owner Jon R delegated the adj decide runs for the C165-C169 ", "by": "Jon R"}
 {"when": "2026-10-17T20:57:23Z", "item": "S33", "action": "status", "from": "review", "to": "done", "note": "Release 0.1.0 prepared: records 0011-0015 (C165-C169), CHANGELOG dated 2026-10-17, check --help names refs (C191), C192. Gate PASS.", "by": "Jon R"}
+{"when": "2026-10-17T21:10:20Z", "item": "C193", "action": "catalog", "from": "", "to": "Publish 0.1.0 to github.com/squalor-xyz/adjudicate with GitHub Actions CI and release binaries", "note": "add"}

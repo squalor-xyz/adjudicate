@@ -56,6 +56,13 @@ library only.
   `PROJECT.md`: goals, non-goals, data model, commands, acceptance criteria
   and Later items. `CHANGELOG.md`: release notes.
 - `scripts/env.sh`: Go cache and temp setup (see below).
+- `.github/workflows/ci.yml`: CI on each push to `main` and each pull request
+  (the checks below plus `adj lint` on `decisions/`, and `go test` on macOS).
+  `.github/workflows/release.yml`: on a `v*` tag, the same checks, then six
+  archives (linux, darwin, freebsd on amd64 and arm64, plain `go build` with
+  `versionOverride` set to the tag) and a GitHub release made with `gh`, with
+  the tag's CHANGELOG section as its notes (C193). Both stay standard
+  library and shell only: no GoReleaser, no new actions without owner approval.
 
 Exit codes for every command: 0 success; 1 a failed operation or failed check;
 2 a usage error (C34). `adj check` is the exception that matters to scripts:
@@ -344,6 +351,9 @@ gofmt -l cmd internal              # must print nothing
 go build -o .cache/bin/adj ./cmd/adj
 ```
 
+CI runs the same checks without `scripts/env.sh`, and `adj lint` on this
+repo's own store.
+
 `scripts/env.sh` must be sourced from bash or zsh (C40). Dash and other shells
 that are not bash or zsh cannot report the sourced path, so there it prints an
 error, returns 1, and sets and creates nothing.
@@ -370,3 +380,7 @@ Never run `go env -w`; it writes outside the repo. Do not add a Makefile.
   `slicer catalog add --kind decision` and a one-line reason. The reviewer
   checks it, and the owner may overrule it.
 - No commits unless the owner asks. No AI attribution in commits or PR text.
+- Releases (C193): the repo is `github.com/squalor-xyz/adjudicate`. A release
+  is a `## X.Y.Z - DATE` CHANGELOG section, then an annotated tag `vX.Y.Z`
+  pushed to `origin`; `release.yml` fails if the section is missing. Only the
+  owner pushes or tags, or asks for it.

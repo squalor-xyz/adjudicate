@@ -1901,7 +1901,7 @@
   "goals": "adjudicate is a small CLI (`adj`) with a plain-text store that records project decisions as a loop: an agent asks, the owner decides in batches, and every later agent reads the decision. The goal and non-goal records below come from PROJECT.md; the owner's decisions on its open questions are catalog records C23-C33, and they override PROJECT.md where it differs (name, runtime, record format, license).",
   "non_goals": "",
   "catalog": {
-    "next_id": 193,
+    "next_id": 194,
     "id_prefix": "C",
     "id_width": 2,
     "records": [
@@ -3629,6 +3629,15 @@
         "kind": "decision",
         "title": "S33 decisions/ records 0011-0015 keep the catalog titles, with a short option label and the catalog text as the rationale",
         "body": "Implementer decision (C32). One record per C165-C169, asked with adj ask by 'S33 implementer' (tag cNNN, ref CNNN, context 'Slicer catalog CNNN.') and decided with adj decide by 'Jon R' under the owner's delegation of 2026-10-17. Each title is the full catalog title; the single option has a short label (the decision) and, as its summary, the first sentence or two of the catalog text; the rationale is the catalog text unchanged apart from the leading 'Owner decision 2026-10-17.' framing, as S17 did for 0001-0010. Reason: the records carry the catalog wording with nothing added; the delegation is stated in the slicer note, as in S17.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C193",
+        "kind": "decision",
+        "title": "Publish 0.1.0 to github.com/squalor-xyz/adjudicate with GitHub Actions CI and release binaries",
+        "body": "Owner decision 2026-10-17. Overrides the publishing part of C165. The repo is pushed to github.com/squalor-xyz/adjudicate (matching the module path, C23; not adjucate), and v0.1.0 is tagged after the commit that adds the workflows and pushed to trigger the release. GitHub Actions (a hosted service, owner's choice) runs CI on main and pull requests (go vet, gofmt, go test, adj lint on this repo's decisions/) and the release on a v* tag. Release binaries are built with plain go build and published with the runner's gh, no GoReleaser, for linux, darwin and freebsd on amd64 and arm64, as tar.gz files with SHA256SUMS; the release notes are the tag's CHANGELOG section. go install github.com/squalor-xyz/adjudicate/cmd/adj@VERSION also works.",
         "status": "active",
         "reason": "",
         "successor": ""

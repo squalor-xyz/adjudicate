@@ -77,9 +77,7 @@ Each goal is a catalog record (C01-C08) and each is met in 0.1.0.
 - Syncing across machines beyond what git already does (C13).
 
 Also not in 0.1.0: a size budget flag for `adj context` (an owner scope call;
-filter with `--tag` and `--key-prefix` instead), and publishing the project
-(creating a remote, pushing, installing with `go install` from a module path),
-which is a separate later step that needs the owner (C165).
+filter with `--tag` and `--key-prefix` instead).
 
 ## Owner decisions that shaped the tool
 
@@ -123,6 +121,12 @@ each with its own decision:
   texts of an `open` record; only the owner amends a decided record (C182).
 - `adj version` and `adj --version` (C169, C177).
 - This file, rewritten to match what shipped, and the CHANGELOG.
+
+C165 also made publishing a later step. The owner then decided to publish
+0.1.0 (C193, 2026-10-17): the repo is on GitHub at
+`github.com/squalor-xyz/adjudicate`, the module path, so
+`go install github.com/squalor-xyz/adjudicate/cmd/adj@v0.1.0` works. GitHub
+Actions runs CI and builds the releases (see Distribution).
 
 ## Data model
 
@@ -345,6 +349,24 @@ command, flag or variable that does not exist.
   validates both records before writing, writes OLD first, and puts it back if
   NEW cannot be written (C136).
 
+## Distribution
+
+- **Install:** a GitHub release archive (`adj_VERSION_OS_ARCH.tar.gz` for
+  linux, darwin and freebsd on amd64 and arm64, with `SHA256SUMS`), or
+  `go install github.com/squalor-xyz/adjudicate/cmd/adj@VERSION` (C193). The
+  README shows both.
+- **CI:** `.github/workflows/ci.yml` runs `go vet`, `gofmt -l`, `go test` and
+  `adj lint` on this repo's `decisions/` for each push to `main` and each pull
+  request, and `go test` on macOS too.
+- **Release:** pushing a tag `vX.Y.Z` runs `.github/workflows/release.yml`. It
+  runs the same checks, builds the six archives with plain `go build -trimpath`
+  and the version set from the tag (`-ldflags -X`), and publishes a GitHub
+  release with `gh` whose notes are the tag's `## X.Y.Z` section of the
+  CHANGELOG. The release fails without that section. There is no GoReleaser
+  (C193).
+- GitHub Actions is a hosted, proprietary service, used by owner decision
+  C193. The tool itself needs no service.
+
 ## v1 acceptance criteria
 
 All met in 0.1.0.
@@ -357,7 +379,7 @@ All met in 0.1.0.
 | `lint` catches each defect class in Goals, with a fixture for each | `TestRunReportsEachDefectClass` and `TestEveryCheckHasAFixture` in `internal/lint/lint_test.go` |
 | Every read command has `--json` output with a documented, stable shape | `docs/json.md`, pinned by `internal/cli/jsonshape_test.go`; "stable" is the 0.x promise described there |
 | Tests cover the model transitions and the CLI end to end against temp directories | `internal/model/transition_test.go`; `internal/cli` tests run the CLI in-process on temp roots |
-| adjudicate's own design decisions are recorded with adjudicate | `decisions/` holds records 0001-0015: 0001-0010 are C23-C32, one each, and 0011-0015 are the release decisions C165-C169 |
+| adjudicate's own design decisions are recorded with adjudicate | `decisions/` holds records 0001-0016: 0001-0010 are C23-C32, one each, 0011-0015 are the release decisions C165-C169, and 0016 is the publish decision C193 |
 
 ## Later
 

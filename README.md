@@ -13,7 +13,36 @@ in batches, and every later agent reads the decisions instead of asking again.
 This is version 0.1.0. [CHANGELOG.md](CHANGELOG.md) lists what each release
 changed; [PROJECT.md](PROJECT.md) says what adjudicate is for and what it does.
 
-## Build
+## Install
+
+Each release on GitHub
+(<https://github.com/squalor-xyz/adjudicate/releases>) has an archive per
+system: linux, darwin (macOS) and freebsd, each on amd64 and arm64, named
+`adj_VERSION_OS_ARCH.tar.gz`, and a `SHA256SUMS` file. Each archive holds `adj`,
+`LICENSE`, `NOTICE`, `README.md` and `CHANGELOG.md`. For 0.1.0 on an Apple
+silicon Mac:
+
+```sh
+curl -LO https://github.com/squalor-xyz/adjudicate/releases/download/v0.1.0/adj_0.1.0_darwin_arm64.tar.gz
+curl -LO https://github.com/squalor-xyz/adjudicate/releases/download/v0.1.0/SHA256SUMS
+shasum -a 256 --check --ignore-missing SHA256SUMS   # Linux: sha256sum --check --ignore-missing SHA256SUMS
+tar -xzf adj_0.1.0_darwin_arm64.tar.gz
+mkdir -p ~/.local/bin
+install -m 0755 adj_0.1.0_darwin_arm64/adj ~/.local/bin/adj   # or any directory on your PATH
+adj version                                                   # v0.1.0
+```
+
+With Go (the version in `go.mod`, 1.27.2, or later) you can install from the
+module instead; `adj version` then prints the module version, `v0.1.0`:
+
+```sh
+go install github.com/squalor-xyz/adjudicate/cmd/adj@v0.1.0
+```
+
+`go install` puts `adj` in `$(go env GOPATH)/bin`. To build from a checkout,
+see below.
+
+## Build from source
 
 You need Go (the version in `go.mod`). From the repo root, source the in-repo
 cache setup first. It points Go's build, module and test caches, `GOPATH` and
@@ -37,8 +66,8 @@ gofmt -l cmd internal    # prints nothing
 `go test ./...` includes a round-trip test that builds the binary and walks
 the whole life of a decision (`cmd/adj/roundtrip_test.go`).
 
-`adj version` and `adj --version` print one line. For a local release build,
-set the version with the linker:
+`adj version` and `adj --version` print one line. A release build sets the
+version with the linker, as the release workflow does:
 
 ```sh
 go build -ldflags "-X github.com/squalor-xyz/adjudicate/internal/cli.versionOverride=v0.1.0" -o .cache/bin/adj ./cmd/adj
@@ -72,6 +101,50 @@ twice after the command still takes the last. Before the command `adj` takes
 `--root DIR`; `--help` and `-h` print the main usage, and `adj --version` as the
 first argument prints the version. Any other flag there is a usage error.
 `adj COMMAND --help` prints a command's flags.
+
+## Using it in a repo
+
+Set up the store once, in the root of the repo whose decisions it keeps, and
+tell its agents about it:
+
+```sh
+adj init                  # writes .adjudicate.json and creates decisions/
+adj ai >> AGENTS.md       # the agent instructions; or paste them into CLAUDE.md
+git add .adjudicate.json decisions AGENTS.md
+```
+
+Commit `.adjudicate.json` and `decisions/`: the records are plain Markdown
+files that diff, merge and review like code. `adj ask` takes IDs under a lock
+file, `decisions/.adj.lock`; add it to `.gitignore` if you do not want it in
+git (`adj` writes no `.gitignore`).
+
+Agents work from the snippet that `adj ai` printed. Before they ask, they run
+`adj check QUERY`; they read the decisions in force with `adj context`, and ask
+with `adj ask`. Set `ADJ_ASKED_BY` to name the asker. Agents never decide.
+
+The owner clears the inbox in batches:
+
+```sh
+export ADJ_DECIDED_BY="Your Name"   # or pass --by on each command
+adj inbox                           # the open questions, oldest first
+adj decide 3 redis --why "Several hosts share it"
+adj decide 4 --text "Neither; use files" --why "No server to run"
+adj reject 5 --why "Out of scope"
+adj supersede 2 --by 6              # 6 replaces decision 2
+adj amend 6 --rationale "Clearer reasons"
+```
+
+Run `adj lint` in CI, so a merge that leaves two records with one ID, a broken
+record or a dangling link fails the build (`adj renumber` fixes duplicate IDs).
+In GitHub Actions:
+
+```yaml
+- uses: actions/setup-go@v5
+  with:
+    go-version: stable
+- run: go install github.com/squalor-xyz/adjudicate/cmd/adj@v0.1.0
+- run: adj lint
+```
 
 ## Exit codes
 
@@ -244,8 +317,8 @@ apart, so renumber stops until you check them and pass `--keep-links`. See
 
 ### `adj version [--root DIR]`
 
-Prints the version: the local release override set with `-ldflags -X`, else
-what Go build information reports (see Build). The same value is printed by
+Prints the version: the release override set with `-ldflags -X`, else what Go
+build information reports (see Build from source). The same value is printed by
 `adj --version`. It reads no repo and needs no config, and accepts `--root` but
 does not use it.
 
@@ -267,6 +340,17 @@ an existing key.
 
 - `ADJ_ASKED_BY`: the default `--by` for `adj ask`.
 - `ADJ_DECIDED_BY`: the default `--by` for `decide`, `reject` and `withdraw`.
+
+## Releases
+
+CI (`.github/workflows/ci.yml`) runs `go vet`, `gofmt`, `go test` and `adj
+lint` on this repo's own `decisions/` for every push to `main` and every pull
+request, and runs the tests on macOS too. Pushing a tag `vX.Y.Z` runs
+`.github/workflows/release.yml`: the same checks, then a build for the six
+systems above with the version set from the tag, and a GitHub release with the
+archives, `SHA256SUMS`, and the `## X.Y.Z` section of
+[CHANGELOG.md](CHANGELOG.md) as its notes. The release fails if that section
+is missing, so write it before you tag.
 
 ## License
 
