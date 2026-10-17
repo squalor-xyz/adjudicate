@@ -34,6 +34,15 @@ gofmt -l cmd internal    # prints nothing
 `go test ./...` includes a round-trip test that builds the binary and walks
 the whole life of a decision (`cmd/adj/roundtrip_test.go`).
 
+`adj version` and `adj --version` print the module version from Go build
+information. For a local release build, set the version with the linker:
+
+```sh
+go build -ldflags "-X github.com/squalor-xyz/adjudicate/internal/cli.versionOverride=v0.1.0" -o .cache/bin/adj ./cmd/adj
+```
+
+A local development build prints `(devel)` and, when present, its VCS revision.
+
 ## Quick start
 
 ```sh
@@ -205,6 +214,11 @@ created first keeps the ID; each other one is written to a new file with the
 next free ID, and its old file is removed. Links to a shared ID cannot be told
 apart, so renumber stops until you check them and pass `--keep-links`. See
 `adj renumber --help`.
+
+### `adj version [--root DIR]`
+
+Prints the version reported by Go build information, or the local release
+override set with `-ldflags -X`. The same value is printed by `adj --version`.
 
 ### `adj ai`
 

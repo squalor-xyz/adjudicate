@@ -1675,7 +1675,7 @@
       "id": "S31",
       "title": "Report the version with adj version",
       "short_title": "Report the version with adj version",
-      "status": "open",
+      "status": "done",
       "has_slice": true,
       "depends_on": [],
       "note_records": [
@@ -1685,6 +1685,28 @@
           "text": "**2026-10-17** — From S26: TestUnknownLeadingFlag in internal/cli/cli_test.go pins adj --version to exit 2. Replace that case when --version is added.",
           "created_at": "2026-10-17T13:04:48Z",
           "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "73dd6c53-bd7a-42eb-a702-e1325ae90f64",
+          "kind": "",
+          "text": "**2026-10-17** — VERDICT: FAIL - executed mutation evidence was missing for each new test; temporary mutations are now verified and restored.",
+          "created_at": "2026-10-17T14:04:15Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "d927807c-b33c-41b8-8539-27bd328814a6",
+          "kind": "",
+          "text": "**2026-10-17** — Reviewer gate FAIL: AGENTS.md lines 232-239 need the S31 version exceptions. Version accepts --root without a config, and --version is a valid leading standalone flag. Update project guidance to match behavior; no product-code defect found.",
+          "created_at": "2026-10-17T14:06:22Z",
+          "attempt": 2,
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
@@ -1713,7 +1735,7 @@
         "importance": 2,
         "urgency": 3,
         "effort": 1,
-        "attempts": 0
+        "attempts": 3
       }
     },
     {
@@ -3439,6 +3461,15 @@
         "kind": "decision",
         "title": "S30 IsStaleCopy takes each amend entry after the renumber entry back to its old text before comparing the fields adj ask sets",
         "body": "Implementer decision (C32), refining C163. adj amend can now change the title, context and option summary/tradeoffs that C163 treated as set only by adj ask, so an edited-since moved record legitimately differs from its stale file there. Options weighed: (1) leave those fields out of the comparison, which is simple but lets a keeper that an amend made look like the stale record (or the reverse) be flagged, and the title/context/options are most of what tells two records of one day and one name text apart; (2) roll the amend entries after the renumber entry back (newest first, using the old text they keep) and compare the result to the stale record, which keeps the check as strong as before. Chosen (2). The history before the renumber entry must still equal the stale record's whole history, compared by content because an amend entry holds pointers; key, tags, asked_by, created, option labels and the recommendation, which no amend changes, are compared as they are; an amend entry that names an option the record does not have fails the match; an amend before the renumber entry is part of the common history and is not rolled back; the rationale is not among the compared fields. The C163 known limits stay (a hand edit with no history entry is not recognised). A finding that tells the owner to delete a live record still costs more than a missed leftover.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C177",
+        "kind": "decision",
+        "title": "Local version output includes VCS revision",
+        "body": "When the module version is (devel), append the available VCS revision after it on the same output line so local builds identify both their development status and source revision.",
         "status": "active",
         "reason": "",
         "successor": ""

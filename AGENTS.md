@@ -26,14 +26,15 @@ library only.
   process entry; `RunWith(Env, ...)` takes the repo root, clock, environment
   and working directory as parameters for tests. Each command's handler is in
   its own file (`init.go`, `ask.go`, `decide.go`, which holds decide,
-  reject and withdraw, `supersede.go`, `amend.go`, `show.go`, `list.go`, `inbox.go`,
-  `check.go`, `context.go`, `lint.go`, `renumber.go` and `ai.go`);
+  reject and withdraw, `supersede.go`, `amend.go`, `show.go`, `list.go`,
+  `inbox.go`, `check.go`, `context.go`, `lint.go`, `renumber.go`, `version.go`
+  and `ai.go`);
   `cli.go` holds the dispatch and shared helpers.
 - `internal/commands`: what each command does to the store, apart from
   parsing, output and exit codes (`init.go`, `ask.go`, `decide.go`,
   `supersede.go`, `amend.go`, `show.go`, `list.go`, `inbox.go`, `check.go`,
-  `context.go`, `lint.go`, `renumber.go`, `ai.go`). `ai.md` is the agent snippet, embedded
-  by `ai.go`.
+  `context.go`, `lint.go`, `renumber.go`, `ai.go`). `ai.md` is the agent
+  snippet, embedded by `ai.go`.
   `errors.go` holds `UsageError`, the error that exits 2.
 - `internal/model`: the record type, validation, status transitions and the
   record file format; its only file I/O is `ReadFile` and `WriteFile` in
@@ -119,8 +120,10 @@ below). `adj lint` exits 1 when it finds an error (see its entry).
   TEXT clears a summary or tradeoffs; a context cannot be emptied). Exit 1: an
   unknown or duplicate ID, `--rationale` on an `open` record, or nothing to
   change. Validated in memory first, so a refusal writes nothing; the file is
-  not renamed when the title changes. Who may amend is not decided: the agent
-  snippet does not name it.
+  not renamed when the title changes. Who may amend (owner decision, not
+  enforced in code, like C27): an agent may amend the title, context and
+  option summaries and tradeoffs of an `open` record; only the owner amends a
+  `decided` record, its rationale included. The agent snippet says so.
 - `adj show ID [--json] [--root DIR]`: prints one record, each set field and
   the history; with `--json` it prints the record object (`docs/json.md`). A
   non-number or 0 ID, or an extra argument, exits 2; an unknown or duplicate
@@ -243,28 +246,34 @@ below). `adj lint` exits 1 when it finds an error (see its entry).
   unknown flag exits 2. Owner-only: the agent snippet tells agents to report a
   duplicate ID and not to run it (C153). A name taken by a directory or another
   writer is skipped for the next ID (C154).
+- `adj version` and `adj --version`: print one line from Go build information,
+  or the release override set with `-ldflags -X`. `version` reads no repo and
+  needs no config; it accepts `--root` but does not use it. The leading
+  `--version` form invokes the same command.
 - `adj ai`: prints the AGENTS.md snippet in `internal/commands/ai.md` (check
   before asking and what each result means, ask, read the decisions, withdraw
-  your own question, only the owner decides and never run decide, reject or
-  supersede, tell the owner about a duplicate ID or a missing repo instead of
+  your own question, amend an open question, only the owner decides or amends
+  a decided record and never run decide, reject or supersede, tell the owner about a duplicate ID or a missing repo instead of
   running renumber or init, exit codes, `ADJ_ASKED_BY`) and exits 0. It reads no
   repo and takes no flag or argument (so no `--root`); either exits 2.
   `internal/cli/ai_test.go` fails if the snippet names a command, flag or
   variable that does not exist, or runs past 1800 bytes (C124, C125). When a
   command or flag an agent uses changes, change the snippet.
-- Every command except `ai` takes `--root DIR`. Without it the root is found
-  from the working directory upwards (`store.FindRoot`); with it nothing is
-  searched for, and a command other than `init` needs `DIR/.adjudicate.json`.
-  A missing config says to run `adj init`.
+- Every command except `ai` takes `--root DIR`. Store commands use it as the
+  repo root; without it the root is found from the working directory upwards
+  (`store.FindRoot`). With it nothing is searched for. Every store command
+  other than `init` needs `DIR/.adjudicate.json`; `version` does not use the
+  store or need a config. A missing config says to run `adj init`.
 - `--root` may also come before the command: `adj --root DIR list` acts as
   `adj list --root DIR` (`cli.leadingRoot`; `invocation.parse` hands it to the
-  command). It is the only flag accepted before the command; any other leading
-  flag exits 2 with usage. `--root` both before and after the command, or twice
-  before it, exits 2 naming both values (C170); twice after the command still
-  takes the last. A leading `--root` with no value or no command exits 2, and
-  before `ai` exits 2 (`ai` takes no `--root`) unless `ai` is given `--help`,
-  which is handled first and exits 0, as `adj ai --help --root D` does. A
-  leading `--root` followed by `--help`/`-h` prints the main usage (exit 0).
+  command). It is the only flag accepted before a command; top-level
+  `--version` invokes the version command, and any other leading flag exits 2
+  with usage. `--root` both before and after the command, or twice before it,
+  exits 2 naming both values (C170); twice after the command still takes the
+  last. A leading `--root` with no value or no command exits 2, and before
+  `ai` exits 2 (`ai` takes no `--root`) unless `ai` is given `--help`, which is
+  handled first and exits 0, as `adj ai --help --root D` does. A leading
+  `--root` followed by `--help`/`-h` prints the main usage (exit 0).
 
 ## Store and config
 

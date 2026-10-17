@@ -2,8 +2,9 @@
 
 // Package cli dispatches the adj command line. It takes its I/O as
 // parameters so tests can run it in-process. Each command's handler is in
-// its own file: init.go, ask.go, decide.go, supersede.go, amend.go, show.go, list.go,
-// inbox.go, check.go, context.go, lint.go, renumber.go, ai.go.
+// its own file: init.go, ask.go, decide.go, supersede.go, amend.go, show.go,
+// list.go, inbox.go, check.go, context.go, lint.go, renumber.go, version.go,
+// ai.go.
 package cli
 
 import (
@@ -46,6 +47,7 @@ Commands:
   adj context   print the decided records as compact context for an agent
   adj lint      check the store for broken records, links, cycles and conflicts
   adj renumber  give records that share an ID new IDs
+  adj version   print the version
   adj ai        print an AGENTS.md snippet that tells agents how to use adj
 
 Run adj <command> --help for a command's flags. --root DIR may come before the
@@ -95,6 +97,9 @@ func RunWith(env Env, args []string, stdin io.Reader, stdout, stderr io.Writer) 
 		fmt.Fprint(stderr, usage)
 		return exitUsage
 	}
+	if args[0] == "--version" {
+		return c.runVersion(args[1:])
+	}
 	if root, rest, ok, err := leadingRoot(args); err != nil {
 		fmt.Fprintf(stderr, "adj: %v\n%s", err, usage)
 		return exitUsage
@@ -137,6 +142,8 @@ func RunWith(env Env, args []string, stdin io.Reader, stdout, stderr io.Writer) 
 		return c.runLint(args[1:])
 	case "renumber":
 		return c.runRenumber(args[1:])
+	case "version":
+		return c.runVersion(args[1:])
 	case "ai":
 		return c.runAI(args[1:])
 	default:

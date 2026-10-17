@@ -31,6 +31,18 @@ func buildAdj(dir string) (string, error) {
 	return bin, nil
 }
 
+// buildAdjWithVersion builds adj with the same ldflags override used for a
+// local release build.
+func buildAdjWithVersion(dir, version string) (string, error) {
+	bin := filepath.Join(dir, "adj")
+	cmd := exec.Command("go", "build", "-ldflags", "-X github.com/squalor-xyz/adjudicate/internal/cli.versionOverride="+version, "-o", bin, "./cmd/adj")
+	cmd.Dir = filepath.Join("..", "..")
+	if out, err := cmd.CombinedOutput(); err != nil {
+		return "", fmt.Errorf("go build: %v\n%s", err, out)
+	}
+	return bin, nil
+}
+
 func TestMain(m *testing.M) {
 	dir, err := os.MkdirTemp("", "adj-roundtrip-")
 	if err != nil {
@@ -178,6 +190,27 @@ func TestV1AcceptanceRoundTrip(t *testing.T) {
 	stdout, stderr, code := adj(t, dir, "lint")
 	if code != 0 || stdout != "" || stderr != "" {
 		t.Errorf("lint: exit %d, stdout %q, stderr %q; want exit 0 and no output", code, stdout, stderr)
+	}
+}
+
+func TestVersionLdflagsRoundTrip(t *testing.T) {
+	dir := t.TempDir()
+	version := "v0.0.0-test"
+	bin, err := buildAdjWithVersion(dir, version)
+	if err != nil {
+		t.Fatal(err)
+	}
+	cmd := exec.Command(bin, "--version")
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout, cmd.Stderr = &stdout, &stderr
+	if err := cmd.Run(); err != nil {
+		t.Fatalf("adj --version: %v; stderr:\n%s", err, stderr.String())
+	}
+	if got := stdout.String(); got != version+"\n" {
+		t.Errorf("adj --version = %q, want %q", got, version+"\n")
+	}
+	if stderr.Len() != 0 {
+		t.Errorf("adj --version stderr = %q, want empty", stderr.String())
 	}
 }
 

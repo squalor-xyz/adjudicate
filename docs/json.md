@@ -436,11 +436,11 @@ The checks:
   ask` sets are equal; an `adj amend` after the entry is first taken back to the
   old text its `amend` entry keeps). A live record that only shares the ID and
   the name text with a moved one is not reported; the body of an edited moved
-  record is not compared. A moved file changed by hand without a `renumber` entry or any other
-  history entry is not recognised: before `adj renumber`, check whether one of
-  the files that `duplicate-id` reports holds a `renumber` entry. Check both
-  files, then delete the stale one. It is reported whether or not the file still
-  shares its ID with another.
+  record is not compared. A moved file changed by hand without a `renumber`
+  entry or any other history entry is not recognised: before `adj renumber`,
+  check whether one of the files that `duplicate-id` reports holds a `renumber`
+  entry. Check both files, then delete the stale one. It is reported whether or
+  not the file still shares its ID with another.
 - `dangling-link` (error): `supersedes` or `superseded_by` names an ID that no
   record file has. A link listed twice in one record is reported once.
 - `supersede-state` (error): `superseded_by` is set on a record whose status is
