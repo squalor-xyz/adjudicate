@@ -304,10 +304,10 @@ decided
 
 `show`, `list`, `inbox`, `check` and `lint` print JSON with `--json`, and
 `context` with `--format json`. The shapes are in
-[docs/json.md](docs/json.md), which also states what 0.x promises about them: a
-shape may change in a minor release and the CHANGELOG names every change; from
-1.0 a release may add keys but never renames, removes or retypes an existing
-key. The same store always gives the same bytes.
+[docs/json.md](docs/json.md), which also states how stable they are: until 1.0
+a shape may change in a minor release and the CHANGELOG names every change;
+from 1.0 a release may add keys but never renames, removes or retypes an
+existing key. The same store always gives the same bytes.
 
 `adj ai` prints a snippet of at most 1800 bytes (C125) for a repo's AGENTS.md.
 It tells agents to check before asking, what each `check` result means, how to
@@ -357,7 +357,7 @@ All met in 0.1.0.
 | `lint` catches each defect class in Goals, with a fixture for each | `TestRunReportsEachDefectClass` and `TestEveryCheckHasAFixture` in `internal/lint/lint_test.go` |
 | Every read command has `--json` output with a documented, stable shape | `docs/json.md`, pinned by `internal/cli/jsonshape_test.go`; "stable" is the 0.x promise described there |
 | Tests cover the model transitions and the CLI end to end against temp directories | `internal/model/transition_test.go`; `internal/cli` tests run the CLI in-process on temp roots |
-| adjudicate's own design decisions are recorded with adjudicate | `decisions/` holds records 0001-0010, one for each of C23-C32 |
+| adjudicate's own design decisions are recorded with adjudicate | `decisions/` holds records 0001-0015: 0001-0010 are C23-C32, one each, and 0011-0015 are the release decisions C165-C169 |
 
 ## Later
 

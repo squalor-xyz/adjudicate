@@ -554,3 +554,10 @@
 {"when": "2026-10-17T16:32:44Z", "item": "S32", "action": "cite", "from": "", "to": "C189", "note": ""}
 {"when": "2026-10-17T16:32:45Z", "item": "S32", "action": "cite", "from": "", "to": "C190", "note": ""}
 {"when": "2026-10-17T16:32:46Z", "item": "S33", "action": "note", "from": "", "to": "", "note": "From S32 (owner 2026-10-17): fix adj check --help so its usa", "by": "Jon R"}
+{"when": "2026-10-17T16:44:20Z", "item": "S33", "action": "status", "from": "open", "to": "started", "note": "", "by": "Jon R"}
+{"when": "2026-10-17T16:46:39Z", "item": "C191", "action": "catalog", "from": "", "to": "S33 adj check --help names refs among the fields it searches", "note": "add"}
+{"when": "2026-10-17T16:46:39Z", "item": "C192", "action": "catalog", "from": "", "to": "S33 decisions/ records 0011-0015 keep the catalog titles, with a short option label and the catalog text as the rationale", "note": "add"}
+{"when": "2026-10-17T16:46:44Z", "item": "S33", "action": "cite", "from": "", "to": "C191,C192", "note": ""}
+{"when": "2026-10-17T16:47:26Z", "item": "S33", "action": "handoff", "from": "started", "to": "review", "note": "claim Jon R cleared", "by": "Jon R"}
+{"when": "2026-10-17T20:57:23Z", "item": "S33", "action": "note", "from": "", "to": "", "note": "Owner Jon R delegated the adj decide runs for the C165-C169 ", "by": "Jon R"}
+{"when": "2026-10-17T20:57:23Z", "item": "S33", "action": "status", "from": "review", "to": "done", "note": "Release 0.1.0 prepared: records 0011-0015 (C165-C169), CHANGELOG dated 2026-10-17, check --help names refs (C191), C192. Gate PASS.", "by": "Jon R"}

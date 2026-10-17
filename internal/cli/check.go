@@ -13,7 +13,7 @@ import (
 const checkUsage = `usage: adj check [flags] QUERY
 
 Check whether QUERY has been decided before asking the owner. QUERY is one
-substring, matched ignoring case against a record's title, key, tags and
+substring, matched ignoring case against a record's title, key, tags, refs and
 decision text; it is not split into words, so a single word or a key
 (storage.engine) finds the most. Quote a query that has spaces. The first line
 of the output is the result:

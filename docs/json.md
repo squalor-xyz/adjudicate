@@ -25,10 +25,9 @@ Two things a reader of 0.1 must not assume:
   with `adj ask --recommend-text`: never both and never neither (C172).
 - The record file keeps the slug it got when the question was asked, in
   `<ID>-<slug>.md`, made from the title at that time (`adj renumber` can change
-  the ID part).
-  `adj amend --title` changes `title` but does not rename the file (C180,
-  C182), so the slug in the file name can drift from the title. Read `title`
-  from the record, not from the file name.
+  the ID part). `adj amend --title` changes `title` but does not rename the file
+  (C180, C182), so the slug in the file name can drift from the title. Read
+  `title` from the record, not from the file name.
 
 ## `adj show ID --json`
 

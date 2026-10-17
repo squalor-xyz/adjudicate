@@ -172,7 +172,8 @@ type invocation struct {
 }
 
 // leadingRoot takes a --root DIR, -root DIR, --root=DIR or -root=DIR from the
-// front of args, the only flag accepted before the command. ok is false when
+// front of args. It is the only flag before the command that takes a value;
+// RunWith itself handles a leading --version, --help and -h. ok is false when
 // args does not start with one. A bare --root takes the next argument as its
 // value, whatever it looks like, as it does after a command. --root with no
 // value, or given again before the command, is an error.

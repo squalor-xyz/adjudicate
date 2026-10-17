@@ -5,10 +5,9 @@ Until 1.0 a JSON shape in [docs/json.md](docs/json.md) may change in a minor
 release, and this file names every such change. From 1.0 a release may add keys
 but never renames, removes or retypes an existing key.
 
-## 0.1.0 - unreleased
+## 0.1.0 - 2026-10-17
 
-The first release. It is not tagged yet: the annotated tag `v0.1.0` on local
-main and the final date are added when the release is made (C165). Nothing is
+The first release, an annotated tag `v0.1.0` on local main (C165). Nothing is
 published.
 
 ### Commands

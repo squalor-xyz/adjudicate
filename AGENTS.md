@@ -282,13 +282,13 @@ below). `adj lint` exits 1 when it finds an error (see its entry).
   main usage (the unknown-flag message names those three, and so does the usage
   text, which also tells `adj --version` apart); `--version` as the first
   argument invokes the version command (`adj --root DIR --version` exits 2),
-  and any other leading flag exits 2 with usage. `--root` both before and after the command,
-  or twice before it, exits 2 naming both values (C170); twice after the
-  command still takes the last. A leading `--root` with no value or no command
-  exits 2, and before `ai` exits 2 (`ai` takes no `--root`) unless `ai` is
-  given `--help`, which is handled first and exits 0, as `adj ai --help --root
-  D` does. A leading `--root` followed by `--help`/`-h` prints the main usage
-  (exit 0).
+  and any other leading flag exits 2 with usage. `--root` both before and after
+  the command, or twice before it, exits 2 naming both values (C170); twice
+  after the command still takes the last. A leading `--root` with no value or
+  no command exits 2, and before `ai` exits 2 (`ai` takes no `--root`) unless
+  `ai` is given `--help`, which is handled first and exits 0, as `adj ai --help
+  --root D` does. A leading `--root` followed by `--help`/`-h` prints the main
+  usage (exit 0).
 
 ## Store and config
 

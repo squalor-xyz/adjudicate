@@ -1840,7 +1840,7 @@
       "id": "S33",
       "title": "Release 0.1.0",
       "short_title": "Release 0.1.0",
-      "status": "open",
+      "status": "done",
       "has_slice": true,
       "depends_on": [
         "S32"
@@ -1852,6 +1852,17 @@
           "text": "**2026-10-17** — From S32 (owner 2026-10-17): fix adj check --help so its usage names refs, which check searches (C171); add a test. Also: replace '0.1.0 - unreleased' in CHANGELOG.md with the release date and delete its 'not tagged yet' sentence; update PROJECT.md ~line 356 (decisions/ holds 0001-0010 = C23-C32) once the C165-C169 records are added; after tagging, re-check README ~47-51 on what adj version prints (C187). Comment-only: cli.go ~174 leadingRoot doc comment still says --root is the only flag accepted before the command. Cosmetic: AGENTS.md:285 is 92 cols, docs/json.md:27 ends a line early, PROJECT.md ~307 'states what 0.x promises' reads oddly now that it also gives the 1.0 rule.",
           "created_at": "2026-10-17T16:32:46Z",
           "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "0dbbd9dd-4df6-44f4-ad93-3f7ef8856fc7",
+          "kind": "",
+          "text": "**2026-10-17** — Owner Jon R delegated the adj decide runs for the C165-C169 records (decisions/0011-0015) to the S33 implementer on 2026-10-17; decided_by is Jon R. Verified: adj lint on decisions/ clean; 15 decided records, inbox empty; -ldflags -X internal/cli.versionOverride=v0.1.0 build prints v0.1.0 for adj version and adj --version; full suite incl. roundtrip passes. Tag v0.1.0 is created by the outer session only on owner ask.",
+          "created_at": "2026-10-17T20:57:23Z",
+          "attempt": 1,
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
@@ -1871,7 +1882,9 @@
         "parent": "",
         "cites": [
           "C165",
-          "C27"
+          "C27",
+          "C191",
+          "C192"
         ],
         "key": "",
         "pass": "",
@@ -1880,7 +1893,7 @@
         "importance": 3,
         "urgency": 3,
         "effort": 1,
-        "attempts": 0
+        "attempts": 1
       }
     }
   ],
@@ -1888,7 +1901,7 @@
   "goals": "adjudicate is a small CLI (`adj`) with a plain-text store that records project decisions as a loop: an agent asks, the owner decides in batches, and every later agent reads the decision. The goal and non-goal records below come from PROJECT.md; the owner's decisions on its open questions are catalog records C23-C33, and they override PROJECT.md where it differs (name, runtime, record format, license).",
   "non_goals": "",
   "catalog": {
-    "next_id": 191,
+    "next_id": 193,
     "id_prefix": "C",
     "id_width": 2,
     "records": [
@@ -3598,6 +3611,24 @@
         "kind": "decision",
         "title": "consequences stays hand-written in 0.1.0; a writer flag or dropping the field is decided after 0.1.0",
         "body": "Owner decision 2026-10-17 (S32 review). The record field consequences has no adj command that writes it in 0.1.0; PROJECT.md says it is written by hand. Whether it gets a flag (for example on decide) or is dropped is decided after the 0.1.0 release.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C191",
+        "kind": "decision",
+        "title": "S33 adj check --help names refs among the fields it searches",
+        "body": "Implementer decision (C32). The usage text says QUERY is matched against a record's 'title, key, tags, refs and decision text', and TestCheckUsageNamesRefsAmongTheSearchedFields pins that sentence (whitespace-normalised). Reason: check has searched refs since C171 and its help is the place an agent reads what is searched; no other wording of the usage changes.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C192",
+        "kind": "decision",
+        "title": "S33 decisions/ records 0011-0015 keep the catalog titles, with a short option label and the catalog text as the rationale",
+        "body": "Implementer decision (C32). One record per C165-C169, asked with adj ask by 'S33 implementer' (tag cNNN, ref CNNN, context 'Slicer catalog CNNN.') and decided with adj decide by 'Jon R' under the owner's delegation of 2026-10-17. Each title is the full catalog title; the single option has a short label (the decision) and, as its summary, the first sentence or two of the catalog text; the rationale is the catalog text unchanged apart from the leading 'Owner decision 2026-10-17.' framing, as S17 did for 0001-0010. Reason: the records carry the catalog wording with nothing added; the delegation is stated in the slicer note, as in S17.",
         "status": "active",
         "reason": "",
         "successor": ""

@@ -307,6 +307,16 @@ func TestCheckUsageNamesTheExitCodes(t *testing.T) {
 	}
 }
 
+// check matches a record's refs as well as its title, key, tags and decision
+// text (C171), so its usage must name them among the fields it searches.
+func TestCheckUsageNamesRefsAmongTheSearchedFields(t *testing.T) {
+	r := run(testEnv(t.TempDir()), "", "check", "--help")
+	flat := strings.Join(strings.Fields(r.stdout), " ")
+	if want := "title, key, tags, refs and decision text"; !strings.Contains(flat, want) {
+		t.Errorf("check usage does not say it searches %q:\n%s", want, r.stdout)
+	}
+}
+
 func TestCheckListedInTheMainUsage(t *testing.T) {
 	r := run(testEnv(t.TempDir()), "", "--help")
 	if !strings.Contains(r.stdout, "adj check") {
