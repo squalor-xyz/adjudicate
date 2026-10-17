@@ -533,3 +533,8 @@
 {"when": "2026-10-17T14:25:41Z", "item": "S30", "action": "cite", "from": "", "to": "C178,C179,C180,C181", "note": ""}
 {"when": "2026-10-17T14:35:44Z", "item": "S30", "action": "handoff", "from": "started", "to": "review", "note": "claim Jon R cleared", "by": "Jon R"}
 {"when": "2026-10-17T14:41:11Z", "item": "S30", "action": "status", "from": "review", "to": "done", "note": "adj amend added: text-only edits of title, context, option summary/tradeoffs and rationale on any status; one amend history entry with was (old text); IsStaleCopy rolls amend entries back; full suite, vet, gofmt and lint on a copy of decisions clean; gate PASS", "by": "Jon R"}
+{"when": "2026-10-17T15:34:02Z", "item": "C182", "action": "catalog", "from": "", "to": "Who may amend: agents amend open records only; the owner amends decided records", "note": "add"}
+{"when": "2026-10-17T15:34:03Z", "item": "C183", "action": "catalog", "from": "", "to": "S30 the agent snippet names adj amend for open questions only, and trims other wording to stay under 1800 bytes", "note": "add"}
+{"when": "2026-10-17T15:34:10Z", "item": "S30", "action": "cite", "from": "", "to": "C182", "note": ""}
+{"when": "2026-10-17T15:34:11Z", "item": "S30", "action": "cite", "from": "", "to": "C183", "note": ""}
+{"when": "2026-10-17T15:34:12Z", "item": "S32", "action": "note", "from": "", "to": "", "note": "From S30: a title change does not rename the file (C180, own", "by": "Jon R"}

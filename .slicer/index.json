@@ -1659,7 +1659,9 @@
           "C178",
           "C179",
           "C180",
-          "C181"
+          "C181",
+          "C182",
+          "C183"
         ],
         "key": "",
         "pass": "",
@@ -1774,6 +1776,17 @@
           "verified_by": "",
           "verified_at": "",
           "stale_after": ""
+        },
+        {
+          "id": "66a35ad2-1e59-4a46-a173-577eb31f8d99",
+          "kind": "",
+          "text": "**2026-10-17** — From S30: a title change does not rename the file (C180, owner-accepted C182), so the filename slug can drift from the title; say so in the README/json.md. Cosmetic reflows left by the S30 merge: AGENTS.md ~line 256 (~126 cols) and ~239 (short line), docs/json.md ~485 (~92 cols). ai.md is 1799/1800 bytes; the S30 trims (C183) dropped small hints worth restoring if the cap is raised.",
+          "created_at": "2026-10-17T15:34:12Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
         }
       ],
       "claim": null,
@@ -1841,7 +1854,7 @@
   "goals": "adjudicate is a small CLI (`adj`) with a plain-text store that records project decisions as a loop: an agent asks, the owner decides in batches, and every later agent reads the decision. The goal and non-goal records below come from PROJECT.md; the owner's decisions on its open questions are catalog records C23-C33, and they override PROJECT.md where it differs (name, runtime, record format, license).",
   "non_goals": "",
   "catalog": {
-    "next_id": 182,
+    "next_id": 184,
     "id_prefix": "C",
     "id_width": 2,
     "records": [
@@ -3470,6 +3483,24 @@
         "kind": "decision",
         "title": "Local version output includes VCS revision",
         "body": "When the module version is (devel), append the available VCS revision after it on the same output line so local builds identify both their development status and source revision.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C182",
+        "kind": "decision",
+        "title": "Who may amend: agents amend open records only; the owner amends decided records",
+        "body": "Owner decision 2026-10-17. Agents may amend the title, context and option summaries/tradeoffs of open records; only the owner amends a decided record, rationale included. Guidance for agents (AGENTS.md, adj ai), not enforced in code, like C27. The owner also accepted the S30 amend UX as built (C178, C180): a context cannot be emptied, an empty TEXT clears an option field, and a title change does not rename the file.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C183",
+        "kind": "decision",
+        "title": "S30 the agent snippet names adj amend for open questions only, and trims other wording to stay under 1800 bytes",
+        "body": "Implementer decision (C32), carrying out the owner's call of 2026-10-17: agents may amend the title, context and option summaries/tradeoffs of open records; only the owner amends a decided record, rationale included (guidance, not enforced, like C27). internal/commands/ai.md gains one line with adj amend ID --title and --context, --summary, --tradeoffs, and says only the owner amends a decided record. To stay at 1799 of 1800 bytes (C125) it drops: the 'in the check output' and 'for the full record' wording of the closed-result sentence, '(any case)', 'in full' after 'One record', 'It prints the new ID.', 'or choose' in 'Before you ask or choose', the sentence 'adj list --status open lists them too', 'for scripts' in the JSON line, and the parenthetical after duplicate ID. Every phrase ai_test.go requires is kept. Reason: one line for the amend rule costs about 160 bytes and these words carry the least.",
         "status": "active",
         "reason": "",
         "successor": ""

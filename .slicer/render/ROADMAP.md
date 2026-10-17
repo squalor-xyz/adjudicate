@@ -698,6 +698,14 @@ Implementer decision (C32), refining C163. adj amend can now change the title, c
 
 When the module version is (devel), append the available VCS revision after it on the same output line so local builds identify both their development status and source revision.
 
+### C182 Who may amend: agents amend open records only; the owner amends decided records
+
+Owner decision 2026-10-17. Agents may amend the title, context and option summaries/tradeoffs of open records; only the owner amends a decided record, rationale included. Guidance for agents (AGENTS.md, adj ai), not enforced in code, like C27. The owner also accepted the S30 amend UX as built (C178, C180): a context cannot be emptied, an empty TEXT clears an option field, and a title change does not rename the file.
+
+### C183 S30 the agent snippet names adj amend for open questions only, and trims other wording to stay under 1800 bytes
+
+Implementer decision (C32), carrying out the owner's call of 2026-10-17: agents may amend the title, context and option summaries/tradeoffs of open records; only the owner amends a decided record, rationale included (guidance, not enforced, like C27). internal/commands/ai.md gains one line with adj amend ID --title and --context, --summary, --tradeoffs, and says only the owner amends a decided record. To stay at 1799 of 1800 bytes (C125) it drops: the 'in the check output' and 'for the full record' wording of the closed-result sentence, '(any case)', 'in full' after 'One record', 'It prints the new ID.', 'or choose' in 'Before you ask or choose', the sentence 'adj list --status open lists them too', 'for scripts' in the JSON line, and the parenthetical after duplicate ID. Every phrase ai_test.go requires is kept. Reason: one line for the amend rule costs about 160 bytes and these words carry the least.
+
 ### C39 LICENSE is a stub until the owner supplies the full GPL-3.0 text and copyright holder
 
 No GPL-3.0 text exists in the adjudicate repo and the workspace has no network, so the stub carries the SPDX line, the or-later notice and TODO(owner) markers.
