@@ -491,3 +491,5 @@
 {"when": "2026-10-17T13:00:08Z", "item": "C170", "action": "catalog", "from": "", "to": "body", "note": "edit"}
 {"when": "2026-10-17T13:02:37Z", "item": "S26", "action": "note", "from": "", "to": "", "note": "Leading --root DIR / --root=DIR is accepted before the subco", "by": "Jon R"}
 {"when": "2026-10-17T13:02:38Z", "item": "S26", "action": "status", "from": "review", "to": "done", "note": "Leading --root DIR / --root=DIR is accepted before the subcommand and handed to the command as if it followed it; --root both before and after, or twice before, exits 2 naming both values (C170); twice after still takes the last. Tests, mutation checks and docs (README, AGENTS.md) done; full suite, vet, gofmt and slicer check pass.", "by": "Jon R"}
+{"when": "2026-10-17T13:04:48Z", "item": "S31", "action": "note", "from": "", "to": "", "note": "From S26: TestUnknownLeadingFlag in internal/cli/cli_test.go", "by": "Jon R"}
+{"when": "2026-10-17T13:04:48Z", "item": "S32", "action": "note", "from": "", "to": "", "note": "From S26 review: the usage text and README name only --root ", "by": "Jon R"}

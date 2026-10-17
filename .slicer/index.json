@@ -1634,7 +1634,19 @@
       "status": "open",
       "has_slice": true,
       "depends_on": [],
-      "note_records": [],
+      "note_records": [
+        {
+          "id": "356e286b-74bd-4339-9a08-d20060f3b2f7",
+          "kind": "",
+          "text": "**2026-10-17** — From S26: TestUnknownLeadingFlag in internal/cli/cli_test.go pins adj --version to exit 2. Replace that case when --version is added.",
+          "created_at": "2026-10-17T13:04:48Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        }
+      ],
       "claim": null,
       "fields": {
         "size": "S",
@@ -1674,7 +1686,19 @@
         "S30",
         "S31"
       ],
-      "note_records": [],
+      "note_records": [
+        {
+          "id": "6d4bc97e-7451-4654-b16a-092086b632ec",
+          "kind": "",
+          "text": "**2026-10-17** — From S26 review: the usage text and README name only --root as accepted before the command, while the unknown-flag error also names --help and -h (owner kept that message 2026-10-17). Make the wording agree.",
+          "created_at": "2026-10-17T13:04:48Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        }
+      ],
       "claim": null,
       "fields": {
         "size": "S",
