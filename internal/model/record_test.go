@@ -122,6 +122,49 @@ func TestValidateAcceptsOptionsAndRecommendation(t *testing.T) {
 	}
 }
 
+// A recommendation may be free text with no option label (C167): it does not
+// need any option, and a label that is not an option is still refused.
+func TestValidateAcceptsATextOnlyRecommendation(t *testing.T) {
+	for _, opts := range [][]Option{nil, {{Label: "a"}, {Label: "b"}}} {
+		r := validRecord(StatusOpen)
+		r.Options = opts
+		r.Recommendation = &Recommendation{Text: "Use neither; keep the files", Reasoning: "simpler"}
+		if err := r.Validate(); err != nil {
+			t.Errorf("Validate() with %d options = %v, want nil", len(opts), err)
+		}
+	}
+
+	r := validRecord(StatusOpen)
+	r.Options = []Option{{Label: "a"}}
+	r.Recommendation = &Recommendation{Label: "z", Reasoning: "because"}
+	err := r.Validate()
+	if err == nil || !errors.Is(err, ErrInvalid) || !strings.Contains(err.Error(), "recommendation") {
+		t.Errorf("Validate() with an unknown label = %v, want an invalid recommendation error", err)
+	}
+}
+
+func TestMarshalOmitsTheRecommendationFieldThatIsNotSet(t *testing.T) {
+	r := Record{ID: 1, Title: "T", Status: StatusOpen, Created: "2026-10-01"}
+	r.Recommendation = &Recommendation{Text: "free", Reasoning: "r"}
+	got, err := json.Marshal(r)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := `{"id":1,"title":"T","status":"open","created":"2026-10-01","recommendation":{"text":"free","reasoning":"r"}}`
+	if string(got) != want {
+		t.Errorf("text recommendation\n got %s\nwant %s", got, want)
+	}
+	r.Recommendation = &Recommendation{Label: "a"}
+	r.Options = []Option{{Label: "a"}}
+	got, err = json.Marshal(r)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if want := `"recommendation":{"label":"a"}}`; !strings.Contains(string(got), want) {
+		t.Errorf("label recommendation = %s, want it to end with %s (no text key)", got, want)
+	}
+}
+
 func TestValidateRejects(t *testing.T) {
 	tests := []struct {
 		name   string
@@ -186,6 +229,16 @@ func TestValidateRejects(t *testing.T) {
 		}, "recommendation"},
 		{"recommendation without options", StatusOpen, func(r *Record) {
 			r.Recommendation = &Recommendation{Label: "a"}
+		}, "recommendation"},
+		{"recommendation with a label and text", StatusOpen, func(r *Record) {
+			r.Options = []Option{{Label: "a"}}
+			r.Recommendation = &Recommendation{Label: "a", Text: "or this"}
+		}, "recommendation"},
+		{"recommendation with blank text", StatusOpen, func(r *Record) {
+			r.Recommendation = &Recommendation{Text: "  \n"}
+		}, "recommendation"},
+		{"recommendation with only reasoning and no options", StatusOpen, func(r *Record) {
+			r.Recommendation = &Recommendation{Reasoning: "because"}
 		}, "recommendation"},
 		{"recommendation without label", StatusOpen, func(r *Record) {
 			r.Options = []Option{{Label: "a"}}

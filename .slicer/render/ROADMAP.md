@@ -654,6 +654,18 @@ Owner decision 2026-10-17. adj version and adj --version print the version. It c
 
 A --root before the command and another after it is a usage error (exit 2) naming both values, and so is --root twice before the command. Reason: silently taking the later one would hide a mistake that points a write at the wrong store. --root twice after the command keeps taking the last (unchanged). A leading --root with --help/-h prints the main usage (exit 0); with no command or no value it exits 2; before ai it exits 2 (ai takes no --root) unless ai is given --help, which is handled first and exits 0 (as adj ai --help --root D does).
 
+### C172 S28: a free-text recommendation is the recommendation's text key; label and text are exclusive
+
+Recommendation gains Text (JSON text, omitempty); Label becomes omitempty so existing records write the same bytes. Validate accepts text alone, still rejects a label that is not an option, and rejects label with text, blank text, or neither. Reason: the smallest change that keeps old files identical and leaves IsStaleCopy comparing the whole recommendation.
+
+### C173 S28: --recommend-text is kept as typed and shown on the Recommendation line
+
+Like decide --text and --reasoning, the text is stored as typed and only a blank one exits 2. show and inbox print it after 'Recommendation:' in place of the label (a multi-line text goes under the label, as for other fields). adj check text output is unchanged (an open record has no detail lines, C106); check --json carries the record, text included. Reason: no new wording to learn, parity with how a label recommendation already shows.
+
+### C174 S28: the agent snippet names --recommend-text in one sentence
+
+internal/commands/ai.md says 'If no option fits, pass --recommend-text instead of --recommend', and drops the '(also --tag T, --format json)' aside on the context line to stay under the 1800-byte cap (C125). Reason: the friction came from agents that had no option to recommend.
+
 ### C39 LICENSE is a stub until the owner supplies the full GPL-3.0 text and copyright holder
 
 No GPL-3.0 text exists in the adjudicate repo and the workspace has no network, so the stub carries the SPDX line, the or-later notice and TODO(owner) markers.
@@ -716,7 +728,7 @@ PENDING OWNER CONFIRMATION - not decided. Source: Dependency/licensing notes (ma
 
 *Retired: Owner decided 2026-10-15: see decision C31 (GPL-3.0-or-later)..*
 
-33 items · — 7 · done 21 · later 5
+33 items · — 6 · done 22 · later 5
 
 | # | Slice | Title | Size | Effort | Trees | Findings | Status |
 |---|---|---|---|---|---|---|---|
@@ -726,35 +738,35 @@ PENDING OWNER CONFIRMATION - not decided. Source: Dependency/licensing notes (ma
 | 4 | [S21](slices/S21.md) | Later: optional owner-only decide enforcement | M | 2 | later | PROJECT.md Feature tiers (Later); Open decisions 5; Non-goals | later |
 | 5 | [S22](slices/S22.md) | Later: import from ADR folders | M | 2 | later | PROJECT.md Feature tiers (Later) | later |
 | 6 | [S27](slices/S27.md) | Set refs with ask --ref | S | 1 | cli, commands | S17 dogfood friction (1), note on S20; C165 | — |
-| 7 | [S28](slices/S28.md) | Free-text recommendation with ask --recommend-text | M | 2 | model, cli, commands, render, lint | S17 dogfood friction (4), note on S20; C167 | — |
-| 8 | [S29](slices/S29.md) | Backdate a decision with decide --decided-at | S | 1 | cli, commands, model | S17 dogfood friction (5), note on S20; C168 | — |
-| 9 | [S30](slices/S30.md) | Correct a record's text with adj amend | M | 2 | model, cli, commands, store, lint | S17 dogfood friction (6), note on S20; C166 | — |
-| 10 | [S31](slices/S31.md) | Report the version with adj version | S | 1 | cli | release prep; C169 | — |
-| 11 | [S32](slices/S32.md) | Release docs: PROJECT.md, CHANGELOG and JSON stability | S | 1 | docs | release prep; C165 | — |
-| 12 | [S33](slices/S33.md) | Release 0.1.0 | S | 1 | release | C165 | — |
+| 7 | [S29](slices/S29.md) | Backdate a decision with decide --decided-at | S | 1 | cli, commands, model | S17 dogfood friction (5), note on S20; C168 | — |
+| 8 | [S30](slices/S30.md) | Correct a record's text with adj amend | M | 2 | model, cli, commands, store, lint | S17 dogfood friction (6), note on S20; C166 | — |
+| 9 | [S31](slices/S31.md) | Report the version with adj version | S | 1 | cli | release prep; C169 | — |
+| 10 | [S32](slices/S32.md) | Release docs: PROJECT.md, CHANGELOG and JSON stability | S | 1 | docs | release prep; C165 | — |
+| 11 | [S33](slices/S33.md) | Release 0.1.0 | S | 1 | release | C165 | — |
 
 ---
 
 | # | Slice | Title | Size | Effort | Trees | Findings | Status |
 |---|---|---|---|---|---|---|---|
-| 13 | [S01](slices/S01.md) | Confirm open decisions | S | 1 | decisions | PROJECT.md Open decisions 1-7; Core concepts (kind); Dependency/licensing notes | done |
-| 14 | [S02](slices/S02.md) | Project scaffolding | S | 1 | scaffold | PROJECT.md Stack recommendation; Dependency/licensing notes | done |
-| 15 | [S03](slices/S03.md) | Record model and lifecycle transitions | M | 2 | model | PROJECT.md Core concepts / data model; Milestone 1 | done |
-| 16 | [S04](slices/S04.md) | Record file read and write | S | 1 | model | PROJECT.md Open decisions 3; Core concepts (Record) | done |
-| 17 | [S05](slices/S05.md) | Store, config and ID allocation | M | 2 | store | PROJECT.md Architecture sketch (ID allocation, Determinism); Open decisions 4, 6, 7 | done |
-| 18 | [S06](slices/S06.md) | Commands: init and ask | M | 2 | cli | PROJECT.md v1 feature tier; Milestone 2 | done |
-| 19 | [S07](slices/S07.md) | Commands: decide, reject, withdraw | S | 1 | cli | PROJECT.md v1 feature tier; Lifecycle; Milestone 2 | done |
-| 20 | [S08](slices/S08.md) | Commands: show and list with --json | S | 1 | cli | PROJECT.md v1 feature tier; Milestone 2; acceptance (--json) | done |
-| 21 | [S09](slices/S09.md) | Command: inbox | S | 1 | cli | PROJECT.md Goals 2; v1 feature tier; Milestone 3 | done |
-| 22 | [S10](slices/S10.md) | Command: check | S | 1 | cli | PROJECT.md Goals 6; v1 feature tier; Milestone 3 | done |
-| 23 | [S11](slices/S11.md) | Command: context | M | 2 | cli | PROJECT.md Goals 5; v1 feature tier; Risks (context bloat); Milestone 3 | done |
-| 24 | [S12](slices/S12.md) | Agent snippet: adj ai and JSON shape docs | S | 1 | docs | PROJECT.md v1 feature tier; Risks (adoption); acceptance (--json documented) | done |
-| 25 | [S13](slices/S13.md) | Command: supersede | S | 1 | cli | PROJECT.md Goals 4; Lifecycle; acceptance (supersede); Milestone 4 | done |
-| 26 | [S14](slices/S14.md) | Command: lint | M | 2 | cli | PROJECT.md Goals 8; acceptance (lint fixtures); Open decisions 5; Milestone 4 | done |
-| 27 | [S15](slices/S15.md) | ID collision detection and renumber | M | 2 | store | PROJECT.md Open decisions 4; Risks (merge conflicts on IDs); Milestone 4 | done |
-| 28 | [S16](slices/S16.md) | Docs and v1 acceptance round trip | S | 1 | docs | PROJECT.md v1 acceptance criteria; Milestone 5 | done |
-| 29 | [S17](slices/S17.md) | Dogfood: record adjudicate's own decisions with adj | S | 1 | docs | PROJECT.md Milestone 5; acceptance (own decisions recorded) | done |
-| 30 | [S23](slices/S23.md) | Lock ID allocation with flock | M | 2 | store | Owner decision 2026-10-15 (S05 review MEDIUM-2; C62, C64) | done |
-| 31 | [S24](slices/S24.md) | Check text shows the rationale under closed records | S | 1 | render | Owner decision 2026-10-15 (S10 gate: closed records show only ID, status, title in text) | done |
-| 32 | [S25](slices/S25.md) | Fix stale-copy false positive that flags a live record | M | 2 | store, lint, cli | S15 gate note (2) on S16; reproduced in the S16 run; S23 review notes (3), (6) on S16 | done |
-| 33 | [S26](slices/S26.md) | Accept --root before the subcommand | S | 1 | cli | S17 dogfood friction (7), note on S20; C165 | done |
+| 12 | [S01](slices/S01.md) | Confirm open decisions | S | 1 | decisions | PROJECT.md Open decisions 1-7; Core concepts (kind); Dependency/licensing notes | done |
+| 13 | [S02](slices/S02.md) | Project scaffolding | S | 1 | scaffold | PROJECT.md Stack recommendation; Dependency/licensing notes | done |
+| 14 | [S03](slices/S03.md) | Record model and lifecycle transitions | M | 2 | model | PROJECT.md Core concepts / data model; Milestone 1 | done |
+| 15 | [S04](slices/S04.md) | Record file read and write | S | 1 | model | PROJECT.md Open decisions 3; Core concepts (Record) | done |
+| 16 | [S05](slices/S05.md) | Store, config and ID allocation | M | 2 | store | PROJECT.md Architecture sketch (ID allocation, Determinism); Open decisions 4, 6, 7 | done |
+| 17 | [S06](slices/S06.md) | Commands: init and ask | M | 2 | cli | PROJECT.md v1 feature tier; Milestone 2 | done |
+| 18 | [S07](slices/S07.md) | Commands: decide, reject, withdraw | S | 1 | cli | PROJECT.md v1 feature tier; Lifecycle; Milestone 2 | done |
+| 19 | [S08](slices/S08.md) | Commands: show and list with --json | S | 1 | cli | PROJECT.md v1 feature tier; Milestone 2; acceptance (--json) | done |
+| 20 | [S09](slices/S09.md) | Command: inbox | S | 1 | cli | PROJECT.md Goals 2; v1 feature tier; Milestone 3 | done |
+| 21 | [S10](slices/S10.md) | Command: check | S | 1 | cli | PROJECT.md Goals 6; v1 feature tier; Milestone 3 | done |
+| 22 | [S11](slices/S11.md) | Command: context | M | 2 | cli | PROJECT.md Goals 5; v1 feature tier; Risks (context bloat); Milestone 3 | done |
+| 23 | [S12](slices/S12.md) | Agent snippet: adj ai and JSON shape docs | S | 1 | docs | PROJECT.md v1 feature tier; Risks (adoption); acceptance (--json documented) | done |
+| 24 | [S13](slices/S13.md) | Command: supersede | S | 1 | cli | PROJECT.md Goals 4; Lifecycle; acceptance (supersede); Milestone 4 | done |
+| 25 | [S14](slices/S14.md) | Command: lint | M | 2 | cli | PROJECT.md Goals 8; acceptance (lint fixtures); Open decisions 5; Milestone 4 | done |
+| 26 | [S15](slices/S15.md) | ID collision detection and renumber | M | 2 | store | PROJECT.md Open decisions 4; Risks (merge conflicts on IDs); Milestone 4 | done |
+| 27 | [S16](slices/S16.md) | Docs and v1 acceptance round trip | S | 1 | docs | PROJECT.md v1 acceptance criteria; Milestone 5 | done |
+| 28 | [S17](slices/S17.md) | Dogfood: record adjudicate's own decisions with adj | S | 1 | docs | PROJECT.md Milestone 5; acceptance (own decisions recorded) | done |
+| 29 | [S23](slices/S23.md) | Lock ID allocation with flock | M | 2 | store | Owner decision 2026-10-15 (S05 review MEDIUM-2; C62, C64) | done |
+| 30 | [S24](slices/S24.md) | Check text shows the rationale under closed records | S | 1 | render | Owner decision 2026-10-15 (S10 gate: closed records show only ID, status, title in text) | done |
+| 31 | [S25](slices/S25.md) | Fix stale-copy false positive that flags a live record | M | 2 | store, lint, cli | S15 gate note (2) on S16; reproduced in the S16 run; S23 review notes (3), (6) on S16 | done |
+| 32 | [S26](slices/S26.md) | Accept --root before the subcommand | S | 1 | cli | S17 dogfood friction (7), note on S20; C165 | done |
+| 33 | [S28](slices/S28.md) | Free-text recommendation with ask --recommend-text | M | 2 | model, cli, commands, render, lint | S17 dogfood friction (4), note on S20; C167 | done |

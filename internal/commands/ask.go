@@ -13,6 +13,8 @@ import (
 
 // AskInput is the raw input of adj ask. Options and Tradeoffs are the flag
 // values as typed: LABEL:SUMMARY and LABEL:TEXT, split at the first colon.
+// Recommend names an option; RecommendText is a recommendation that is not
+// one (C167), kept as typed. At most one of them is set.
 type AskInput struct {
 	Title     string
 	Key       string
@@ -23,6 +25,8 @@ type AskInput struct {
 	Tradeoffs []string
 	Recommend string
 	Reasoning string
+
+	RecommendText string
 }
 
 // splitLabeled splits "LABEL:TEXT" at the first colon, so the text may hold
@@ -82,6 +86,13 @@ func (in AskInput) build(now time.Time) (model.Record, error) {
 	}
 	var rec *model.Recommendation
 	switch {
+	case in.Recommend != "" && in.RecommendText != "":
+		return model.Record{}, usagef("--recommend and --recommend-text are exclusive")
+	case in.RecommendText != "":
+		if strings.TrimSpace(in.RecommendText) == "" {
+			return model.Record{}, usagef("--recommend-text must not be blank")
+		}
+		rec = &model.Recommendation{Text: in.RecommendText, Reasoning: in.Reasoning}
 	case in.Recommend != "":
 		label := strings.TrimSpace(in.Recommend)
 		if _, ok := index[label]; !ok {
@@ -89,7 +100,7 @@ func (in AskInput) build(now time.Time) (model.Record, error) {
 		}
 		rec = &model.Recommendation{Label: label, Reasoning: in.Reasoning}
 	case in.Reasoning != "":
-		return model.Record{}, usagef("--reasoning needs --recommend")
+		return model.Record{}, usagef("--reasoning needs --recommend or --recommend-text")
 	}
 	var tags []string
 	for _, tag := range in.Tags {

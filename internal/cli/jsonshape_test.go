@@ -139,13 +139,15 @@ func TestTableKeysUnderReadsOneSectionsTable(t *testing.T) {
 // only a fixture that matches the example pins the keys):
 //
 //	1 open     Pick a store, key storage.engine
-//	2 decided  Cache layer, key storage.cache, tag infra, redis, by owner
+//	2 decided  Cache layer, key storage.cache, tag infra, a free-text
+//	           recommendation, redis, by owner
 func docsFixture(t *testing.T) string {
 	t.Helper()
 	root := initRoot(t)
 	steps := [][]string{
 		{"ask", "Pick a store", "--key", "storage.engine"},
-		{"ask", "Cache layer", "--option", "redis:Use Redis", "--key", "storage.cache", "--tag", "infra"},
+		{"ask", "Cache layer", "--option", "redis:Use Redis", "--recommend-text", "Use Redis, with a short TTL",
+			"--reasoning", "Hosts share it", "--key", "storage.cache", "--tag", "infra"},
 		{"decide", "2", "redis", "--why", "fast", "--by", "owner"},
 	}
 	for _, args := range steps {
@@ -194,7 +196,7 @@ func TestJSONTopLevelKeysMatchTheDocs(t *testing.T) {
 		want    []string // the keys the docs example must have
 	}{
 		{"show", "## `adj show ID --json`", []string{"show", "2", "--json"},
-			[]string{"created", "decided_at", "decided_by", "decision", "history", "id", "key", "options", "rationale", "status", "tags", "title"}},
+			[]string{"created", "decided_at", "decided_by", "decision", "history", "id", "key", "options", "rationale", "recommendation", "status", "tags", "title"}},
 		{"list", "## `adj list --json`", []string{"list", "--json"}, []string{"records"}},
 		{"inbox", "## `adj inbox --json`", []string{"inbox", "--json"}, []string{"records"}},
 		{"check", "## `adj check QUERY --json`", []string{"check", "--json", "storage"},
@@ -356,5 +358,70 @@ func TestContextTableSaysFirstNonBlankLine(t *testing.T) {
 	}
 	if !strings.Contains(section, "the first non-blank line of the record's rationale") {
 		t.Errorf("the context rationale row does not say the first non-blank line:\n%s", section)
+	}
+}
+
+// The sub-keys of "recommendation": the row of the "Keys of a record" table
+// names exactly the keys the model writes, and a recommendation that is an
+// option label and one that is free text (C167) print only keys it names.
+func TestJSONShape(t *testing.T) {
+	t.Run("the docs row names the model's recommendation keys", func(t *testing.T) {
+		var want []string
+		typ := reflect.TypeOf(model.Recommendation{})
+		for i := 0; i < typ.NumField(); i++ {
+			name, _, _ := strings.Cut(typ.Field(i).Tag.Get("json"), ",")
+			want = append(want, name)
+		}
+		sort.Strings(want)
+		section, err := sectionUnder(docsText(t), "## Keys of a record")
+		if err != nil {
+			t.Fatal(err)
+		}
+		var row string
+		for _, line := range strings.Split(section, "\n") {
+			if strings.HasPrefix(line, "| `recommendation` |") {
+				row = line
+			}
+		}
+		if row == "" {
+			t.Fatal("the key table has no recommendation row")
+		}
+		var got []string
+		for _, k := range want {
+			if strings.Contains(row, "`"+k+"`") {
+				got = append(got, k)
+			}
+		}
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("the recommendation row names %v, want all of %v:\n%s", got, want, row)
+		}
+	})
+
+	root := initRoot(t)
+	for _, args := range [][]string{
+		{"ask", "By label", "--option", "a:A", "--recommend", "a", "--reasoning", "r"},
+		{"ask", "By text", "--option", "a:A", "--recommend-text", "free", "--reasoning", "r"},
+	} {
+		if r := run(testEnv(root), "", args...); r.code != 0 {
+			t.Fatalf("%v: exit %d: %s", args, r.code, r.stderr)
+		}
+	}
+	for _, tt := range []struct {
+		id   string
+		want []string // the recommendation's keys
+	}{
+		{"1", []string{"label", "reasoning"}},
+		{"2", []string{"reasoning", "text"}},
+	} {
+		t.Run("show "+tt.id, func(t *testing.T) {
+			r := run(testEnv(root), "", "show", tt.id, "--json")
+			rec, ok := decodeObject(t, r.stdout)["recommendation"].(map[string]any)
+			if !ok {
+				t.Fatalf("no recommendation object in:\n%s", r.stdout)
+			}
+			if got := keysOf(rec); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("recommendation keys = %v, want %v", got, tt.want)
+			}
+		})
 	}
 }

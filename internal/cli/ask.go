@@ -19,7 +19,10 @@ Record an open question. Prints the new record's ID.
   --option LABEL:SUMMARY    an answer on offer; repeat for each option
   --tradeoffs LABEL:TEXT    the trade-offs of the option LABEL; once per option
   --recommend LABEL         the option you recommend
-  --reasoning TEXT          why you recommend it (needs --recommend)
+  --recommend-text TEXT     a recommendation that is not one of the options
+                            (instead of --recommend)
+  --reasoning TEXT          why you recommend it (needs --recommend or
+                            --recommend-text)
   --key KEY                 the decision key, such as storage.engine
   --tag TAG                 a tag; repeat for several
   --context TEXT            why the question is asked
@@ -39,6 +42,7 @@ func (c *invocation) runAsk(args []string) int {
 	fs.Var(&tradeoffs, "tradeoffs", "")
 	fs.Var(&tags, "tag", "")
 	recommend := fs.String("recommend", "", "")
+	recommendText := fs.String("recommend-text", "", "")
 	reasoning := fs.String("reasoning", "", "")
 	key := fs.String("key", "", "")
 	context := fs.String("context", "", "")
@@ -66,12 +70,20 @@ func (c *invocation) runAsk(args []string) int {
 		Tradeoffs: tradeoffs,
 		Recommend: *recommend,
 		Reasoning: *reasoning,
+
+		RecommendText: *recommendText,
 	}
 	if in.AskedBy == "" {
 		in.AskedBy = c.env.Getenv("ADJ_ASKED_BY")
 	}
 	if *fromStdin && fsSet(fs, "context") {
 		return c.usageError("ask", askUsage, errors.New("--context and --stdin are exclusive"))
+	}
+	if fsSet(fs, "recommend") && fsSet(fs, "recommend-text") {
+		return c.usageError("ask", askUsage, errors.New("--recommend and --recommend-text are exclusive"))
+	}
+	if fsSet(fs, "recommend-text") && strings.TrimSpace(*recommendText) == "" {
+		return c.usageError("ask", askUsage, errors.New("--recommend-text must not be blank"))
 	}
 	if fsSet(fs, "recommend") && strings.TrimSpace(*recommend) == "" {
 		return c.usageError("ask", askUsage, errors.New("--recommend must not be blank"))

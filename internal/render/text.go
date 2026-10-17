@@ -32,7 +32,7 @@ func RecordText(w io.Writer, r model.Record) error {
 	field("Context", r.Context)
 	writeOptions(&b, "", r.Options)
 	if rec := r.Recommendation; rec != nil {
-		field("Recommendation", rec.Label)
+		field("Recommendation", recommended(rec))
 		field("Reasoning", rec.Reasoning)
 	}
 	field("Decided by", r.DecidedBy)
@@ -66,6 +66,15 @@ func RecordText(w io.Writer, r model.Record) error {
 	}
 	_, err := io.WriteString(w, b.String())
 	return err
+}
+
+// recommended is what a recommendation shows after "Recommendation:": its free
+// text (C167), or else the option label.
+func recommended(rec *model.Recommendation) string {
+	if rec.Text != "" {
+		return rec.Text
+	}
+	return rec.Label
 }
 
 // RecordsText writes one line per record: ID, status and title, in aligned

@@ -65,14 +65,18 @@ below). `adj lint` exits 1 when it finds an error (see its entry).
   working directory, never on a parent. A second successful run changes
   nothing; a failed run removes a config it wrote.
 - `adj ask TITLE [--option LABEL:SUMMARY]... [--tradeoffs LABEL:TEXT]...
-  [--recommend LABEL] [--reasoning TEXT] [--key K] [--tag T]...
-  [--context TEXT | --stdin] [--by NAME] [--root DIR]`: creates an `open`
-  record with one `ask` history entry and prints its ID. Flags may come before
-  or after TITLE. A blank `--key` or `--tag` exits 2; `--key` is stored as
-  typed. `asked_by` is `--by`, else `$ADJ_ASKED_BY`, else blank. The ID is
-  taken under the store's lock (see "Store and config"): an `ask` that cannot
-  get the lock within 5 seconds exits 1 with an error that names `.adj.lock`
-  and creates no record.
+  [--recommend LABEL | --recommend-text TEXT] [--reasoning TEXT] [--key K]
+  [--tag T]... [--context TEXT | --stdin] [--by NAME] [--root DIR]`: creates an
+  `open` record with one `ask` history entry and prints its ID. Flags may come
+  before or after TITLE. `--recommend` must name one of the options;
+  `--recommend-text` is a recommendation that is not an option (C167), stored
+  as typed in the recommendation's `text` with no `label`, and needs no option.
+  Both together, a blank `--recommend-text` or `--reasoning` with neither exits
+  2; `--reasoning` goes with either. A blank `--key` or `--tag` exits 2; `--key`
+  is stored as typed. `asked_by` is `--by`, else `$ADJ_ASKED_BY`, else blank.
+  The ID is taken under the store's lock (see "Store and config"): an `ask`
+  that cannot get the lock within 5 seconds exits 1 with an error that names
+  `.adj.lock` and creates no record.
 - `adj decide ID OPTION --why TEXT`, or `adj decide ID --text TEXT --why TEXT`,
   `[--by NAME] [--root DIR]`: moves an `open` record to `decided`. OPTION
   (trimmed) must be one of the record's option labels; `decision` is that
@@ -116,8 +120,8 @@ below). `adj lint` exits 1 when it finds an error (see its entry).
 - `adj inbox [--json] [--root DIR]`: lists the `open` records, oldest first (by
   `created`, then ID). Text: per record `ID  title`, then indented its created
   date, its context (when set), every option (`label: summary`, with
-  `tradeoffs:` under it when set) and the recommendation with its reasoning;
-  entries are separated by a blank line.
+  `tradeoffs:` under it when set) and the recommendation (the option label, or
+  the free text) with its reasoning; entries are separated by a blank line.
   `--json` prints `{"records": [...]}`, the same record objects as `adj list`
   (`docs/json.md`). An empty inbox prints nothing (JSON: an empty array) and
   exits 0. An argument or other flag exits 2.

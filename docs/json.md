@@ -34,6 +34,10 @@ plus `body`.
       "summary": "Use Redis"
     }
   ],
+  "recommendation": {
+    "text": "Use Redis, with a short TTL",
+    "reasoning": "Hosts share it"
+  },
   "decision": "redis",
   "rationale": "fast",
   "history": [
@@ -87,6 +91,10 @@ the shape above, in ID order.
           "summary": "Use Redis"
         }
       ],
+      "recommendation": {
+        "text": "Use Redis, with a short TTL",
+        "reasoning": "Hosts share it"
+      },
       "decision": "redis",
       "rationale": "fast",
       "history": [
@@ -152,6 +160,10 @@ there for the owner to read.
       "title": "Logging",
       "status": "open",
       "created": "2026-03-04",
+      "recommendation": {
+        "text": "Log to stderr as JSON lines",
+        "reasoning": "Agents parse it"
+      },
       "history": [
         {
           "date": "2026-03-04",
@@ -401,7 +413,9 @@ The checks:
   rule: a missing required field (`id`, `title`, `status`, `created`; `rationale`
   and `decided_at` once answered; `decision` once decided or superseded;
   `superseded_by` once superseded), a bad date, an unknown status or history
-  event, a bad option or recommendation, a link to the record itself.
+  event, a bad option, a bad recommendation (a `label` that is not an option,
+  both `label` and `text`, or neither; free `text` alone is fine), a link to
+  the record itself.
 - `id-mismatch` (error): the record's `id` is not the ID in its file name,
   which the other commands refuse to load. The `id` of a finding is the file
   name's. A record whose `id` is missing or not positive gets a `fields`
@@ -455,7 +469,7 @@ when it has a value. `id`, `title`, `status` and `created` are always present.
 | `decided_at` | string | the date of the answer, `YYYY-MM-DD` |
 | `context` | string | why the question is asked; may contain line breaks |
 | `options` | array of objects | the options; each has `label`, and `summary` and `tradeoffs` when set |
-| `recommendation` | object | `label`, one of the option labels, and `reasoning` when set |
+| `recommendation` | object | either `label`, one of the option labels, or `text`, a free-text recommendation that is not an option (never both), and `reasoning` when set |
 | `decision` | string | the answer: an option label, or free text |
 | `rationale` | string | the reason given with the answer, rejection or withdrawal |
 | `consequences` | string | the consequences of the decision |
