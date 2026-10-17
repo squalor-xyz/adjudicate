@@ -54,6 +54,9 @@ func TestRoundTripKeepsEveryField(t *testing.T) {
 		rec  Record
 	}
 	tests := []roundTripCase{{"fully populated", fullRecord()}}
+	text := validRecord(StatusOpen)
+	text.Recommendation = &Recommendation{Text: "A third way,\nnot an option", Reasoning: "r"}
+	tests = append(tests, roundTripCase{"free-text recommendation", text})
 	for _, s := range allStatuses {
 		tests = append(tests, roundTripCase{"minimal " + string(s), validRecord(s)})
 	}

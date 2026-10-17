@@ -88,7 +88,10 @@ TITLE.
 --option LABEL:SUMMARY    an answer on offer; repeat for each option
 --tradeoffs LABEL:TEXT    the trade-offs of the option LABEL; once per option
 --recommend LABEL         the option you recommend
---reasoning TEXT          why you recommend it (needs --recommend)
+--recommend-text TEXT     a recommendation that is not one of the options
+                          (instead of --recommend)
+--reasoning TEXT          why you recommend it (needs --recommend or
+                          --recommend-text)
 --key KEY                 the decision key, such as storage.engine
 --tag TAG                 a tag; repeat for several
 --ref REF                 a reference; repeat for several (opaque, kept in order)

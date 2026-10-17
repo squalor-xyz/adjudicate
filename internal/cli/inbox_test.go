@@ -213,7 +213,7 @@ func TestInboxJSONMatchesTheDocumentedExample(t *testing.T) {
 		{"ask", "Pick a store", "--option", "a:Use A", "--option", "b:Use B",
 			"--tradeoffs", "a:Younger project", "--recommend", "a", "--reasoning", "A is proven",
 			"--key", "storage.engine", "--by", "claude-opus"},
-		{"ask", "Logging"},
+		{"ask", "Logging", "--recommend-text", "Log to stderr as JSON lines", "--reasoning", "Agents parse it"},
 	}
 	for _, args := range steps {
 		if r := run(testEnv(root), "", args...); r.code != 0 {

@@ -172,6 +172,15 @@ var fixtureCases = []struct {
 		finding(3, "0003-third.md", errSev, lint.CheckSupersedeCycle, "supersede cycle among records 3, 4"),
 		finding(4, "0004-fourth.md", errSev, lint.CheckSupersedeCycle, "supersede cycle among records 3, 4"),
 	}},
+	// A free-text recommendation (C167) is no finding, with or without
+	// options; a label that is not an option stays one, and so do a label with
+	// text, a blank text and a recommendation with neither.
+	{"recommendations", []lint.Finding{
+		finding(3, "0003-label-not-an-option.md", errSev, lint.CheckFields, `recommendation: label "z" is not one of the options`),
+		finding(4, "0004-label-and-text.md", errSev, lint.CheckFields, "recommendation: has both a label and text; want one"),
+		finding(5, "0005-blank-text.md", errSev, lint.CheckFields, "recommendation: text must not be blank"),
+		finding(6, "0006-empty-recommendation.md", errSev, lint.CheckFields, "recommendation: needs a label or text"),
+	}},
 	{"mixed", []lint.Finding{
 		finding(1, "0001-pick-a-store.md", warnSev, lint.CheckDecidedBy, "decided_by is missing"),
 		finding(2, "0002-cache-layer.md", errSev, lint.CheckFields, "rationale: is required once decided"),

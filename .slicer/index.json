@@ -1541,7 +1541,7 @@
       "id": "S28",
       "title": "Free-text recommendation with ask --recommend-text",
       "short_title": "Free-text recommendation with ask --recommend-text",
-      "status": "open",
+      "status": "done",
       "has_slice": true,
       "depends_on": [],
       "note_records": [],
@@ -1563,7 +1563,10 @@
         "cites": [
           "C165",
           "C167",
-          "C163"
+          "C163",
+          "C172",
+          "C173",
+          "C174"
         ],
         "key": "",
         "pass": "",
@@ -1572,7 +1575,7 @@
         "importance": 2,
         "urgency": 3,
         "effort": 2,
-        "attempts": 0
+        "attempts": 1
       }
     },
     {
@@ -1621,7 +1624,19 @@
       "depends_on": [
         "S28"
       ],
-      "note_records": [],
+      "note_records": [
+        {
+          "id": "b13e7169-a813-4307-b18f-8af80e2886b3",
+          "kind": "",
+          "text": "**2026-10-17** — From S28: a recommendation has exactly one of label or text (C172). If amend can edit the recommendation, keep them exclusive and go through Validate.",
+          "created_at": "2026-10-17T13:53:33Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        }
+      ],
       "claim": null,
       "fields": {
         "size": "M",
@@ -1739,6 +1754,17 @@
           "kind": "",
           "text": "**2026-10-17** — From S26 review: the usage text and README name only --root as accepted before the command, while the unknown-flag error also names --help and -h (owner kept that message 2026-10-17). Make the wording agree.",
           "created_at": "2026-10-17T13:04:48Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "afe5953c-105b-4b0a-a509-ee909817a19d",
+          "kind": "",
+          "text": "**2026-10-17** — From S28: recommendation.label is optional since S28; a recommendation has exactly one of label or text (C172), so say so in the json.md 0.x stability section. From the S28 merge: the AGENTS.md decide entry does not name S29's --decided-at (docs/json.md does); add it.",
+          "created_at": "2026-10-17T13:53:34Z",
           "attempt": 0,
           "by": "Jon R",
           "verified_by": "",
@@ -3341,6 +3367,33 @@
         "kind": "decision",
         "title": "adj --root: given twice is a usage error (S26, C32)",
         "body": "A --root before the command and another after it is a usage error (exit 2) naming both values, and so is --root twice before the command. Reason: silently taking the later one would hide a mistake that points a write at the wrong store. --root twice after the command keeps taking the last (unchanged). A leading --root with --help/-h prints the main usage (exit 0); with no command or no value it exits 2; before ai it exits 2 (ai takes no --root) unless ai is given --help, which is handled first and exits 0 (as adj ai --help --root D does).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C172",
+        "kind": "decision",
+        "title": "S28: a free-text recommendation is the recommendation's text key; label and text are exclusive",
+        "body": "Recommendation gains Text (JSON text, omitempty); Label becomes omitempty so existing records write the same bytes. Validate accepts text alone, still rejects a label that is not an option, and rejects label with text, blank text, or neither. Reason: the smallest change that keeps old files identical and leaves IsStaleCopy comparing the whole recommendation.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C173",
+        "kind": "decision",
+        "title": "S28: --recommend-text is kept as typed and shown on the Recommendation line",
+        "body": "Like decide --text and --reasoning, the text is stored as typed and only a blank one exits 2. show and inbox print it after 'Recommendation:' in place of the label (a multi-line text goes under the label, as for other fields). adj check text output is unchanged (an open record has no detail lines, C106); check --json carries the record, text included. Reason: no new wording to learn, parity with how a label recommendation already shows. Owner confirmed 2026-10-17: check text stays as built; C106 stands.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C174",
+        "kind": "decision",
+        "title": "S28: the agent snippet names --recommend-text in one sentence",
+        "body": "internal/commands/ai.md says 'No option fits? Use --recommend-text \"Text\".', drops the '(also --tag T, --format json)' aside on the context line, and (after the merge with S27) shortens the --ref sentence to 'Repeat --ref ID for slice or catalog references.' (the word 'opaque' dropped; AGENTS.md still says refs are opaque strings), to stay under the 1800-byte cap (C125). Reason: the friction came from agents that had no option to recommend.",
         "status": "active",
         "reason": "",
         "successor": ""

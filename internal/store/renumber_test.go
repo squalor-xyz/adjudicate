@@ -931,3 +931,43 @@ func TestRenumberRefusesACollidingRecordWithoutAValidCreatedDate(t *testing.T) {
 		})
 	}
 }
+
+// The recommendation is compared as a whole (C163), so the free-text field
+// (C167) counts too: a moved record whose recommendation text differs, or that
+// has a label where the stale one has text, is not the stale copy.
+func TestIsStaleCopyComparesTheRecommendationText(t *testing.T) {
+	stale, moved := File{ID: 3, Name: "0003-foo.md"}, File{ID: 5, Name: "0005-foo.md"}
+	staleRec := askedRecord(3)
+	staleRec.Recommendation = &model.Recommendation{Text: "a third way", Reasoning: "why"}
+	decided := func(r *model.Record) { // what adj decide does after the crash
+		r.Status, r.Decision, r.Rationale, r.DecidedAt = model.StatusDecided, "x", "because", "2026-11-03"
+		r.History = append(r.History, model.HistoryEntry{Date: "2026-11-03", Event: model.EventDecide})
+	}
+	edit := func(f func(*model.Record)) model.Record {
+		r := movedBy(t, staleRec, 5)
+		f(&r)
+		return r
+	}
+	tests := []struct {
+		name  string
+		moved model.Record
+		want  bool
+	}{
+		{"the interrupted move itself", movedBy(t, staleRec, 5), true},
+		{"decided since, text unchanged", edit(decided), true},
+		{"text differs, no edit since", edit(func(r *model.Record) { r.Recommendation.Text = "another way" }), false},
+		{"edited since, but the text differs", edit(func(r *model.Record) { decided(r); r.Recommendation.Text = "another way" }), false},
+		{"edited since, but a label instead of the text", edit(func(r *model.Record) {
+			decided(r)
+			r.Recommendation = &model.Recommendation{Label: "a", Reasoning: "why"}
+		}), false},
+		{"edited since, but the text is gone", edit(func(r *model.Record) { decided(r); r.Recommendation = nil }), false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := IsStaleCopy(stale, staleRec, moved, tt.moved); got != tt.want {
+				t.Errorf("IsStaleCopy = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

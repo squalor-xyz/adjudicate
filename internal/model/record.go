@@ -57,9 +57,13 @@ type Option struct {
 	Tradeoffs string `json:"tradeoffs,omitempty"`
 }
 
-// Recommendation is the asker's suggested option and why.
+// Recommendation is the asker's suggestion and why. It names one of the
+// record's options (Label) or is free text (Text, C167); exactly one is set.
+// Records written before Text existed have a Label, and read and write as they
+// did.
 type Recommendation struct {
-	Label     string `json:"label"`
+	Label     string `json:"label,omitempty"`
+	Text      string `json:"text,omitempty"`
 	Reasoning string `json:"reasoning,omitempty"`
 }
 
@@ -124,6 +128,7 @@ func validDate(s string) bool {
 // Once answered (decided, rejected, withdrawn, superseded):
 // rationale and decided_at; decided and superseded also need decision, and
 // superseded needs superseded_by. decided_by is never required (C27).
+// A recommendation has an option label or free text, not both (C167).
 func (r Record) Validate() error {
 	var errs []error
 	bad := func(field, format string, args ...any) {
@@ -191,7 +196,16 @@ func (r Record) Validate() error {
 		labels[o.Label] = true
 	}
 	if rec := r.Recommendation; rec != nil {
-		if !labels[rec.Label] {
+		switch {
+		case rec.Label != "" && rec.Text != "":
+			bad("recommendation", "has both a label and text; want one")
+		case rec.Label == "" && rec.Text != "":
+			if strings.TrimSpace(rec.Text) == "" {
+				bad("recommendation", "text must not be blank")
+			}
+		case rec.Label == "":
+			bad("recommendation", "needs a label or text")
+		case !labels[rec.Label]:
 			bad("recommendation", "label %q is not one of the options", rec.Label)
 		}
 	}

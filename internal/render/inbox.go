@@ -13,8 +13,9 @@ import (
 // InboxText writes the open questions of adj inbox in the order given. Each
 // entry is its ID and title, then, indented, its created date, its refs when
 // set (C171), its context, its options (with summary and tradeoffs) and its
-// recommendation with the reasoning; the rest of the record is left to adj
-// show. Entries are separated by one blank line. No records prints nothing.
+// recommendation with the reasoning (a free-text recommendation shows as its
+// text); the rest of the record is left to adj show. Entries are separated by
+// one blank line. No records prints nothing.
 func InboxText(w io.Writer, recs []model.Record) error {
 	var b strings.Builder
 	for i, r := range recs {
@@ -27,7 +28,7 @@ func InboxText(w io.Writer, recs []model.Record) error {
 		writeField(&b, "  ", "Context", r.Context)
 		writeOptions(&b, "  ", r.Options)
 		if rec := r.Recommendation; rec != nil {
-			writeField(&b, "  ", "Recommendation", rec.Label)
+			writeField(&b, "  ", "Recommendation", recommended(rec))
 			writeField(&b, "  ", "Reasoning", rec.Reasoning)
 		}
 	}

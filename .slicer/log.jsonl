@@ -493,6 +493,13 @@
 {"when": "2026-10-17T13:02:38Z", "item": "S26", "action": "status", "from": "review", "to": "done", "note": "Leading --root DIR / --root=DIR is accepted before the subcommand and handed to the command as if it followed it; --root both before and after, or twice before, exits 2 naming both values (C170); twice after still takes the last. Tests, mutation checks and docs (README, AGENTS.md) done; full suite, vet, gofmt and slicer check pass.", "by": "Jon R"}
 {"when": "2026-10-17T13:04:48Z", "item": "S31", "action": "note", "from": "", "to": "", "note": "From S26: TestUnknownLeadingFlag in internal/cli/cli_test.go", "by": "Jon R"}
 {"when": "2026-10-17T13:04:48Z", "item": "S32", "action": "note", "from": "", "to": "", "note": "From S26 review: the usage text and README name only --root ", "by": "Jon R"}
+{"when": "2026-10-17T13:17:56Z", "item": "S28", "action": "status", "from": "open", "to": "started", "note": "", "by": "Jon R"}
+{"when": "2026-10-17T13:26:18Z", "item": "C172", "action": "catalog", "from": "", "to": "S28: a free-text recommendation is the recommendation's text key; label and text are exclusive", "note": "add"}
+{"when": "2026-10-17T13:26:19Z", "item": "C173", "action": "catalog", "from": "", "to": "S28: --recommend-text is kept as typed and shown on the Recommendation line", "note": "add"}
+{"when": "2026-10-17T13:26:20Z", "item": "C174", "action": "catalog", "from": "", "to": "S28: the agent snippet names --recommend-text in one sentence", "note": "add"}
+{"when": "2026-10-17T13:26:28Z", "item": "S28", "action": "cite", "from": "", "to": "C172,C173,C174", "note": ""}
+{"when": "2026-10-17T13:29:52Z", "item": "S28", "action": "handoff", "from": "started", "to": "review", "note": "claim Jon R cleared", "by": "Jon R"}
+{"when": "2026-10-17T13:33:37Z", "item": "S28", "action": "status", "from": "review", "to": "done", "note": "Verified: adj ask --recommend-text stores a free-text recommendation (recommendation.text, no label; exclusive with --recommend; --reasoning works with either); show, inbox and their --json forms display it, check --json carries it. Validate accepts it and still rejects a label that is not an option; lint reports nothing for it; old records write the same bytes; IsStaleCopy compares the whole recommendation. adj check text output is unchanged by design (C173). Decisions C172-C174. go test ./..., go vet and gofmt pass.", "by": "Jon R"}
 {"when": "2026-10-17T13:11:26Z", "item": "S27", "action": "status", "from": "open", "to": "started", "note": "", "by": "Jon R"}
 {"when": "2026-10-17T13:11:50Z", "item": "C171", "action": "catalog", "from": "", "to": "Ask refs in search and active views", "note": "add"}
 {"when": "2026-10-17T13:11:52Z", "item": "S27", "action": "note", "from": "", "to": "", "note": "C171 records ref search and inbox/check display; implementin", "by": "Jon R"}
@@ -513,3 +520,7 @@
 {"when": "2026-10-17T14:06:44Z", "item": "S31", "action": "status", "from": "open", "to": "started", "note": "", "by": "Jon R"}
 {"when": "2026-10-17T14:07:35Z", "item": "S31", "action": "handoff", "from": "started", "to": "review", "note": "claim Jon R cleared", "by": "Jon R"}
 {"when": "2026-10-17T14:08:28Z", "item": "S31", "action": "status", "from": "review", "to": "done", "note": "Verified adj version and --version, build-info/ldflags behavior, extra-argument usage, binary round trip, four controlled mutations, full tests/vet/formatting and matching guidance.", "by": "Jon R"}
+{"when": "2026-10-17T13:53:32Z", "item": "C173", "action": "catalog", "from": "", "to": "body", "note": "edit"}
+{"when": "2026-10-17T13:53:33Z", "item": "C174", "action": "catalog", "from": "", "to": "body", "note": "edit"}
+{"when": "2026-10-17T13:53:33Z", "item": "S30", "action": "note", "from": "", "to": "", "note": "From S28: a recommendation has exactly one of label or text ", "by": "Jon R"}
+{"when": "2026-10-17T13:53:34Z", "item": "S32", "action": "note", "from": "", "to": "", "note": "From S28: recommendation.label is optional since S28; a reco", "by": "Jon R"}
