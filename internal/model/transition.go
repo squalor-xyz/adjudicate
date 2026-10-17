@@ -4,7 +4,9 @@ package model
 
 import (
 	"fmt"
+	"maps"
 	"slices"
+	"strings"
 )
 
 // ErrInvalidTransition is returned when a record's current status does not
@@ -87,6 +89,92 @@ func LinkSupersedes(r *Record, old int, date string) error {
 		}
 	})
 }
+
+// ErrNoChange is matched by the error Amend returns when no text it was given
+// differs from the record's.
+var ErrNoChange = fmt.Errorf("%w: nothing to change", ErrInvalid)
+
+// Amendment is what Amend changes. A nil pointer leaves the field alone;
+// Summaries and Tradeoffs map an option label to its new text.
+type Amendment struct {
+	Title, Context, Rationale *string
+	Summaries, Tradeoffs      map[string]string
+}
+
+// Amend corrects text on r, a record in any status, and appends one amend
+// history entry dated date (YYYY-MM-DD) whatever the number of fields changed
+// (C166). The entry's Was keeps the old text of every field that changed, and
+// its note names them: title, context, then for each option in order summary
+// and tradeoffs, then rationale. A field given the text the record already has
+// is not a change and is not in the entry. Nothing else changes: not the
+// status, decision, decided_by, dates, ID, links, key, tags, refs, an option's
+// label or the recommendation.
+//
+// An open record has no rationale, so Rationale on it is refused
+// (ErrInvalidTransition); a label in Summaries or Tradeoffs that no option has
+// is an error matching ErrInvalid; an amend that changes nothing returns
+// ErrNoChange. The result is validated on a copy (a title must stay one
+// non-blank line, a rationale must stay non-blank once answered), so on error
+// r is untouched (C45).
+func Amend(r *Record, a Amendment, date string) error {
+	if !validDate(date) {
+		return fmt.Errorf("%w: date: %q is not a YYYY-MM-DD date", ErrInvalid, date)
+	}
+	if a.Rationale != nil && r.Status == StatusOpen {
+		return fmt.Errorf("%w: cannot amend the rationale of record %d: it is open and has none", ErrInvalidTransition, r.ID)
+	}
+	for _, texts := range []map[string]string{a.Summaries, a.Tradeoffs} {
+		for _, label := range slices.Sorted(maps.Keys(texts)) {
+			if !slices.ContainsFunc(r.Options, func(o Option) bool { return o.Label == label }) {
+				return fmt.Errorf("%w: options: record %d has no option %q", ErrInvalid, r.ID, label)
+			}
+		}
+	}
+
+	next := *r
+	next.Options = slices.Clone(r.Options)
+	var was Was
+	var changed []string
+	if a.Title != nil && *a.Title != r.Title {
+		was.Title, next.Title = ptr(r.Title), *a.Title
+		changed = append(changed, "title")
+	}
+	if a.Context != nil && *a.Context != r.Context {
+		was.Context, next.Context = ptr(r.Context), *a.Context
+		changed = append(changed, "context")
+	}
+	for i, o := range r.Options {
+		ow := OptionWas{Label: o.Label}
+		if text, ok := a.Summaries[o.Label]; ok && text != o.Summary {
+			ow.Summary, next.Options[i].Summary = ptr(o.Summary), text
+			changed = append(changed, "summary "+o.Label)
+		}
+		if text, ok := a.Tradeoffs[o.Label]; ok && text != o.Tradeoffs {
+			ow.Tradeoffs, next.Options[i].Tradeoffs = ptr(o.Tradeoffs), text
+			changed = append(changed, "tradeoffs "+o.Label)
+		}
+		if ow.Summary != nil || ow.Tradeoffs != nil {
+			was.Options = append(was.Options, ow)
+		}
+	}
+	if a.Rationale != nil && *a.Rationale != r.Rationale {
+		was.Rationale, next.Rationale = ptr(r.Rationale), *a.Rationale
+		changed = append(changed, "rationale")
+	}
+	if len(changed) == 0 {
+		return fmt.Errorf("cannot amend record %d: %w", r.ID, ErrNoChange)
+	}
+	next.History = append(slices.Clip(r.History), HistoryEntry{Date: date, Event: EventAmend, Note: strings.Join(changed, ", "), Was: &was})
+	if err := next.Validate(); err != nil {
+		return fmt.Errorf("cannot amend record %d: %w", r.ID, err)
+	}
+	*r = next
+	return nil
+}
+
+// ptr returns a pointer to a copy of s: the old text must not alias a field
+// that Amend is about to overwrite.
+func ptr(s string) *string { return &s }
 
 // Renumber gives r a new ID and appends one renumber history entry with the
 // note "from <old ID>", dated date (YYYY-MM-DD). It works on a record in any

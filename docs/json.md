@@ -414,8 +414,9 @@ The checks:
   and `decided_at` once answered; `decision` once decided or superseded;
   `superseded_by` once superseded), a bad date, an unknown status or history
   event, a bad option, a bad recommendation (a `label` that is not an option,
-  both `label` and `text`, or neither; free `text` alone is fine), a link to
-  the record itself.
+  both `label` and `text`, or neither; free `text` alone is fine), a history
+  entry with `was` that is not an `amend` entry, or an `amend` entry with no
+  old text, a link to the record itself.
 - `id-mismatch` (error): the record's `id` is not the ID in its file name,
   which the other commands refuse to load. The `id` of a finding is the file
   name's. A record whose `id` is missing or not positive gets a `fields`
@@ -432,9 +433,10 @@ The checks:
   this file's ID, wherever it sits in the history, and the same content: the
   moved record without that entry equals this one, or, if it was edited since,
   its history before the entry is this record's history and the fields `adj
-  ask` sets are equal). A live record that only shares the ID and the name text
-  with a moved one is not reported; the body of an edited moved record is not
-  compared. A moved file changed by hand without a `renumber` entry or any other
+  ask` sets are equal; an `adj amend` after the entry is first taken back to the
+  old text its `amend` entry keeps). A live record that only shares the ID and
+  the name text with a moved one is not reported; the body of an edited moved
+  record is not compared. A moved file changed by hand without a `renumber` entry or any other
   history entry is not recognised: before `adj renumber`, check whether one of
   the files that `duplicate-id` reports holds a `renumber` entry. Check both
   files, then delete the stale one. It is reported whether or not the file still
@@ -476,11 +478,11 @@ when it has a value. `id`, `title`, `status` and `created` are always present.
 | `supersedes` | array of integers | the IDs of the records this one replaces |
 | `superseded_by` | integer | the ID of the record that replaces this one |
 | `refs` | array of strings | opaque references set with repeatable `adj ask --ref REF`, kept in order |
-| `history` | array of objects | the history, oldest first; each entry has `date`, `event`, and `note` when set |
+| `history` | array of objects | the history, oldest first; each entry is an object with the keys under "Keys of a history entry" |
 | `body` | string | the Markdown after the record's frontmatter, kept verbatim; present only when the record has a body |
 
 A history entry's `event` is one of `ask`, `decide`, `reject`, `withdraw`,
-`supersede` or `renumber`. `adj supersede` writes one `supersede` entry on each
+`supersede`, `renumber` or `amend`. `adj supersede` writes one `supersede` entry on each
 of the two records: the note is `by N` on the record that is replaced and
 `supersedes N` on the one that replaces it. `adj renumber` writes one `renumber`
 entry on each record it gives a new ID; the note is `from N`, the old ID. Notes
@@ -489,3 +491,46 @@ strings, not timestamps. A decide entry's date is the run date. If
 `adj decide --decided-at DATE` sets an earlier effective date, the decide
 entry's note is `backdated to DATE`, so the history still shows when the command
 ran. A date after the run date is refused.
+
+## Keys of a history entry
+
+| Key | Type | Meaning |
+|---|---|---|
+| `date` | string | the day the command ran, `YYYY-MM-DD` |
+| `event` | string | `ask`, `decide`, `reject`, `withdraw`, `supersede`, `renumber` or `amend` |
+| `note` | string | a short note, present only when set: for `amend`, the fields that changed (see below) |
+| `was` | object | `amend` entries only: the old text of every field the amend changed |
+
+`adj amend` appends one `amend` entry per call, whatever the number of fields
+changed. Its `note` lists the fields in a fixed order, separated by commas:
+`title`, `context`, then for each option in the record's order `summary LABEL`
+and `tradeoffs LABEL`, then `rationale`. Its `was` object has only the keys of
+the fields that changed:
+
+- `title`, `context` and `rationale`: the old text, which may contain line
+  breaks. An old text that was empty is the empty string, so a field that
+  changed from nothing is told apart from a field that did not change.
+- `options`: an array with one object per option that changed, in the record's
+  order: its `label` (which `adj amend` never changes), and `summary` and/or
+  `tradeoffs` with the old text.
+
+An amend never changes the status, decision, `decided_by`, `asked_by`, dates,
+links, `key`, `tags`, `refs`, an option's `label` or the recommendation, and the
+record file is not renamed when the title changes.
+
+```json
+{
+  "date": "2026-10-17",
+  "event": "amend",
+  "note": "title, tradeoffs a",
+  "was": {
+    "title": "Pick a store",
+    "options": [
+      {
+        "label": "a",
+        "tradeoffs": "slower"
+      }
+    ]
+  }
+}
+```

@@ -112,6 +112,27 @@ Replaces a decided record with another decided one. OLD becomes `superseded`
 and points to NEW; NEW lists OLD in `supersedes`. OLD stays readable with
 `adj show` and leaves `adj context`. Prints OLD's ID.
 
+### `adj amend ID [flags]`
+
+Corrects the text of a record of any status and prints its ID. Give at least
+one flag; several may change several fields in one call.
+
+```
+--title TEXT              the new title (one line)
+--context TEXT            the new context
+--stdin                   read the context from standard input instead
+--summary LABEL:TEXT      the new summary of the option LABEL; once per option
+--tradeoffs LABEL:TEXT    the new trade-offs of the option LABEL; once per option
+--rationale TEXT          the new rationale (an open record has none)
+--root DIR                the repo root
+```
+
+Only text changes: never the status, decision, who decided or asked, dates,
+links, key, tags, an option's label or the recommendation. An empty TEXT in
+`--summary` or `--tradeoffs` clears that text. Each call appends one `amend`
+entry to the history that keeps the old text of every field it changed, and
+`adj show` prints it. If nothing would change, it fails and writes nothing.
+
 ### `adj show ID [--json]`
 
 Prints one record: its fields and history. With `--json` it prints the record

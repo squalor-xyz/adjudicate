@@ -55,6 +55,9 @@ func RecordText(w io.Writer, r model.Record) error {
 			} else {
 				fmt.Fprintf(&b, "  %s %s: %s\n", h.Date, h.Event, cont(note, "    "))
 			}
+			if h.Was != nil {
+				writeWas(&b, "    ", *h.Was)
+			}
 		}
 	}
 	if r.Body != "" {
@@ -66,6 +69,30 @@ func RecordText(w io.Writer, r model.Record) error {
 	}
 	_, err := io.WriteString(w, b.String())
 	return err
+}
+
+// writeWas writes the old text an amend entry keeps, one "was FIELD: text" line
+// per field at indent pad, in the order of the entry's note: title, context,
+// each option's summary and tradeoffs, rationale. Multi-line text goes under
+// its label, indented, and an old empty text shows as (empty).
+func writeWas(b *strings.Builder, pad string, w model.Was) {
+	was := func(label string, old *string) {
+		if old == nil {
+			return
+		}
+		text := trimBreaks(*old)
+		if text == "" {
+			text = "(empty)"
+		}
+		writeField(b, pad, "was "+label, text)
+	}
+	was("title", w.Title)
+	was("context", w.Context)
+	for _, o := range w.Options {
+		was("summary "+o.Label, o.Summary)
+		was("tradeoffs "+o.Label, o.Tradeoffs)
+	}
+	was("rationale", w.Rationale)
 }
 
 // recommended is what a recommendation shows after "Recommendation:": its free

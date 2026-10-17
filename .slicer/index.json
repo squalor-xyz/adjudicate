@@ -1619,7 +1619,7 @@
       "id": "S30",
       "title": "Correct a record's text with adj amend",
       "short_title": "Correct a record's text with adj amend",
-      "status": "open",
+      "status": "done",
       "has_slice": true,
       "depends_on": [
         "S28"
@@ -1655,7 +1655,11 @@
         "cites": [
           "C165",
           "C166",
-          "C163"
+          "C163",
+          "C178",
+          "C179",
+          "C180",
+          "C181"
         ],
         "key": "",
         "pass": "",
@@ -1664,7 +1668,7 @@
         "importance": 2,
         "urgency": 3,
         "effort": 2,
-        "attempts": 0
+        "attempts": 1
       }
     },
     {
@@ -1815,7 +1819,7 @@
   "goals": "adjudicate is a small CLI (`adj`) with a plain-text store that records project decisions as a loop: an agent asks, the owner decides in batches, and every later agent reads the decision. The goal and non-goal records below come from PROJECT.md; the owner's decisions on its open questions are catalog records C23-C33, and they override PROJECT.md where it differs (name, runtime, record format, license).",
   "non_goals": "",
   "catalog": {
-    "next_id": 177,
+    "next_id": 182,
     "id_prefix": "C",
     "id_width": 2,
     "records": [
@@ -3399,6 +3403,42 @@
         "kind": "decision",
         "title": "S29 labels a backdated decide history entry",
         "body": "When --decided-at differs from the run date, set the decide history note to backdated to YYYY-MM-DD so the run date remains visible beside the effective date.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C178",
+        "kind": "decision",
+        "title": "S30 adj amend flags: --title, --context or --stdin, --summary LABEL:TEXT, --tradeoffs LABEL:TEXT and --rationale, any number in one call",
+        "body": "Implementer decision (C32), refining C166. Flag names follow the existing ones: --context/--stdin as on ask, LABEL:TEXT split at the first colon as ask's --option and --tradeoffs (the label is trimmed and each label once per flag), --rationale for the field C166 names (not --why, which would read as the reason for the amend). One call may change several fields and still appends one history entry. Texts are kept as typed (title, context, rationale) or trimmed (option summary and tradeoffs, as ask does). Blank values follow ask and decide: a blank --title, --context or --rationale, a multi-line title, a malformed or repeated LABEL:TEXT and a call with no field are usage errors (exit 2) before the store is looked for; an empty TEXT in --summary or --tradeoffs clears that option text (both are optional on ask), but a context cannot be emptied. A label that no option has is a usage error too, which also covers 'renaming' an option: no flag changes a label. Reason: stay close to ask/decide so the CLI has one vocabulary, and keep every refusal before any write.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C179",
+        "kind": "decision",
+        "title": "S30 an amend history entry is the event amend with a note naming the changed fields and a was object holding their old text",
+        "body": "Implementer decision (C32), refining C166. A new HistoryEntry key was (omitted when absent, allowed on amend entries only, and required there) holds one entry per changed field: title, context, rationale as strings and options as [{label, summary?, tradeoffs?}] in the record's option order. A field the call left alone, or gave its current text, is not in it; an old empty text is kept as an empty string (a pointer in Go), so 'was empty' is told apart from 'not changed'. note is the list of changed fields in a fixed order (title, context, per option summary then tradeoffs, rationale). Validate checks the shape, so lint reports a broken entry as a fields finding. adj show prints each old text under the entry as 'was FIELD: text' (multi-line text indented under its label, an empty old text as (empty)). Reason: a structured value can be rolled back by IsStaleCopy (C181) and read by agents in show --json; a free-text note could not be, and the old text of a multi-line field would have to be parsed back out of prose.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C180",
+        "kind": "decision",
+        "title": "S30 adj amend errors: a rationale on an open record and an amend that changes nothing exit 1, bad arguments and a label that no option has exit 2, and a title change does not rename the file",
+        "body": "Implementer decision (C32), refining C166 and the slice's failing tests. Exit 1 (a failed operation, C34) when the arguments are fine but the record cannot take them: an unknown or duplicate ID, a --rationale on an open record (it has none; the whole call is refused, a title given beside it is not written), and an amend whose texts all equal what the record says ('nothing to change'). A text equal to the current one beside a real change is simply left out of the entry. Exit 2 for what is wrong with the arguments whatever the record is, or with a label against the record's options (as decide's OPTION is). Everything is validated in memory before the one store.Update, so a refusal writes nothing. store.Update keeps the file name, so an amended title leaves the slug of the file as it was (the same as before any amend: a file is named once, at ask), which also keeps IsStaleCopy's name-text test valid. Reason: the same split between usage and failure the other commands use; no rename keeps links and git history of the file stable.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C181",
+        "kind": "decision",
+        "title": "S30 IsStaleCopy takes each amend entry after the renumber entry back to its old text before comparing the fields adj ask sets",
+        "body": "Implementer decision (C32), refining C163. adj amend can now change the title, context and option summary/tradeoffs that C163 treated as set only by adj ask, so an edited-since moved record legitimately differs from its stale file there. Options weighed: (1) leave those fields out of the comparison, which is simple but lets a keeper that an amend made look like the stale record (or the reverse) be flagged, and the title/context/options are most of what tells two records of one day and one name text apart; (2) roll the amend entries after the renumber entry back (newest first, using the old text they keep) and compare the result to the stale record, which keeps the check as strong as before. Chosen (2). The history before the renumber entry must still equal the stale record's whole history, compared by content because an amend entry holds pointers; key, tags, asked_by, created, option labels and the recommendation, which no amend changes, are compared as they are; an amend entry that names an option the record does not have fails the match; an amend before the renumber entry is part of the common history and is not rolled back; the rationale is not among the compared fields. The C163 known limits stay (a hand edit with no history entry is not recognised). A finding that tells the owner to delete a live record still costs more than a missed leftover.",
         "status": "active",
         "reason": "",
         "successor": ""

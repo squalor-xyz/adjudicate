@@ -48,6 +48,7 @@ const (
 	EventWithdraw  Event = "withdraw"
 	EventSupersede Event = "supersede"
 	EventRenumber  Event = "renumber" // a collision on the ID was resolved (C26)
+	EventAmend     Event = "amend"    // text fields were corrected; the entry's Was keeps the old text (C166)
 )
 
 // Option is one answer a question offers.
@@ -67,10 +68,10 @@ type Recommendation struct {
 	Reasoning string `json:"reasoning,omitempty"`
 }
 
-// Valid reports whether e is one of the six events.
+// Valid reports whether e is one of the seven events.
 func (e Event) Valid() bool {
 	switch e {
-	case EventAsk, EventDecide, EventReject, EventWithdraw, EventSupersede, EventRenumber:
+	case EventAsk, EventDecide, EventReject, EventWithdraw, EventSupersede, EventRenumber, EventAmend:
 		return true
 	}
 	return false
@@ -82,6 +83,29 @@ type HistoryEntry struct {
 	Date  string `json:"date"`
 	Event Event  `json:"event"`
 	Note  string `json:"note,omitempty"`
+	Was   *Was   `json:"was,omitempty"` // amend only: the text the amend replaced
+}
+
+// Was is the text an amend replaced: one pointer per field that changed, nil
+// for a field that did not, so an old empty text (a pointer to "") is told
+// apart from a field that was left alone.
+type Was struct {
+	Title     *string     `json:"title,omitempty"`
+	Context   *string     `json:"context,omitempty"`
+	Rationale *string     `json:"rationale,omitempty"`
+	Options   []OptionWas `json:"options,omitempty"`
+}
+
+// empty reports whether w holds no old text.
+func (w Was) empty() bool {
+	return w.Title == nil && w.Context == nil && w.Rationale == nil && len(w.Options) == 0
+}
+
+// OptionWas is the old summary and/or tradeoffs of the option with Label.
+type OptionWas struct {
+	Label     string  `json:"label"`
+	Summary   *string `json:"summary,omitempty"`
+	Tradeoffs *string `json:"tradeoffs,omitempty"`
 }
 
 // Record is one question or decision. Field order follows the PROJECT.md
@@ -182,6 +206,22 @@ func (r Record) Validate() error {
 		}
 		if !h.Event.Valid() {
 			bad("history", "entry %d: unknown event %q", i, string(h.Event))
+		}
+		switch {
+		case h.Event == EventAmend && (h.Was == nil || h.Was.empty()):
+			bad("history", "entry %d: an amend entry needs the old text in was", i)
+		case h.Event != EventAmend && h.Was != nil:
+			bad("history", "entry %d: only an amend entry has was", i)
+		}
+		if h.Was != nil {
+			for _, o := range h.Was.Options {
+				switch {
+				case o.Label == "":
+					bad("history", "entry %d: was.options: an option has no label", i)
+				case o.Summary == nil && o.Tradeoffs == nil:
+					bad("history", "entry %d: was.options: option %q has no old summary or tradeoffs", i, o.Label)
+				}
+			}
 		}
 	}
 

@@ -26,13 +26,13 @@ library only.
   process entry; `RunWith(Env, ...)` takes the repo root, clock, environment
   and working directory as parameters for tests. Each command's handler is in
   its own file (`init.go`, `ask.go`, `decide.go`, which holds decide,
-  reject and withdraw, `supersede.go`, `show.go`, `list.go`, `inbox.go`,
+  reject and withdraw, `supersede.go`, `amend.go`, `show.go`, `list.go`, `inbox.go`,
   `check.go`, `context.go`, `lint.go`, `renumber.go` and `ai.go`);
   `cli.go` holds the dispatch and shared helpers.
 - `internal/commands`: what each command does to the store, apart from
   parsing, output and exit codes (`init.go`, `ask.go`, `decide.go`,
-  `supersede.go`, `show.go`, `list.go`, `inbox.go`, `check.go`, `context.go`,
-  `lint.go`, `renumber.go`, `ai.go`). `ai.md` is the agent snippet, embedded
+  `supersede.go`, `amend.go`, `show.go`, `list.go`, `inbox.go`, `check.go`,
+  `context.go`, `lint.go`, `renumber.go`, `ai.go`). `ai.md` is the agent snippet, embedded
   by `ai.go`.
   `errors.go` holds `UsageError`, the error that exits 2.
 - `internal/model`: the record type, validation, status transitions and the
@@ -106,6 +106,21 @@ below). `adj lint` exits 1 when it finds an error (see its entry).
   and the message names the status.
   Only the owner supersedes, as for decide (C27): the agent snippet lists it
   among the commands never to run (C137). `adj lint` finds supersede cycles.
+- `adj amend ID [--title T] [--context T | --stdin] [--summary LABEL:TEXT]...
+  [--tradeoffs LABEL:TEXT]... [--rationale T] [--root DIR]` (C166, C178-C180):
+  corrects the text of a record of any status; it never changes status,
+  decision, `decided_by`, `asked_by`, dates, ID, links, key, tags, refs, an
+  option's label or the recommendation. One call may change several fields and
+  appends one `amend` history entry whose `was` object keeps the old text of
+  each field that changed (`docs/json.md`, C179); `adj show` prints it. A text
+  equal to the current one is not a change. Prints the ID. Exit 2: no field
+  flag, a blank `--title`, `--context` or `--rationale`, a title on several
+  lines, a bad or repeated LABEL:TEXT, or a label that no option has (an empty
+  TEXT clears a summary or tradeoffs; a context cannot be emptied). Exit 1: an
+  unknown or duplicate ID, `--rationale` on an `open` record, or nothing to
+  change. Validated in memory first, so a refusal writes nothing; the file is
+  not renamed when the title changes. Who may amend is not decided: the agent
+  snippet does not name it.
 - `adj show ID [--json] [--root DIR]`: prints one record, each set field and
   the history; with `--json` it prints the record object (`docs/json.md`). A
   non-number or 0 ID, or an extra argument, exits 2; an unknown or duplicate
@@ -215,8 +230,10 @@ below). `adj lint` exits 1 when it finds an error (see its entry).
   the history, and holds the same record: equal to the old file apart from the
   entry, or, if edited since, with the old file's whole history before the entry
   and the same title, key, tags, asked_by, created, context, options and
-  recommendation, not the body, C163; a live record that only shares the ID and
-  name text with a moved one is not a stale copy), and `adj renumber` refuses
+  recommendation, not the body, C163, once the `amend` entries after the
+  renumber entry are taken back to the old text they keep, C181; a live record
+  that only shares the ID and name text with a moved one is not a stale copy),
+  and `adj renumber` refuses
   (exit 1, nothing changed, `store.ErrStaleCopy`) until the owner checks both
   files and deletes the old one (C156); nothing is deleted automatically. Known
   limit (C163): a moved file that was changed by hand without a history entry is

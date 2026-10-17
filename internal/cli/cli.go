@@ -2,7 +2,7 @@
 
 // Package cli dispatches the adj command line. It takes its I/O as
 // parameters so tests can run it in-process. Each command's handler is in
-// its own file: init.go, ask.go, decide.go, supersede.go, show.go, list.go,
+// its own file: init.go, ask.go, decide.go, supersede.go, amend.go, show.go, list.go,
 // inbox.go, check.go, context.go, lint.go, renumber.go, ai.go.
 package cli
 
@@ -38,6 +38,7 @@ Commands:
   adj reject    close an open question without an answer
   adj withdraw  close an open question because no answer is needed
   adj supersede replace a decided record with another decided record
+  adj amend     correct the text of a record, keeping the old text in its history
   adj show      print one record
   adj list      list records, optionally filtered
   adj inbox     list open questions, oldest first, with options
@@ -120,6 +121,8 @@ func RunWith(env Env, args []string, stdin io.Reader, stdout, stderr io.Writer) 
 		return c.runReasonCommand("withdraw", withdrawUsage, args[1:], commands.Withdraw)
 	case "supersede":
 		return c.runSupersede(args[1:])
+	case "amend":
+		return c.runAmend(args[1:])
 	case "show":
 		return c.runShow(args[1:])
 	case "list":

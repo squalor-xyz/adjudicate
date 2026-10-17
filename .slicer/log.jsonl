@@ -514,3 +514,12 @@
 {"when": "2026-10-17T13:53:33Z", "item": "C174", "action": "catalog", "from": "", "to": "body", "note": "edit"}
 {"when": "2026-10-17T13:53:33Z", "item": "S30", "action": "note", "from": "", "to": "", "note": "From S28: a recommendation has exactly one of label or text ", "by": "Jon R"}
 {"when": "2026-10-17T13:53:34Z", "item": "S32", "action": "note", "from": "", "to": "", "note": "From S28: recommendation.label is optional since S28; a reco", "by": "Jon R"}
+{"when": "2026-10-17T14:10:26Z", "item": "S30", "action": "status", "from": "open", "to": "started", "note": "", "by": "Jon R"}
+{"when": "2026-10-17T14:25:19Z", "item": "C178", "action": "catalog", "from": "", "to": "S30 adj amend flags: --title, --context or --stdin, --summary LABEL:TEXT, --tradeoffs LABEL:TEXT and --rationale, any number in one call", "note": "add"}
+{"when": "2026-10-17T14:25:20Z", "item": "C179", "action": "catalog", "from": "", "to": "S30 an amend history entry is the event amend with a note naming the changed fields and a was object holding their old text", "note": "add"}
+{"when": "2026-10-17T14:25:22Z", "item": "C180", "action": "catalog", "from": "", "to": "S30 adj amend errors: a rationale on an open record and an amend that changes nothing exit 1, bad arguments and a label that no option has exit 2, and a title change does not rename the file", "note": "add"}
+{"when": "2026-10-17T14:25:24Z", "item": "C181", "action": "catalog", "from": "", "to": "S30 IsStaleCopy takes each amend entry after the renumber entry back to its old text before comparing the fields adj ask sets", "note": "add"}
+{"when": "2026-10-17T14:25:37Z", "item": "C179", "action": "catalog", "from": "", "to": "body", "note": "edit"}
+{"when": "2026-10-17T14:25:41Z", "item": "S30", "action": "cite", "from": "", "to": "C178,C179,C180,C181", "note": ""}
+{"when": "2026-10-17T14:35:44Z", "item": "S30", "action": "handoff", "from": "started", "to": "review", "note": "claim Jon R cleared", "by": "Jon R"}
+{"when": "2026-10-17T14:41:11Z", "item": "S30", "action": "status", "from": "review", "to": "done", "note": "adj amend added: text-only edits of title, context, option summary/tradeoffs and rationale on any status; one amend history entry with was (old text); IsStaleCopy rolls amend entries back; full suite, vet, gofmt and lint on a copy of decisions clean; gate PASS", "by": "Jon R"}

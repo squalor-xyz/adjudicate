@@ -11,6 +11,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"reflect"
 	"slices"
 	"strconv"
 	"strings"
@@ -99,7 +100,15 @@ func RenumberedFrom(r model.Record, id int) bool {
 // entries), so the status, decision, links and body may differ; then the
 // history before the renumber entry must be staleRec's whole history, and the
 // fields that only adj ask sets (title, key, tags, asked_by, created, context,
-// options, recommendation) must be equal; the body is not compared. Records are
+// options, recommendation) must be equal; the body is not compared. adj amend
+// (C166) can also change the title, the context and the summary and tradeoffs
+// of an option, so before the comparison each amend entry after the renumber
+// entry is taken back, newest first, to the old text it keeps (an entry that
+// names an option the record does not have fails the match): the moved record
+// must have said, before its amends, what staleRec says. A keeper that an
+// amend made look like staleRec is told apart by that old text (C163 case). The
+// key, tags, asked_by, created, option labels and recommendation cannot be
+// amended and stay compared as they are. Records are
 // compared as stored, so a stale file that is not in the form model.Marshal
 // writes (empty arrays, no final newline in the body) still matches. The
 // record's id field is ignored on both sides: the ID in the file name is its
@@ -127,7 +136,7 @@ func IsStaleCopy(stale File, staleRec model.Record, moved File, movedRec model.R
 // form model.Marshal writes (an empty array that omitempty drops, a body
 // without its final newline), while the moved file was written by it.
 func sameRecord(stale, moved model.Record, i int) bool {
-	if !slices.Equal(moved.History[:i], stale.History) {
+	if !sameHistory(moved.History[:i], stale.History) {
 		return false
 	}
 	moved.ID = stale.ID
@@ -135,7 +144,48 @@ func sameRecord(stale, moved model.Record, i int) bool {
 		moved.History = stale.History // the equal prefix; drops the entry
 		return sameStored(stale, moved) && withNewline(stale.Body) == withNewline(moved.Body)
 	}
-	return sameStored(asked(stale), asked(moved))
+	back, ok := unamended(moved, i)
+	return ok && sameStored(asked(stale), asked(back))
+}
+
+// sameHistory reports whether two histories have equal entries. An amend entry
+// holds pointers to its old text, so the entries are compared by content.
+func sameHistory(a, b []model.HistoryEntry) bool {
+	return slices.EqualFunc(a, b, func(x, y model.HistoryEntry) bool { return reflect.DeepEqual(x, y) })
+}
+
+// unamended returns r with the amend entries after history entry i taken back,
+// newest first: the title, context and option summaries and tradeoffs they
+// changed are put back to the old text they keep. ok is false when an entry
+// names an option that r does not have. r itself is not changed.
+func unamended(r model.Record, i int) (back model.Record, ok bool) {
+	back = r
+	back.Options = slices.Clone(r.Options)
+	for j := len(r.History) - 1; j > i; j-- {
+		h := r.History[j]
+		if h.Event != model.EventAmend || h.Was == nil {
+			continue
+		}
+		if h.Was.Title != nil {
+			back.Title = *h.Was.Title
+		}
+		if h.Was.Context != nil {
+			back.Context = *h.Was.Context
+		}
+		for _, ow := range h.Was.Options {
+			k := slices.IndexFunc(back.Options, func(o model.Option) bool { return o.Label == ow.Label })
+			if k < 0 {
+				return back, false
+			}
+			if ow.Summary != nil {
+				back.Options[k].Summary = *ow.Summary
+			}
+			if ow.Tradeoffs != nil {
+				back.Options[k].Tradeoffs = *ow.Tradeoffs
+			}
+		}
+	}
+	return back, true
 }
 
 // asked returns r with only the fields that adj ask sets.
