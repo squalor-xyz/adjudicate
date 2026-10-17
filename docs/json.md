@@ -15,7 +15,8 @@ store.
 
 adjudicate is at version 0.x (`adj version`). Until 1.0, a shape on this page
 may change in a minor release (from 0.1 to 0.2, for example), and the
-[CHANGELOG](../CHANGELOG.md) names every such change. 1.0 freezes the shapes.
+[CHANGELOG](../CHANGELOG.md) names every such change. From 1.0 a release may add
+keys but never renames, removes or retypes an existing key.
 
 Two things a reader of 0.1 must not assume:
 

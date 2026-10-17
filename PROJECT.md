@@ -305,8 +305,9 @@ decided
 `show`, `list`, `inbox`, `check` and `lint` print JSON with `--json`, and
 `context` with `--format json`. The shapes are in
 [docs/json.md](docs/json.md), which also states what 0.x promises about them: a
-shape may change in a minor release, the CHANGELOG names every change, and 1.0
-freezes the shapes. The same store always gives the same bytes.
+shape may change in a minor release and the CHANGELOG names every change; from
+1.0 a release may add keys but never renames, removes or retypes an existing
+key. The same store always gives the same bytes.
 
 `adj ai` prints a snippet of at most 1800 bytes (C125) for a repo's AGENTS.md.
 It tells agents to check before asking, what each `check` result means, how to

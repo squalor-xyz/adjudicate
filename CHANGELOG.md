@@ -2,7 +2,8 @@
 
 All notable changes to adjudicate (CLI `adj`) are listed here, newest first.
 Until 1.0 a JSON shape in [docs/json.md](docs/json.md) may change in a minor
-release, and this file names every such change.
+release, and this file names every such change. From 1.0 a release may add keys
+but never renames, removes or retypes an existing key.
 
 ## 0.1.0 - unreleased
 

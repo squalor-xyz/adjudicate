@@ -260,7 +260,8 @@ and takes no argument.
 `show`, `list`, `inbox`, `check` and `lint` print JSON with `--json`; `context`
 does it with `--format json`. The shapes are in [docs/json.md](docs/json.md).
 Until 1.0 a shape may change in a minor release; the CHANGELOG names every
-change.
+change. From 1.0 a release may add keys but never renames, removes or retypes
+an existing key.
 
 ## Environment
 
