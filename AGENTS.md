@@ -231,6 +231,15 @@ below). `adj lint` exits 1 when it finds an error (see its entry).
   from the working directory upwards (`store.FindRoot`); with it nothing is
   searched for, and a command other than `init` needs `DIR/.adjudicate.json`.
   A missing config says to run `adj init`.
+- `--root` may also come before the command: `adj --root DIR list` acts as
+  `adj list --root DIR` (`cli.leadingRoot`; `invocation.parse` hands it to the
+  command). It is the only flag accepted before the command; any other leading
+  flag exits 2 with usage. `--root` both before and after the command, or twice
+  before it, exits 2 naming both values (C170); twice after the command still
+  takes the last. A leading `--root` with no value or no command exits 2, and
+  before `ai` exits 2 (`ai` takes no `--root`) unless `ai` is given `--help`,
+  which is handled first and exits 0, as `adj ai --help --root D` does. A
+  leading `--root` followed by `--help`/`-h` prints the main usage (exit 0).
 
 ## Store and config
 

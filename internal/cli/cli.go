@@ -13,6 +13,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/squalor-xyz/adjudicate/internal/commands"
@@ -26,7 +27,7 @@ const (
 	exitUsage = 2 // a usage error
 )
 
-const usage = `usage: adj <command> [arguments]
+const usage = `usage: adj [--root DIR] <command> [arguments]
 
 adjudicate records project decisions as plain text.
 
@@ -46,7 +47,8 @@ Commands:
   adj renumber  give records that share an ID new IDs
   adj ai        print an AGENTS.md snippet that tells agents how to use adj
 
-Run adj <command> --help for a command's flags.
+Run adj <command> --help for a command's flags. --root DIR may come before the
+command or after it, but not both; it is the only flag accepted before it.
 `
 
 // Env is what Run takes from the process. Tests replace it; the zero value
@@ -67,8 +69,10 @@ type Env struct {
 }
 
 // Run executes one adj invocation and returns the process exit code. args
-// excludes the program name. Help goes to stdout with exit 0; a missing or
-// unknown command prints usage to stderr with exit 2.
+// excludes the program name. A leading --root DIR is taken before dispatch and
+// given to the command as if it followed the command name. Help goes to
+// stdout with exit 0; a missing or unknown command prints usage to stderr with
+// exit 2.
 func Run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 	return RunWith(Env{}, args, stdin, stdout, stderr)
 }
@@ -89,6 +93,16 @@ func RunWith(env Env, args []string, stdin io.Reader, stdout, stderr io.Writer) 
 	if len(args) == 0 {
 		fmt.Fprint(stderr, usage)
 		return exitUsage
+	}
+	if root, rest, ok, err := leadingRoot(args); err != nil {
+		fmt.Fprintf(stderr, "adj: %v\n%s", err, usage)
+		return exitUsage
+	} else if ok {
+		if len(rest) == 0 {
+			fmt.Fprintf(stderr, "adj: --root %q needs a command\n%s", root, usage)
+			return exitUsage
+		}
+		c.leadRoot, c.hasLeadRoot, args = root, true, rest
 	}
 	switch args[0] {
 	case "--help", "-h":
@@ -123,7 +137,11 @@ func RunWith(env Env, args []string, stdin io.Reader, stdout, stderr io.Writer) 
 	case "ai":
 		return c.runAI(args[1:])
 	default:
-		fmt.Fprintf(stderr, "adj: unknown command %q\n", args[0])
+		if strings.HasPrefix(args[0], "-") && args[0] != "-" {
+			fmt.Fprintf(stderr, "adj: unknown flag %q before the command; only --root, --help and -h are accepted there\n", args[0])
+		} else {
+			fmt.Fprintf(stderr, "adj: unknown command %q\n", args[0])
+		}
 		fmt.Fprint(stderr, usage)
 		return exitUsage
 	}
@@ -134,6 +152,39 @@ type invocation struct {
 	env            Env
 	stdin          io.Reader
 	stdout, stderr io.Writer
+
+	// leadRoot is the value of a --root given before the command; it counts
+	// only when hasLeadRoot is set (the value may be empty). parse hands it
+	// to the command as if it had followed the command name.
+	leadRoot    string
+	hasLeadRoot bool
+}
+
+// leadingRoot takes a --root DIR, -root DIR, --root=DIR or -root=DIR from the
+// front of args, the only flag accepted before the command. ok is false when
+// args does not start with one. A bare --root takes the next argument as its
+// value, whatever it looks like, as it does after a command. --root with no
+// value, or given again before the command, is an error.
+func leadingRoot(args []string) (root string, rest []string, ok bool, err error) {
+	rest = args
+	for len(rest) > 0 {
+		name, value, hasValue := strings.Cut(rest[0], "=")
+		if name != "--root" && name != "-root" {
+			break
+		}
+		rest = rest[1:]
+		if !hasValue {
+			if len(rest) == 0 {
+				return "", nil, false, errors.New("--root needs a value")
+			}
+			value, rest = rest[0], rest[1:]
+		}
+		if ok {
+			return "", nil, false, fmt.Errorf("--root given twice before the command (%q and %q)", root, value)
+		}
+		root, ok = value, true
+	}
+	return root, rest, ok, nil
 }
 
 // newFlagSet returns a FlagSet that reports nothing itself: the command
@@ -156,6 +207,19 @@ func (c *invocation) parse(name, usageText string, fs *flag.FlagSet, args []stri
 	}
 	if err != nil {
 		return nil, c.usageError(name, usageText, err), true
+	}
+	if c.hasLeadRoot {
+		if fs.Lookup("root") == nil {
+			return nil, c.usageError(name, usageText, fmt.Errorf("%s takes no --root", name)), true
+		}
+		if fsSet(fs, "root") {
+			return nil, c.usageError(name, usageText, fmt.Errorf(
+				"--root given twice: before the command (%q) and after it (%q)",
+				c.leadRoot, fs.Lookup("root").Value.String())), true
+		}
+		if err := fs.Set("root", c.leadRoot); err != nil {
+			return nil, c.usageError(name, usageText, err), true
+		}
 	}
 	return pos, 0, false
 }

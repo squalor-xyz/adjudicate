@@ -47,8 +47,12 @@ adj check storage.cache                     # has this been decided?
 ```
 
 Commands find the repo root from the working directory upwards (the nearest
-`.adjudicate.json`). `--root DIR` names it instead. `adj COMMAND --help` prints
-a command's flags.
+`.adjudicate.json`). `--root DIR` names it instead, either before the command
+(`adj --root DIR list`) or after it (`adj list --root DIR`). Giving it both
+before and after the command, or twice before it, is a usage error (exit 2);
+twice after the command still takes the last. It is the only flag accepted
+before the command, apart from `--help`. `adj COMMAND --help` prints a
+command's flags.
 
 ## Exit codes
 

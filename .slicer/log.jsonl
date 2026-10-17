@@ -485,3 +485,9 @@
 {"when": "2026-10-17T12:49:42Z", "item": "S32", "action": "cite", "from": "", "to": "C165,C31", "note": ""}
 {"when": "2026-10-17T12:49:42Z", "item": "S33", "action": "cite", "from": "", "to": "C165,C27", "note": ""}
 {"when": "2026-10-17T12:49:43Z", "item": "S20", "action": "note", "from": "", "to": "", "note": "2026-10-17 release review: friction items 1, 4, 5, 6 and 7 a", "by": "Jon R"}
+{"when": "2026-10-17T12:52:15Z", "item": "S26", "action": "status", "from": "open", "to": "started", "note": "", "by": "Jon R"}
+{"when": "2026-10-17T12:55:10Z", "item": "C170", "action": "catalog", "from": "", "to": "adj --root: given twice is a usage error (S26, C32)", "note": "add"}
+{"when": "2026-10-17T12:56:01Z", "item": "S26", "action": "handoff", "from": "started", "to": "review", "note": "claim Jon R cleared", "by": "Jon R"}
+{"when": "2026-10-17T13:00:08Z", "item": "C170", "action": "catalog", "from": "", "to": "body", "note": "edit"}
+{"when": "2026-10-17T13:02:37Z", "item": "S26", "action": "note", "from": "", "to": "", "note": "Leading --root DIR / --root=DIR is accepted before the subco", "by": "Jon R"}
+{"when": "2026-10-17T13:02:38Z", "item": "S26", "action": "status", "from": "review", "to": "done", "note": "Leading --root DIR / --root=DIR is accepted before the subcommand and handed to the command as if it followed it; --root both before and after, or twice before, exits 2 naming both values (C170); twice after still takes the last. Tests, mutation checks and docs (README, AGENTS.md) done; full suite, vet, gofmt and slicer check pass.", "by": "Jon R"}
