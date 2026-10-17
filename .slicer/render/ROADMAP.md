@@ -720,11 +720,19 @@ Implementer decision (C32). internal/commands/ai.md (1799 of 1800 bytes, C125) a
 
 ### C187 S32 docs/json.md states 0.x stability in its own section, and README states what a plain local build prints on Go 1.27.2
 
-Implementer decision (C32). docs/json.md gains a 'Stability' section: for 0.x a shape may change in a minor release and the CHANGELOG names every change, 1.0 freezes the shapes; recommendation.label is optional and exactly one of label or text is present (C172); the file name keeps the slug of the title at ask, so adj amend --title leaves it drifting (C180, C182). Its opening sentence 'a key keeps its name and its type' now says 'within the limits under Stability', since it would otherwise contradict the 0.x rule. No further promise is made. README's version text no longer says a plain local build prints (devel): with Go 1.27.2 a plain go build in a git checkout prints a pseudo-version (v0.0.0-<time>-<revision>, +dirty with uncommitted changes), and -buildvcs=false prints (devel); the code (internal/cli/version.go) is unchanged and returns what Go records, as C169 and C177 say. Reason: the docs must match what the binary prints.
+Implementer decision (C32). docs/json.md gains a 'Stability' section: for 0.x a shape may change in a minor release and the CHANGELOG names every change; from 1.0 a release may add keys but never renames, removes or retypes an existing key (owner decision C189, which replaced the earlier '1.0 freezes the shapes'); recommendation.label is optional and exactly one of label or text is present (C172); the file name keeps the slug of the title at ask, so adj amend --title leaves it drifting (C180, C182). Its opening sentence 'a key keeps its name and its type' now says 'within the limits under Stability', since it would otherwise contradict the 0.x rule. No further promise is made. README's version text no longer says a plain local build prints (devel): with Go 1.27.2 a plain go build in a git checkout prints a pseudo-version (v0.0.0-<time>-<revision>, +dirty with uncommitted changes), and -buildvcs=false prints (devel); the code (internal/cli/version.go) is unchanged and returns what Go records, as C169 and C177 say. Reason: the docs must match what the binary prints.
 
 ### C188 S32 PROJECT.md is rewritten around the shipped tool: decisions that changed the brief are cited, the draft's open decisions, milestones and stack alternatives are dropped
 
 Implementer decision (C32). PROJECT.md keeps the Summary, Motivation, Users, Goals and Non-goals (C01-C13), replaces 'Open decisions' with 'Owner decisions that shaped the tool' (C23-C33 and the 0.1.0 plan C165-C170, C172, C175-C182), shows the record format with a real record and a verified session, lists the commands, the version behaviour, the architecture, the acceptance criteria as met with the tests that meet them, the Later items (S18-S22) as later, risks, and licensing (C31). The draft's Milestones are dropped (all done; git has the history). The consequences field is kept in the table with a note that no 0.1.0 flag sets it. The size budget flag is named as not in 0.1.0 (owner scope call recorded in S11). Reason: a reader gets what the tool does, not the draft it started from.
+
+### C189 JSON stability: before 1.0 a shape may change in a minor release; from 1.0 a release may add keys but never rename, remove or retype one
+
+Owner decision 2026-10-17 (S32). Until 1.0 a JSON shape may change in a minor release and the CHANGELOG names every change. From 1.0 a release may add keys but never renames, removes or retypes an existing key; readers ignore keys they do not know. Stated in docs/json.md, PROJECT.md, README.md and CHANGELOG.md.
+
+### C190 consequences stays hand-written in 0.1.0; a writer flag or dropping the field is decided after 0.1.0
+
+Owner decision 2026-10-17 (S32 review). The record field consequences has no adj command that writes it in 0.1.0; PROJECT.md says it is written by hand. Whether it gets a flag (for example on decide) or is dropped is decided after the 0.1.0 release.
 
 ### C39 LICENSE is a stub until the owner supplies the full GPL-3.0 text and copyright holder
 
