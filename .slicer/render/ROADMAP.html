@@ -360,6 +360,12 @@
 <div class="prose"><p>Like decide --text and --reasoning, the text is stored as typed and only a blank one exits 2. show and inbox print it after &#x27;Recommendation:&#x27; in place of the label (a multi-line text goes under the label, as for other fields). adj check text output is unchanged (an open record has no detail lines, C106); check --json carries the record, text included. Reason: no new wording to learn, parity with how a label recommendation already shows.</p></div>
 <h3>C174 S28: the agent snippet names --recommend-text in one sentence</h3>
 <div class="prose"><p>internal/commands/ai.md says &#x27;If no option fits, pass --recommend-text instead of --recommend&#x27;, and drops the &#x27;(also --tag T, --format json)&#x27; aside on the context line to stay under the 1800-byte cap (C125). Reason: the friction came from agents that had no option to recommend.</p></div>
+<h3>C171 Ask refs in search and active views</h3>
+<div class="prose"><p>adj check searches refs, and inbox/check text shows them so owners see linked slice or catalog context on open records and ref-based matches.</p></div>
+<h3>C175 S29 permits decided_at before created</h3>
+<div class="prose"><p>Allow --decided-at before created because S17 records decisions entered days after they were made; created marks when the record was logged.</p></div>
+<h3>C176 S29 labels a backdated decide history entry</h3>
+<div class="prose"><p>When --decided-at differs from the run date, set the decide history note to backdated to YYYY-MM-DD so the run date remains visible beside the effective date.</p></div>
 <h3>C39 LICENSE is a stub until the owner supplies the full GPL-3.0 text and copyright holder</h3>
 <div class="prose"><p>No GPL-3.0 text exists in the adjudicate repo and the workspace has no network, so the stub carries the SPDX line, the or-later notice and TODO(owner) markers.</p></div>
 <p><em>Retired: Replaced by the full GPL-3.0 text and NOTICE (owner supplied the text and named Squalor LLC, 2026-10-15).. Successor: C131.</em></p>
@@ -393,42 +399,42 @@
 <div class="prose"><p>PENDING OWNER CONFIRMATION - not decided. Source: Dependency/licensing notes (marked open there, not in the Open decisions list). Recommendation: a permissive FLOSS license such as MIT or Apache-2.0; PROJECT.md does not pick between them (owner must choose).</p></div>
 <p><em>Retired: Owner decided 2026-10-15: see decision C31 (GPL-3.0-or-later)..</em></p>
 </section>
-<p class="summary">33 items · — 6 · done 22 · later 5</p>
+<p class="summary">33 items · — 4 · done 24 · later 5</p>
 <table><thead><tr><th>#</th><th>ID</th><th>Title</th><th>Size</th><th>Effort</th><th>Trees</th><th>Findings</th><th>Status</th></tr></thead><tbody>
 <tr class="other"><td>1</td><td>S18</td><td>Later: cross-repo inbox</td><td>M</td><td>2</td><td>later</td><td>PROJECT.md Feature tiers (Later); Open decisions 6</td><td class="status">later</td></tr>
 <tr class="other"><td>2</td><td>S19</td><td>Later: TUI or static HTML inbox</td><td>M</td><td>2</td><td>later</td><td>PROJECT.md Feature tiers (Later)</td><td class="status">later</td></tr>
 <tr class="other"><td>3</td><td>S20</td><td>Later: slicer integration</td><td>M</td><td>2</td><td>later</td><td>PROJECT.md Feature tiers (Later); Non-goals (not replacing slicer); Risks (overlap with slicer catalog)</td><td class="status">later</td></tr>
 <tr class="other"><td>4</td><td>S21</td><td>Later: optional owner-only decide enforcement</td><td>M</td><td>2</td><td>later</td><td>PROJECT.md Feature tiers (Later); Open decisions 5; Non-goals</td><td class="status">later</td></tr>
 <tr class="other"><td>5</td><td>S22</td><td>Later: import from ADR folders</td><td>M</td><td>2</td><td>later</td><td>PROJECT.md Feature tiers (Later)</td><td class="status">later</td></tr>
-<tr class="open"><td>6</td><td>S27</td><td>Set refs with ask --ref</td><td>S</td><td>1</td><td>cli, commands</td><td>S17 dogfood friction (1), note on S20; C165</td><td class="status">—</td></tr>
-<tr class="open"><td>7</td><td>S29</td><td>Backdate a decision with decide --decided-at</td><td>S</td><td>1</td><td>cli, commands, model</td><td>S17 dogfood friction (5), note on S20; C168</td><td class="status">—</td></tr>
-<tr class="open"><td>8</td><td>S30</td><td>Correct a record&#x27;s text with adj amend</td><td>M</td><td>2</td><td>model, cli, commands, store, lint</td><td>S17 dogfood friction (6), note on S20; C166</td><td class="status">—</td></tr>
-<tr class="open"><td>9</td><td>S31</td><td>Report the version with adj version</td><td>S</td><td>1</td><td>cli</td><td>release prep; C169</td><td class="status">—</td></tr>
-<tr class="open"><td>10</td><td>S32</td><td>Release docs: PROJECT.md, CHANGELOG and JSON stability</td><td>S</td><td>1</td><td>docs</td><td>release prep; C165</td><td class="status">—</td></tr>
-<tr class="open"><td>11</td><td>S33</td><td>Release 0.1.0</td><td>S</td><td>1</td><td>release</td><td>C165</td><td class="status">—</td></tr>
+<tr class="open"><td>6</td><td>S30</td><td>Correct a record&#x27;s text with adj amend</td><td>M</td><td>2</td><td>model, cli, commands, store, lint</td><td>S17 dogfood friction (6), note on S20; C166</td><td class="status">—</td></tr>
+<tr class="open"><td>7</td><td>S31</td><td>Report the version with adj version</td><td>S</td><td>1</td><td>cli</td><td>release prep; C169</td><td class="status">—</td></tr>
+<tr class="open"><td>8</td><td>S32</td><td>Release docs: PROJECT.md, CHANGELOG and JSON stability</td><td>S</td><td>1</td><td>docs</td><td>release prep; C165</td><td class="status">—</td></tr>
+<tr class="open"><td>9</td><td>S33</td><td>Release 0.1.0</td><td>S</td><td>1</td><td>release</td><td>C165</td><td class="status">—</td></tr>
 </tbody></table>
 <table><thead><tr><th>#</th><th>ID</th><th>Title</th><th>Size</th><th>Effort</th><th>Trees</th><th>Findings</th><th>Status</th></tr></thead><tbody>
-<tr class="done"><td>12</td><td>S01</td><td>Confirm open decisions</td><td>S</td><td>1</td><td>decisions</td><td>PROJECT.md Open decisions 1-7; Core concepts (kind); Dependency/licensing notes</td><td class="status">done</td></tr>
-<tr class="done"><td>13</td><td>S02</td><td>Project scaffolding</td><td>S</td><td>1</td><td>scaffold</td><td>PROJECT.md Stack recommendation; Dependency/licensing notes</td><td class="status">done</td></tr>
-<tr class="done"><td>14</td><td>S03</td><td>Record model and lifecycle transitions</td><td>M</td><td>2</td><td>model</td><td>PROJECT.md Core concepts / data model; Milestone 1</td><td class="status">done</td></tr>
-<tr class="done"><td>15</td><td>S04</td><td>Record file read and write</td><td>S</td><td>1</td><td>model</td><td>PROJECT.md Open decisions 3; Core concepts (Record)</td><td class="status">done</td></tr>
-<tr class="done"><td>16</td><td>S05</td><td>Store, config and ID allocation</td><td>M</td><td>2</td><td>store</td><td>PROJECT.md Architecture sketch (ID allocation, Determinism); Open decisions 4, 6, 7</td><td class="status">done</td></tr>
-<tr class="done"><td>17</td><td>S06</td><td>Commands: init and ask</td><td>M</td><td>2</td><td>cli</td><td>PROJECT.md v1 feature tier; Milestone 2</td><td class="status">done</td></tr>
-<tr class="done"><td>18</td><td>S07</td><td>Commands: decide, reject, withdraw</td><td>S</td><td>1</td><td>cli</td><td>PROJECT.md v1 feature tier; Lifecycle; Milestone 2</td><td class="status">done</td></tr>
-<tr class="done"><td>19</td><td>S08</td><td>Commands: show and list with --json</td><td>S</td><td>1</td><td>cli</td><td>PROJECT.md v1 feature tier; Milestone 2; acceptance (--json)</td><td class="status">done</td></tr>
-<tr class="done"><td>20</td><td>S09</td><td>Command: inbox</td><td>S</td><td>1</td><td>cli</td><td>PROJECT.md Goals 2; v1 feature tier; Milestone 3</td><td class="status">done</td></tr>
-<tr class="done"><td>21</td><td>S10</td><td>Command: check</td><td>S</td><td>1</td><td>cli</td><td>PROJECT.md Goals 6; v1 feature tier; Milestone 3</td><td class="status">done</td></tr>
-<tr class="done"><td>22</td><td>S11</td><td>Command: context</td><td>M</td><td>2</td><td>cli</td><td>PROJECT.md Goals 5; v1 feature tier; Risks (context bloat); Milestone 3</td><td class="status">done</td></tr>
-<tr class="done"><td>23</td><td>S12</td><td>Agent snippet: adj ai and JSON shape docs</td><td>S</td><td>1</td><td>docs</td><td>PROJECT.md v1 feature tier; Risks (adoption); acceptance (--json documented)</td><td class="status">done</td></tr>
-<tr class="done"><td>24</td><td>S13</td><td>Command: supersede</td><td>S</td><td>1</td><td>cli</td><td>PROJECT.md Goals 4; Lifecycle; acceptance (supersede); Milestone 4</td><td class="status">done</td></tr>
-<tr class="done"><td>25</td><td>S14</td><td>Command: lint</td><td>M</td><td>2</td><td>cli</td><td>PROJECT.md Goals 8; acceptance (lint fixtures); Open decisions 5; Milestone 4</td><td class="status">done</td></tr>
-<tr class="done"><td>26</td><td>S15</td><td>ID collision detection and renumber</td><td>M</td><td>2</td><td>store</td><td>PROJECT.md Open decisions 4; Risks (merge conflicts on IDs); Milestone 4</td><td class="status">done</td></tr>
-<tr class="done"><td>27</td><td>S16</td><td>Docs and v1 acceptance round trip</td><td>S</td><td>1</td><td>docs</td><td>PROJECT.md v1 acceptance criteria; Milestone 5</td><td class="status">done</td></tr>
-<tr class="done"><td>28</td><td>S17</td><td>Dogfood: record adjudicate&#x27;s own decisions with adj</td><td>S</td><td>1</td><td>docs</td><td>PROJECT.md Milestone 5; acceptance (own decisions recorded)</td><td class="status">done</td></tr>
-<tr class="done"><td>29</td><td>S23</td><td>Lock ID allocation with flock</td><td>M</td><td>2</td><td>store</td><td>Owner decision 2026-10-15 (S05 review MEDIUM-2; C62, C64)</td><td class="status">done</td></tr>
-<tr class="done"><td>30</td><td>S24</td><td>Check text shows the rationale under closed records</td><td>S</td><td>1</td><td>render</td><td>Owner decision 2026-10-15 (S10 gate: closed records show only ID, status, title in text)</td><td class="status">done</td></tr>
-<tr class="done"><td>31</td><td>S25</td><td>Fix stale-copy false positive that flags a live record</td><td>M</td><td>2</td><td>store, lint, cli</td><td>S15 gate note (2) on S16; reproduced in the S16 run; S23 review notes (3), (6) on S16</td><td class="status">done</td></tr>
-<tr class="done"><td>32</td><td>S26</td><td>Accept --root before the subcommand</td><td>S</td><td>1</td><td>cli</td><td>S17 dogfood friction (7), note on S20; C165</td><td class="status">done</td></tr>
-<tr class="done"><td>33</td><td>S28</td><td>Free-text recommendation with ask --recommend-text</td><td>M</td><td>2</td><td>model, cli, commands, render, lint</td><td>S17 dogfood friction (4), note on S20; C167</td><td class="status">done</td></tr>
+<tr class="done"><td>10</td><td>S01</td><td>Confirm open decisions</td><td>S</td><td>1</td><td>decisions</td><td>PROJECT.md Open decisions 1-7; Core concepts (kind); Dependency/licensing notes</td><td class="status">done</td></tr>
+<tr class="done"><td>11</td><td>S02</td><td>Project scaffolding</td><td>S</td><td>1</td><td>scaffold</td><td>PROJECT.md Stack recommendation; Dependency/licensing notes</td><td class="status">done</td></tr>
+<tr class="done"><td>12</td><td>S03</td><td>Record model and lifecycle transitions</td><td>M</td><td>2</td><td>model</td><td>PROJECT.md Core concepts / data model; Milestone 1</td><td class="status">done</td></tr>
+<tr class="done"><td>13</td><td>S04</td><td>Record file read and write</td><td>S</td><td>1</td><td>model</td><td>PROJECT.md Open decisions 3; Core concepts (Record)</td><td class="status">done</td></tr>
+<tr class="done"><td>14</td><td>S05</td><td>Store, config and ID allocation</td><td>M</td><td>2</td><td>store</td><td>PROJECT.md Architecture sketch (ID allocation, Determinism); Open decisions 4, 6, 7</td><td class="status">done</td></tr>
+<tr class="done"><td>15</td><td>S06</td><td>Commands: init and ask</td><td>M</td><td>2</td><td>cli</td><td>PROJECT.md v1 feature tier; Milestone 2</td><td class="status">done</td></tr>
+<tr class="done"><td>16</td><td>S07</td><td>Commands: decide, reject, withdraw</td><td>S</td><td>1</td><td>cli</td><td>PROJECT.md v1 feature tier; Lifecycle; Milestone 2</td><td class="status">done</td></tr>
+<tr class="done"><td>17</td><td>S08</td><td>Commands: show and list with --json</td><td>S</td><td>1</td><td>cli</td><td>PROJECT.md v1 feature tier; Milestone 2; acceptance (--json)</td><td class="status">done</td></tr>
+<tr class="done"><td>18</td><td>S09</td><td>Command: inbox</td><td>S</td><td>1</td><td>cli</td><td>PROJECT.md Goals 2; v1 feature tier; Milestone 3</td><td class="status">done</td></tr>
+<tr class="done"><td>19</td><td>S10</td><td>Command: check</td><td>S</td><td>1</td><td>cli</td><td>PROJECT.md Goals 6; v1 feature tier; Milestone 3</td><td class="status">done</td></tr>
+<tr class="done"><td>20</td><td>S11</td><td>Command: context</td><td>M</td><td>2</td><td>cli</td><td>PROJECT.md Goals 5; v1 feature tier; Risks (context bloat); Milestone 3</td><td class="status">done</td></tr>
+<tr class="done"><td>21</td><td>S12</td><td>Agent snippet: adj ai and JSON shape docs</td><td>S</td><td>1</td><td>docs</td><td>PROJECT.md v1 feature tier; Risks (adoption); acceptance (--json documented)</td><td class="status">done</td></tr>
+<tr class="done"><td>22</td><td>S13</td><td>Command: supersede</td><td>S</td><td>1</td><td>cli</td><td>PROJECT.md Goals 4; Lifecycle; acceptance (supersede); Milestone 4</td><td class="status">done</td></tr>
+<tr class="done"><td>23</td><td>S14</td><td>Command: lint</td><td>M</td><td>2</td><td>cli</td><td>PROJECT.md Goals 8; acceptance (lint fixtures); Open decisions 5; Milestone 4</td><td class="status">done</td></tr>
+<tr class="done"><td>24</td><td>S15</td><td>ID collision detection and renumber</td><td>M</td><td>2</td><td>store</td><td>PROJECT.md Open decisions 4; Risks (merge conflicts on IDs); Milestone 4</td><td class="status">done</td></tr>
+<tr class="done"><td>25</td><td>S16</td><td>Docs and v1 acceptance round trip</td><td>S</td><td>1</td><td>docs</td><td>PROJECT.md v1 acceptance criteria; Milestone 5</td><td class="status">done</td></tr>
+<tr class="done"><td>26</td><td>S17</td><td>Dogfood: record adjudicate&#x27;s own decisions with adj</td><td>S</td><td>1</td><td>docs</td><td>PROJECT.md Milestone 5; acceptance (own decisions recorded)</td><td class="status">done</td></tr>
+<tr class="done"><td>27</td><td>S23</td><td>Lock ID allocation with flock</td><td>M</td><td>2</td><td>store</td><td>Owner decision 2026-10-15 (S05 review MEDIUM-2; C62, C64)</td><td class="status">done</td></tr>
+<tr class="done"><td>28</td><td>S24</td><td>Check text shows the rationale under closed records</td><td>S</td><td>1</td><td>render</td><td>Owner decision 2026-10-15 (S10 gate: closed records show only ID, status, title in text)</td><td class="status">done</td></tr>
+<tr class="done"><td>29</td><td>S25</td><td>Fix stale-copy false positive that flags a live record</td><td>M</td><td>2</td><td>store, lint, cli</td><td>S15 gate note (2) on S16; reproduced in the S16 run; S23 review notes (3), (6) on S16</td><td class="status">done</td></tr>
+<tr class="done"><td>30</td><td>S26</td><td>Accept --root before the subcommand</td><td>S</td><td>1</td><td>cli</td><td>S17 dogfood friction (7), note on S20; C165</td><td class="status">done</td></tr>
+<tr class="done"><td>31</td><td>S27</td><td>Set refs with ask --ref</td><td>S</td><td>1</td><td>cli, commands</td><td>S17 dogfood friction (1), note on S20; C165</td><td class="status">done</td></tr>
+<tr class="done"><td>32</td><td>S28</td><td>Free-text recommendation with ask --recommend-text</td><td>M</td><td>2</td><td>model, cli, commands, render, lint</td><td>S17 dogfood friction (4), note on S20; C167</td><td class="status">done</td></tr>
+<tr class="done"><td>33</td><td>S29</td><td>Backdate a decision with decide --decided-at</td><td>S</td><td>1</td><td>cli, commands, model</td><td>S17 dogfood friction (5), note on S20; C168</td><td class="status">done</td></tr>
 </tbody></table>
 </body></html>

@@ -19,6 +19,7 @@ type AskInput struct {
 	Title     string
 	Key       string
 	Tags      []string
+	Refs      []string
 	Context   string
 	AskedBy   string
 	Options   []string
@@ -54,6 +55,11 @@ func (in AskInput) build(now time.Time) (model.Record, error) {
 	}
 	if in.Key != "" && strings.TrimSpace(in.Key) == "" {
 		return model.Record{}, usagef("--key must not be blank")
+	}
+	for _, ref := range in.Refs {
+		if strings.TrimSpace(ref) == "" {
+			return model.Record{}, usagef("--ref must not be blank")
+		}
 	}
 	var opts []model.Option
 	index := map[string]int{}
@@ -118,6 +124,7 @@ func (in AskInput) build(now time.Time) (model.Record, error) {
 		Status:         model.StatusOpen,
 		Key:            in.Key,
 		Tags:           tags,
+		Refs:           slices.Clone(in.Refs),
 		AskedBy:        in.AskedBy,
 		Created:        date,
 		Context:        in.Context,

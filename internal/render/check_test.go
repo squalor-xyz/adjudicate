@@ -116,6 +116,23 @@ func TestCheckText(t *testing.T) {
 	}
 }
 
+func TestCheckTextShowsRefs(t *testing.T) {
+	res := query.Result{
+		Outcome: query.Decided,
+		Decided: []model.Record{{ID: 23, Title: "Decision", Status: model.StatusDecided, Refs: []string{"C23", "S20"}, Decision: "yes"}},
+		Open:    []model.Record{{ID: 24, Title: "Question", Status: model.StatusOpen, Refs: []string{"C24"}}},
+		Closed:  []model.Record{{ID: 25, Title: "Old question", Status: model.StatusRejected, Refs: []string{"C25"}}},
+	}
+	var b bytes.Buffer
+	if err := CheckText(&b, res); err != nil {
+		t.Fatal(err)
+	}
+	want := "decided\n23  decided  Decision\n  Refs: C23, S20\n  Decision: yes\n24  open  Question\n  Refs: C24\n25  rejected  Old question\n  Refs: C25\n"
+	if b.String() != want {
+		t.Errorf("CheckText = %q, want %q", b.String(), want)
+	}
+}
+
 func TestCheckJSON(t *testing.T) {
 	decided, open := checkSampleResult()
 	decided.Body = "Notes.\n"

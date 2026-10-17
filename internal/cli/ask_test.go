@@ -86,6 +86,47 @@ func TestAskCreatesAnOpenRecord(t *testing.T) {
 	}
 }
 
+func TestAskRef(t *testing.T) {
+	root := initRoot(t)
+	r := run(testEnv(root), "", "ask", "Pick a store", "--ref", "C23", "--ref", "S20")
+	if r.code != 0 || r.stdout != "1\n" {
+		t.Fatalf("ask refs: exit %d, stdout %q, stderr:\n%s", r.code, r.stdout, r.stderr)
+	}
+	got := records(t, root)
+	if len(got) != 1 || !reflect.DeepEqual(got[0].Refs, []string{"C23", "S20"}) {
+		t.Fatalf("refs = %+v, want [C23 S20] in order", got)
+	}
+
+	shown := run(testEnv(root), "", "show", "1")
+	if shown.code != 0 || !strings.Contains(shown.stdout, "Refs: C23, S20\n") {
+		t.Errorf("show: exit %d, stdout:\n%s\nstderr:\n%s", shown.code, shown.stdout, shown.stderr)
+	}
+	shown = run(testEnv(root), "", "show", "1", "--json")
+	wantJSON := `"refs": [
+    "C23",
+    "S20"
+  ]`
+	if shown.code != 0 || !strings.Contains(shown.stdout, wantJSON) {
+		t.Errorf("show --json: exit %d, stdout:\n%s\nstderr:\n%s", shown.code, shown.stdout, shown.stderr)
+	}
+}
+
+func TestAskRefBlank(t *testing.T) {
+	for _, ref := range []string{"", " \t "} {
+		t.Run(ref, func(t *testing.T) {
+			root := initRoot(t)
+			before := snapshot(t, root)
+			r := run(testEnv(root), "", "ask", "Title", "--ref", ref)
+			if r.code != 2 || !strings.Contains(r.stderr, "--ref must not be blank") {
+				t.Errorf("exit %d, stderr %q; want usage error for blank --ref", r.code, r.stderr)
+			}
+			if after := snapshot(t, root); !reflect.DeepEqual(after, before) {
+				t.Errorf("tree changed:\nbefore %q\nafter  %q", before, after)
+			}
+		})
+	}
+}
+
 func TestAskTitleOnlyAndSecondIDs(t *testing.T) {
 	root := initRoot(t)
 	env := testEnv(root)

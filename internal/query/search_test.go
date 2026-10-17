@@ -116,6 +116,14 @@ func TestSearchOutcomeWhenOnlyOpenRecordsMatch(t *testing.T) {
 	}
 }
 
+func TestSearchMatchesRefs(t *testing.T) {
+	recs := []model.Record{{ID: 23, Title: "Decision", Status: model.StatusDecided, Refs: []string{"C23", "S20"}}}
+	got := Search(recs, "c2")
+	if got.Outcome != Decided || !reflect.DeepEqual(idsOf(got.Decided), []int{23}) {
+		t.Errorf("Search by ref = %+v, want decided record 23", got)
+	}
+}
+
 func TestSearchOutcomeNamesAreTheCLIWords(t *testing.T) {
 	if Decided != "decided" || Open != "open" || Closed != "closed" || NotFound != "not found" {
 		t.Errorf("outcomes = %q, %q, %q, %q; want decided, open, closed, not found", Decided, Open, Closed, NotFound)

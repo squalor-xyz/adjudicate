@@ -9,6 +9,7 @@ import (
 	"slices"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/squalor-xyz/adjudicate/internal/model"
 )
@@ -74,6 +75,84 @@ func TestDecideTextRecordsAFreeTextAnswer(t *testing.T) {
 	want.History = append(slices.Clip(before.History), model.HistoryEntry{Date: "2026-03-04", Event: model.EventDecide})
 	if got := records(t, root); len(got) != 1 || !reflect.DeepEqual(got[0], want) {
 		t.Errorf("records = %+v\nwant one %+v", got, want)
+	}
+}
+
+func TestDecideDecidedAt(t *testing.T) {
+	root, before := askOpen(t)
+	env := testEnv(root)
+	env.Now = func() time.Time { return time.Date(2026, 10, 16, 12, 0, 0, 0, time.UTC) }
+	r := run(env, "", "decide", "1", "a", "--why", "decided earlier", "--decided-at", "2026-10-01")
+	if r.code != 0 {
+		t.Fatalf("exit code = %d, want 0; stderr:\n%s", r.code, r.stderr)
+	}
+	if r.stdout != "1\n" || r.stderr != "" {
+		t.Errorf("output = (%q, %q), want ID and no stderr", r.stdout, r.stderr)
+	}
+	want := before
+	want.Status = model.StatusDecided
+	want.Decision = "a"
+	want.Rationale = "decided earlier"
+	want.DecidedAt = "2026-10-01"
+	want.History = append(slices.Clip(before.History), model.HistoryEntry{
+		Date: "2026-10-16", Event: model.EventDecide, Note: "backdated to 2026-10-01",
+	})
+	if got := records(t, root); len(got) != 1 || !reflect.DeepEqual(got[0], want) {
+		t.Errorf("records = %+v\nwant one %+v", got, want)
+	}
+}
+
+func TestDecideDecidedAtFuture(t *testing.T) {
+	root, _ := askOpen(t)
+	env := testEnv(root)
+	env.Now = func() time.Time { return time.Date(2026, 10, 16, 12, 0, 0, 0, time.UTC) }
+	before := snapshot(t, root)
+	r := run(env, "", "decide", "1", "a", "--why", "future", "--decided-at", "2026-10-17")
+	if r.code != 2 {
+		t.Errorf("exit code = %d, want usage error 2; stderr:\n%s", r.code, r.stderr)
+	}
+	if !strings.Contains(r.stderr, "later than the run date") {
+		t.Errorf("stderr does not explain the future date:\n%s", r.stderr)
+	}
+	if !hasUsageLine(r.stderr) {
+		t.Errorf("stderr has no usage line:\n%s", r.stderr)
+	}
+	if r.stdout != "" {
+		t.Errorf("stdout = %q, want empty", r.stdout)
+	}
+	if after := snapshot(t, root); !reflect.DeepEqual(after, before) {
+		t.Errorf("tree changed:\nbefore %q\nafter  %q", before, after)
+	}
+}
+
+func TestDecideDecidedAtBadDate(t *testing.T) {
+	root, _ := askOpen(t)
+	before := snapshot(t, root)
+	r := run(testEnv(root), "", "decide", "1", "a", "--why", "bad date", "--decided-at", "2026-02-30")
+	if r.code != 2 {
+		t.Errorf("exit code = %d, want usage error 2; stderr:\n%s", r.code, r.stderr)
+	}
+	if !strings.Contains(r.stderr, "YYYY-MM-DD") {
+		t.Errorf("stderr does not explain the required date format:\n%s", r.stderr)
+	}
+	if !hasUsageLine(r.stderr) {
+		t.Errorf("stderr has no usage line:\n%s", r.stderr)
+	}
+	if r.stdout != "" {
+		t.Errorf("stdout = %q, want empty", r.stdout)
+	}
+	if after := snapshot(t, root); !reflect.DeepEqual(after, before) {
+		t.Errorf("tree changed:\nbefore %q\nafter  %q", before, after)
+	}
+}
+
+func TestDecideHelpDocumentsDecidedAt(t *testing.T) {
+	r := run(testEnv(t.TempDir()), "", "decide", "--help")
+	if r.code != 0 {
+		t.Fatalf("exit code = %d, want 0; stderr:\n%s", r.code, r.stderr)
+	}
+	if !strings.Contains(r.stdout, "--decided-at DATE") || !strings.Contains(r.stdout, "the date the decision took effect") {
+		t.Errorf("help does not document --decided-at:\n%s", r.stdout)
 	}
 }
 

@@ -85,6 +85,7 @@ TITLE.
                           --recommend-text)
 --key KEY                 the decision key, such as storage.engine
 --tag TAG                 a tag; repeat for several
+--ref REF                 a reference; repeat for several (opaque, kept in order)
 --context TEXT            why the question is asked
 --stdin                   read the context from standard input instead
 --by NAME                 who asks; default: $ADJ_ASKED_BY, else left blank
@@ -132,15 +133,15 @@ Every filter given must match. No match is not an error.
 
 ### `adj inbox [--json]`
 
-Lists the open questions, oldest first, each with its options and
+Lists the open questions, oldest first, each with its references, options and
 recommendation. An empty inbox prints nothing.
 
 ### `adj check QUERY [--json]`
 
 Asks whether QUERY has been decided, so an agent checks before it asks. QUERY
-is one substring, matched ignoring case against a record's title, key, tags and
-decision text; quote a query that has spaces. The first line of the output is
-the result:
+is one substring, matched ignoring case against a record's title, key, tags,
+references and decision text; quote a query that has spaces. Matching records
+show their references in text output. The first line of the output is the result:
 
 ```
 decided     a decided record matches

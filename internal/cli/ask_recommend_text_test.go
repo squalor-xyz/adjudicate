@@ -173,3 +173,25 @@ func TestDecideTextAfterRecommendText(t *testing.T) {
 		t.Errorf("recommendation after decide = %+v, want it kept", got)
 	}
 }
+
+// --ref (S27) and --recommend-text (S28) work together: the record keeps the
+// refs in order and the text recommendation, and inbox shows both.
+func TestAskRefWithRecommendText(t *testing.T) {
+	root := initRoot(t)
+	r := run(testEnv(root), "", "ask", "Where do logs go", "--ref", "S27", "--ref", "C167",
+		"--recommend-text", "Log to stderr", "--reasoning", "agents parse it")
+	if r.code != 0 || r.stdout != "1\n" || r.stderr != "" {
+		t.Fatalf("ask: exit %d, stdout %q, stderr %q; want exit 0 and the ID", r.code, r.stdout, r.stderr)
+	}
+	rec := records(t, root)[0]
+	if want := []string{"S27", "C167"}; !reflect.DeepEqual(rec.Refs, want) {
+		t.Errorf("refs = %q, want %q", rec.Refs, want)
+	}
+	if want := (&model.Recommendation{Text: "Log to stderr", Reasoning: "agents parse it"}); !reflect.DeepEqual(rec.Recommendation, want) {
+		t.Errorf("recommendation = %+v, want %+v", rec.Recommendation, want)
+	}
+	inbox := run(testEnv(root), "", "inbox")
+	if want := "  Refs: S27, C167\n"; !strings.Contains(inbox.stdout, want) || !strings.Contains(inbox.stdout, "  Recommendation: Log to stderr\n") {
+		t.Errorf("inbox =\n%s\nwant the refs and the text recommendation", inbox.stdout)
+	}
+}

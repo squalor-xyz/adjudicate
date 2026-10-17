@@ -199,9 +199,9 @@ empty, else `closed` if `closed` is not empty, else `not found`. So when records
 of several kinds match, the result is the first kind that has one, and the
 other arrays still list theirs.
 
-A query matches a record when its title, key, one of its tags or its `decision`
-contains the query, ignoring case. The whole query is one substring: it is not
-split into words. Options, context, rationale and body are not searched.
+A query matches a record when its title, key, one of its tags or refs, or its
+`decision` contains the query, ignoring case. The whole query is one substring:
+it is not split into words. Options, context, rationale and body are not searched.
 
 A matching superseded record is listed in `closed`. Its `superseded_by` is
 followed to the end of the chain, through superseded records. If the last
@@ -466,7 +466,7 @@ when it has a value. `id`, `title`, `status` and `created` are always present.
 | `asked_by` | string | who asked the question |
 | `decided_by` | string | who decided, rejected or withdrew the record |
 | `created` | string | the date the question was asked, `YYYY-MM-DD` |
-| `decided_at` | string | the date of the answer, `YYYY-MM-DD` |
+| `decided_at` | string | the effective date of the answer, `YYYY-MM-DD`; `adj decide --decided-at` may set an earlier date |
 | `context` | string | why the question is asked; may contain line breaks |
 | `options` | array of objects | the options; each has `label`, and `summary` and `tradeoffs` when set |
 | `recommendation` | object | either `label`, one of the option labels, or `text`, a free-text recommendation that is not an option (never both), and `reasoning` when set |
@@ -475,7 +475,7 @@ when it has a value. `id`, `title`, `status` and `created` are always present.
 | `consequences` | string | the consequences of the decision |
 | `supersedes` | array of integers | the IDs of the records this one replaces |
 | `superseded_by` | integer | the ID of the record that replaces this one |
-| `refs` | array of strings | references |
+| `refs` | array of strings | opaque references set with repeatable `adj ask --ref REF`, kept in order |
 | `history` | array of objects | the history, oldest first; each entry has `date`, `event`, and `note` when set |
 | `body` | string | the Markdown after the record's frontmatter, kept verbatim; present only when the record has a body |
 
@@ -485,4 +485,7 @@ of the two records: the note is `by N` on the record that is replaced and
 `supersedes N` on the one that replaces it. `adj renumber` writes one `renumber`
 entry on each record it gives a new ID; the note is `from N`, the old ID. Notes
 that name an ID are history: nothing rewrites them. Dates are `YYYY-MM-DD`
-strings, not timestamps.
+strings, not timestamps. A decide entry's date is the run date. If
+`adj decide --decided-at DATE` sets an earlier effective date, the decide
+entry's note is `backdated to DATE`, so the history still shows when the command
+ran. A date after the run date is refused.

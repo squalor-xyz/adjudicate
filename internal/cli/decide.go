@@ -13,15 +13,19 @@ import (
 	"github.com/squalor-xyz/adjudicate/internal/store"
 )
 
-const decideUsage = `usage: adj decide ID OPTION --why TEXT
-       adj decide ID --text TEXT --why TEXT
+const decideUsage = `usage: adj decide ID OPTION --why TEXT [--decided-at YYYY-MM-DD]
+       adj decide ID --text TEXT --why TEXT [--decided-at YYYY-MM-DD]
 
 Answer an open question: OPTION must be one of the record's option labels, or
 --text gives a free-text answer. The record becomes decided. Prints its ID.
+--decided-at sets the effective date; the history keeps the run date. Future
+dates are refused.
 
   --text TEXT    the answer as free text, instead of OPTION
   --why TEXT     the reason for the answer (required)
   --by NAME      who decided; default: $ADJ_DECIDED_BY, else left blank
+  --decided-at DATE
+                 the date the decision took effect; default: the run date
   --root DIR     the repo root; default: found from the working directory
                  upwards (the nearest .adjudicate.json)
 `
@@ -69,6 +73,7 @@ func (c *invocation) runDecide(args []string) int {
 	text := fs.String("text", "", "")
 	why := fs.String("why", "", "")
 	by := fs.String("by", "", "")
+	decidedAt := fs.String("decided-at", "", "")
 
 	pos, code, done := c.parse("decide", decideUsage, fs, args)
 	if done {
@@ -82,10 +87,12 @@ func (c *invocation) runDecide(args []string) int {
 		return c.usageError("decide", decideUsage, fmt.Errorf("want an ID and one OPTION, got %d arguments", len(pos)))
 	}
 	in := commands.DecideInput{
-		HasText:   fsSet(fs, "text"),
-		Text:      *text,
-		Why:       *why,
-		DecidedBy: *by,
+		HasText:      fsSet(fs, "text"),
+		Text:         *text,
+		Why:          *why,
+		DecidedBy:    *by,
+		DecidedAt:    *decidedAt,
+		HasDecidedAt: fsSet(fs, "decided-at"),
 	}
 	if len(pos) == 2 {
 		in.HasOption = true
@@ -94,8 +101,9 @@ func (c *invocation) runDecide(args []string) int {
 	if in.DecidedBy == "" {
 		in.DecidedBy = c.env.Getenv("ADJ_DECIDED_BY")
 	}
-	return c.answerRecord("decide", decideUsage, *root, in.Check(), func(st *store.Store) (model.Record, error) {
-		return commands.Decide(st, id, in, c.env.Now())
+	now := c.env.Now()
+	return c.answerRecord("decide", decideUsage, *root, in.CheckAt(now), func(st *store.Store) (model.Record, error) {
+		return commands.Decide(st, id, in, now)
 	})
 }
 
