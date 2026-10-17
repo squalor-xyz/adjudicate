@@ -1656,7 +1656,7 @@
       "id": "S31",
       "title": "Report the version with adj version",
       "short_title": "Report the version with adj version",
-      "status": "open",
+      "status": "done",
       "has_slice": true,
       "depends_on": [],
       "note_records": [
@@ -1666,6 +1666,28 @@
           "text": "**2026-10-17** — From S26: TestUnknownLeadingFlag in internal/cli/cli_test.go pins adj --version to exit 2. Replace that case when --version is added.",
           "created_at": "2026-10-17T13:04:48Z",
           "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "73dd6c53-bd7a-42eb-a702-e1325ae90f64",
+          "kind": "",
+          "text": "**2026-10-17** — VERDICT: FAIL - executed mutation evidence was missing for each new test; temporary mutations are now verified and restored.",
+          "created_at": "2026-10-17T14:04:15Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "d927807c-b33c-41b8-8539-27bd328814a6",
+          "kind": "",
+          "text": "**2026-10-17** — Reviewer gate FAIL: AGENTS.md lines 232-239 need the S31 version exceptions. Version accepts --root without a config, and --version is a valid leading standalone flag. Update project guidance to match behavior; no product-code defect found.",
+          "created_at": "2026-10-17T14:06:22Z",
+          "attempt": 2,
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
@@ -1694,7 +1716,7 @@
         "importance": 2,
         "urgency": 3,
         "effort": 1,
-        "attempts": 0
+        "attempts": 3
       }
     },
     {
@@ -1789,7 +1811,7 @@
   "goals": "adjudicate is a small CLI (`adj`) with a plain-text store that records project decisions as a loop: an agent asks, the owner decides in batches, and every later agent reads the decision. The goal and non-goal records below come from PROJECT.md; the owner's decisions on its open questions are catalog records C23-C33, and they override PROJECT.md where it differs (name, runtime, record format, license).",
   "non_goals": "",
   "catalog": {
-    "next_id": 177,
+    "next_id": 178,
     "id_prefix": "C",
     "id_width": 2,
     "records": [
@@ -3346,6 +3368,15 @@
         "kind": "decision",
         "title": "S29 labels a backdated decide history entry",
         "body": "When --decided-at differs from the run date, set the decide history note to backdated to YYYY-MM-DD so the run date remains visible beside the effective date.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C177",
+        "kind": "decision",
+        "title": "Local version output includes VCS revision",
+        "body": "When the module version is (devel), append the available VCS revision after it on the same output line so local builds identify both their development status and source revision.",
         "status": "active",
         "reason": "",
         "successor": ""

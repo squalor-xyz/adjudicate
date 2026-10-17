@@ -283,7 +283,6 @@ func TestUnknownLeadingFlag(t *testing.T) {
 	}{
 		{"--json", []string{"--json", "list"}},
 		{"--status", []string{"--status", "open", "list"}},
-		{"--version", []string{"--version"}},
 		{"-v", []string{"-v", "list"}},
 		{"unknown after --root", []string{"--root", root, "--json", "list"}},
 		{"unknown before --root", []string{"--json", "--root", root, "list"}},
