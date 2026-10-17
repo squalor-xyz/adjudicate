@@ -1,0 +1,41 @@
+{
+  "id": "S26",
+  "title": "Accept --root before the subcommand",
+  "lead": [
+    "`adj --root DIR list` exits 2 with \"unknown command\"; only `adj list --root DIR`\nworks. Agents and the owner trip on it."
+  ],
+  "depends_note": null,
+  "findings_note": "S17 dogfood friction (7), note on S20; C165",
+  "size": "S",
+  "flags": [],
+  "trees_note": "cli",
+  "trees_plural": false,
+  "boundary": "**Not in this slice:**",
+  "sections": [
+    {
+      "heading": "Why",
+      "body": "S17 dogfood friction item 7. The release (C165) fixes it before 0.1.0."
+    },
+    {
+      "heading": "Files",
+      "body": "- `internal/cli/cli.go`: before dispatch, take a leading `--root DIR` / `--root=DIR` and pass it to the command as if it followed the subcommand.\n- `internal/cli/cli_test.go`: tests.\n- `README.md`, `internal/commands/ai.md` (if they say flags must follow the command)."
+    },
+    {
+      "heading": "Failing tests",
+      "body": "- `TestRootBeforeCommand`: `adj --root DIR list`, `adj --root=DIR inbox --json` and `adj --root DIR ask ...` behave exactly like the same flags after the command (same stdout, stderr and exit code) against a temp store.\n- `TestRootTwice`: `--root` both before and after the command is a usage error (exit 2) naming both, unless the implementer records another rule in the catalog.\n- `TestUnknownLeadingFlag`: any other flag before the command still exits 2 with usage."
+    },
+    {
+      "heading": "Implement",
+      "body": "- Only `--root` (and the existing `--help`/`-h`) is accepted before the command. Do not add other global flags here; `--version` is S31's.\n- The exact rule for `--root` given twice is the implementer's call, recorded per C32."
+    },
+    {
+      "heading": "Check",
+      "body": "- `. scripts/env.sh && go test ./... && go vet ./... && test -z \"$(gofmt -l cmd internal)\"` passes."
+    },
+    {
+      "heading": "Git",
+      "body": "Worktree `.worktrees/s26` on branch `s26`. Commit and land on local main when\nthe owner asks; no AI attribution."
+    }
+  ],
+  "notes": []
+}

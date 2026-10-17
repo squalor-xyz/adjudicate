@@ -1,0 +1,41 @@
+{
+  "id": "S33",
+  "title": "Release 0.1.0",
+  "lead": [
+    "Check the v1 acceptance criteria once more on the final tree, record the\nrelease decisions in the dogfood store, and tag v0.1.0."
+  ],
+  "depends_note": null,
+  "findings_note": "C165",
+  "size": "S",
+  "flags": [],
+  "trees_note": "release",
+  "trees_plural": false,
+  "boundary": "**Not in this slice:**",
+  "sections": [
+    {
+      "heading": "Why",
+      "body": "C165: 0.1.0 is an annotated tag on local main, with no remote and no push."
+    },
+    {
+      "heading": "Files",
+      "body": "- `decisions/`: records for C165-C169, asked with adj. The owner runs `adj decide` (or delegates it, noted as in S17).\n- `CHANGELOG.md`: the final date."
+    },
+    {
+      "heading": "Failing tests",
+      "body": "- None new. The full suite, including `cmd/adj/roundtrip_test.go`, passes on the final tree."
+    },
+    {
+      "heading": "Implement",
+      "body": "- Build with `-ldflags -X` set to `v0.1.0` and check that `adj --version` prints it.\n- Run `adj lint` on `decisions/`; it reports no findings.\n- This slice pauses for the owner to run or delegate `adj decide`.\n- The outer session creates the annotated tag `v0.1.0` on local main after landing, when the owner asks. It never pushes."
+    },
+    {
+      "heading": "Check",
+      "body": "- `. scripts/env.sh && go test ./... && go vet ./... && test -z \"$(gofmt -l cmd internal)\"` passes.\n- `git tag -l v0.1.0` lists the tag, and `git remote` prints nothing."
+    },
+    {
+      "heading": "Git",
+      "body": "Worktree `.worktrees/s33` on branch `s33`. Commit and land on local main when\nthe owner asks; no AI attribution. Tag `v0.1.0` after landing, when the owner asks; never push."
+    }
+  ],
+  "notes": []
+}

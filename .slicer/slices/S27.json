@@ -1,0 +1,41 @@
+{
+  "id": "S27",
+  "title": "Set refs with ask --ref",
+  "lead": [
+    "The record schema has a `refs` field (`internal/model/record.go`), but no\ncommand sets it, so a slicer catalog ID like C23 lives only in free text and a\nlowercase tag."
+  ],
+  "depends_note": null,
+  "findings_note": "S17 dogfood friction (1), note on S20; C165",
+  "size": "S",
+  "flags": [],
+  "trees_note": "cli, commands",
+  "trees_plural": true,
+  "boundary": "**Not in this slice:**",
+  "sections": [
+    {
+      "heading": "Why",
+      "body": "S17 dogfood friction item 1. Structured refs let an agent link a decision to a\nslice or catalog ID without abusing tags (C12: link by ID, no dependency)."
+    },
+    {
+      "heading": "Files",
+      "body": "- `internal/cli/ask.go`, `internal/commands/ask.go`: a repeatable `--ref REF` flag.\n- `internal/render/*`: show refs in `show`, and in `check` and `inbox` if the implementer finds them useful there (recorded per C32).\n- `internal/query/search.go`: decide (per C32) whether `check` matches refs, and record it.\n- `docs/json.md`: refs already exist in the record keys; confirm the docs say how they are set.\n- Tests next to each changed file."
+    },
+    {
+      "heading": "Failing tests",
+      "body": "- `TestAskRef`: `adj ask ... --ref C23 --ref S20` writes `refs: [\"C23\",\"S20\"]` in that order; `show` and `show --json` print them.\n- `TestAskRefBlank`: a blank `--ref` is a usage error.\n- The round-trip test in `cmd/adj/roundtrip_test.go` asks with a `--ref` and sees it in `show --json`."
+    },
+    {
+      "heading": "Implement",
+      "body": "- Refs are opaque strings: no validation against slicer, no network or file lookups (C12, C10)."
+    },
+    {
+      "heading": "Check",
+      "body": "- `. scripts/env.sh && go test ./... && go vet ./... && test -z \"$(gofmt -l cmd internal)\"` passes."
+    },
+    {
+      "heading": "Git",
+      "body": "Worktree `.worktrees/s27` on branch `s27`. Commit and land on local main when\nthe owner asks; no AI attribution."
+    }
+  ],
+  "notes": []
+}

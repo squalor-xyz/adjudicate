@@ -2,7 +2,7 @@
   "version": 9,
   "id_prefix": "S",
   "id_width": 2,
-  "next_id": 26,
+  "next_id": 34,
   "preamble": "Roadmap for **adjudicate** (CLI command `adj`; formerly the working name \"dlog\"): a Go, standard-library-only CLI that records project decisions as plain files in the repo. Owner decisions from 2026-10-15 are catalog records C23-C33.",
   "passes": [],
   "items": [
@@ -1152,6 +1152,17 @@
           "verified_by": "",
           "verified_at": "",
           "stale_after": ""
+        },
+        {
+          "id": "f3764e80-0112-4c02-894d-557b3184bc56",
+          "kind": "",
+          "text": "**2026-10-17** — 2026-10-17 release review: friction items 1, 4, 5, 6 and 7 above moved to S27, S28, S29, S30 and S26 for 0.1.0 (owner decisions C166-C168). Items 2 (tag case) and 3 (keys in the dogfood store) stay here as conventions.",
+          "created_at": "2026-10-17T12:49:43Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
         }
       ],
       "claim": null,
@@ -1424,13 +1435,300 @@
         "effort": 2,
         "attempts": 1
       }
+    },
+    {
+      "id": "S26",
+      "title": "Accept --root before the subcommand",
+      "short_title": "Accept --root before the subcommand",
+      "status": "open",
+      "has_slice": true,
+      "depends_on": [],
+      "note_records": [],
+      "claim": null,
+      "fields": {
+        "size": "S",
+        "flags": [],
+        "trees": [
+          "cli"
+        ],
+        "trees_literal": false,
+        "findings": "S17 dogfood friction (7), note on S20; C165",
+        "discovered_from": "",
+        "parent": "",
+        "cites": [
+          "C165"
+        ],
+        "key": "",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 2,
+        "urgency": 3,
+        "effort": 1,
+        "attempts": 0
+      }
+    },
+    {
+      "id": "S27",
+      "title": "Set refs with ask --ref",
+      "short_title": "Set refs with ask --ref",
+      "status": "open",
+      "has_slice": true,
+      "depends_on": [],
+      "note_records": [],
+      "claim": null,
+      "fields": {
+        "size": "S",
+        "flags": [],
+        "trees": [
+          "cli",
+          "commands"
+        ],
+        "trees_literal": false,
+        "findings": "S17 dogfood friction (1), note on S20; C165",
+        "discovered_from": "",
+        "parent": "",
+        "cites": [
+          "C165",
+          "C12"
+        ],
+        "key": "",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 2,
+        "urgency": 3,
+        "effort": 1,
+        "attempts": 0
+      }
+    },
+    {
+      "id": "S28",
+      "title": "Free-text recommendation with ask --recommend-text",
+      "short_title": "Free-text recommendation with ask --recommend-text",
+      "status": "open",
+      "has_slice": true,
+      "depends_on": [],
+      "note_records": [],
+      "claim": null,
+      "fields": {
+        "size": "M",
+        "flags": [],
+        "trees": [
+          "model",
+          "cli",
+          "commands",
+          "render",
+          "lint"
+        ],
+        "trees_literal": false,
+        "findings": "S17 dogfood friction (4), note on S20; C167",
+        "discovered_from": "",
+        "parent": "",
+        "cites": [
+          "C165",
+          "C167",
+          "C163"
+        ],
+        "key": "",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 2,
+        "urgency": 3,
+        "effort": 2,
+        "attempts": 0
+      }
+    },
+    {
+      "id": "S29",
+      "title": "Backdate a decision with decide --decided-at",
+      "short_title": "Backdate a decision with decide --decided-at",
+      "status": "open",
+      "has_slice": true,
+      "depends_on": [],
+      "note_records": [],
+      "claim": null,
+      "fields": {
+        "size": "S",
+        "flags": [],
+        "trees": [
+          "cli",
+          "commands",
+          "model"
+        ],
+        "trees_literal": false,
+        "findings": "S17 dogfood friction (5), note on S20; C168",
+        "discovered_from": "",
+        "parent": "",
+        "cites": [
+          "C165",
+          "C168"
+        ],
+        "key": "",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 2,
+        "urgency": 3,
+        "effort": 1,
+        "attempts": 0
+      }
+    },
+    {
+      "id": "S30",
+      "title": "Correct a record's text with adj amend",
+      "short_title": "Correct a record's text with adj amend",
+      "status": "open",
+      "has_slice": true,
+      "depends_on": [
+        "S28"
+      ],
+      "note_records": [],
+      "claim": null,
+      "fields": {
+        "size": "M",
+        "flags": [],
+        "trees": [
+          "model",
+          "cli",
+          "commands",
+          "store",
+          "lint"
+        ],
+        "trees_literal": false,
+        "findings": "S17 dogfood friction (6), note on S20; C166",
+        "discovered_from": "",
+        "parent": "",
+        "cites": [
+          "C165",
+          "C166",
+          "C163"
+        ],
+        "key": "",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 2,
+        "urgency": 3,
+        "effort": 2,
+        "attempts": 0
+      }
+    },
+    {
+      "id": "S31",
+      "title": "Report the version with adj version",
+      "short_title": "Report the version with adj version",
+      "status": "open",
+      "has_slice": true,
+      "depends_on": [],
+      "note_records": [],
+      "claim": null,
+      "fields": {
+        "size": "S",
+        "flags": [],
+        "trees": [
+          "cli"
+        ],
+        "trees_literal": false,
+        "findings": "release prep; C169",
+        "discovered_from": "",
+        "parent": "",
+        "cites": [
+          "C165",
+          "C169"
+        ],
+        "key": "",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 2,
+        "urgency": 3,
+        "effort": 1,
+        "attempts": 0
+      }
+    },
+    {
+      "id": "S32",
+      "title": "Release docs: PROJECT.md, CHANGELOG and JSON stability",
+      "short_title": "Release docs: PROJECT.md, CHANGELOG and JSON stability",
+      "status": "open",
+      "has_slice": true,
+      "depends_on": [
+        "S26",
+        "S27",
+        "S28",
+        "S29",
+        "S30",
+        "S31"
+      ],
+      "note_records": [],
+      "claim": null,
+      "fields": {
+        "size": "S",
+        "flags": [],
+        "trees": [
+          "docs"
+        ],
+        "trees_literal": false,
+        "findings": "release prep; C165",
+        "discovered_from": "",
+        "parent": "",
+        "cites": [
+          "C165",
+          "C31"
+        ],
+        "key": "",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 2,
+        "urgency": 3,
+        "effort": 1,
+        "attempts": 0
+      }
+    },
+    {
+      "id": "S33",
+      "title": "Release 0.1.0",
+      "short_title": "Release 0.1.0",
+      "status": "open",
+      "has_slice": true,
+      "depends_on": [
+        "S32"
+      ],
+      "note_records": [],
+      "claim": null,
+      "fields": {
+        "size": "S",
+        "flags": [],
+        "trees": [
+          "release"
+        ],
+        "trees_literal": false,
+        "findings": "C165",
+        "discovered_from": "",
+        "parent": "",
+        "cites": [
+          "C165",
+          "C27"
+        ],
+        "key": "",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 3,
+        "urgency": 3,
+        "effort": 1,
+        "attempts": 0
+      }
     }
   ],
   "epilogue": "",
   "goals": "adjudicate is a small CLI (`adj`) with a plain-text store that records project decisions as a loop: an agent asks, the owner decides in batches, and every later agent reads the decision. The goal and non-goal records below come from PROJECT.md; the owner's decisions on its open questions are catalog records C23-C33, and they override PROJECT.md where it differs (name, runtime, record format, license).",
   "non_goals": "",
   "catalog": {
-    "next_id": 165,
+    "next_id": 170,
     "id_prefix": "C",
     "id_width": 2,
     "records": [
@@ -2906,6 +3204,51 @@
         "kind": "decision",
         "title": "S25 the ID lock opens an existing read-only .adj.lock read-only when the read-write open fails with EACCES",
         "body": "Implementer decision (C32), refining C114. flock needs no write access, so a lock file that exists but cannot be opened for writing (checked out of git by another user, chmod 444) must not stop every ask. acquire opens O_RDWR|O_CREATE as before; only on EACCES it opens the same path O_RDONLY (without O_CREATE, so only a file that exists) and flocks that. If the file is missing (a read-only directory) or the read-only open fails too, the error of the first open stands, so behaviour is as before; every other error is unchanged. The lock file is never written, so its mode and content stay. The lock still excludes: a second writer finds it held.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C165",
+        "kind": "decision",
+        "title": "Release 0.1.0: an annotated v0.1.0 tag on local main; no remote, no push",
+        "body": "Owner decision 2026-10-17. adjudicate ships 0.1.0 once S26-S33 land. The release is an annotated git tag v0.1.0 on local main with a CHANGELOG.md entry. Publishing (creating a remote, pushing, go install from a module path) is a separate later step and needs the owner. The Later items S18-S22 stay later, after 0.1.0. Before the release: global flags before the subcommand, ask --ref, a free-text recommendation, decide --decided-at, adj amend, adj version, and PROJECT.md rewritten to match what shipped.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C166",
+        "kind": "decision",
+        "title": "adj amend changes text fields only and records the old text in history",
+        "body": "Owner decision 2026-10-17. adj amend ID changes title, context, option tradeoffs, option summaries and rationale on a record of any status. It never changes status, the chosen option or decision, decided_by, asked_by, dates, ID, links, key or tags. Each amend appends a dated history entry (a new event) that keeps the old text of every changed field, so the record shows what it said before. Flag names and the history note format are the implementer's call (C32).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C167",
+        "kind": "decision",
+        "title": "A free-text recommendation: ask --recommend-text",
+        "body": "Owner decision 2026-10-17. ask --recommend-text TEXT records a recommendation that is not one of the options (it has no option label). inbox, show and check display it, and the owner accepts it with decide ID --text as today. --recommend and --recommend-text are exclusive. The JSON shape gets a documented field for it (docs/json.md). The field name and storage are the implementer's call (C32).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C168",
+        "kind": "decision",
+        "title": "decide --decided-at DATE backdates a decision and keeps the run date in history",
+        "body": "Owner decision 2026-10-17. adj decide takes --decided-at YYYY-MM-DD. decided_at is set to the given date. The history entry keeps the real run date, so backdating stays visible. A date after the run date is refused with a usage error. Other validation (for example a date before the record's created date) is the implementer's call (C32).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C169",
+        "kind": "decision",
+        "title": "adj version and --version report the version from build info, with an ldflags override",
+        "body": "Owner decision 2026-10-17. adj version and adj --version print the version. It comes from runtime/debug.ReadBuildInfo (the module version when the binary is built by go install module@version), and a package variable set with -ldflags -X overrides it for local release builds. A plain local build prints (devel) or the VCS revision the build info carries. Standard library only.",
         "status": "active",
         "reason": "",
         "successor": ""

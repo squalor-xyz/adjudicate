@@ -1,0 +1,41 @@
+{
+  "id": "S28",
+  "title": "Free-text recommendation with ask --recommend-text",
+  "lead": [
+    "`adj ask` can recommend only one of the option labels (docs/json.md: the\nrecommendation `label` is one of the option labels). During S17, C26 had to\ngain a fourth option just to carry its recommendation."
+  ],
+  "depends_note": null,
+  "findings_note": "S17 dogfood friction (4), note on S20; C167",
+  "size": "M",
+  "flags": [],
+  "trees_note": "model, cli, commands, render, lint",
+  "trees_plural": true,
+  "boundary": "**Not in this slice:**",
+  "sections": [
+    {
+      "heading": "Why",
+      "body": "S17 dogfood friction item 4. The owner chose `--recommend-text` (C167)."
+    },
+    {
+      "heading": "Files",
+      "body": "- `internal/model/record.go`: store a recommendation with no option label (the field name is the implementer's call); Validate accepts it and still rejects a label that is not an option.\n- `internal/cli/ask.go`, `internal/commands/ask.go`: `--recommend-text TEXT`, exclusive with `--recommend`; `--reasoning` works with either.\n- `internal/render/*`: `inbox`, `show` and `check` display it.\n- `internal/lint/lint.go`: no finding for a free-text recommendation; the existing finding for a label that is not an option stays.\n- `docs/json.md`: the new field in `Keys of a record` and in the inbox/show examples.\n- Tests next to each changed file; a lint fixture under `internal/lint/testdata`."
+    },
+    {
+      "heading": "Failing tests",
+      "body": "- `TestAskRecommendText`: the record stores the text with no label; `show`, `inbox` and their `--json` forms display it.\n- `TestAskRecommendExclusive`: `--recommend` together with `--recommend-text` is a usage error.\n- `TestDecideTextAfterRecommendText`: `decide ID --text ... --why ...` accepts it, as today.\n- A model test: Validate accepts a text-only recommendation and still rejects an unknown label.\n- `TestJSONShape` (`internal/cli/jsonshape_test.go`) covers the new field."
+    },
+    {
+      "heading": "Implement",
+      "body": "- An existing record without the new field reads and writes byte for byte as before (run the store and file tests over the current fixtures).\n- Keep store.IsStaleCopy (C163) comparing the recommendation as a whole, including the new field."
+    },
+    {
+      "heading": "Check",
+      "body": "- `. scripts/env.sh && go test ./... && go vet ./... && test -z \"$(gofmt -l cmd internal)\"` passes.\n- `adj lint` on a copy of `decisions/` reports nothing new."
+    },
+    {
+      "heading": "Git",
+      "body": "Worktree `.worktrees/s28` on branch `s28`. Commit and land on local main when\nthe owner asks; no AI attribution."
+    }
+  ],
+  "notes": []
+}

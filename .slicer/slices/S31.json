@@ -1,0 +1,41 @@
+{
+  "id": "S31",
+  "title": "Report the version with adj version",
+  "lead": [
+    "`adj` cannot say which version it is."
+  ],
+  "depends_note": null,
+  "findings_note": "release prep; C169",
+  "size": "S",
+  "flags": [],
+  "trees_note": "cli",
+  "trees_plural": false,
+  "boundary": "**Not in this slice:**",
+  "sections": [
+    {
+      "heading": "Why",
+      "body": "A release needs a version the binary reports (C165, C169)."
+    },
+    {
+      "heading": "Files",
+      "body": "- `internal/cli/version.go` (new): `adj version` and `adj --version`.\n- `internal/cli/cli.go`: dispatch and the usage text.\n- `README.md`: how to build with the version set (`-ldflags -X`).\n- `internal/cli/version_test.go`."
+    },
+    {
+      "heading": "Failing tests",
+      "body": "- `TestVersionLdflags`: with the override variable set (in the test), `adj version` and `adj --version` print it and exit 0.\n- `TestVersionBuildInfo`: with no override, the output comes from runtime/debug.ReadBuildInfo through a seam the test can replace: a module version prints as is, and `(devel)` prints with the VCS revision when the build info has one.\n- `TestVersionArgs`: extra arguments are a usage error.\n- The round-trip test builds with `-ldflags -X ...=v0.0.0-test` and checks `adj --version`."
+    },
+    {
+      "heading": "Implement",
+      "body": "- Standard library only (C169). One output line, so scripts can read it."
+    },
+    {
+      "heading": "Check",
+      "body": "- `. scripts/env.sh && go test ./... && go vet ./... && test -z \"$(gofmt -l cmd internal)\"` passes."
+    },
+    {
+      "heading": "Git",
+      "body": "Worktree `.worktrees/s31` on branch `s31`. Commit and land on local main when\nthe owner asks; no AI attribution."
+    }
+  ],
+  "notes": []
+}

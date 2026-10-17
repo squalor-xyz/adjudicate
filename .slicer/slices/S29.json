@@ -1,0 +1,41 @@
+{
+  "id": "S29",
+  "title": "Backdate a decision with decide --decided-at",
+  "lead": [
+    "`decided_at` is always the run date, so a decision made earlier (the S17\ndogfood recorded C23-C32 days after they were made) cannot carry its real date."
+  ],
+  "depends_note": null,
+  "findings_note": "S17 dogfood friction (5), note on S20; C168",
+  "size": "S",
+  "flags": [],
+  "trees_note": "cli, commands, model",
+  "trees_plural": true,
+  "boundary": "**Not in this slice:**",
+  "sections": [
+    {
+      "heading": "Why",
+      "body": "S17 dogfood friction item 5. The owner chose the rules in C168."
+    },
+    {
+      "heading": "Files",
+      "body": "- `internal/cli/decide.go`, `internal/commands/decide.go`: `--decided-at YYYY-MM-DD`.\n- `internal/model/transition.go`: the decide transition takes the decided date apart from the run date.\n- `docs/json.md` and the `decide --help` text.\n- Tests next to each changed file."
+    },
+    {
+      "heading": "Failing tests",
+      "body": "- `TestDecideDecidedAt`: with `--decided-at 2026-10-01` and the clock at 2026-10-16, `decided_at` is 2026-10-01 and the decide history entry's date is 2026-10-16; the history note (or a field, per C32) says that it was backdated.\n- `TestDecideDecidedAtFuture`: a date after the run date is a usage error, and the store is unchanged.\n- `TestDecideDecidedAtBadDate`: a value that is not a YYYY-MM-DD date is a usage error.\n- Without the flag, behaviour and output are unchanged (the existing decide tests pass untouched)."
+    },
+    {
+      "heading": "Implement",
+      "body": "- Use the Env clock (`cli.Env.Now`), never `time.Now` directly, so tests stay deterministic.\n- Whether reject, withdraw and supersede get the flag is out of this slice (C168 names decide only)."
+    },
+    {
+      "heading": "Check",
+      "body": "- `. scripts/env.sh && go test ./... && go vet ./... && test -z \"$(gofmt -l cmd internal)\"` passes."
+    },
+    {
+      "heading": "Git",
+      "body": "Worktree `.worktrees/s29` on branch `s29`. Commit and land on local main when\nthe owner asks; no AI attribution."
+    }
+  ],
+  "notes": []
+}

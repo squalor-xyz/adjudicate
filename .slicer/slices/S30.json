@@ -1,0 +1,41 @@
+{
+  "id": "S30",
+  "title": "Correct a record's text with adj amend",
+  "lead": [
+    "There is no way to fix a typo or a slightly wrong text in a record except\nreject, withdraw or supersede. On S17, adj #2 (C24) keeps tradeoffs text that\nrepeats the recommendation."
+  ],
+  "depends_note": null,
+  "findings_note": "S17 dogfood friction (6), note on S20; C166",
+  "size": "M",
+  "flags": [],
+  "trees_note": "model, cli, commands, store, lint",
+  "trees_plural": true,
+  "boundary": "**Not in this slice:**",
+  "sections": [
+    {
+      "heading": "Why",
+      "body": "S17 dogfood friction item 6. The owner chose its scope in C166."
+    },
+    {
+      "heading": "Files",
+      "body": "- `internal/model/record.go`, `internal/model/transition.go`: a new history event for amend, and an Amend transition that changes only the C166 fields and records their old text.\n- `internal/cli/amend.go`, `internal/commands/amend.go` (new): `adj amend ID` with flags for each field (names per C32); the usage text in `internal/cli/cli.go`.\n- `internal/store/renumber.go`: store.IsStaleCopy (C163) treats title, context, options and recommendation as fields \"only adj ask sets\". After amend that is no longer true, so the edited-since rule must allow amend entries after the renumber entry the same way it allows decide and supersede, without letting a keeper be flagged as a stale copy.\n- `internal/lint/lint.go`: the new event is valid.\n- `internal/commands/ai.md`, `docs/json.md`: the new command and the new history event.\n- Tests next to each changed file; extend the renumber and stale-copy tests in `internal/store`."
+    },
+    {
+      "heading": "Failing tests",
+      "body": "- `TestAmendTitle`, `TestAmendContext`, `TestAmendOptionSummary`, `TestAmendTradeoffs`, `TestAmendRationale`: each changes only that field, on an open and on a decided record, and appends one history entry dated by the clock that holds the old text.\n- `TestAmendRefusesOtherFields`: there is no flag for status, decision, decided_by, IDs, links, key or tags, and amending an option label (as opposed to its summary) is refused.\n- `TestAmendNoChange`: an amend that changes nothing is an error, and nothing is written.\n- `TestAmendRationaleOnOpen`: amending the rationale of an open record (it has none) is refused.\n- `TestStaleCopyAfterAmend` (store): a moved record amended after a crash is still recognised as the moved copy, and a keeper is still not flagged (both C163 cases)."
+    },
+    {
+      "heading": "Implement",
+      "body": "- One history entry per amend, whatever the number of fields changed.\n- The old text must survive the file format: multi-line context and rationale round-trip through ReadFile and WriteFile."
+    },
+    {
+      "heading": "Check",
+      "body": "- `. scripts/env.sh && go test ./... && go vet ./... && test -z \"$(gofmt -l cmd internal)\"` passes.\n- `adj lint` on a copy of `decisions/` reports nothing new."
+    },
+    {
+      "heading": "Git",
+      "body": "Worktree `.worktrees/s30` on branch `s30`. Commit and land on local main when\nthe owner asks; no AI attribution."
+    }
+  ],
+  "notes": []
+}

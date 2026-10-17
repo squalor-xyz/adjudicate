@@ -461,3 +461,27 @@
 {"when": "2026-10-16T03:36:32Z", "item": "S20", "action": "note", "from": "", "to": "", "note": "**2026-10-16** — From S17 dogfood review (adj store C23-C32 ", "by": "Jon R"}
 {"when": "2026-10-16T03:36:32Z", "item": "S20", "action": "note", "from": "", "to": "", "note": "**2026-10-16** — Owner question from S17: decisions/.adj.loc", "by": "Jon R"}
 {"when": "2026-10-16T03:36:32Z", "item": "S21", "action": "note", "from": "", "to": "", "note": "**2026-10-16** — From S17: the ten decisions C23-C32 were de", "by": "Jon R"}
+{"when": "2026-10-17T12:47:57Z", "item": "C165", "action": "catalog", "from": "", "to": "Release 0.1.0: an annotated v0.1.0 tag on local main; no remote, no push", "note": "add"}
+{"when": "2026-10-17T12:47:57Z", "item": "C166", "action": "catalog", "from": "", "to": "adj amend changes text fields only and records the old text in history", "note": "add"}
+{"when": "2026-10-17T12:47:58Z", "item": "C167", "action": "catalog", "from": "", "to": "A free-text recommendation: ask --recommend-text", "note": "add"}
+{"when": "2026-10-17T12:48:00Z", "item": "C168", "action": "catalog", "from": "", "to": "decide --decided-at DATE backdates a decision and keeps the run date in history", "note": "add"}
+{"when": "2026-10-17T12:48:01Z", "item": "C169", "action": "catalog", "from": "", "to": "adj version and --version report the version from build info, with an ldflags override", "note": "add"}
+{"when": "2026-10-17T12:48:09Z", "item": "C168", "action": "catalog", "from": "", "to": "body", "note": "edit"}
+{"when": "2026-10-17T12:48:16Z", "item": "C168", "action": "catalog", "from": "", "to": "body", "note": "edit"}
+{"when": "2026-10-17T12:49:30Z", "item": "S26", "action": "add", "from": "", "to": "open", "note": "Accept --root before the subcommand"}
+{"when": "2026-10-17T12:49:30Z", "item": "S27", "action": "add", "from": "", "to": "open", "note": "Set refs with ask --ref"}
+{"when": "2026-10-17T12:49:30Z", "item": "S28", "action": "add", "from": "", "to": "open", "note": "Free-text recommendation with ask --recommend-text"}
+{"when": "2026-10-17T12:49:30Z", "item": "S29", "action": "add", "from": "", "to": "open", "note": "Backdate a decision with decide --decided-at"}
+{"when": "2026-10-17T12:49:30Z", "item": "S30", "action": "add", "from": "", "to": "open", "note": "Correct a record's text with adj amend"}
+{"when": "2026-10-17T12:49:30Z", "item": "S31", "action": "add", "from": "", "to": "open", "note": "Report the version with adj version"}
+{"when": "2026-10-17T12:49:30Z", "item": "S32", "action": "add", "from": "", "to": "open", "note": "Release docs: PROJECT.md, CHANGELOG and JSON stability"}
+{"when": "2026-10-17T12:49:30Z", "item": "S33", "action": "add", "from": "", "to": "open", "note": "Release 0.1.0"}
+{"when": "2026-10-17T12:49:38Z", "item": "S26", "action": "cite", "from": "", "to": "C165", "note": ""}
+{"when": "2026-10-17T12:49:39Z", "item": "S27", "action": "cite", "from": "", "to": "C165,C12", "note": ""}
+{"when": "2026-10-17T12:49:39Z", "item": "S28", "action": "cite", "from": "", "to": "C165,C167,C163", "note": ""}
+{"when": "2026-10-17T12:49:40Z", "item": "S29", "action": "cite", "from": "", "to": "C165,C168", "note": ""}
+{"when": "2026-10-17T12:49:40Z", "item": "S30", "action": "cite", "from": "", "to": "C165,C166,C163", "note": ""}
+{"when": "2026-10-17T12:49:41Z", "item": "S31", "action": "cite", "from": "", "to": "C165,C169", "note": ""}
+{"when": "2026-10-17T12:49:42Z", "item": "S32", "action": "cite", "from": "", "to": "C165,C31", "note": ""}
+{"when": "2026-10-17T12:49:42Z", "item": "S33", "action": "cite", "from": "", "to": "C165,C27", "note": ""}
+{"when": "2026-10-17T12:49:43Z", "item": "S20", "action": "note", "from": "", "to": "", "note": "2026-10-17 release review: friction items 1, 4, 5, 6 and 7 a", "by": "Jon R"}
