@@ -51,7 +51,8 @@ Commands:
   adj ai        print an AGENTS.md snippet that tells agents how to use adj
 
 Run adj <command> --help for a command's flags. --root DIR may come before the
-command or after it, but not both; it is the only flag accepted before it.
+command or after it, but not both. The only other flags accepted before the
+command are --help and -h; adj --version prints the version.
 `
 
 // Env is what Run takes from the process. Tests replace it; the zero value

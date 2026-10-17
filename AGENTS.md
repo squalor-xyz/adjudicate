@@ -10,8 +10,9 @@ library only.
   recorded under the C32 standing rule, override PROJECT.md where they differ:
   name `adjudicate` with CLI `adj`; module `github.com/squalor-xyz/adjudicate`;
   Go with the standard library only; one Markdown file per record with JSON
-  frontmatter; sequential IDs; GPL-3.0-or-later. PROJECT.md still describes the
-  earlier Python/TOML draft under the name dlog; read it as background.
+  frontmatter; sequential IDs; GPL-3.0-or-later. PROJECT.md was rewritten for
+  0.1.0 (C165) to describe the shipped tool and cites those decisions; keep it
+  in step when a command, a flag or the record format changes.
 - `LICENSE` is the full GPL-3.0 text, unmodified; `NOTICE` holds the
   copyright line (Squalor LLC) and the "or any later version" notice (C31,
   C131). Each Go file starts with
@@ -52,6 +53,8 @@ library only.
   the JSON shapes are in `docs/json.md`, and `internal/cli/jsonshape_test.go`
   pins each read command's `--json` keys to it.
 - `README.md`: what adjudicate is, how to build it and use each command.
+  `PROJECT.md`: goals, non-goals, data model, commands, acceptance criteria
+  and Later items. `CHANGELOG.md`: release notes.
 - `scripts/env.sh`: Go cache and temp setup (see below).
 
 Exit codes for every command: 0 success; 1 a failed operation or failed check;
@@ -80,17 +83,23 @@ below). `adj lint` exits 1 when it finds an error (see its entry).
   "Store and config"): an `ask` that cannot get the lock within 5 seconds exits
   1 with an error that names `.adj.lock` and creates no record.
 - `adj decide ID OPTION --why TEXT`, or `adj decide ID --text TEXT --why TEXT`,
-  `[--by NAME] [--root DIR]`: moves an `open` record to `decided`. OPTION
-  (trimmed) must be one of the record's option labels; `decision` is that
-  label, or the `--text` answer. `rationale` is the `--why` text, and
-  `decided_at` and one `decide` history entry are dated now. `adj reject ID
-  --why TEXT` and `adj withdraw ID --why TEXT` move an `open` record to
-  `rejected` or `withdrawn` the same way, with no decision. `decided_by` is
-  `--by`, else `$ADJ_DECIDED_BY`, else blank (C27). `--why` and `--text` are
-  kept as typed but must not be blank. All three print the record's ID. A bad
-  argument exits 2, including an OPTION the record does not offer while the
-  record is open. An unknown ID, or a record that is not `open` (checked before
-  OPTION), exits 1 and changes nothing; its message names the status.
+  `[--by NAME] [--decided-at YYYY-MM-DD] [--root DIR]`: moves an `open` record
+  to `decided`. OPTION (trimmed) must be one of the record's option labels;
+  `decision` is that label, or the `--text` answer. `rationale` is the `--why`
+  text, and `decided_at` and one `decide` history entry are dated now.
+  `--decided-at DATE` (C168) dates `decided_at` DATE instead, to record a
+  decision made earlier; the history entry keeps the run date, and its note is
+  `backdated to DATE` when DATE is not the run date (C176). DATE may be before
+  `created` (C175). A DATE that is not a valid `YYYY-MM-DD` date (a blank value
+  too) or is after the run date exits 2, before any store access. Only `decide`
+  takes it. `adj reject ID --why TEXT` and `adj withdraw ID --why TEXT` move an
+  `open` record to `rejected` or `withdrawn` the same way, with no decision.
+  `decided_by` is `--by`, else `$ADJ_DECIDED_BY`, else blank (C27). `--why` and
+  `--text` are kept as typed but must not be blank. All three print the
+  record's ID. A bad argument exits 2, including an OPTION the record does not
+  offer while the record is open. An unknown ID, or a record that is not `open`
+  (checked before OPTION), exits 1 and changes nothing; its message names the
+  status.
 - `adj supersede OLD --by NEW [--root DIR]`: replaces a decided record with
   another decided one. OLD becomes `superseded` with `superseded_by` NEW and
   one `supersede` history entry (note `by NEW`); NEW stays `decided`, lists OLD
@@ -236,26 +245,29 @@ below). `adj lint` exits 1 when it finds an error (see its entry).
   recommendation, not the body, C163, once the `amend` entries after the
   renumber entry are taken back to the old text they keep, C181; a live record
   that only shares the ID and name text with a moved one is not a stale copy),
-  and `adj renumber` refuses
-  (exit 1, nothing changed, `store.ErrStaleCopy`) until the owner checks both
-  files and deletes the old one (C156); nothing is deleted automatically. Known
-  limit (C163): a moved file that was changed by hand without a history entry is
-  not recognised, so before running `adj renumber` on files that `adj lint`
-  reports as `duplicate-id`, check whether one holds a `renumber` entry; two
-  files with identical records (contrived) flag the keeper. An argument or
-  unknown flag exits 2. Owner-only: the agent snippet tells agents to report a
-  duplicate ID and not to run it (C153). A name taken by a directory or another
-  writer is skipped for the next ID (C154).
+  and `adj renumber` refuses (exit 1, nothing changed, `store.ErrStaleCopy`)
+  until the owner checks both files and deletes the old one (C156); nothing is
+  deleted automatically. Known limit (C163): a moved file that was changed by
+  hand without a history entry is not recognised, so before running
+  `adj renumber` on files that `adj lint` reports as `duplicate-id`, check
+  whether one holds a `renumber` entry; two files with identical records
+  (contrived) flag the keeper. An argument or unknown flag exits 2.
+  Owner-only: the agent snippet tells agents to report a duplicate ID and not
+  to run it (C153). A name taken by a directory or another writer is skipped
+  for the next ID (C154).
 - `adj version` and `adj --version`: print one line from Go build information,
   or the release override set with `-ldflags -X`. `version` reads no repo and
   needs no config; it accepts `--root` but does not use it. The leading
   `--version` form invokes the same command.
 - `adj ai`: prints the AGENTS.md snippet in `internal/commands/ai.md` (check
-  before asking and what each result means, ask, read the decisions, withdraw
-  your own question, amend an open question, only the owner decides or amends
-  a decided record and never run decide, reject or supersede, tell the owner about a duplicate ID or a missing repo instead of
-  running renumber or init, exit codes, `ADJ_ASKED_BY`) and exits 0. It reads no
-  repo and takes no flag or argument (so no `--root`); either exits 2.
+  before asking and what each result means, ask with `--ref` and
+  `--recommend-text`, read the decisions, withdraw your own question, amend an
+  open question, only the owner decides or amends a decided record and never
+  run decide, reject or supersede, tell the owner about a duplicate ID or a
+  missing repo instead of running renumber or init, exit codes, `ADJ_ASKED_BY`)
+  and exits 0. It does not name `--decided-at`: agents never run decide, so the
+  flag is the owner's. It reads no repo and takes no flag or argument (so no
+  `--root`); either exits 2.
   `internal/cli/ai_test.go` fails if the snippet names a command, flag or
   variable that does not exist, or runs past 1800 bytes (C124, C125). When a
   command or flag an agent uses changes, change the snippet.
@@ -266,14 +278,17 @@ below). `adj lint` exits 1 when it finds an error (see its entry).
   store or need a config. A missing config says to run `adj init`.
 - `--root` may also come before the command: `adj --root DIR list` acts as
   `adj list --root DIR` (`cli.leadingRoot`; `invocation.parse` hands it to the
-  command). It is the only flag accepted before a command; top-level
-  `--version` invokes the version command, and any other leading flag exits 2
-  with usage. `--root` both before and after the command, or twice before it,
-  exits 2 naming both values (C170); twice after the command still takes the
-  last. A leading `--root` with no value or no command exits 2, and before
-  `ai` exits 2 (`ai` takes no `--root`) unless `ai` is given `--help`, which is
-  handled first and exits 0, as `adj ai --help --root D` does. A leading
-  `--root` followed by `--help`/`-h` prints the main usage (exit 0).
+  command). Before a command, `--root DIR` is taken and `--help`/`-h` print the
+  main usage (the unknown-flag message names those three, and so does the usage
+  text, which also tells `adj --version` apart); `--version` as the first
+  argument invokes the version command (`adj --root DIR --version` exits 2),
+  and any other leading flag exits 2 with usage. `--root` both before and after the command,
+  or twice before it, exits 2 naming both values (C170); twice after the
+  command still takes the last. A leading `--root` with no value or no command
+  exits 2, and before `ai` exits 2 (`ai` takes no `--root`) unless `ai` is
+  given `--help`, which is handled first and exits 0, as `adj ai --help --root
+  D` does. A leading `--root` followed by `--help`/`-h` prints the main usage
+  (exit 0).
 
 ## Store and config
 

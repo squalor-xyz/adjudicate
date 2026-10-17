@@ -538,3 +538,13 @@
 {"when": "2026-10-17T15:34:10Z", "item": "S30", "action": "cite", "from": "", "to": "C182", "note": ""}
 {"when": "2026-10-17T15:34:11Z", "item": "S30", "action": "cite", "from": "", "to": "C183", "note": ""}
 {"when": "2026-10-17T15:34:12Z", "item": "S32", "action": "note", "from": "", "to": "", "note": "From S30: a title change does not rename the file (C180, own", "by": "Jon R"}
+{"when": "2026-10-17T16:04:43Z", "item": "S32", "action": "status", "from": "open", "to": "started", "note": "", "by": "Jon R"}
+{"when": "2026-10-17T16:16:46Z", "item": "C184", "action": "catalog", "from": "", "to": "S32 the usage text, README and AGENTS.md name --root, --help and -h before the command, and adj --version separately; the unknown-flag error is unchanged", "note": "add"}
+{"when": "2026-10-17T16:16:48Z", "item": "C185", "action": "catalog", "from": "", "to": "S32 CHANGELOG 0.1.0 is dated unreleased until the release slice sets the date; no tag is claimed", "note": "add"}
+{"when": "2026-10-17T16:16:49Z", "item": "C186", "action": "catalog", "from": "", "to": "S32 the agent snippet is unchanged: it already covers --ref, --recommend-text and amend, and does not name --decided-at", "note": "add"}
+{"when": "2026-10-17T16:16:50Z", "item": "C187", "action": "catalog", "from": "", "to": "S32 docs/json.md states 0.x stability in its own section, and README states what a plain local build prints on Go 1.27.2", "note": "add"}
+{"when": "2026-10-17T16:16:51Z", "item": "C188", "action": "catalog", "from": "", "to": "S32 PROJECT.md is rewritten around the shipped tool: decisions that changed the brief are cited, the draft's open decisions, milestones and stack alternatives are dropped", "note": "add"}
+{"when": "2026-10-17T16:16:58Z", "item": "S32", "action": "cite", "from": "", "to": "C184,C185,C186,C187,C188,C172,C180,C182,C169", "note": ""}
+{"when": "2026-10-17T16:17:28Z", "item": "S32", "action": "handoff", "from": "started", "to": "review", "note": "claim Jon R cleared", "by": "Jon R"}
+{"when": "2026-10-17T16:27:36Z", "item": "S32", "action": "note", "from": "", "to": "", "note": "For S33: CHANGELOG.md says '0.1.0 - unreleased' with a not-t", "by": "Jon R"}
+{"when": "2026-10-17T16:27:38Z", "item": "S32", "action": "status", "from": "review", "to": "done", "note": "Rewrote PROJECT.md to the shipped tool, added CHANGELOG.md (0.1.0 unreleased, no tag claimed) and a docs/json.md Stability section, updated README and AGENTS.md (decide --decided-at, root-flag wording, slug note), changed one usage sentence in cli.go with a pinned test; ai.md unchanged. Full suite, vet, gofmt and slicer check pass; documented adj examples were run against scratch stores and match.", "by": "Jon R"}

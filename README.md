@@ -10,6 +10,9 @@ in batches, and every later agent reads the decisions instead of asking again.
   `superseded`, and keeps its history.
 - No server, no database, no network, no LLM calls. Go standard library only.
 
+This is version 0.1.0. [CHANGELOG.md](CHANGELOG.md) lists what each release
+changed; [PROJECT.md](PROJECT.md) says what adjudicate is for and what it does.
+
 ## Build
 
 You need Go (the version in `go.mod`). From the repo root, source the in-repo
@@ -34,14 +37,20 @@ gofmt -l cmd internal    # prints nothing
 `go test ./...` includes a round-trip test that builds the binary and walks
 the whole life of a decision (`cmd/adj/roundtrip_test.go`).
 
-`adj version` and `adj --version` print the module version from Go build
-information. For a local release build, set the version with the linker:
+`adj version` and `adj --version` print one line. For a local release build,
+set the version with the linker:
 
 ```sh
 go build -ldflags "-X github.com/squalor-xyz/adjudicate/internal/cli.versionOverride=v0.1.0" -o .cache/bin/adj ./cmd/adj
 ```
 
-A local development build prints `(devel)` and, when present, its VCS revision.
+Without that, `adj` prints the main module version that Go records in the
+binary. With the Go toolchain this repo uses (1.27.2), a plain `go build` inside
+a git checkout records a pseudo-version made from the commit time and revision,
+such as `v0.0.0-20261017153413-4d1d8a898308+dirty`, and
+`go build -buildvcs=false` records none, so `adj` prints `(devel)`. If the
+version is `(devel)` or empty, `adj` adds the VCS revision when the build
+information has one.
 
 ## Quick start
 
@@ -59,9 +68,10 @@ Commands find the repo root from the working directory upwards (the nearest
 `.adjudicate.json`). `--root DIR` names it instead, either before the command
 (`adj --root DIR list`) or after it (`adj list --root DIR`). Giving it both
 before and after the command, or twice before it, is a usage error (exit 2);
-twice after the command still takes the last. It is the only flag accepted
-before the command, apart from `--help`. `adj COMMAND --help` prints a
-command's flags.
+twice after the command still takes the last. Before the command `adj` takes
+`--root DIR`; `--help` and `-h` print the main usage, and `adj --version` as the
+first argument prints the version. Any other flag there is a usage error.
+`adj COMMAND --help` prints a command's flags.
 
 ## Exit codes
 
@@ -77,7 +87,7 @@ when it finds an error and 0 when it finds none or only warnings.
 
 Writes `.adjudicate.json` (`{"store": "decisions"}`) if it is missing and
 creates the store directory. It acts on DIR or the working directory, never on
-a parent. Running it again changes nothing.
+a parent, and DIR must already exist. Running it again changes nothing.
 
 ### `adj ask TITLE [flags]`
 
@@ -101,13 +111,24 @@ TITLE.
 --root DIR                the repo root
 ```
 
-### `adj decide ID OPTION --why TEXT`
+### `adj decide ID OPTION --why TEXT [flags]`
 
 Answers an open question: OPTION must be one of the record's option labels. To
 give a free-text answer instead, use `adj decide ID --text TEXT --why TEXT`.
-The record becomes `decided`. Prints its ID. `--by NAME` says who decided
-(default `$ADJ_DECIDED_BY`, else blank). Only the owner decides; this is a
+The record becomes `decided`. Prints its ID. Only the owner decides; this is a
 convention, not enforced.
+
+```
+--by NAME              who decided; default: $ADJ_DECIDED_BY, else blank
+--decided-at DATE      the date the decision took effect, YYYY-MM-DD;
+                       default: today
+```
+
+`--decided-at` records a decision made earlier: `decided_at` is DATE, while
+the history entry keeps the day you ran the command and notes
+`backdated to DATE`. A date that is not a valid `YYYY-MM-DD` date, or that is
+after today, is a usage error (exit 2). A date before the question was created
+is allowed.
 
 ### `adj reject ID --why TEXT` and `adj withdraw ID --why TEXT`
 
@@ -141,6 +162,12 @@ links, key, tags, an option's label or the recommendation. An empty TEXT in
 `--summary` or `--tradeoffs` clears that text. Each call appends one `amend`
 entry to the history that keeps the old text of every field it changed, and
 `adj show` prints it. If nothing would change, it fails and writes nothing.
+Changing the title does not rename the record file: the file name keeps the
+slug of the title the question was asked with, so it can drift from the title.
+
+Agents amend only the title, context and option texts of an `open` record; only
+the owner amends a decided record, its rationale included. This is guidance
+(`adj ai` says so), not enforced.
 
 ### `adj show ID [--json]`
 
@@ -217,8 +244,10 @@ apart, so renumber stops until you check them and pass `--keep-links`. See
 
 ### `adj version [--root DIR]`
 
-Prints the version reported by Go build information, or the local release
-override set with `-ldflags -X`. The same value is printed by `adj --version`.
+Prints the version: the local release override set with `-ldflags -X`, else
+what Go build information reports (see Build). The same value is printed by
+`adj --version`. It reads no repo and needs no config, and accepts `--root` but
+does not use it.
 
 ### `adj ai`
 
@@ -230,6 +259,8 @@ and takes no argument.
 
 `show`, `list`, `inbox`, `check` and `lint` print JSON with `--json`; `context`
 does it with `--format json`. The shapes are in [docs/json.md](docs/json.md).
+Until 1.0 a shape may change in a minor release; the CHANGELOG names every
+change.
 
 ## Environment
 

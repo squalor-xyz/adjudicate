@@ -312,4 +312,11 @@ func TestMainUsageShowsRootBeforeTheCommand(t *testing.T) {
 	if !strings.Contains(r.stdout, "usage: adj [--root DIR] <command>") {
 		t.Errorf("usage does not show --root before the command:\n%s", r.stdout)
 	}
+	// S32: the usage names what the unknown-flag error names (--root, --help
+	// and -h) and does not call --root the only flag accepted before the
+	// command; adj --version is told apart as the version command.
+	want := "--root DIR may come before the\ncommand or after it, but not both. The only other flags accepted before the\ncommand are --help and -h; adj --version prints the version.\n"
+	if !strings.Contains(r.stdout, want) {
+		t.Errorf("usage does not say %q:\n%s", want, r.stdout)
+	}
 }

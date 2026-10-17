@@ -3,13 +3,31 @@
 `adj show ID --json`, `adj list --json`, `adj inbox --json`,
 `adj check QUERY --json`, `adj context --format json` and `adj lint --json` print
 JSON for agents.
-The shapes on this page are the contract: a key keeps its name and its type.
-Readers should ignore keys they do not know, because a later release may add
-keys.
+The shapes on this page are the contract: a key keeps its name and its type,
+within the limits under "Stability" below. Readers should ignore keys they do
+not know, because a later release may add keys.
 
 All six commands print the JSON with two-space indentation and HTML characters
 unescaped, end it with one newline, and print the same bytes for the same
 store.
+
+## Stability
+
+adjudicate is at version 0.x (`adj version`). Until 1.0, a shape on this page
+may change in a minor release (from 0.1 to 0.2, for example), and the
+[CHANGELOG](../CHANGELOG.md) names every such change. 1.0 freezes the shapes.
+
+Two things a reader of 0.1 must not assume:
+
+- `recommendation.label` is optional. A recommendation has exactly one of
+  `label`, one of the option labels, or `text`, a free-text recommendation set
+  with `adj ask --recommend-text`: never both and never neither (C172).
+- The record file keeps the slug it got when the question was asked, in
+  `<ID>-<slug>.md`, made from the title at that time (`adj renumber` can change
+  the ID part).
+  `adj amend --title` changes `title` but does not rename the file (C180,
+  C182), so the slug in the file name can drift from the title. Read `title`
+  from the record, not from the file name.
 
 ## `adj show ID --json`
 
@@ -482,12 +500,12 @@ when it has a value. `id`, `title`, `status` and `created` are always present.
 | `body` | string | the Markdown after the record's frontmatter, kept verbatim; present only when the record has a body |
 
 A history entry's `event` is one of `ask`, `decide`, `reject`, `withdraw`,
-`supersede`, `renumber` or `amend`. `adj supersede` writes one `supersede` entry on each
-of the two records: the note is `by N` on the record that is replaced and
-`supersedes N` on the one that replaces it. `adj renumber` writes one `renumber`
-entry on each record it gives a new ID; the note is `from N`, the old ID. Notes
-that name an ID are history: nothing rewrites them. Dates are `YYYY-MM-DD`
-strings, not timestamps. A decide entry's date is the run date. If
+`supersede`, `renumber` or `amend`. `adj supersede` writes one `supersede`
+entry on each of the two records: the note is `by N` on the record that is
+replaced and `supersedes N` on the one that replaces it. `adj renumber` writes
+one `renumber` entry on each record it gives a new ID; the note is `from N`, the
+old ID. Notes that name an ID are history: nothing rewrites them. Dates are
+`YYYY-MM-DD` strings, not timestamps. A decide entry's date is the run date. If
 `adj decide --decided-at DATE` sets an earlier effective date, the decide
 entry's note is `backdated to DATE`, so the history still shows when the command
 ran. A date after the run date is refused.

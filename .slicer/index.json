@@ -1744,7 +1744,7 @@
       "id": "S32",
       "title": "Release docs: PROJECT.md, CHANGELOG and JSON stability",
       "short_title": "Release docs: PROJECT.md, CHANGELOG and JSON stability",
-      "status": "open",
+      "status": "done",
       "has_slice": true,
       "depends_on": [
         "S26",
@@ -1787,6 +1787,17 @@
           "verified_by": "",
           "verified_at": "",
           "stale_after": ""
+        },
+        {
+          "id": "f65afac8-a622-46c1-8af9-019af273963c",
+          "kind": "",
+          "text": "**2026-10-17** — For S33: CHANGELOG.md says '0.1.0 - unreleased' with a not-tagged sentence; replace unreleased with the final date and delete that sentence (C185). README documents that on Go 1.27.2 a plain go build in a git checkout prints a Go-stamped pseudo-version, not (devel) as C169 assumed; version.go is unchanged (C187).",
+          "created_at": "2026-10-17T16:27:36Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
         }
       ],
       "claim": null,
@@ -1802,7 +1813,16 @@
         "parent": "",
         "cites": [
           "C165",
-          "C31"
+          "C31",
+          "C184",
+          "C185",
+          "C186",
+          "C187",
+          "C188",
+          "C172",
+          "C180",
+          "C182",
+          "C169"
         ],
         "key": "",
         "pass": "",
@@ -1811,7 +1831,7 @@
         "importance": 2,
         "urgency": 3,
         "effort": 1,
-        "attempts": 0
+        "attempts": 1
       }
     },
     {
@@ -1854,7 +1874,7 @@
   "goals": "adjudicate is a small CLI (`adj`) with a plain-text store that records project decisions as a loop: an agent asks, the owner decides in batches, and every later agent reads the decision. The goal and non-goal records below come from PROJECT.md; the owner's decisions on its open questions are catalog records C23-C33, and they override PROJECT.md where it differs (name, runtime, record format, license).",
   "non_goals": "",
   "catalog": {
-    "next_id": 184,
+    "next_id": 189,
     "id_prefix": "C",
     "id_width": 2,
     "records": [
@@ -3501,6 +3521,51 @@
         "kind": "decision",
         "title": "S30 the agent snippet names adj amend for open questions only, and trims other wording to stay under 1800 bytes",
         "body": "Implementer decision (C32), carrying out the owner's call of 2026-10-17: agents may amend the title, context and option summaries/tradeoffs of open records; only the owner amends a decided record, rationale included (guidance, not enforced, like C27). internal/commands/ai.md gains one line with adj amend ID --title and --context, --summary, --tradeoffs, and says only the owner amends a decided record. To stay at 1799 of 1800 bytes (C125) it drops: the 'in the check output' and 'for the full record' wording of the closed-result sentence, '(any case)', 'in full' after 'One record', 'It prints the new ID.', 'or choose' in 'Before you ask or choose', the sentence 'adj list --status open lists them too', 'for scripts' in the JSON line, and the parenthetical after duplicate ID. Every phrase ai_test.go requires is kept. Reason: one line for the amend rule costs about 160 bytes and these words carry the least.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C184",
+        "kind": "decision",
+        "title": "S32 the usage text, README and AGENTS.md name --root, --help and -h before the command, and adj --version separately; the unknown-flag error is unchanged",
+        "body": "Implementer decision (C32), carrying out the S26 note (owner kept the unknown-flag message of 2026-10-17). The usage's last sentence no longer calls --root the only flag accepted before the command; it says the other accepted flags are --help and -h and that adj --version prints the version (--version is accepted only as the first argument: adj --root D --version exits 2). README and AGENTS.md say the same. This changes one usage string in internal/cli/cli.go and one assertion in TestMainUsageShowsRootBeforeTheCommand; no other test pinned the sentence. Reason: the three texts then agree without touching the error the owner kept.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C185",
+        "kind": "decision",
+        "title": "S32 CHANGELOG 0.1.0 is dated unreleased until the release slice sets the date; no tag is claimed",
+        "body": "Implementer decision (C32). CHANGELOG.md has '## 0.1.0 - unreleased' and a note that the annotated tag v0.1.0 and the final date are added when the release is made (C165). S33 lists 'CHANGELOG.md: the final date', so it replaces 'unreleased' with the date and drops the note. Reason: S32 lands before the tag exists (C165), so a date would claim a release that has not happened.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C186",
+        "kind": "decision",
+        "title": "S32 the agent snippet is unchanged: it already covers --ref, --recommend-text and amend, and does not name --decided-at",
+        "body": "Implementer decision (C32). internal/commands/ai.md (1799 of 1800 bytes, C125) already has --ref (C174), --recommend-text (C174) and adj amend for open questions (C183). --decided-at is not named: agents never run decide (C27), so the flag is the owner's, naming it would sit next to the never-run list, and one byte is left under the cap, which stays at 1800. The small hints the S30 trims dropped (C183) are not restored. AGENTS.md's adj ai entry says the snippet leaves --decided-at out. Reason: the snippet should only teach agents what they may run.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C187",
+        "kind": "decision",
+        "title": "S32 docs/json.md states 0.x stability in its own section, and README states what a plain local build prints on Go 1.27.2",
+        "body": "Implementer decision (C32). docs/json.md gains a 'Stability' section: for 0.x a shape may change in a minor release and the CHANGELOG names every change, 1.0 freezes the shapes; recommendation.label is optional and exactly one of label or text is present (C172); the file name keeps the slug of the title at ask, so adj amend --title leaves it drifting (C180, C182). Its opening sentence 'a key keeps its name and its type' now says 'within the limits under Stability', since it would otherwise contradict the 0.x rule. No further promise is made. README's version text no longer says a plain local build prints (devel): with Go 1.27.2 a plain go build in a git checkout prints a pseudo-version (v0.0.0-<time>-<revision>, +dirty with uncommitted changes), and -buildvcs=false prints (devel); the code (internal/cli/version.go) is unchanged and returns what Go records, as C169 and C177 say. Reason: the docs must match what the binary prints.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C188",
+        "kind": "decision",
+        "title": "S32 PROJECT.md is rewritten around the shipped tool: decisions that changed the brief are cited, the draft's open decisions, milestones and stack alternatives are dropped",
+        "body": "Implementer decision (C32). PROJECT.md keeps the Summary, Motivation, Users, Goals and Non-goals (C01-C13), replaces 'Open decisions' with 'Owner decisions that shaped the tool' (C23-C33 and the 0.1.0 plan C165-C170, C172, C175-C182), shows the record format with a real record and a verified session, lists the commands, the version behaviour, the architecture, the acceptance criteria as met with the tests that meet them, the Later items (S18-S22) as later, risks, and licensing (C31). The draft's Milestones are dropped (all done; git has the history). The consequences field is kept in the table with a note that no 0.1.0 flag sets it. The size budget flag is named as not in 0.1.0 (owner scope call recorded in S11). Reason: a reader gets what the tool does, not the draft it started from.",
         "status": "active",
         "reason": "",
         "successor": ""
