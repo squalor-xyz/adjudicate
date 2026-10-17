@@ -452,7 +452,7 @@ when it has a value. `id`, `title`, `status` and `created` are always present.
 | `asked_by` | string | who asked the question |
 | `decided_by` | string | who decided, rejected or withdrew the record |
 | `created` | string | the date the question was asked, `YYYY-MM-DD` |
-| `decided_at` | string | the date of the answer, `YYYY-MM-DD` |
+| `decided_at` | string | the effective date of the answer, `YYYY-MM-DD`; `adj decide --decided-at` may set an earlier date |
 | `context` | string | why the question is asked; may contain line breaks |
 | `options` | array of objects | the options; each has `label`, and `summary` and `tradeoffs` when set |
 | `recommendation` | object | `label`, one of the option labels, and `reasoning` when set |
@@ -471,4 +471,7 @@ of the two records: the note is `by N` on the record that is replaced and
 `supersedes N` on the one that replaces it. `adj renumber` writes one `renumber`
 entry on each record it gives a new ID; the note is `from N`, the old ID. Notes
 that name an ID are history: nothing rewrites them. Dates are `YYYY-MM-DD`
-strings, not timestamps.
+strings, not timestamps. A decide entry's date is the run date. If
+`adj decide --decided-at DATE` sets an earlier effective date, the decide
+entry's note is `backdated to DATE`, so the history still shows when the command
+ran. A date after the run date is refused.

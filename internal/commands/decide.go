@@ -16,12 +16,14 @@ import (
 // (Option, with HasOption) or free text (Text, with HasText), never both. Why
 // is the reason for it, and DecidedBy who decided (C27, C70).
 type DecideInput struct {
-	Option    string
-	HasOption bool
-	Text      string
-	HasText   bool
-	Why       string
-	DecidedBy string
+	Option       string
+	HasOption    bool
+	Text         string
+	HasText      bool
+	Why          string
+	DecidedBy    string
+	DecidedAt    string
+	HasDecidedAt bool
 }
 
 // ReasonInput is the raw input of adj reject and adj withdraw: the reason and
@@ -33,8 +35,8 @@ type ReasonInput struct {
 
 // Check reports a *UsageError if the input cannot answer a record whatever
 // the record is: both or neither of OPTION and --text, a blank answer or no
-// reason. Whether OPTION is one of the record's options needs the record, so
-// Decide checks that. The CLI runs Check before the store is looked for.
+// reason, or an invalid --decided-at date. Whether OPTION is one of the
+// record's options needs the record, so Decide checks that.
 func (in DecideInput) Check() error {
 	switch {
 	case in.HasOption && in.HasText:
@@ -46,7 +48,26 @@ func (in DecideInput) Check() error {
 	case in.HasText && strings.TrimSpace(in.Text) == "":
 		return usagef("--text must not be blank")
 	}
-	return checkWhy(in.Why)
+	if err := checkWhy(in.Why); err != nil {
+		return err
+	}
+	if in.HasDecidedAt || in.DecidedAt != "" {
+		if _, err := time.Parse(time.DateOnly, in.DecidedAt); err != nil {
+			return usagef("--decided-at must be a valid YYYY-MM-DD date, got %q", in.DecidedAt)
+		}
+	}
+	return nil
+}
+
+// CheckAt reports a *UsageError when the input date is after the run date.
+func (in DecideInput) CheckAt(now time.Time) error {
+	if err := in.Check(); err != nil {
+		return err
+	}
+	if (in.HasDecidedAt || in.DecidedAt != "") && in.DecidedAt > now.Format(time.DateOnly) {
+		return usagef("--decided-at %s is later than the run date %s", in.DecidedAt, now.Format(time.DateOnly))
+	}
+	return nil
 }
 
 // Check reports a *UsageError if there is no reason. Reject and Withdraw run
@@ -63,18 +84,22 @@ func checkWhy(why string) error {
 	return nil
 }
 
-// Decide answers the open record with id, dated now: its decision is the
-// option label or the free text, its rationale is in.Why, and its history
-// gets one decide entry. It returns the record as stored. Bad input is a
-// *UsageError, and so is an OPTION that the record does not offer, when the
-// record is open. A missing record, or one that is not open, is an ordinary
-// error, and a record that is not open is reported before OPTION is checked.
-// Nothing is written on error.
+// Decide answers the open record with id, setting decided_at to the requested
+// date or to now, and dating its history at now. Its decision is the option
+// label or free text, and its rationale is in.Why. It returns the record as
+// stored. Bad input is a *UsageError, and so is an OPTION that the record does
+// not offer, when the record is open. A missing record, or one that is not
+// open, is an ordinary error, and a record that is not open is reported before
+// OPTION is checked. Nothing is written on error.
 func Decide(st *store.Store, id int, in DecideInput, now time.Time) (model.Record, error) {
-	if err := in.Check(); err != nil {
+	if err := in.CheckAt(now); err != nil {
 		return model.Record{}, err
 	}
-	date := now.Format(time.DateOnly)
+	runDate := now.Format(time.DateOnly)
+	decidedAt := runDate
+	if in.HasDecidedAt || in.DecidedAt != "" {
+		decidedAt = in.DecidedAt
+	}
 	return change(st, id, "decided", func(r *model.Record) error {
 		decision := in.Text
 		if in.HasOption {
@@ -86,7 +111,7 @@ func Decide(st *store.Store, id int, in DecideInput, now time.Time) (model.Recor
 			}
 			decision = label
 		}
-		return model.Decide(r, decision, in.Why, in.DecidedBy, date)
+		return model.DecideAt(r, decision, in.Why, in.DecidedBy, decidedAt, runDate)
 	})
 }
 

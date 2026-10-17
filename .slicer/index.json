@@ -1579,7 +1579,7 @@
       "id": "S29",
       "title": "Backdate a decision with decide --decided-at",
       "short_title": "Backdate a decision with decide --decided-at",
-      "status": "open",
+      "status": "done",
       "has_slice": true,
       "depends_on": [],
       "note_records": [],
@@ -1598,7 +1598,9 @@
         "parent": "",
         "cites": [
           "C165",
-          "C168"
+          "C168",
+          "C175",
+          "C176"
         ],
         "key": "",
         "pass": "",
@@ -1607,7 +1609,7 @@
         "importance": 2,
         "urgency": 3,
         "effort": 1,
-        "attempts": 0
+        "attempts": 1
       }
     },
     {
@@ -1787,7 +1789,7 @@
   "goals": "adjudicate is a small CLI (`adj`) with a plain-text store that records project decisions as a loop: an agent asks, the owner decides in batches, and every later agent reads the decision. The goal and non-goal records below come from PROJECT.md; the owner's decisions on its open questions are catalog records C23-C33, and they override PROJECT.md where it differs (name, runtime, record format, license).",
   "non_goals": "",
   "catalog": {
-    "next_id": 172,
+    "next_id": 177,
     "id_prefix": "C",
     "id_width": 2,
     "records": [
@@ -3326,6 +3328,24 @@
         "kind": "decision",
         "title": "Ask refs in search and active views",
         "body": "adj check searches refs, and inbox/check text shows them so owners see linked slice or catalog context on open records and ref-based matches.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C175",
+        "kind": "decision",
+        "title": "S29 permits decided_at before created",
+        "body": "Allow --decided-at before created because S17 records decisions entered days after they were made; created marks when the record was logged.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C176",
+        "kind": "decision",
+        "title": "S29 labels a backdated decide history entry",
+        "body": "When --decided-at differs from the run date, set the decide history note to backdated to YYYY-MM-DD so the run date remains visible beside the effective date.",
         "status": "active",
         "reason": "",
         "successor": ""

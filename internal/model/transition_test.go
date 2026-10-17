@@ -121,6 +121,24 @@ func TestDecideSetsFields(t *testing.T) {
 	}
 }
 
+func TestDecideAtSeparatesDecisionAndHistoryDates(t *testing.T) {
+	r := validRecord(StatusOpen)
+	r.Created = "2026-10-10"
+	if err := DecideAt(&r, "files", "plain text", "owner", "2026-10-01", "2026-10-16"); err != nil {
+		t.Fatal(err)
+	}
+	if r.DecidedAt != "2026-10-01" {
+		t.Errorf("decided_at = %q, want backdated date", r.DecidedAt)
+	}
+	want := HistoryEntry{Date: "2026-10-16", Event: EventDecide, Note: "backdated to 2026-10-01"}
+	if len(r.History) != 1 || r.History[0] != want {
+		t.Errorf("history = %+v, want [%+v]", r.History, want)
+	}
+	if err := r.Validate(); err != nil {
+		t.Errorf("record with a decision before created is invalid: %v", err)
+	}
+}
+
 func TestRejectAndWithdrawSetFields(t *testing.T) {
 	for _, tc := range transitionCases()[1:3] {
 		t.Run(tc.name, func(t *testing.T) {

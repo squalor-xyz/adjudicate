@@ -498,3 +498,8 @@
 {"when": "2026-10-17T13:11:52Z", "item": "S27", "action": "note", "from": "", "to": "", "note": "C171 records ref search and inbox/check display; implementin", "by": "Jon R"}
 {"when": "2026-10-17T13:21:07Z", "item": "S27", "action": "note", "from": "", "to": "", "note": "C171 review P3: aligned ask, check and inbox guidance and re", "by": "Jon R"}
 {"when": "2026-10-17T13:23:04Z", "item": "S27", "action": "status", "from": "started", "to": "done", "note": "Added repeatable ask --ref with opaque ordered values; refs appear in show, inbox and check text, and check searches them. Updated docs and guidance. Full tests, vet, formatting, and build passed.", "by": "Jon R"}
+{"when": "2026-10-17T13:32:51Z", "item": "S29", "action": "status", "from": "open", "to": "started", "note": "", "by": "Jon R"}
+{"when": "2026-10-17T13:33:14Z", "item": "C175", "action": "catalog", "from": "", "to": "S29 permits decided_at before created", "note": "add"}
+{"when": "2026-10-17T13:33:17Z", "item": "C176", "action": "catalog", "from": "", "to": "S29 labels a backdated decide history entry", "note": "add"}
+{"when": "2026-10-17T13:36:44Z", "item": "S29", "action": "cite", "from": "", "to": "C175,C176", "note": ""}
+{"when": "2026-10-17T13:39:42Z", "item": "S29", "action": "status", "from": "started", "to": "done", "note": "Implemented and verified adj decide --decided-at: effective dates backdate while history retains the run date; tests, vet, gofmt, and build pass.", "by": "Jon R"}

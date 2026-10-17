@@ -60,3 +60,56 @@ func TestClosedRecordErrorMatchesInvalidTransition(t *testing.T) {
 		}
 	}
 }
+
+func TestDecideDecidedAt(t *testing.T) {
+	st, err := store.Open(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	now := time.Date(2026, 10, 16, 12, 0, 0, 0, time.UTC)
+	rec, err := Ask(st, AskInput{Title: "Pick a store"}, now)
+	if err != nil {
+		t.Fatal(err)
+	}
+	got, err := Decide(st, rec.ID, DecideInput{
+		Text: "files", HasText: true, Why: "decided before logging",
+		DecidedAt: "2026-10-01", HasDecidedAt: true,
+	}, now)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got.DecidedAt != "2026-10-01" {
+		t.Errorf("decided_at = %q, want 2026-10-01", got.DecidedAt)
+	}
+	want := model.HistoryEntry{Date: "2026-10-16", Event: model.EventDecide, Note: "backdated to 2026-10-01"}
+	if len(got.History) != 2 || got.History[1] != want {
+		t.Errorf("history = %+v, want final entry %+v", got.History, want)
+	}
+}
+
+func TestDecideDecidedAtFutureIsUsageErrorAndLeavesStoreOpen(t *testing.T) {
+	st, err := store.Open(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	now := time.Date(2026, 10, 16, 12, 0, 0, 0, time.UTC)
+	rec, err := Ask(st, AskInput{Title: "Pick a store"}, now)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = Decide(st, rec.ID, DecideInput{
+		Text: "files", HasText: true, Why: "future",
+		DecidedAt: "2026-10-17", HasDecidedAt: true,
+	}, now)
+	var usageErr *UsageError
+	if !errors.As(err, &usageErr) {
+		t.Fatalf("error = %v, want UsageError", err)
+	}
+	after, err := st.Get(rec.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if after.Status != model.StatusOpen || len(after.History) != 1 {
+		t.Errorf("record changed after refused future date: %+v", after)
+	}
+}

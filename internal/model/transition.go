@@ -36,8 +36,19 @@ func apply(r *Record, from, to Status, event Event, date, note string, mutate fu
 // or free-text decision, the owner's rationale, who decided (free text; may
 // be empty) and the date (YYYY-MM-DD).
 func Decide(r *Record, decision, rationale, decidedBy, date string) error {
-	return apply(r, StatusOpen, StatusDecided, EventDecide, date, "", func(n *Record) {
-		n.Decision, n.Rationale, n.DecidedBy, n.DecidedAt = decision, rationale, decidedBy, date
+	return DecideAt(r, decision, rationale, decidedBy, date, date)
+}
+
+// DecideAt moves an open record to decided, setting decidedAt as the date the
+// decision took effect and date as the date this transition was recorded.
+// When those dates differ, the history entry notes the backdated date.
+func DecideAt(r *Record, decision, rationale, decidedBy, decidedAt, date string) error {
+	note := ""
+	if decidedAt != date {
+		note = fmt.Sprintf("backdated to %s", decidedAt)
+	}
+	return apply(r, StatusOpen, StatusDecided, EventDecide, date, note, func(n *Record) {
+		n.Decision, n.Rationale, n.DecidedBy, n.DecidedAt = decision, rationale, decidedBy, decidedAt
 	})
 }
 
