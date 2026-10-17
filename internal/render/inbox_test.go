@@ -113,3 +113,14 @@ func TestInboxText(t *testing.T) {
 		})
 	}
 }
+
+func TestInboxTextShowsRefs(t *testing.T) {
+	var b bytes.Buffer
+	rec := model.Record{ID: 23, Title: "Question", Status: model.StatusOpen, Created: "2026-03-04", Refs: []string{"C23", "S20"}}
+	if err := InboxText(&b, []model.Record{rec}); err != nil {
+		t.Fatal(err)
+	}
+	if want := "23  Question\n  Created: 2026-03-04\n  Refs: C23, S20\n"; b.String() != want {
+		t.Errorf("InboxText = %q, want %q", b.String(), want)
+	}
+}

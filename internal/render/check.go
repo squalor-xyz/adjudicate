@@ -18,8 +18,8 @@ import (
 // record is followed by its decision and rationale, indented. A closed record
 // (rejected, withdrawn or superseded) is followed by its rationale, so the
 // reason it was closed is in the answer; a superseded one has the ID of the
-// record that replaced it first. Nothing else of a record is shown; adj show
-// has it.
+// record that replaced it first. Each matching record shows its refs when set
+// (C171); adj show prints the other fields.
 func CheckText(w io.Writer, res query.Result) error {
 	var b strings.Builder
 	fmt.Fprintf(&b, "%s\n", res.Outcome)
@@ -44,6 +44,7 @@ func CheckText(w io.Writer, res query.Result) error {
 
 func checkLine(b *strings.Builder, r model.Record) {
 	fmt.Fprintf(b, "%d  %s  %s\n", r.ID, r.Status, r.Title)
+	writeField(b, "  ", "Refs", strings.Join(r.Refs, ", "))
 }
 
 // checkJSON is the object adj check --json prints.

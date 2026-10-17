@@ -22,6 +22,7 @@ Record an open question. Prints the new record's ID.
   --reasoning TEXT          why you recommend it (needs --recommend)
   --key KEY                 the decision key, such as storage.engine
   --tag TAG                 a tag; repeat for several
+  --ref REF                 a reference; repeat for several
   --context TEXT            why the question is asked
   --stdin                   read the context from standard input instead
   --by NAME                 who asks; default: $ADJ_ASKED_BY, else left blank
@@ -34,10 +35,11 @@ at the first colon, so the text may hold colons.
 
 func (c *invocation) runAsk(args []string) int {
 	fs, root := newFlagSet("ask")
-	var options, tradeoffs, tags stringList
+	var options, tradeoffs, tags, refs stringList
 	fs.Var(&options, "option", "")
 	fs.Var(&tradeoffs, "tradeoffs", "")
 	fs.Var(&tags, "tag", "")
+	fs.Var(&refs, "ref", "")
 	recommend := fs.String("recommend", "", "")
 	reasoning := fs.String("reasoning", "", "")
 	key := fs.String("key", "", "")
@@ -60,6 +62,7 @@ func (c *invocation) runAsk(args []string) int {
 		Title:     pos[0],
 		Key:       *key,
 		Tags:      tags,
+		Refs:      refs,
 		Context:   *context,
 		AskedBy:   *by,
 		Options:   options,

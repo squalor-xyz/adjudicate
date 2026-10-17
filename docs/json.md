@@ -187,9 +187,9 @@ empty, else `closed` if `closed` is not empty, else `not found`. So when records
 of several kinds match, the result is the first kind that has one, and the
 other arrays still list theirs.
 
-A query matches a record when its title, key, one of its tags or its `decision`
-contains the query, ignoring case. The whole query is one substring: it is not
-split into words. Options, context, rationale and body are not searched.
+A query matches a record when its title, key, one of its tags or refs, or its
+`decision` contains the query, ignoring case. The whole query is one substring:
+it is not split into words. Options, context, rationale and body are not searched.
 
 A matching superseded record is listed in `closed`. Its `superseded_by` is
 followed to the end of the chain, through superseded records. If the last
@@ -461,7 +461,7 @@ when it has a value. `id`, `title`, `status` and `created` are always present.
 | `consequences` | string | the consequences of the decision |
 | `supersedes` | array of integers | the IDs of the records this one replaces |
 | `superseded_by` | integer | the ID of the record that replaces this one |
-| `refs` | array of strings | references |
+| `refs` | array of strings | opaque references set with repeatable `adj ask --ref REF`, kept in order |
 | `history` | array of objects | the history, oldest first; each entry has `date`, `event`, and `note` when set |
 | `body` | string | the Markdown after the record's frontmatter, kept verbatim; present only when the record has a body |
 

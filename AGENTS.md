@@ -65,14 +65,14 @@ below). `adj lint` exits 1 when it finds an error (see its entry).
   working directory, never on a parent. A second successful run changes
   nothing; a failed run removes a config it wrote.
 - `adj ask TITLE [--option LABEL:SUMMARY]... [--tradeoffs LABEL:TEXT]...
-  [--recommend LABEL] [--reasoning TEXT] [--key K] [--tag T]...
+  [--recommend LABEL] [--reasoning TEXT] [--key K] [--tag T]... [--ref REF]...
   [--context TEXT | --stdin] [--by NAME] [--root DIR]`: creates an `open`
   record with one `ask` history entry and prints its ID. Flags may come before
-  or after TITLE. A blank `--key` or `--tag` exits 2; `--key` is stored as
-  typed. `asked_by` is `--by`, else `$ADJ_ASKED_BY`, else blank. The ID is
-  taken under the store's lock (see "Store and config"): an `ask` that cannot
-  get the lock within 5 seconds exits 1 with an error that names `.adj.lock`
-  and creates no record.
+  or after TITLE. A blank `--key`, `--tag` or `--ref` exits 2; `--key` is
+  stored as typed. Refs are opaque strings, kept as typed and in order. `asked_by`
+  is `--by`, else `$ADJ_ASKED_BY`, else blank. The ID is taken under the store's
+  lock (see "Store and config"): an `ask` that cannot get the lock within 5
+  seconds exits 1 with an error that names `.adj.lock` and creates no record.
 - `adj decide ID OPTION --why TEXT`, or `adj decide ID --text TEXT --why TEXT`,
   `[--by NAME] [--root DIR]`: moves an `open` record to `decided`. OPTION
   (trimmed) must be one of the record's option labels; `decision` is that
@@ -115,26 +115,28 @@ below). `adj lint` exits 1 when it finds an error (see its entry).
   an error (exit 0).
 - `adj inbox [--json] [--root DIR]`: lists the `open` records, oldest first (by
   `created`, then ID). Text: per record `ID  title`, then indented its created
-  date, its context (when set), every option (`label: summary`, with
-  `tradeoffs:` under it when set) and the recommendation with its reasoning;
-  entries are separated by a blank line.
+  date, its refs when set (C171), its context, every option (`label: summary`,
+  with `tradeoffs:` under it when set) and the recommendation with its
+  reasoning; entries are separated by a blank line.
   `--json` prints `{"records": [...]}`, the same record objects as `adj list`
   (`docs/json.md`). An empty inbox prints nothing (JSON: an empty array) and
   exits 0. An argument or other flag exits 2.
 - `adj check QUERY [--json] [--root DIR]`: asks whether QUERY has been decided,
   so an agent checks before it asks the owner. QUERY (trimmed, one argument:
   quote it if it has spaces) is one substring, not split into words; it matches
-  a record when its title, key, one of its tags or its decision text contains
-  it, ignoring case (C105). A match is listed by status: `decided`, `open`, or
-  `closed` for a rejected, withdrawn or superseded record (C106). A superseded
-  match also leads to the end of its `superseded_by` chain; if that is a decided
-  record it is listed as `decided` too (C113). The first line of the text output
-  is the result: `decided` if any decided record is listed, else `open`, else
-  `closed`, else `not found` (C107). Then one line per record, `ID  status
-  title`: decided, open, then closed ones, with a decided record's `Decision:`
-  and `Rationale:` under it, and a closed record's `Rationale:` (why it was
-  rejected, withdrawn or superseded; the whole text, C132, C138), after
-  `Superseded by:` on a superseded one. An open record has no detail lines.
+  a record when its title, key, one of its tags or refs, or its decision text
+  contains it, ignoring case (C105, C171). A match is listed by status:
+  `decided`, `open`, or `closed` for a rejected, withdrawn or superseded record
+  (C106). A superseded match also leads to the end of its `superseded_by` chain;
+  if that is a decided record it is listed as `decided` too (C113). The first
+  line of the text output is the result: `decided` if any decided record is
+  listed, else `open`, else `closed`, else `not found` (C107). Then one line per
+  record, `ID  status  title`: decided, open, then closed ones. A matching
+  record with refs shows `Refs:` underneath (C171); decided records also show
+  `Decision:` and `Rationale:`, and closed records show `Rationale:` (why they
+  were rejected, withdrawn or superseded; the whole text, C132, C138), after
+  `Superseded by:` on a superseded one. An open record has no decision or
+  rationale detail lines.
   `--json` prints `{"query", "result", "decided", "open", "closed"}`
   (`docs/json.md`). Exit 0 for every completed check, whatever the result
   (including `closed` and `not found`), so a script reads the `result`; exit 1

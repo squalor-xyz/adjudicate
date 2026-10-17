@@ -120,11 +120,14 @@ func TestV1AcceptanceRoundTrip(t *testing.T) {
 
 	// ask prints the new ID; the question is in the inbox.
 	if got := ok(t, dir, "ask", "Pick a cache", "--option", "mem:Keep it in memory", "--option", "disk:Keep it on disk",
-		"--recommend", "mem", "--reasoning", "It is fast", "--key", "storage.cache", "--tag", "perf"); got != "1\n" {
+		"--recommend", "mem", "--reasoning", "It is fast", "--key", "storage.cache", "--tag", "perf", "--ref", "S27"); got != "1\n" {
 		t.Fatalf("first ask printed %q, want \"1\\n\"", got)
 	}
 	inbox := ok(t, dir, "inbox")
-	want(t, "inbox after ask", inbox, "1  Pick a cache", "mem: Keep it in memory", "disk: Keep it on disk", "Recommendation: mem")
+	want(t, "inbox after ask", inbox, "1  Pick a cache", "Refs: S27", "mem: Keep it in memory", "disk: Keep it on disk", "Recommendation: mem")
+	want(t, "show --json after ask", ok(t, dir, "show", "1", "--json"), `"refs": [
+    "S27"
+  ]`)
 	if out := ok(t, dir, "context"); out != "" {
 		t.Errorf("context before any decision = %q, want nothing", out)
 	}

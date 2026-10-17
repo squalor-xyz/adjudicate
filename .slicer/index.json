@@ -1484,10 +1484,33 @@
       "id": "S27",
       "title": "Set refs with ask --ref",
       "short_title": "Set refs with ask --ref",
-      "status": "open",
+      "status": "done",
       "has_slice": true,
       "depends_on": [],
-      "note_records": [],
+      "note_records": [
+        {
+          "id": "2afbd353-70bc-418a-ad21-07d2c8f0d4c0",
+          "kind": "",
+          "text": "**2026-10-17** — C171 records ref search and inbox/check display; implementing ask parsing and round-trip coverage.",
+          "created_at": "2026-10-17T13:11:52Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "2bf5405e-b17d-4a3c-8616-7347052eb040",
+          "kind": "",
+          "text": "**2026-10-17** — C171 review P3: aligned ask, check and inbox guidance and renderer comments with ref behavior.",
+          "created_at": "2026-10-17T13:21:07Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        }
+      ],
       "claim": null,
       "fields": {
         "size": "S",
@@ -1511,7 +1534,7 @@
         "importance": 2,
         "urgency": 3,
         "effort": 1,
-        "attempts": 0
+        "attempts": 1
       }
     },
     {
@@ -1764,7 +1787,7 @@
   "goals": "adjudicate is a small CLI (`adj`) with a plain-text store that records project decisions as a loop: an agent asks, the owner decides in batches, and every later agent reads the decision. The goal and non-goal records below come from PROJECT.md; the owner's decisions on its open questions are catalog records C23-C33, and they override PROJECT.md where it differs (name, runtime, record format, license).",
   "non_goals": "",
   "catalog": {
-    "next_id": 171,
+    "next_id": 172,
     "id_prefix": "C",
     "id_width": 2,
     "records": [
@@ -3294,6 +3317,15 @@
         "kind": "decision",
         "title": "adj --root: given twice is a usage error (S26, C32)",
         "body": "A --root before the command and another after it is a usage error (exit 2) naming both values, and so is --root twice before the command. Reason: silently taking the later one would hide a mistake that points a write at the wrong store. --root twice after the command keeps taking the last (unchanged). A leading --root with --help/-h prints the main usage (exit 0); with no command or no value it exits 2; before ai it exits 2 (ai takes no --root) unless ai is given --help, which is handled first and exits 0 (as adj ai --help --root D does).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C171",
+        "kind": "decision",
+        "title": "Ask refs in search and active views",
+        "body": "adj check searches refs, and inbox/check text shows them so owners see linked slice or catalog context on open records and ref-based matches.",
         "status": "active",
         "reason": "",
         "successor": ""

@@ -28,8 +28,8 @@ type Result struct {
 	Closed  []model.Record // matching records with status rejected, withdrawn or superseded
 }
 
-// Search looks for q in the title, key, tags and decision text of recs. A
-// record matches when any of those contains q, ignoring case (C105). A match
+// Search looks for q in the title, key, tags, refs and decision text of recs.
+// A record matches when any of those contains q, ignoring case (C105). A match
 // is listed by its status: decided, open, or closed for a rejected, withdrawn
 // or superseded record (C106). For a superseded match, superseded_by is
 // followed to the end of its chain; if the last record is decided it is listed
@@ -118,10 +118,11 @@ func indexOf(recs []model.Record, id int) int {
 	return -1
 }
 
-// mentions reports whether the title, key, a tag or the decision of r contains
-// needle, which is already lower case.
+// mentions reports whether the title, key, a tag, a ref or the decision of r
+// contains needle, which is already lower case.
 func mentions(r model.Record, needle string) bool {
 	fields := append([]string{r.Title, r.Key, r.Decision}, r.Tags...)
+	fields = append(fields, r.Refs...)
 	for _, f := range fields {
 		if strings.Contains(strings.ToLower(f), needle) {
 			return true
