@@ -3,8 +3,8 @@
 // Package cli dispatches the adj command line. It takes its I/O as
 // parameters so tests can run it in-process. Each command's handler is in
 // its own file: init.go, ask.go, decide.go, supersede.go, amend.go, show.go,
-// list.go, inbox.go, check.go, context.go, lint.go, renumber.go, version.go,
-// ai.go.
+// list.go, inbox.go, check.go, context.go, lint.go, renumber.go, importadr.go,
+// version.go, ai.go.
 package cli
 
 import (
@@ -33,22 +33,23 @@ const usage = `usage: adj [--root DIR] <command> [arguments]
 adjudicate records project decisions as plain text.
 
 Commands:
-  adj init      create the config file and the store directory
-  adj ask       record an open question with options and a recommendation
-  adj decide    answer an open question
-  adj reject    close an open question without an answer
-  adj withdraw  close an open question because no answer is needed
-  adj supersede replace a decided record with another decided record
-  adj amend     correct the text of a record, keeping the old text in its history
-  adj show      print one record
-  adj list      list records, optionally filtered
-  adj inbox     list open questions, oldest first, with options
-  adj check     find out whether a topic is decided, open or not found
-  adj context   print the decided records as compact context for an agent
-  adj lint      check the store for broken records, links, cycles and conflicts
-  adj renumber  give records that share an ID new IDs
-  adj version   print the version
-  adj ai        print an AGENTS.md snippet that tells agents how to use adj
+  adj init       create the config file and the store directory
+  adj ask        record an open question with options and a recommendation
+  adj decide     answer an open question
+  adj reject     close an open question without an answer
+  adj withdraw   close an open question because no answer is needed
+  adj supersede  replace a decided record with another decided record
+  adj amend      correct the text of a record, keeping the old text in its history
+  adj show       print one record
+  adj list       list records, optionally filtered
+  adj inbox      list open questions, oldest first, with options
+  adj check      find out whether a topic is decided, open or not found
+  adj context    print the decided records as compact context for an agent
+  adj lint       check the store for broken records, links, cycles and conflicts
+  adj renumber   give records that share an ID new IDs
+  adj import-adr create records from a folder of ADRs (Nygard or MADR)
+  adj version    print the version
+  adj ai         print an AGENTS.md snippet that tells agents how to use adj
 
 Run adj <command> --help for a command's flags. --root DIR may come before the
 command or after it, but not both. The only other flags accepted before the
@@ -143,6 +144,8 @@ func RunWith(env Env, args []string, stdin io.Reader, stdout, stderr io.Writer) 
 		return c.runLint(args[1:])
 	case "renumber":
 		return c.runRenumber(args[1:])
+	case "import-adr":
+		return c.runImportADR(args[1:])
 	case "version":
 		return c.runVersion(args[1:])
 	case "ai":

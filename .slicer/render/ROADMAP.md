@@ -762,6 +762,14 @@ Owner decision 2026-10-18 (S20). The adj side of the slicer integration is a --r
 
 Implementer decision under C32 (S20). --ref values on adj list and adj context match exact, case-sensitive values as typed, with no trimming, because refs are opaque strings stored as typed; a blank or whitespace-only value exits 2 before store access.
 
+### C198 Windows support: LockFileEx lock, Windows CI, Windows zips
+
+Owner decisions 2026-10-18 (S36). The Windows ID lock is kernel32 LockFileEx through the standard library syscall package, on the same <store>/.adj.lock, with flock's semantics (held from ID scan to link, released on return or process death, never deleted, 5 s wait polling every 10 ms, error names .adj.lock). A read-only .adj.lock falls back to a read-only open, as C164 on unix. CI runs go vet and go test on windows-latest. release.yml adds windows amd64/arm64 .zip archives (adj.exe) in SHA256SUMS. Line endings are pinned by .gitattributes rather than a CI autocrlf step.
+
+### C199 Windows support: test layout, lock open seam, .gitattributes form
+
+Implementer decisions under C32 (S36), confirmed by the owner 2026-10-18. Acquire tests are built on every system with a lock (lock_acquire_test.go) so they run on unix too; tests that need unix mode bits or errno values live in lock_unix_test.go (not built on Windows); TestFilePermissions skips on Windows and the renumber test drops its chmod check there. The open logic is openLockFile (lock_open.go), parameterised by the open function and the permission-error test (EACCES on unix, ERROR_ACCESS_DENIED on Windows); the read-only open never creates the file and never accepts a directory. Lock range is the whole file; ERROR_LOCK_VIOLATION means held. .gitattributes is '* text=auto eol=lf' with -text on the deliberate CRLF fixtures and binary on *.png. The roundtrip test builds adj.exe on Windows.
+
 ### C39 LICENSE is a stub until the owner supplies the full GPL-3.0 text and copyright holder
 
 No GPL-3.0 text exists in the adjudicate repo and the workspace has no network, so the stub carries the SPDX line, the or-later notice and TODO(owner) markers.
@@ -824,26 +832,26 @@ PENDING OWNER CONFIRMATION - not decided. Source: Dependency/licensing notes (ma
 
 *Retired: Owner decided 2026-10-15: see decision C31 (GPL-3.0-or-later)..*
 
-39 items · — 7 · done 31 · retired 1
+39 items · — 5 · done 33 · retired 1
 
 | # | Slice | Title | Size | Effort | Trees | Findings | Status |
 |---|---|---|---|---|---|---|---|
-| 1 | S36 | Windows support | M | 2 | store | AGENTS.md Store and config (lock_other.go: no lock, bounded retry only); release.yml builds no windows archive | — |
-| 2 | S38 | adj repos | M | 2 | cli | Owner decision 2026-10-18 (S18 config): user config file managed by adj repos add/remove/list | — |
-| 3 | [S18](slices/S18.md) | Cross-repo inbox | M | 2 | cli | PROJECT.md Feature tiers (Later); Open decisions 6 | — |
-| 4 | [S19](slices/S19.md) | TUI or static HTML inbox | M | 2 | cli | PROJECT.md Feature tiers (Later) | — |
-| 5 | [S22](slices/S22.md) | Import from ADR folders | L | 2 | cli | PROJECT.md Feature tiers (Later) | — |
-| 6 | S37 | Release 0.2.0 | S | 1 | release | CHANGELOG.md and docs/json.md 1.0 rule | — |
-| 7 | S39 | Release 1.0 | S | 1 | release | CHANGELOG.md and docs/json.md 1.0 rule; owner 2026-10-18: 0.2.0 first, 1.0 later | — |
-| 8 | [S21](slices/S21.md) | Later: optional owner-only decide enforcement | M | 2 | later | PROJECT.md Feature tiers (Later); Open decisions 5; Non-goals · Owner 2026-10-18: owner-only decide stays a convention (C11, C27); no enforcement planned | retired |
+| 1 | S38 | adj repos | M | 2 | cli | Owner decision 2026-10-18 (S18 config): user config file managed by adj repos add/remove/list | — |
+| 2 | [S18](slices/S18.md) | Cross-repo inbox | M | 2 | cli | PROJECT.md Feature tiers (Later); Open decisions 6 | — |
+| 3 | [S19](slices/S19.md) | TUI or static HTML inbox | M | 2 | cli | PROJECT.md Feature tiers (Later) | — |
+| 4 | S37 | Release 0.2.0 | S | 1 | release | CHANGELOG.md and docs/json.md 1.0 rule | — |
+| 5 | S39 | Release 1.0 | S | 1 | release | CHANGELOG.md and docs/json.md 1.0 rule; owner 2026-10-18: 0.2.0 first, 1.0 later | — |
+| 6 | [S21](slices/S21.md) | Later: optional owner-only decide enforcement | M | 2 | later | PROJECT.md Feature tiers (Later); Open decisions 5; Non-goals · Owner 2026-10-18: owner-only decide stays a convention (C11, C27); no enforcement planned | retired |
 
 ---
 
 | # | Slice | Title | Size | Effort | Trees | Findings | Status |
 |---|---|---|---|---|---|---|---|
-| 9 | [S34](slices/S34.md) | Dogfood conventions | S | 1 | decisions | S20 notes 2026-10-16/17, items 2 (tag case) and 3 (keys) | done |
-| 10 | [S20](slices/S20.md) | Slicer integration | M | 2 | cli | PROJECT.md Feature tiers (Later); Non-goals (not replacing slicer); Risks (overlap with slicer catalog) | done |
-| 11 | [S35](slices/S35.md) | adj context size budget | S | 1 | cli | PROJECT.md Non-goals (not in 0.1.0: size budget flag); Risks: context bloat | done |
+| 7 | [S34](slices/S34.md) | Dogfood conventions | S | 1 | decisions | S20 notes 2026-10-16/17, items 2 (tag case) and 3 (keys) | done |
+| 8 | [S20](slices/S20.md) | Slicer integration | M | 2 | cli | PROJECT.md Feature tiers (Later); Non-goals (not replacing slicer); Risks (overlap with slicer catalog) | done |
+| 9 | [S35](slices/S35.md) | adj context size budget | S | 1 | cli | PROJECT.md Non-goals (not in 0.1.0: size budget flag); Risks: context bloat | done |
+| 10 | [S36](slices/S36.md) | Windows support | M | 2 | store | AGENTS.md Store and config (lock_other.go: no lock, bounded retry only); release.yml builds no windows archive | done |
+| 11 | [S22](slices/S22.md) | Import from ADR folders | L | 2 | cli | PROJECT.md Feature tiers (Later) | done |
 | 12 | [S01](slices/S01.md) | Confirm open decisions | S | 1 | decisions | PROJECT.md Open decisions 1-7; Core concepts (kind); Dependency/licensing notes | done |
 | 13 | [S02](slices/S02.md) | Project scaffolding | S | 1 | scaffold | PROJECT.md Stack recommendation; Dependency/licensing notes | done |
 | 14 | [S03](slices/S03.md) | Record model and lifecycle transitions | M | 2 | model | PROJECT.md Core concepts / data model; Milestone 1 | done |

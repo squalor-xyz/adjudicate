@@ -273,6 +273,25 @@ func TestValidateAcceptsEveryKnownHistoryEvent(t *testing.T) {
 	}
 }
 
+// adj import-adr writes one import entry, with the note "from FILE", in place
+// of the ask and decide entries a record made by hand has (S22).
+func TestValidateAcceptsAnImportEntry(t *testing.T) {
+	r := validRecord(StatusOpen)
+	r.History = []HistoryEntry{{Date: "2026-10-01", Event: EventImport, Note: "from docs/adr/0001-x.md"}}
+	if err := r.Validate(); err != nil {
+		t.Fatalf("Validate() = %v, want nil", err)
+	}
+	if EventImport != "import" || !EventImport.Valid() {
+		t.Errorf("EventImport = %q, Valid() = %v; want %q and true", EventImport, EventImport.Valid(), "import")
+	}
+	// Only an amend entry has was.
+	r.History[0].Was = &Was{Title: ptr("old")}
+	err := r.Validate()
+	if err == nil || !strings.Contains(err.Error(), "only an amend entry has was") {
+		t.Errorf("Validate() = %v, want the error that only an amend entry has was", err)
+	}
+}
+
 func TestValidateDoesNotRequireDecidedBy(t *testing.T) {
 	// decided_by is attribution, not authentication; lint warns, Validate does not (C27).
 	r := validRecord(StatusDecided)

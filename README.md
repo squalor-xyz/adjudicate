@@ -362,6 +362,56 @@ next free ID, and its old file is removed. Links to a shared ID cannot be told
 apart, so renumber stops until you check them and pass `--keep-links`. See
 `adj renumber --help`.
 
+### `adj import-adr DIR [flags]`
+
+Owner-only. Creates one record for each ADR in the folder DIR, so a team that
+keeps ADRs can start with its history. It reads the layout adr-tools writes
+(Michael Nygard's template: `# 7. Title`, `Date: 2020-05-01`, then `## Status`,
+`## Context`, `## Decision` and `## Consequences`) and MADR (optional YAML front
+matter or a `Status:` line, then `## Context and Problem Statement`,
+`## Considered Options` and `## Decision Outcome`). Only files directly in DIR
+whose names start with a number (`0007-use-postgres.md`,
+`adr-0007-use-postgres.md`) are read, and they are never changed. DIR must be
+inside the repo.
+
+```sh
+adj import-adr docs/adr --by "the team" --tag adr
+```
+
+The first word of the status gives the record's status: `accepted` is
+`decided`, `proposed` is `open`, `rejected` is `rejected`, `deprecated` is
+`withdrawn`, and `superseded` (`Superseded by [4. Title](0004-title.md)` or
+`superseded by ADR-0004`) is `superseded` and linked to the record made from
+that ADR, if it is in the same run and is accepted or itself superseded and the
+links make no loop; if not, the record is `decided` and a warning says why. The
+ADR's Decision section (MADR: the chosen option) is the decision. The rationale
+is the MADR justification (the text after "because"), else the Consequences
+section, else the Context; for a rejected or withdrawn ADR it is the
+justification, then the Decision text, then the Consequences, then the Context.
+The ADR's date is `created` and `decided_at`; an ADR with no date, a date that
+is not `YYYY-MM-DD` or not a real date, or a date after the run date gets the
+run date and a warning. `--by NAME` is `decided_by`, else `$ADJ_DECIDED_BY`, else the ADR's
+deciders field, else blank. Each record has the refs `FILE` (its path from the
+repo root) and `ADR-0007`, and one `import` history entry.
+
+Every file is checked first: a file with no title, no known status, no decision
+(when accepted) or no rationale, or that cannot be read, stops the import with
+nothing written, and each problem is named. If a write fails partway, the
+records created so far stay in the store and are printed, and the error lists
+the supersede links not yet written as `adj supersede OLD --by NEW` commands.
+A file is already imported when a record has an `import` history entry for it,
+so you can run the import again after adding ADRs; a record you asked by hand
+with the file as a ref does not count. A skipped file is read again only for its
+"Superseded by" line: if its record is still `decided` and the file now says it
+is superseded by an ADR whose record is `decided` (adr-tools' `adr new -s`), a
+warning gives the `adj supersede OLD --by NEW` command to run. The import does
+not write that link itself. An ADR file that is a symbolic link is not read, and
+a warning says so. It prints
+`FILE -> ID (STATUS)` per file, or `FILE: already imported as ID`; warnings go
+to stderr. `--dry-run` prints `FILE -> would create (STATUS)` and writes
+nothing. A folder with no ADR files prints nothing and succeeds. See
+`adj import-adr --help`.
+
 ### `adj version [--root DIR]`
 
 Prints the version: the release override set with `-ldflags -X`, else what Go

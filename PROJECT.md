@@ -209,8 +209,10 @@ Empty fields are left out. The fields, with their exact types, are in
 `withdrawn`. `adj supersede OLD --by NEW` links two decided records and marks
 OLD `superseded`; NEW stays `decided`. No transition leaves `superseded`. Every
 transition, an `adj amend` and an `adj renumber` appends a dated entry to the
-history, so a record shows what happened and when. The history's `event` is
-`ask`, `decide`, `reject`, `withdraw`, `supersede`, `renumber` or `amend`.
+history, so a record shows what happened and when. A record made by
+`adj import-adr` from an ADR file has one `import` entry instead of `ask` and
+`decide`. The history's `event` is `ask`, `decide`, `reject`, `withdraw`,
+`supersede`, `renumber`, `amend` or `import`.
 
 **Store and config:** `adj init` writes `.adjudicate.json`
 (`{"store": "decisions"}`) at the repo root and creates the store directory.
@@ -241,6 +243,7 @@ when it finds an error and 0 for a clean store or warnings only.
 | `adj context [--tag T]... [--ref REF]... [--key-prefix P] [--format md\|json] [--max-bytes N]` | Print the decided records as compact context for an agent. With `--max-bytes N`, keep the newest decisions whose output fits in N bytes (ID order, an `N decisions omitted` line, JSON `omitted`). |
 | `adj lint [--json]` | Check the store for broken records, links, cycles and conflicts. |
 | `adj renumber [--keep-links]` | Owner-only. Give record files that share an ID new IDs. |
+| `adj import-adr DIR [--tag T]... [--by NAME] [--dry-run]` | Owner-only. Create one record for each ADR in DIR, in the format adr-tools writes (Nygard) or MADR; see below. |
 | `adj version`, `adj --version` | Print the version (see below). |
 | `adj ai` | Print the snippet for an agent's AGENTS.md. |
 
@@ -255,6 +258,41 @@ surrounding whitespace). A blank value exits 2 before store access. Ref filters
 combine with the other filters, before the context size budget is applied.
 For slicer slice records use `adj list --ref S20 --json` (S20); neither tool
 depends on the other.
+
+**Importing ADRs.** `adj import-adr DIR` (S22) moves a team that keeps ADRs
+to adj with its history. DIR must be inside the repo; the files in it (not in
+subfolders) whose names start with a number (`0007-use-postgres.md`,
+`adr-0007-use-postgres.md`) are read, in ADR number order, and never changed.
+Two layouts are read: Michael Nygard's template as adr-tools writes it
+(`# N. Title`, a `Date:` line, `## Status`, `## Context`, `## Decision`,
+`## Consequences`) and MADR (optional YAML front matter, or `Status:` and
+`Date:` lines, with `## Context and Problem Statement`, `## Considered
+Options`, `## Decision Outcome`); the front matter is read by hand, only for its
+flat `key: value` lines. The first word of the status, in any case, gives the
+record's status: `accepted` is `decided` (the Decision section, or the MADR
+chosen option, is the `decision`; the MADR justification after `because`, else
+the Consequences section, else the Context, is the `rationale`), `proposed` is
+`open` (its decision is the `recommendation`), `rejected` is `rejected`,
+`deprecated` is `withdrawn`, and `superseded by ...` is `superseded` with the
+links to the ADR that replaced it, found by file name or number, when that ADR
+is in the same run and is accepted or itself superseded. Otherwise, or in a
+loop, the record is `decided` and a warning says why. The ADR date is `created`
+and `decided_at` (the run date, with a warning, if there is none, it is not a
+real date or it is after the run date); MADR
+Considered Options are `options`; `decided_by` is `--by`, else
+`$ADJ_DECIDED_BY`, else the ADR's deciders, else blank (so `adj lint` warns); the
+record's `refs` are the file's path from the repo root and `ADR-NNNN`, and its
+history is one `import` entry (`from FILE`). A file is skipped, so a second run
+adds only new files, when a record has an `import` entry for it (a record asked
+by hand with the file as a ref does not count); a skipped file is read again
+only to warn, with the `adj supersede OLD --by NEW` command, when its record is
+still `decided` but the file now says it is superseded by an ADR whose record is
+`decided`. A write that fails partway leaves the records created so far
+(printed) and the error lists the links not yet written as `adj supersede`
+commands. An ADR file that is a symbolic link is skipped with a warning. Every
+file is checked before any record is written. `--dry-run` writes nothing. Unlike a hand-made
+question, an imported record was never asked or decided with adj, so it has no
+`ask` or `decide` entry (C32 decision S22).
 
 **The version.** `adj version` prints one line. A binary built with
 `-ldflags "-X github.com/squalor-xyz/adjudicate/internal/cli.versionOverride=v0.1.0"`
@@ -399,7 +437,6 @@ owner re-prioritized them on 2026-10-18, so they are open work, not parked:
 - A cross-repo inbox: aggregate open questions from several configured repos
   (S18).
 - A TUI or a local static HTML page for clearing the inbox faster (S19).
-- Import from existing ADR folders (S22).
 - A 1.0 release that freezes the JSON shapes (S37).
 
 Optional enforcement of owner-only decide (a git hook or signed-commit check)
