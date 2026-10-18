@@ -3,6 +3,7 @@
 package cli
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -471,5 +472,28 @@ func TestContextBudgetJSONKeysAndExampleMatchTheDocs(t *testing.T) {
 	// never there.
 	if plain := docsTableKeys(t, "## `adj context --format json`"); !reflect.DeepEqual(plain, []string{"decision", "id", "key", "rationale", "title"}) {
 		t.Errorf("context entry table = %v; the omitted key belongs in its own section", plain)
+	}
+}
+
+func TestReposJSONShape(t *testing.T) {
+	env, path, repo := reposEnv(t)
+	writeReposConfig(t, path, `{"repos":[`+quoteRepo(repo)+`]}`)
+	r := run(env, "", "repos", "list", "--json")
+	if r.code != 0 || r.stderr != "" {
+		t.Fatalf("list JSON: %+v", r)
+	}
+	var got map[string][]string
+	if err := json.Unmarshal([]byte(r.stdout), &got); err != nil {
+		t.Fatal(err)
+	}
+	if len(got) != 1 || len(got["repos"]) != 1 || got["repos"][0] != repo {
+		t.Fatalf("JSON shape: %s", r.stdout)
+	}
+	var example map[string][]string
+	if err := json.Unmarshal([]byte(docsJSONExample(t, "## `adj repos list --json`")), &example); err != nil {
+		t.Fatal(err)
+	}
+	if len(example) != 1 || len(example["repos"]) != 1 {
+		t.Fatalf("documented JSON shape: %v", example)
 	}
 }

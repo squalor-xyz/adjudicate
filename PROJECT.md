@@ -217,6 +217,13 @@ history, so a record shows what happened and when. The history's `event` is
 Commands find the root as the nearest directory, from the working directory
 upwards, that holds `.adjudicate.json`; `--root DIR` names it instead.
 
+**User config:** `$XDG_CONFIG_HOME/adjudicate/config.json`, falling back to
+`$HOME/.config/adjudicate/config.json` when XDG_CONFIG_HOME is unset or empty
+(on every OS), holds `{"repos": ["/absolute/repo/path", ...]}`. A missing file
+is an empty list. Unknown keys, bad JSON and non-absolute repo paths are errors.
+Writes create the directory (0755) and atomically rename a same-directory temp
+file over the config (0644). This is separate from `.adjudicate.json`.
+
 ## Commands
 
 Every command takes `--root DIR` except `adj ai`. Exit codes for all of them:
@@ -241,6 +248,7 @@ when it finds an error and 0 for a clean store or warnings only.
 | `adj context [--tag T]... [--ref REF]... [--key-prefix P] [--format md\|json] [--max-bytes N]` | Print the decided records as compact context for an agent. With `--max-bytes N`, keep the newest decisions whose output fits in N bytes (ID order, an `N decisions omitted` line, JSON `omitted`). |
 | `adj lint [--json]` | Check the store for broken records, links, cycles and conflicts. |
 | `adj renumber [--keep-links]` | Owner-only. Give record files that share an ID new IDs. |
+| `adj repos add [PATH]`, `adj repos remove PATH`, `adj repos list [--json]` | Manage the user repo list; add defaults to the current repo root (`--root`), explicit relative paths use the working directory. Store cleaned absolute strings without resolving symlinks. Add requires `.adjudicate.json`; duplicates are a no-op. Remove requires a listed path, else exit 1. Both print nothing. List prints paths in insertion order without probing them; JSON is `{"repos": [...]}` (empty: `[]`). `--root` is otherwise unused; no current repo is required. |
 | `adj version`, `adj --version` | Print the version (see below). |
 | `adj ai` | Print the snippet for an agent's AGENTS.md. |
 
@@ -340,6 +348,7 @@ command, flag or variable that does not exist.
   record file format.
 - `internal/store`: one repo's record directory, its config, ID allocation with
   the lock, and `Renumber`.
+- `internal/userconfig`: per-user config path resolution, strict loading and atomic saving.
 - `internal/query`: record filters and the `check` search.
 - `internal/lint`: the `adj lint` checks.
 - `internal/render`: text and JSON output.

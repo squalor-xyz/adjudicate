@@ -8,6 +8,12 @@ but never renames, removes or retypes an existing key.
 ## Unreleased
 
 ### Commands
+- `adj repos add [PATH]`, `remove PATH` and `list [--json]` manage a user repo
+  list in `$XDG_CONFIG_HOME/adjudicate/config.json` (fallback:
+  `$HOME/.config/adjudicate/config.json`). Add defaults to the current root,
+  stores cleaned absolute paths and treats duplicates as a no-op. Remove exits
+  1 for an unlisted path; list prints stored paths without probing them.
+  Config writes use a same-directory temporary file and atomic rename.
 - `adj list` and `adj context` accept repeatable `--ref REF` filters: every ref
   must match exactly, case-sensitively and as typed. Blank values exit 2 before
   store access. Filters combine with the other criteria, before the context
@@ -20,6 +26,7 @@ but never renames, removes or retypes an existing key.
   exit code is 1. Without the flag the output is unchanged.
 
 ### JSON shapes
+- `adj repos list --json` prints `{"repos": [...]}` (empty: `[]`).
 - `adj context --format json --max-bytes N` adds a top-level `omitted` key (the
   number of records left out, `0` included). Without `--max-bytes` the output
   has no `omitted` key and is unchanged. See [docs/json.md](docs/json.md).

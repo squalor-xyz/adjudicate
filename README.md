@@ -347,6 +347,28 @@ next free ID, and its old file is removed. Links to a shared ID cannot be told
 apart, so renumber stops until you check them and pass `--keep-links`. See
 `adj renumber --help`.
 
+### `adj repos add [PATH]`, `adj repos remove PATH`, `adj repos list [--json]`
+
+Manage the per-user list of repos. `add` defaults to the current repo root
+(`--root DIR` overrides that default); an explicit PATH is used instead.
+Relative paths are resolved against the working directory and stored as cleaned
+absolute paths, without resolving symlinks. A repo must hold a regular
+`.adjudicate.json` file. Adding a listed path succeeds without rewriting the
+file. `remove` needs a PATH and exits 1 without writing if it is not listed;
+it can remove a repo that no longer exists. Add and remove print nothing.
+`list` prints one stored path per line in insertion order, or
+`{"repos": [...]}` with `--json`; it does not check whether repos still exist.
+An empty list prints nothing (JSON: `{"repos": []}`). `--root` is accepted but
+unused for explicit paths and for list/remove; these need no current repo.
+
+The list lives in `$XDG_CONFIG_HOME/adjudicate/config.json`, falling back to
+`$HOME/.config/adjudicate/config.json` when XDG_CONFIG_HOME is unset or empty,
+on every OS. If both variables are unset or empty, the command exits 1.
+A missing file is an empty list. Bad JSON, unknown keys or non-absolute repo
+paths exit 1 and leave the file unchanged. Writes create the directory (0755)
+and replace the config (0644) atomically using a temp file in the same directory
+and rename. This user config is separate from `.adjudicate.json`.
+
 ### `adj version [--root DIR]`
 
 Prints the version: the release override set with `-ldflags -X`, else what Go
@@ -362,7 +384,7 @@ and takes no argument.
 
 ## Output for scripts
 
-`show`, `list`, `inbox`, `check` and `lint` print JSON with `--json`; `context`
+`show`, `list`, `inbox`, `check`, `lint` and `repos list` print JSON with `--json`; `context`
 does it with `--format json`. The shapes are in [docs/json.md](docs/json.md).
 Until 1.0 a shape may change in a minor release; the CHANGELOG names every
 change. From 1.0 a release may add keys but never renames, removes or retypes
@@ -370,6 +392,7 @@ an existing key.
 
 ## Environment
 
+- `XDG_CONFIG_HOME`, else `$HOME/.config`: base directory for the user repo list.
 - `ADJ_ASKED_BY`: the default `--by` for `adj ask`.
 - `ADJ_DECIDED_BY`: the default `--by` for `decide`, `reject` and `withdraw`.
 

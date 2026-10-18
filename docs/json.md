@@ -590,3 +590,17 @@ record file is not renamed when the title changes.
   }
 }
 ```
+
+## `adj repos list --json`
+
+One JSON object with exactly one key, `repos`: an array of absolute repo path
+strings, in insertion order. Paths are printed as stored, without checking
+whether the repos still exist. A missing config file gives `{"repos": []}`.
+
+```json
+{
+  "repos": [
+    "/home/owner/project"
+  ]
+}
+```

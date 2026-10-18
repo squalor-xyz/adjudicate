@@ -300,10 +300,77 @@
       "id": "S38",
       "title": "adj repos: manage the user repo list",
       "short_title": "adj repos",
-      "status": "open",
+      "status": "done",
       "has_slice": true,
       "depends_on": [],
-      "note_records": [],
+      "note_records": [
+        {
+          "id": "b82ce0ad-a2cd-4282-9a60-ee0ee9ebfa53",
+          "kind": "",
+          "text": "**2026-10-18** — C32 decision: use internal/userconfig for per-user config, separate from the repo-only store package (keeps store scoped to one repo).",
+          "created_at": "2026-10-18T19:30:07Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "be15bfdf-c0c1-4794-ad82-b4ab39f5df1d",
+          "kind": "",
+          "text": "**2026-10-18** — C32 decision: --root supplies the default PATH for repos add only; otherwise it is accepted but unused (explicit PATH and user-wide list/remove do not require a current repo).",
+          "created_at": "2026-10-18T19:30:07Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "d07c0c73-8f69-4df6-86fb-5a6cc938ac04",
+          "kind": "",
+          "text": "**2026-10-18** — C32 decision: removing an unlisted path exits 1 without writing (makes a mistaken removal visible).",
+          "created_at": "2026-10-18T19:30:07Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "da8062b2-271f-4323-936d-5f53edda79cf",
+          "kind": "",
+          "text": "**2026-10-18** — C32 decision: repos list prints stored paths without checking or marking missing repos (S18 owns warnings).",
+          "created_at": "2026-10-18T19:30:07Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "c447985b-5c98-47fc-91c5-72a505032ea3",
+          "kind": "",
+          "text": "**2026-10-18** — C32 decision: compare cleaned absolute path strings without resolving symlinks, preserving insertion order (matches the specified stored paths without filesystem identity checks).",
+          "created_at": "2026-10-18T19:30:07Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "95b1cab0-3701-4a2e-8e9b-04123d6a1c9d",
+          "kind": "",
+          "text": "**2026-10-18** — Review round 1: VERDICT PASS, no blockers. Accepted lows: AGENTS.md comma, AGENTS.md Commands entry wording (Env.Root/Env.Getwd), README stray blank line, config_test.go 0755 dir assert under umask. Later notes: (a) relay config read-modify-write has no lock, concurrent repos add can drop an entry (S18); (b) Save replaces a symlinked config.json and does not fsync; (c) owner call: whether a relative XDG_CONFIG_HOME/HOME counts as unset (XDG spec says ignore).",
+          "created_at": "2026-10-18T19:42:59Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        }
+      ],
       "claim": null,
       "fields": {
         "size": "M",
@@ -323,7 +390,7 @@
         "importance": 2,
         "urgency": 2,
         "effort": 2,
-        "attempts": 0
+        "attempts": 1
       }
     },
     {

@@ -28,13 +28,13 @@ library only.
   and working directory as parameters for tests. Each command's handler is in
   its own file (`init.go`, `ask.go`, `decide.go`, which holds decide,
   reject and withdraw, `supersede.go`, `amend.go`, `show.go`, `list.go`,
-  `inbox.go`, `check.go`, `context.go`, `lint.go`, `renumber.go`, `version.go`
-  and `ai.go`);
+  `inbox.go`, `check.go`, `context.go`, `lint.go`, `renumber.go`, `version.go`,
+  `repos.go` and `ai.go`);
   `cli.go` holds the dispatch and shared helpers.
 - `internal/commands`: what each command does to the store, apart from
   parsing, output and exit codes (`init.go`, `ask.go`, `decide.go`,
   `supersede.go`, `amend.go`, `show.go`, `list.go`, `inbox.go`, `check.go`,
-  `context.go`, `lint.go`, `renumber.go`, `ai.go`). `ai.md` is the agent
+  `context.go`, `lint.go`, `renumber.go`, `repos.go`, `ai.go`). `ai.md` is the agent
   snippet, embedded by `ai.go`.
   `errors.go` holds `UsageError`, the error that exits 2.
 - `internal/model`: the record type, validation, status transitions and the
@@ -43,13 +43,15 @@ library only.
 - `internal/store`: one repo's record directory (`store.go`), its config
   (`config.go`), `Renumber` (`renumber.go`) and the ID lock (`lock_unix.go`,
   `lock_other.go`); see "Store and config" below.
+- `internal/userconfig`: per-user repo list, injected environment path resolution,
+  strict loading and atomic saving; separate from repo config.
 - `internal/query`: record filters and the `check` search, pure functions over
   records (`filter.go`, `search.go`).
 - `internal/lint`: `adj lint`'s checks (`lint.go`): reads each record file with
   `model.Parse` through `store.Files`, so it works on a store that `List`
   refuses, and returns findings; see the `adj lint` entry below.
 - `internal/render`: text and JSON output (`text.go`, `inbox.go`, `check.go`,
-  `context.go`, `lint.go`, `json.go`);
+  `context.go`, `lint.go`, `repos.go`, `json.go`);
   the JSON shapes are in `docs/json.md`, and `internal/cli/jsonshape_test.go`
   pins each read command's `--json` keys to it.
 - `README.md`: what adjudicate is, how to build it and use each command.
@@ -284,6 +286,22 @@ below). `adj lint` exits 1 when it finds an error (see its entry).
   Owner-only: the agent snippet tells agents to report a duplicate ID and not
   to run it (C153). A name taken by a directory or another writer is skipped
   for the next ID (C154).
+- `adj repos add [PATH]`, `adj repos remove PATH`, `adj repos list [--json]`
+  (S38): manage `$XDG_CONFIG_HOME/adjudicate/config.json`, falling back to
+  `$HOME/.config/adjudicate/config.json` when XDG_CONFIG_HOME is unset or empty;
+  neither variable set is an error (exit 1). Shape: `{"repos": [...]}`. A missing
+  file is empty; bad JSON, unknown keys or non-absolute paths exit 1 naming the
+  file, without writing. Add defaults to the repo root (`--root`, else
+  discovery from the working directory); explicit paths resolve against the
+  working directory. Paths are cleaned absolute strings, compared without
+  resolving symlinks. Add needs
+  a regular `.adjudicate.json`; a listed path is a byte-preserving no-op.
+  Remove needs a PATH; unlisted exits 1 without writing, and stale paths can be
+  removed. Add/remove print nothing. List prints one stored path per line in
+  insertion order, without probing repos; JSON is `{"repos": []}` when empty.
+  `--root` is otherwise accepted but unused. Unknown subcommands, extra args
+  and blank PATH exit 2. Writes create the directory (0755) and atomically
+  replace the file (0644) using a same-directory temp and rename.
 - `adj version` and `adj --version`: print one line from Go build information,
   or the release override set with `-ldflags -X`. `version` reads no repo and
   needs no config; it accepts `--root` but does not use it. The leading
@@ -392,6 +410,8 @@ Never run `go env -w`; it writes outside the repo. Do not add a Makefile.
   (`cli.Env.Root`) and fails on any use of the real working directory; a test
   of root discovery bounds the walk with `cli.Env.Stop`. No test calls
   `os.Chdir`.
+- User config tests inject `Getenv` with XDG_CONFIG_HOME/HOME pointing into
+  worktree temp dirs; never touch the real home or user config.
 - Only the owner makes the decide transition (`adj decide`, C27) and the
   supersede transition (`adj supersede`). Agents ask, check and read; an agent
   may withdraw its own question (`adj withdraw`).
