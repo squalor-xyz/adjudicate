@@ -1,6 +1,6 @@
 {
   "id": "S22",
-  "title": "Later: import from ADR folders",
+  "title": "Import from ADR folders",
   "lead": [
     "Import records from existing ADR folders."
   ],
@@ -8,7 +8,7 @@
   "findings_note": "PROJECT.md Feature tiers (Later)",
   "size": "M",
   "flags": [],
-  "trees_note": "later",
+  "trees_note": "cli",
   "trees_plural": false,
   "boundary": "**Not in this slice:** exporting to ADR format (not mentioned in PROJECT.md).",
   "sections": [

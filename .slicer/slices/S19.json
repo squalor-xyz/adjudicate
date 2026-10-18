@@ -1,6 +1,6 @@
 {
   "id": "S19",
-  "title": "Later: TUI or static HTML inbox",
+  "title": "TUI or static HTML inbox",
   "lead": [
     "A TUI or a local static HTML page for clearing the inbox faster."
   ],
@@ -8,7 +8,7 @@
   "findings_note": "PROJECT.md Feature tiers (Later)",
   "size": "M",
   "flags": [],
-  "trees_note": "later",
+  "trees_note": "cli",
   "trees_plural": false,
   "boundary": "**Not in this slice:** a hosted service or web server (v1 non-goal).",
   "sections": [

@@ -2,10 +2,338 @@
   "version": 9,
   "id_prefix": "S",
   "id_width": 2,
-  "next_id": 34,
+  "next_id": 38,
   "preamble": "Roadmap for **adjudicate** (CLI command `adj`; formerly the working name \"dlog\"): a Go, standard-library-only CLI that records project decisions as plain files in the repo. Owner decisions from 2026-10-15 are catalog records C23-C33.",
   "passes": [],
   "items": [
+    {
+      "id": "S34",
+      "title": "Dogfood conventions: tag case and keys in decisions/",
+      "short_title": "Dogfood conventions",
+      "status": "open",
+      "has_slice": false,
+      "depends_on": [],
+      "note_records": [
+        {
+          "id": "2dbd4826-7c8b-410b-ade8-1536fdcec2fa",
+          "kind": "",
+          "text": "**2026-10-18** — 2026-10-18 re-prioritization: also update PROJECT.md Later (~384-396): S21 is retired and S18-S20, S22 are now open, not later.",
+          "created_at": "2026-10-18T14:42:20Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        }
+      ],
+      "claim": null,
+      "fields": {
+        "size": "S",
+        "flags": [],
+        "trees": [
+          "decisions"
+        ],
+        "trees_literal": false,
+        "findings": "S20 notes 2026-10-16/17, items 2 (tag case) and 3 (keys)",
+        "discovered_from": "",
+        "parent": "",
+        "cites": [],
+        "key": "",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 2,
+        "urgency": 2,
+        "effort": 1,
+        "attempts": 0
+      }
+    },
+    {
+      "id": "S20",
+      "title": "Slicer integration",
+      "short_title": "Slicer integration",
+      "status": "open",
+      "has_slice": true,
+      "depends_on": [
+        "S08"
+      ],
+      "note_records": [
+        {
+          "id": "8f8c274c-bf1a-4a77-93b3-21bdfa7b43e8",
+          "kind": "",
+          "text": "**2026-10-16** — **2026-10-16** — From S17 dogfood review (adj store C23-C32 recorded as adj #1-#10): (1) The record schema has a refs field (internal/model/record.go:105) but adj ask has no flag to set it, so the slicer catalog ID lives only in free-text context plus a lowercase tag (c23). Consider a structured ref flag. (2) Tag case: tags are lowercase (c23) while catalog IDs are C23; adj check matches case-insensitively. Convention call for the owner. (3) No record sets a key, though check and conflict detection use keys; owner may want keys (e.g. project.license) in the dogfood store. (4) adj cannot express a recommendation that is not among the options (the label must be an option, docs/json.md:458), so C26 (adj #4) needed the recommendation added as a fourth option. (5) decided_at is the run date, so a backdated decision cannot record its real date. (6) adj has no way to correct a record after ask/decide beyond reject, withdraw or supersede; a slightly-off tradeoffs text on #2 (C24 Python tradeoffs repeat the recommendation reasoning) stays as is. (7) Flags must follow the subcommand: adj --root DIR list exits 2 with unknown command; adj list --root DIR works (documented, but easy to trip on).",
+          "created_at": "2026-10-16T03:36:32Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "958f9f72-4b25-49b2-8fe3-1b5d7e98b63c",
+          "kind": "",
+          "text": "**2026-10-16** — **2026-10-16** — Owner question from S17: decisions/.adj.lock (empty) is untracked and not git-ignored in the adjudicate repo; AGENTS.md says adj writes no .gitignore. Decide whether this repo ignores it or commits it. The S17 commit left it out (untracked).",
+          "created_at": "2026-10-16T03:36:32Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "f3764e80-0112-4c02-894d-557b3184bc56",
+          "kind": "",
+          "text": "**2026-10-17** — 2026-10-17 release review: friction items 1, 4, 5, 6 and 7 above moved to S27, S28, S29, S30 and S26 for 0.1.0 (owner decisions C166-C168). Items 2 (tag case) and 3 (keys in the dogfood store) stay here as conventions.",
+          "created_at": "2026-10-17T12:49:43Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "98b7daf8-5124-49cc-aea7-937c80816b3f",
+          "kind": "",
+          "text": "**2026-10-18** — 2026-10-18: the 2026-10-16 .adj.lock question is resolved: .gitignore ignores /decisions/.adj.lock. Items 2 (tag case) and 3 (keys) moved to their own slice (dogfood conventions).",
+          "created_at": "2026-10-18T14:42:20Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        }
+      ],
+      "claim": null,
+      "fields": {
+        "size": "M",
+        "flags": [],
+        "trees": [
+          "cli"
+        ],
+        "trees_literal": false,
+        "findings": "PROJECT.md Feature tiers (Later); Non-goals (not replacing slicer); Risks (overlap with slicer catalog)",
+        "discovered_from": "",
+        "parent": "",
+        "cites": [],
+        "key": "",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 2,
+        "urgency": 2,
+        "effort": 2,
+        "attempts": 0
+      }
+    },
+    {
+      "id": "S35",
+      "title": "adj context size budget",
+      "short_title": "adj context size budget",
+      "status": "open",
+      "has_slice": false,
+      "depends_on": [],
+      "note_records": [],
+      "claim": null,
+      "fields": {
+        "size": "S",
+        "flags": [],
+        "trees": [
+          "cli"
+        ],
+        "trees_literal": false,
+        "findings": "PROJECT.md Non-goals (not in 0.1.0: size budget flag); Risks: context bloat",
+        "discovered_from": "",
+        "parent": "",
+        "cites": [],
+        "key": "",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 2,
+        "urgency": 2,
+        "effort": 1,
+        "attempts": 0
+      }
+    },
+    {
+      "id": "S36",
+      "title": "Windows support: ID lock and release archive",
+      "short_title": "Windows support",
+      "status": "open",
+      "has_slice": false,
+      "depends_on": [],
+      "note_records": [],
+      "claim": null,
+      "fields": {
+        "size": "M",
+        "flags": [],
+        "trees": [
+          "store"
+        ],
+        "trees_literal": false,
+        "findings": "AGENTS.md Store and config (lock_other.go: no lock, bounded retry only); release.yml builds no windows archive",
+        "discovered_from": "",
+        "parent": "",
+        "cites": [],
+        "key": "",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 2,
+        "urgency": 2,
+        "effort": 2,
+        "attempts": 0
+      }
+    },
+    {
+      "id": "S18",
+      "title": "Cross-repo inbox",
+      "short_title": "Cross-repo inbox",
+      "status": "open",
+      "has_slice": true,
+      "depends_on": [
+        "S09",
+        "S01"
+      ],
+      "note_records": [],
+      "claim": null,
+      "fields": {
+        "size": "M",
+        "flags": [],
+        "trees": [
+          "cli"
+        ],
+        "trees_literal": false,
+        "findings": "PROJECT.md Feature tiers (Later); Open decisions 6",
+        "discovered_from": "",
+        "parent": "",
+        "cites": [
+          "C28"
+        ],
+        "key": "",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 2,
+        "urgency": 2,
+        "effort": 2,
+        "attempts": 0
+      }
+    },
+    {
+      "id": "S19",
+      "title": "TUI or static HTML inbox",
+      "short_title": "TUI or static HTML inbox",
+      "status": "open",
+      "has_slice": true,
+      "depends_on": [
+        "S18"
+      ],
+      "note_records": [],
+      "claim": null,
+      "fields": {
+        "size": "M",
+        "flags": [],
+        "trees": [
+          "cli"
+        ],
+        "trees_literal": false,
+        "findings": "PROJECT.md Feature tiers (Later)",
+        "discovered_from": "",
+        "parent": "",
+        "cites": [],
+        "key": "",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 2,
+        "urgency": 2,
+        "effort": 2,
+        "attempts": 0
+      }
+    },
+    {
+      "id": "S22",
+      "title": "Import from ADR folders",
+      "short_title": "Import from ADR folders",
+      "status": "open",
+      "has_slice": true,
+      "depends_on": [
+        "S05"
+      ],
+      "note_records": [
+        {
+          "id": "10482a81-2da3-44b5-9d87-d81e04b87ff0",
+          "kind": "",
+          "text": "**2026-10-16** — From S25 review: imported (ADR) record files will often not be in the form model.Marshal writes (empty arrays, no final newline in the body). C163 compares stale copies as stored for that reason; keep any importer or new comparison on the same footing.",
+          "created_at": "2026-10-16T03:27:51Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        }
+      ],
+      "claim": null,
+      "fields": {
+        "size": "M",
+        "flags": [],
+        "trees": [
+          "cli"
+        ],
+        "trees_literal": false,
+        "findings": "PROJECT.md Feature tiers (Later)",
+        "discovered_from": "",
+        "parent": "",
+        "cites": [],
+        "key": "",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 2,
+        "urgency": 2,
+        "effort": 2,
+        "attempts": 0
+      }
+    },
+    {
+      "id": "S37",
+      "title": "Release 1.0: freeze JSON shapes",
+      "short_title": "Release 1.0",
+      "status": "open",
+      "has_slice": false,
+      "depends_on": [
+        "S34",
+        "S20",
+        "S35",
+        "S36",
+        "S18",
+        "S19",
+        "S22"
+      ],
+      "note_records": [],
+      "claim": null,
+      "fields": {
+        "size": "S",
+        "flags": [],
+        "trees": [
+          "release"
+        ],
+        "trees_literal": false,
+        "findings": "CHANGELOG.md and docs/json.md 1.0 rule",
+        "discovered_from": "",
+        "parent": "",
+        "cites": [],
+        "key": "",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 2,
+        "urgency": 2,
+        "effort": 1,
+        "attempts": 0
+      }
+    },
     {
       "id": "S01",
       "title": "Confirm open decisions",
@@ -1055,143 +1383,10 @@
       }
     },
     {
-      "id": "S18",
-      "title": "Later: cross-repo inbox",
-      "short_title": "Later: cross-repo inbox",
-      "status": "later",
-      "has_slice": true,
-      "depends_on": [
-        "S09",
-        "S01"
-      ],
-      "note_records": [],
-      "claim": null,
-      "fields": {
-        "size": "M",
-        "flags": [],
-        "trees": [
-          "later"
-        ],
-        "trees_literal": false,
-        "findings": "PROJECT.md Feature tiers (Later); Open decisions 6",
-        "discovered_from": "",
-        "parent": "",
-        "cites": [
-          "C28"
-        ],
-        "key": "",
-        "pass": "",
-        "group": "",
-        "reason": "",
-        "importance": 1,
-        "urgency": 1,
-        "effort": 2,
-        "attempts": 0
-      }
-    },
-    {
-      "id": "S19",
-      "title": "Later: TUI or static HTML inbox",
-      "short_title": "Later: TUI or static HTML inbox",
-      "status": "later",
-      "has_slice": true,
-      "depends_on": [
-        "S09"
-      ],
-      "note_records": [],
-      "claim": null,
-      "fields": {
-        "size": "M",
-        "flags": [],
-        "trees": [
-          "later"
-        ],
-        "trees_literal": false,
-        "findings": "PROJECT.md Feature tiers (Later)",
-        "discovered_from": "",
-        "parent": "",
-        "cites": [],
-        "key": "",
-        "pass": "",
-        "group": "",
-        "reason": "",
-        "importance": 1,
-        "urgency": 1,
-        "effort": 2,
-        "attempts": 0
-      }
-    },
-    {
-      "id": "S20",
-      "title": "Later: slicer integration",
-      "short_title": "Later: slicer integration",
-      "status": "later",
-      "has_slice": true,
-      "depends_on": [
-        "S08"
-      ],
-      "note_records": [
-        {
-          "id": "8f8c274c-bf1a-4a77-93b3-21bdfa7b43e8",
-          "kind": "",
-          "text": "**2026-10-16** — **2026-10-16** — From S17 dogfood review (adj store C23-C32 recorded as adj #1-#10): (1) The record schema has a refs field (internal/model/record.go:105) but adj ask has no flag to set it, so the slicer catalog ID lives only in free-text context plus a lowercase tag (c23). Consider a structured ref flag. (2) Tag case: tags are lowercase (c23) while catalog IDs are C23; adj check matches case-insensitively. Convention call for the owner. (3) No record sets a key, though check and conflict detection use keys; owner may want keys (e.g. project.license) in the dogfood store. (4) adj cannot express a recommendation that is not among the options (the label must be an option, docs/json.md:458), so C26 (adj #4) needed the recommendation added as a fourth option. (5) decided_at is the run date, so a backdated decision cannot record its real date. (6) adj has no way to correct a record after ask/decide beyond reject, withdraw or supersede; a slightly-off tradeoffs text on #2 (C24 Python tradeoffs repeat the recommendation reasoning) stays as is. (7) Flags must follow the subcommand: adj --root DIR list exits 2 with unknown command; adj list --root DIR works (documented, but easy to trip on).",
-          "created_at": "2026-10-16T03:36:32Z",
-          "attempt": 0,
-          "by": "Jon R",
-          "verified_by": "",
-          "verified_at": "",
-          "stale_after": ""
-        },
-        {
-          "id": "958f9f72-4b25-49b2-8fe3-1b5d7e98b63c",
-          "kind": "",
-          "text": "**2026-10-16** — **2026-10-16** — Owner question from S17: decisions/.adj.lock (empty) is untracked and not git-ignored in the adjudicate repo; AGENTS.md says adj writes no .gitignore. Decide whether this repo ignores it or commits it. The S17 commit left it out (untracked).",
-          "created_at": "2026-10-16T03:36:32Z",
-          "attempt": 0,
-          "by": "Jon R",
-          "verified_by": "",
-          "verified_at": "",
-          "stale_after": ""
-        },
-        {
-          "id": "f3764e80-0112-4c02-894d-557b3184bc56",
-          "kind": "",
-          "text": "**2026-10-17** — 2026-10-17 release review: friction items 1, 4, 5, 6 and 7 above moved to S27, S28, S29, S30 and S26 for 0.1.0 (owner decisions C166-C168). Items 2 (tag case) and 3 (keys in the dogfood store) stay here as conventions.",
-          "created_at": "2026-10-17T12:49:43Z",
-          "attempt": 0,
-          "by": "Jon R",
-          "verified_by": "",
-          "verified_at": "",
-          "stale_after": ""
-        }
-      ],
-      "claim": null,
-      "fields": {
-        "size": "M",
-        "flags": [],
-        "trees": [
-          "later"
-        ],
-        "trees_literal": false,
-        "findings": "PROJECT.md Feature tiers (Later); Non-goals (not replacing slicer); Risks (overlap with slicer catalog)",
-        "discovered_from": "",
-        "parent": "",
-        "cites": [],
-        "key": "",
-        "pass": "",
-        "group": "",
-        "reason": "",
-        "importance": 1,
-        "urgency": 1,
-        "effort": 2,
-        "attempts": 0
-      }
-    },
-    {
       "id": "S21",
       "title": "Later: optional owner-only decide enforcement",
       "short_title": "Later: optional owner-only decide enforcement",
-      "status": "later",
+      "status": "retired",
       "has_slice": true,
       "depends_on": [
         "S07",
@@ -1228,51 +1423,7 @@
         "key": "",
         "pass": "",
         "group": "",
-        "reason": "",
-        "importance": 1,
-        "urgency": 1,
-        "effort": 2,
-        "attempts": 0
-      }
-    },
-    {
-      "id": "S22",
-      "title": "Later: import from ADR folders",
-      "short_title": "Later: import from ADR folders",
-      "status": "later",
-      "has_slice": true,
-      "depends_on": [
-        "S05"
-      ],
-      "note_records": [
-        {
-          "id": "10482a81-2da3-44b5-9d87-d81e04b87ff0",
-          "kind": "",
-          "text": "**2026-10-16** — From S25 review: imported (ADR) record files will often not be in the form model.Marshal writes (empty arrays, no final newline in the body). C163 compares stale copies as stored for that reason; keep any importer or new comparison on the same footing.",
-          "created_at": "2026-10-16T03:27:51Z",
-          "attempt": 0,
-          "by": "Jon R",
-          "verified_by": "",
-          "verified_at": "",
-          "stale_after": ""
-        }
-      ],
-      "claim": null,
-      "fields": {
-        "size": "M",
-        "flags": [],
-        "trees": [
-          "later"
-        ],
-        "trees_literal": false,
-        "findings": "PROJECT.md Feature tiers (Later)",
-        "discovered_from": "",
-        "parent": "",
-        "cites": [],
-        "key": "",
-        "pass": "",
-        "group": "",
-        "reason": "",
+        "reason": "Owner 2026-10-18: owner-only decide stays a convention (C11, C27); no enforcement planned",
         "importance": 1,
         "urgency": 1,
         "effort": 2,

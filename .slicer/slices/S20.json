@@ -1,6 +1,6 @@
 {
   "id": "S20",
-  "title": "Later: slicer integration",
+  "title": "Slicer integration",
   "lead": [
     "Link decisions to slice IDs and show them in `slicer show` notes."
   ],
@@ -8,7 +8,7 @@
   "findings_note": "PROJECT.md Feature tiers (Later); Non-goals (not replacing slicer); Risks (overlap with slicer catalog)",
   "size": "M",
   "flags": [],
-  "trees_note": "later",
+  "trees_note": "cli",
   "trees_plural": false,
   "boundary": "**Not in this slice:** any dependency of adjudicate on slicer or of slicer on\nadjudicate (non-goal).",
   "sections": [

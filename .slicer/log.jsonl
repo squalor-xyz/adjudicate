@@ -562,3 +562,38 @@
 {"when": "2026-10-17T20:57:23Z", "item": "S33", "action": "note", "from": "", "to": "", "note": "Owner Jon R delegated the adj decide runs for the C165-C169 ", "by": "Jon R"}
 {"when": "2026-10-17T20:57:23Z", "item": "S33", "action": "status", "from": "review", "to": "done", "note": "Release 0.1.0 prepared: records 0011-0015 (C165-C169), CHANGELOG dated 2026-10-17, check --help names refs (C191), C192. Gate PASS.", "by": "Jon R"}
 {"when": "2026-10-17T21:10:20Z", "item": "C193", "action": "catalog", "from": "", "to": "Publish 0.1.0 to github.com/squalor-xyz/adjudicate with GitHub Actions CI and release binaries", "note": "add"}
+{"when": "2026-10-18T14:42:09Z", "item": "S21", "action": "retire", "from": "later", "to": "retired", "note": "Owner 2026-10-18: owner-only decide stays a convention (C11, C27); no enforcement planned"}
+{"when": "2026-10-18T14:42:09Z", "item": "S18", "action": "set", "from": "later", "to": "open", "note": "status later→open"}
+{"when": "2026-10-18T14:42:09Z", "item": "S19", "action": "set", "from": "later", "to": "open", "note": "status later→open"}
+{"when": "2026-10-18T14:42:09Z", "item": "S20", "action": "set", "from": "later", "to": "open", "note": "status later→open"}
+{"when": "2026-10-18T14:42:09Z", "item": "S22", "action": "set", "from": "later", "to": "open", "note": "status later→open"}
+{"when": "2026-10-18T14:42:09Z", "item": "S18", "action": "set", "from": "", "to": "", "note": "title Later: cross-repo inbox→Cross-repo inbox; short_title Later: cross-repo inbox→Cross-repo inbox"}
+{"when": "2026-10-18T14:42:10Z", "item": "S19", "action": "set", "from": "", "to": "", "note": "title Later: TUI or static HTML inbox→TUI or static HTML inbox; depends_on S09→S18; short_title Later: TUI or static HTML inbox→TUI or static HTML inbox"}
+{"when": "2026-10-18T14:42:10Z", "item": "S20", "action": "set", "from": "", "to": "", "note": "title Later: slicer integration→Slicer integration; short_title Later: slicer integration→Slicer integration"}
+{"when": "2026-10-18T14:42:10Z", "item": "S22", "action": "set", "from": "", "to": "", "note": "title Later: import from ADR folders→Import from ADR folders; short_title Later: import from ADR folders→Import from ADR folders"}
+{"when": "2026-10-18T14:42:20Z", "item": "S20", "action": "note", "from": "", "to": "", "note": "2026-10-18: the 2026-10-16 .adj.lock question is resolved: .", "by": "Jon R"}
+{"when": "2026-10-18T14:42:20Z", "item": "S34", "action": "add", "from": "", "to": "open", "note": "Dogfood conventions: tag case and keys in decisions/"}
+{"when": "2026-10-18T14:42:20Z", "item": "S34", "action": "note", "from": "", "to": "", "note": "2026-10-18 re-prioritization: also update PROJECT.md Later (", "by": "Jon R"}
+{"when": "2026-10-18T14:42:21Z", "item": "S35", "action": "add", "from": "", "to": "open", "note": "adj context size budget"}
+{"when": "2026-10-18T14:42:21Z", "item": "S36", "action": "add", "from": "", "to": "open", "note": "Windows support: ID lock and release archive"}
+{"when": "2026-10-18T14:42:21Z", "item": "S37", "action": "add", "from": "", "to": "open", "note": "Release 1.0: freeze JSON shapes"}
+{"when": "2026-10-18T14:42:34Z", "item": "S18", "action": "set", "from": "", "to": "", "note": "importance 1→2; urgency 1→2"}
+{"when": "2026-10-18T14:42:34Z", "item": "S19", "action": "set", "from": "", "to": "", "note": "importance 1→2; urgency 1→2"}
+{"when": "2026-10-18T14:42:34Z", "item": "S20", "action": "set", "from": "", "to": "", "note": "importance 1→2; urgency 1→2"}
+{"when": "2026-10-18T14:42:34Z", "item": "S22", "action": "set", "from": "", "to": "", "note": "importance 1→2; urgency 1→2"}
+{"when": "2026-10-18T14:42:34Z", "item": "S34", "action": "move", "from": "34", "to": "1", "note": ""}
+{"when": "2026-10-18T14:42:34Z", "item": "S20", "action": "move", "from": "21", "to": "2", "note": ""}
+{"when": "2026-10-18T14:42:34Z", "item": "S35", "action": "move", "from": "35", "to": "3", "note": ""}
+{"when": "2026-10-18T14:42:34Z", "item": "S36", "action": "move", "from": "36", "to": "4", "note": ""}
+{"when": "2026-10-18T14:42:34Z", "item": "S18", "action": "move", "from": "22", "to": "5", "note": ""}
+{"when": "2026-10-18T14:42:34Z", "item": "S19", "action": "move", "from": "23", "to": "6", "note": ""}
+{"when": "2026-10-18T14:42:34Z", "item": "S22", "action": "move", "from": "25", "to": "7", "note": ""}
+{"when": "2026-10-18T14:42:34Z", "item": "S37", "action": "move", "from": "37", "to": "8", "note": ""}
+{"when": "2026-10-18T14:42:54Z", "item": "S18", "action": "set", "from": "", "to": "", "note": "trees later→cli"}
+{"when": "2026-10-18T14:42:54Z", "item": "S19", "action": "set", "from": "", "to": "", "note": "trees later→cli"}
+{"when": "2026-10-18T14:42:54Z", "item": "S20", "action": "set", "from": "", "to": "", "note": "trees later→cli"}
+{"when": "2026-10-18T14:42:54Z", "item": "S22", "action": "set", "from": "", "to": "", "note": "trees later→cli"}
+{"when": "2026-10-18T14:42:54Z", "item": "S35", "action": "set", "from": "", "to": "", "note": "trees -→cli"}
+{"when": "2026-10-18T14:42:54Z", "item": "S34", "action": "set", "from": "", "to": "", "note": "trees -→decisions"}
+{"when": "2026-10-18T14:42:54Z", "item": "S36", "action": "set", "from": "", "to": "", "note": "trees -→store"}
+{"when": "2026-10-18T14:42:54Z", "item": "S37", "action": "set", "from": "", "to": "", "note": "trees -→release"}

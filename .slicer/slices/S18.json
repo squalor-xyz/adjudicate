@@ -1,6 +1,6 @@
 {
   "id": "S18",
-  "title": "Later: cross-repo inbox",
+  "title": "Cross-repo inbox",
   "lead": [
     "Aggregate open questions from several configured repos into one inbox."
   ],
@@ -8,7 +8,7 @@
   "findings_note": "PROJECT.md Feature tiers (Later); Open decisions 6",
   "size": "M",
   "flags": [],
-  "trees_note": "later",
+  "trees_note": "cli",
   "trees_plural": false,
   "boundary": "**Not in this slice:** anything in v1; this waits for the owner to schedule it.",
   "sections": [
