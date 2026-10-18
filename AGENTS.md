@@ -314,7 +314,8 @@ below). `adj lint` exits 1 when it finds an error (see its entry).
   Consequences section when the rationale came from elsewhere. `created` and
   `decided_at` are the ADR's date, or the run date with a warning when it has
   none or it is not `YYYY-MM-DD`. `decided_by` is `--by`, else
-  `$ADJ_DECIDED_BY`, else the ADR's deciders, else blank (lint warns, C27);
+  the ADR's deciders, else `$ADJ_DECIDED_BY`, else blank (lint warns, C27;
+  `ImportADRInput.DecidedByDefault` carries the environment);
   `asked_by` is blank. `refs` are the file's slash path from the root and
   `ADR-NNNN` (when the number is above 0); history is one `import` entry
   (`from FILE`, dated the run date) instead of `ask`/`decide`. A file is

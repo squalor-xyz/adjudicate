@@ -390,8 +390,8 @@ section, else the Context; for a rejected or withdrawn ADR it is the
 justification, then the Decision text, then the Consequences, then the Context.
 The ADR's date is `created` and `decided_at`; an ADR with no date, a date that
 is not `YYYY-MM-DD` or not a real date, or a date after the run date gets the
-run date and a warning. `--by NAME` is `decided_by`, else `$ADJ_DECIDED_BY`, else the ADR's
-deciders field, else blank. Each record has the refs `FILE` (its path from the
+run date and a warning. `decided_by` is `--by NAME`, else the ADR's deciders field (MADR),
+else `$ADJ_DECIDED_BY`, else blank. Each record has the refs `FILE` (its path from the
 repo root) and `ADR-0007`, and one `import` history entry.
 
 Every file is checked first: a file with no title, no known status, no decision

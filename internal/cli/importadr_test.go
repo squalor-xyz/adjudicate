@@ -153,21 +153,30 @@ func TestImportADRDryRun(t *testing.T) {
 	}
 }
 
-func TestImportADRDecidedByComesFromTheFlagThenTheEnvironment(t *testing.T) {
+// decided_by: --by, else the ADR's deciders, else $ADJ_DECIDED_BY, else blank.
+func TestImportADRDecidedByOrder(t *testing.T) {
+	// The MADR fixture: record 1 has deciders ("Alice Example, Bob Example"),
+	// record 3 has none. The nygard fixture has no deciders at all.
 	tests := []struct {
-		name string
-		args []string
-		env  string
-		want string
+		name, fixture string
+		args          []string
+		env           string
+		id            int
+		want          string
 	}{
-		{"--by", []string{"--by", "flag"}, "env", "flag"},
-		{"environment", nil, "env", "env"},
-		{"neither: the ADR has none", nil, "", ""},
+		{"--by beats the deciders and the environment", "madr", []string{"--by", "flag"}, "env", 1, "flag"},
+		{"--by beats the environment", "madr", []string{"--by", "flag"}, "env", 3, "flag"},
+		{"the deciders beat the environment", "madr", nil, "env", 1, "Alice Example, Bob Example"},
+		{"the environment where the ADR has no deciders", "madr", nil, "env", 3, "env"},
+		{"the environment for an adr-tools ADR", "nygard", nil, "env", 1, "env"},
+		{"the deciders when no environment", "madr", nil, "", 1, "Alice Example, Bob Example"},
+		{"blank when nothing names anyone", "madr", nil, "", 3, ""},
+		{"blank for an adr-tools ADR when nothing names anyone", "nygard", nil, "", 1, ""},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			root := initRoot(t)
-			dir := adrFixture(t, root, "nygard")
+			dir := adrFixture(t, root, tt.fixture)
 			env := testEnv(root)
 			env.Getenv = func(k string) string {
 				if k == "ADJ_DECIDED_BY" {
@@ -178,8 +187,8 @@ func TestImportADRDecidedByComesFromTheFlagThenTheEnvironment(t *testing.T) {
 			if r := run(env, "", append([]string{"import-adr", dir}, tt.args...)...); r.code != 0 {
 				t.Fatalf("exit %d: %s", r.code, r.stderr)
 			}
-			if got := recordByID(t, root, 1).DecidedBy; got != tt.want {
-				t.Errorf("decided_by = %q, want %q", got, tt.want)
+			if got := recordByID(t, root, tt.id).DecidedBy; got != tt.want {
+				t.Errorf("decided_by of record %d = %q, want %q", tt.id, got, tt.want)
 			}
 		})
 	}
@@ -346,6 +355,7 @@ func TestImportADRHelp(t *testing.T) {
 		"after the run date",
 		"the command to run, adj supersede OLD --by NEW",
 		"has an import history entry",
+		"--by NAME decided_by of the answered records; default: the ADR's deciders field (MADR), else $ADJ_DECIDED_BY, else left blank",
 	} {
 		if !strings.Contains(flat, want) {
 			t.Errorf("help does not say %q:\n%s", want, r.stdout)

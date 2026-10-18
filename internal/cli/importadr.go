@@ -59,9 +59,8 @@ ID" for a file skipped. Warnings go to stderr. A folder with no ADR files
 prints nothing and succeeds.
 
   --tag TAG      a tag for every record; repeat for several
-  --by NAME      decided_by of the answered records; default:
-                 $ADJ_DECIDED_BY, else the ADR's deciders field (MADR), else
-                 left blank
+  --by NAME      decided_by of the answered records; default: the ADR's
+                 deciders field (MADR), else $ADJ_DECIDED_BY, else left blank
   --dry-run      write nothing; print what would be created
   --root DIR     the repo root; default: found from the working directory
                  upwards (the nearest .adjudicate.json)
@@ -89,10 +88,9 @@ func (c *invocation) runImportADR(args []string) int {
 	if strings.TrimSpace(pos[0]) == "" {
 		return c.usageError(name, importADRUsage, errors.New("DIR must not be blank"))
 	}
-	in := commands.ImportADRInput{Tags: tags, DecidedBy: *by, DryRun: *dryRun}
-	if in.DecidedBy == "" {
-		in.DecidedBy = c.env.Getenv("ADJ_DECIDED_BY")
-	}
+	// decided_by is --by, else the ADR's own deciders, else $ADJ_DECIDED_BY:
+	// the environment is only the default the importer falls back to.
+	in := commands.ImportADRInput{Tags: tags, DecidedBy: *by, DecidedByDefault: c.env.Getenv("ADJ_DECIDED_BY"), DryRun: *dryRun}
 	if err := in.Check(); err != nil {
 		return c.commandError(name, importADRUsage, err)
 	}

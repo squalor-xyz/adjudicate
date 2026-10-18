@@ -280,7 +280,7 @@ loop, the record is `decided` and a warning says why. The ADR date is `created`
 and `decided_at` (the run date, with a warning, if there is none, it is not a
 real date or it is after the run date); MADR
 Considered Options are `options`; `decided_by` is `--by`, else
-`$ADJ_DECIDED_BY`, else the ADR's deciders, else blank (so `adj lint` warns); the
+the ADR's deciders, else `$ADJ_DECIDED_BY`, else blank (so `adj lint` warns); the
 record's `refs` are the file's path from the repo root and `ADR-NNNN`, and its
 history is one `import` entry (`from FILE`). A file is skipped, so a second run
 adds only new files, when a record has an `import` entry for it (a record asked

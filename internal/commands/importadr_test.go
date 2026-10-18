@@ -281,21 +281,29 @@ func TestImportADRMADRMapsEachStatus(t *testing.T) {
 	}
 }
 
-// decided_by is --by, else the ADR's deciders, else blank (lint then warns
-// that a decided record has none, C27).
+// decided_by is --by, else the ADR's deciders, else the default the caller
+// gives ($ADJ_DECIDED_BY), else blank (lint then warns that a decided record
+// has none, C27). The owner's order, 2026-10-18.
 func TestImportADRDecidedBy(t *testing.T) {
+	// The MADR fixture: records 1, 2 and 5 have deciders; 3, 6 and 7 have none.
 	tests := []struct {
-		name, by string
-		want     map[int]string
+		name, by, def string
+		want          map[int]string
 	}{
-		{"no --by: the deciders field, else blank", "", map[int]string{1: "Alice Example, Bob Example", 2: "Dana Example, Eli Example", 3: "", 5: "Alice Example", 6: "", 7: ""}},
-		{"--by wins", "owner", map[int]string{1: "owner", 2: "owner", 3: "owner", 5: "owner", 6: "owner", 7: "owner"}},
+		{"nothing given: the deciders field, else blank", "", "",
+			map[int]string{1: "Alice Example, Bob Example", 2: "Dana Example, Eli Example", 3: "", 5: "Alice Example", 6: "", 7: ""}},
+		{"the default fills in where the ADR has no deciders", "", "env",
+			map[int]string{1: "Alice Example, Bob Example", 2: "Dana Example, Eli Example", 3: "env", 5: "Alice Example", 6: "env", 7: "env"}},
+		{"--by beats the deciders and the default", "owner", "env",
+			map[int]string{1: "owner", 2: "owner", 3: "owner", 5: "owner", 6: "owner", 7: "owner"}},
+		{"--by beats the deciders", "owner", "",
+			map[int]string{1: "owner", 2: "owner", 3: "owner", 5: "owner", 6: "owner", 7: "owner"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			root, dir := adrRoot(t, "madr")
 			st := openStore(t, root)
-			importOK(t, st, ImportADRInput{Dir: dir, Root: root, DecidedBy: tt.by})
+			importOK(t, st, ImportADRInput{Dir: dir, Root: root, DecidedBy: tt.by, DecidedByDefault: tt.def})
 			for _, r := range listAll(t, st) {
 				if want, ok := tt.want[r.ID]; ok && r.DecidedBy != want {
 					t.Errorf("record %d decided_by = %q, want %q", r.ID, r.DecidedBy, want)
@@ -1268,5 +1276,38 @@ func TestImportADRChosenOptionLinkIsTheOptionLabel(t *testing.T) {
 	want := &model.Recommendation{Label: "Postgres", Reasoning: "it is boring."}
 	if !reflect.DeepEqual(rec.Recommendation, want) {
 		t.Errorf("recommendation = %+v, want %+v", rec.Recommendation, want)
+	}
+}
+
+// The record is checked with Validate before anything is written; a record
+// that fails is a problem of its file, nothing is written, and the others are
+// still checked. The check cannot fail for any input the parser gives (see
+// TestImportADRBuiltRecordsAreValid), so this test reaches it through the
+// input's unexported validate seam.
+func TestImportADRRefusesARecordThatFailsValidation(t *testing.T) {
+	root, dir := adrFiles(t, map[string]string{
+		"0001-a.md": "# 1. A\n\nStatus: proposed\n",
+		"0002-b.md": "# 2. B\n\nStatus: proposed\n",
+		"0003-c.md": "# 3. C\n\nStatus: proposed\n",
+	})
+	st := openStore(t, root)
+	var seen []model.Record
+	in := ImportADRInput{Dir: dir, Root: root, validate: func(r model.Record) error {
+		seen = append(seen, r)
+		if r.Title == "B" {
+			return errors.New("invalid record: boom")
+		}
+		return nil
+	}}
+	_, err := ImportADR(st, in, importNow)
+	var fe *ADRFilesError
+	if !errors.As(err, &fe) || len(fe.Problems) != 1 || fe.Problems[0] != "docs/adr/0002-b.md: the record would be invalid: boom" {
+		t.Fatalf("error = %v, want one problem for docs/adr/0002-b.md: the record would be invalid: boom", err)
+	}
+	if len(seen) != 3 || seen[0].ID <= 0 {
+		t.Errorf("validate saw %d records (first id %d), want all 3 with an ID", len(seen), seen[0].ID)
+	}
+	if files := storeFiles(t, root); len(files) != 0 {
+		t.Errorf("the store was touched: %q", files)
 	}
 }

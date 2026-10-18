@@ -36,8 +36,9 @@ but never renames, removes or retypes an existing key.
   template) or MADR. The status word gives the record's status (accepted is
   decided, proposed is open, rejected, deprecated is withdrawn, superseded is
   superseded when the ADR that replaced it is in the same run, else decided with
-  a warning); the ADR's date is `created` and `decided_at`; the refs name the
-  file (its path from the repo root) and the ADR number. Every file is checked
+  a warning); `decided_by` is `--by`, else the ADR's deciders field, else
+  `$ADJ_DECIDED_BY`, else blank; the ADR's date is `created` and `decided_at`;
+  the refs name the file (its path from the repo root) and the ADR number. Every file is checked
   before any record is written, a file already imported (a record with an
   `import` history entry for it) is skipped, and the ADR files are never
   changed. A second run warns, with the `adj supersede` command, about a

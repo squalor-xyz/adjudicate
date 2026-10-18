@@ -26,12 +26,18 @@ import (
 type ImportADRInput struct {
 	Dir, Root string
 	Tags      []string // put on every record
-	// DecidedBy is decided_by on every answered record; if it is empty the
-	// ADR's own deciders field is used, else decided_by is left blank.
-	DecidedBy string
+	// DecidedBy is decided_by on every answered record. If it is empty the
+	// ADR's own deciders field is used (MADR decision-makers or deciders),
+	// then DecidedByDefault (the CLI gives $ADJ_DECIDED_BY), else decided_by
+	// is left blank.
+	DecidedBy, DecidedByDefault string
 	// DryRun reads and checks everything and reports what would be created,
 	// but writes nothing.
 	DryRun bool
+
+	// validate checks each built record before any write; nil means
+	// model.Record.Validate. Tests set it to reach the failure path.
+	validate func(model.Record) error
 }
 
 // Check reports a *UsageError if the input cannot be used whatever the folder
@@ -497,10 +503,8 @@ func (it *adrItem) build(in ImportADRInput, now time.Time) error {
 			rec.Status = model.StatusWithdrawn
 		}
 		rec.DecidedAt = created
-		rec.DecidedBy = in.DecidedBy
-		if rec.DecidedBy == "" {
-			rec.DecidedBy = a.Deciders
-		}
+		// --by, else the ADR's deciders, else the default ($ADJ_DECIDED_BY).
+		rec.DecidedBy = firstNonEmpty(in.DecidedBy, a.Deciders, in.DecidedByDefault)
 		// The reason is the justification, else the consequences, else the
 		// context; a rejected or withdrawn ADR's decision text ("we will
 		// not ...") comes before the consequences.
@@ -516,10 +520,26 @@ func (it *adrItem) build(in ImportADRInput, now time.Time) error {
 			rec.Consequences = a.Consequences
 		}
 	}
-	// rec is valid by construction: the title is one non-blank line, the
-	// dates are real, an answered record has a non-blank decision (if
-	// decided) and rationale, and a recommendation names an option or has
-	// text (TestImportADRBuiltRecordsAreValid).
+	// Check the record as Create will, before anything is written, so that a
+	// record Create would refuse cannot stop the import halfway. Validate
+	// checks what the model requires: one non-blank title line, a known
+	// status, real created, decided_at and history dates, a non-blank
+	// rationale and a decided_at once answered, a non-blank decision once
+	// decided, unique non-blank option labels, a recommendation with an
+	// option label or text, and known history events. No ADR is known that
+	// fails it (TestImportADRBuiltRecordsAreValid checks the fixtures and
+	// awkward text), so the failure path is reached by
+	// TestImportADRRefusesARecordThatFailsValidation through the validate
+	// field, not through any ADR file.
+	probe := rec
+	probe.ID = 1
+	validate := in.validate
+	if validate == nil {
+		validate = model.Record.Validate
+	}
+	if err := validate(probe); err != nil {
+		return fmt.Errorf("the record would be invalid: %s", strings.TrimPrefix(err.Error(), model.ErrInvalid.Error()+": "))
+	}
 	it.status = rec.Status
 	it.rec = rec
 	if a.Status == adr.Superseded {
@@ -530,6 +550,16 @@ func (it *adrItem) build(in ImportADRInput, now time.Time) error {
 
 // dateShape is the shape of a date: a real date has it, and so does 2024-02-30.
 var dateShape = regexp.MustCompile(`^[0-9]{4}-[0-9]{2}-[0-9]{2}`)
+
+// firstNonEmpty returns the first string that is not empty.
+func firstNonEmpty(ss ...string) string {
+	for _, s := range ss {
+		if s != "" {
+			return s
+		}
+	}
+	return ""
+}
 
 // firstText returns the first text that is not blank.
 func firstText(texts ...string) string {
