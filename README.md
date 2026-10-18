@@ -296,7 +296,7 @@ Every filter given must match. Refs are case-sensitive and matched as typed,
 including surrounding whitespace; a blank `--ref` exits 2 before store access.
 No match is not an error.
 
-### `adj inbox [-i [--by NAME] | --all] [--json]`
+### `adj inbox [[--all] [--json] | -i [--by NAME]] [--root DIR]`
 
 Lists the open questions, oldest first, each with its references, options and
 recommendation. An empty inbox prints nothing.
@@ -319,7 +319,10 @@ oldest-first order. Each question shows the usual inbox block, then prompts:
 Action [d=option, t=text, r=reject, w=withdraw, s=skip, q=quit, ?=help]:
 ```
 
-`d` asks for an option label; `t` asks for free-text decision text. `r` rejects,
+`d` asks for an option label; a blank label returns to the action prompt.
+If the record has no options, `d` reports an error pointing to `t` and returns
+to the action prompt without asking for a label. `t` asks for free-text decision
+text. `r` rejects,
 `w` withdraws, `s` skips and `q` quits; `?` prints help. Each write asks for a
 non-blank rationale. Unknown labels and blank text or rationale re-prompt the
 same field. Decision text and rationale keep their surrounding whitespace;

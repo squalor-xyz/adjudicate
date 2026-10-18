@@ -255,7 +255,10 @@ oldest-first order. Each question shows the usual inbox block, then prompts:
 Action [d=option, t=text, r=reject, w=withdraw, s=skip, q=quit, ?=help]:
 ```
 
-`d` asks for an option label; `t` asks for free-text decision text. `r` rejects,
+`d` asks for an option label; a blank label returns to the action prompt.
+If the record has no options, `d` reports an error pointing to `t` and returns
+to the action prompt without asking for a label. `t` asks for free-text decision
+text. `r` rejects,
 `w` withdraws, `s` skips and `q` quits; `?` prints help. Each write asks for a
 non-blank rationale. Unknown labels and blank text or rationale re-prompt the
 same field. Decision text and rationale keep their surrounding whitespace;
@@ -292,7 +295,7 @@ when it finds an error and 0 for a clean store or warnings only.
 | `adj amend ID [--title T] [--context T \| --stdin] [--summary LABEL:TEXT]... [--tradeoffs LABEL:TEXT]... [--rationale T]` | Correct text on a record of any status; the old text is kept in the history. |
 | `adj show ID [--json]` | Print one record and its history. |
 | `adj list [--status S] [--tag T]... [--ref REF]... [--key K] [--json]` | List records in ID order; every filter given must match. |
-| `adj inbox [-i [--by NAME] \| --all] [--json]` | List open questions oldest first, with options and recommendation; `--all` groups the user repo list by root; owner-only `-i` walks one repo to decide, reject, withdraw or skip. |
+| `adj inbox [[--all] [--json] \| -i [--by NAME]] [--root DIR]` | List open questions oldest first, with options and recommendation; `--all` groups the user repo list by root; owner-only `-i` walks one repo to decide, reject, withdraw or skip. |
 | `adj check QUERY [--json]` | Is QUERY decided? One substring, matched ignoring case against titles, keys, tags, refs and decision text. Line 1 of the output is `decided`, `open`, `closed` or `not found`. |
 | `adj context [--tag T]... [--ref REF]... [--key-prefix P] [--format md\|json] [--max-bytes N]` | Print the decided records as compact context for an agent. With `--max-bytes N`, keep the newest decisions whose output fits in N bytes (ID order, an `N decisions omitted` line, JSON `omitted`). |
 | `adj lint [--json]` | Check the store for broken records, links, cycles and conflicts. |

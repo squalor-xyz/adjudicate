@@ -570,6 +570,17 @@
           "verified_by": "",
           "verified_at": "",
           "stale_after": ""
+        },
+        {
+          "id": "95fbe1bd-597b-4fb1-abec-20a9c7afdf72",
+          "kind": "",
+          "text": "**2026-10-18** — Fix round 2026-10-18: adj inbox -i refuses d on a record with no options (points to t) and returns to the action prompt; a blank option label returns to the action prompt (unknown labels still re-prompt); the inbox usage line is now 'adj inbox [[--all] [--json] | -i [--by NAME]] [--root DIR]' in help, AGENTS.md, README.md and PROJECT.md and is pinned in inbox_test.go. Reviewed and gated VERDICT: PASS.",
+          "created_at": "2026-10-18T21:55:59Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
         }
       ],
       "claim": null,

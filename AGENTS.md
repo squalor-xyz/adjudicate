@@ -164,7 +164,7 @@ below). `adj lint` exits 1 when it finds an error (see its entry).
   an error (exit 0). `--ref` repeats: every ref must be on the record, matched
   exactly, case-sensitively and as typed, including surrounding whitespace; a
   blank value exits 2 before store access.
-- `adj inbox [-i [--by NAME] | --all] [--json] [--root DIR]`: lists the `open` records, oldest first (by
+- `adj inbox [[--all] [--json] | -i [--by NAME]] [--root DIR]`: lists the `open` records, oldest first (by
   `created`, then ID). Text: per record `ID  title`, then indented its created
   date, its refs when set (C171), its context, every option (`label: summary`,
   with `tradeoffs:` under it when set) and the recommendation (the option
@@ -190,7 +190,10 @@ below). `adj lint` exits 1 when it finds an error (see its entry).
   Action [d=option, t=text, r=reject, w=withdraw, s=skip, q=quit, ?=help]:
   ```
 
-  `d` asks for an option label; `t` asks for free-text decision text. `r` rejects,
+  `d` asks for an option label; a blank label returns to the action prompt.
+  If the record has no options, `d` reports an error pointing to `t` and returns
+  to the action prompt without asking for a label. `t` asks for free-text decision
+  text. `r` rejects,
   `w` withdraws, `s` skips and `q` quits; `?` prints help. Each write asks for a
   non-blank rationale. Unknown labels and blank text or rationale re-prompt the
   same field. Decision text and rationale keep their surrounding whitespace;

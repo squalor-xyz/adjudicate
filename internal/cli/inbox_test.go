@@ -230,7 +230,7 @@ func TestInboxJSONMatchesTheDocumentedExample(t *testing.T) {
 func TestInboxHelpPrintsUsageToStdout(t *testing.T) {
 	for _, flag := range []string{"--help", "-h"} {
 		r := run(testEnv(t.TempDir()), "", "inbox", flag)
-		if r.code != 0 || !strings.Contains(r.stdout, "usage: adj inbox [flags]\n") || r.stderr != "" {
+		if r.code != 0 || !strings.Contains(r.stdout, "usage: adj inbox [[--all] [--json] | -i [--by NAME]] [--root DIR]\n") || r.stderr != "" {
 			t.Errorf("inbox %s: exit %d, stdout %q, stderr %q; want exit 0 and usage on stdout", flag, r.code, r.stdout, r.stderr)
 		}
 	}
@@ -260,7 +260,7 @@ func TestInboxBadArgumentsAreUsageErrors(t *testing.T) {
 			if r.code != 2 {
 				t.Errorf("exit code = %d, want 2; stderr:\n%s", r.code, r.stderr)
 			}
-			if !strings.Contains(r.stderr, tt.wantErr) || !strings.Contains(r.stderr, "usage: adj inbox [flags]\n") {
+			if !strings.Contains(r.stderr, tt.wantErr) || !strings.Contains(r.stderr, "usage: adj inbox [[--all] [--json] | -i [--by NAME]] [--root DIR]\n") {
 				t.Errorf("stderr should contain %q and the inbox usage:\n%s", tt.wantErr, r.stderr)
 			}
 			if r.stdout != "" {

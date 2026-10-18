@@ -16,7 +16,7 @@ import (
 )
 
 const inboxActionPrompt = "Action [d=option, t=text, r=reject, w=withdraw, s=skip, q=quit, ?=help]: "
-const inboxActionHelp = "d: decide by option label; t: decide with free text; r: reject; w: withdraw; s: skip; q: quit; ?: help\n"
+const inboxActionHelp = "d: decide by option label (blank returns to action; no options: use t); t: decide with free text; r: reject; w: withdraw; s: skip; q: quit; ?: help\n"
 
 // inboxInput reads complete lines. EOF discards an unfinished field, so a
 // truncated pipe cannot turn a partial rationale into a stored decision.
@@ -71,6 +71,7 @@ walk:
 		if err := render.InboxRecordText(c.stdout, rec); err != nil {
 			return c.fail("inbox", err)
 		}
+	actions:
 		for {
 			action, ok := in.line(inboxActionPrompt)
 			if !ok {
@@ -95,12 +96,19 @@ walk:
 			}
 			var answer string
 			if action == "d" {
+				if len(rec.Options) == 0 {
+					fmt.Fprintf(c.stderr, "adj inbox: record %d has no options; use t to decide with text\n", rec.ID)
+					continue actions
+				}
 				for {
 					answer, ok = in.line("Option label: ")
 					if !ok {
 						break walk
 					}
 					answer = strings.TrimSpace(answer)
+					if answer == "" {
+						continue actions
+					}
 					found := false
 					for _, option := range rec.Options {
 						if option.Label == answer {

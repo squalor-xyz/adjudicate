@@ -199,7 +199,7 @@ func TestInteractiveGolden(t *testing.T) {
   Created: 2026-03-04
   Options:
     a: Use A
-Action [d=option, t=text, r=reject, w=withdraw, s=skip, q=quit, ?=help]: d: decide by option label; t: decide with free text; r: reject; w: withdraw; s: skip; q: quit; ?: help
+Action [d=option, t=text, r=reject, w=withdraw, s=skip, q=quit, ?=help]: d: decide by option label (blank returns to action; no options: use t); t: decide with free text; r: reject; w: withdraw; s: skip; q: quit; ?: help
 Action [d=option, t=text, r=reject, w=withdraw, s=skip, q=quit, ?=help]: Option label: Rationale: 
 2  Second
   Created: 2026-03-04
@@ -226,5 +226,42 @@ func TestInteractiveReadError(t *testing.T) {
 	}
 	if got := snapshot(t, root); !reflect.DeepEqual(got, before) {
 		t.Errorf("read error wrote: %v", got)
+	}
+}
+
+func TestInteractiveNoOptionsReturnsToAction(t *testing.T) {
+	root := initRoot(t)
+	if r := run(testEnv(root), "", "ask", "Free", "--recommend-text", "Use text"); r.code != 0 {
+		t.Fatal(r)
+	}
+	before := snapshot(t, root)
+	r := run(testEnv(root), "d\ns\n", "inbox", "-i")
+	want := result{
+		stdout: "1  Free\n  Created: 2026-03-04\n  Recommendation: Use text\n" +
+			inboxActionPrompt + inboxActionPrompt + "\n0 decided, 0 rejected, 0 withdrawn, 1 skipped, 0 failed\n",
+		stderr: "adj inbox: record 1 has no options; use t to decide with text\n",
+	}
+	if r != want {
+		t.Errorf("no-options action: %+v; want %+v", r, want)
+	}
+	if got := snapshot(t, root); !reflect.DeepEqual(got, before) {
+		t.Errorf("refused option action wrote files: %v; want %v", got, before)
+	}
+}
+
+func TestInteractiveBlankLabelReturnsToAction(t *testing.T) {
+	root := initRoot(t)
+	if r := run(testEnv(root), "", "ask", "First", "--option", "a:Use A"); r.code != 0 {
+		t.Fatal(r)
+	}
+	before := snapshot(t, root)
+	r := run(testEnv(root), "d\n \t \ns\n", "inbox", "-i")
+	want := result{stdout: "1  First\n  Created: 2026-03-04\n  Options:\n    a: Use A\n" +
+		inboxActionPrompt + "Option label: " + inboxActionPrompt + "\n0 decided, 0 rejected, 0 withdrawn, 1 skipped, 0 failed\n"}
+	if r != want {
+		t.Errorf("blank-label action: %+v; want %+v", r, want)
+	}
+	if got := snapshot(t, root); !reflect.DeepEqual(got, before) {
+		t.Errorf("cancelled option action wrote files: %v; want %v", got, before)
 	}
 }
