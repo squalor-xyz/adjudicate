@@ -18,18 +18,25 @@ import (
 // --max-bytes, used only when HasMaxBytes is set.
 type ContextInput struct {
 	Tags         []string
+	Refs         []string
 	KeyPrefix    string
 	HasKeyPrefix bool
 	MaxBytes     int
 	HasMaxBytes  bool
 }
 
-// Check reports a *UsageError if a filter cannot be used: a blank tag or a
-// blank key prefix (C91), or a budget below 1 byte. The CLI runs it before the store is looked for.
+// Check reports a *UsageError if a filter cannot be used: a blank tag, ref or
+// key prefix (C91), or a budget below 1 byte. The CLI runs it before the store
+// is looked for.
 func (in ContextInput) Check() error {
 	for _, tag := range in.Tags {
 		if strings.TrimSpace(tag) == "" {
 			return usagef("--tag must not be blank")
+		}
+	}
+	for _, ref := range in.Refs {
+		if strings.TrimSpace(ref) == "" {
+			return usagef("--ref must not be blank")
 		}
 	}
 	if in.HasKeyPrefix && strings.TrimSpace(in.KeyPrefix) == "" {
@@ -44,8 +51,8 @@ func (in ContextInput) Check() error {
 // Context returns the decided records of st that meet every filter in in, in
 // ID order. Only status decided counts: open, rejected, withdrawn and
 // superseded records are not context. Tags are trimmed as in List; the key
-// prefix is matched as typed against the stored key. Bad input is a
-// *UsageError and nothing is read.
+// prefix is matched as typed against the stored key. Refs match exactly as
+// typed. Bad input is a *UsageError and nothing is read.
 func Context(st *store.Store, in ContextInput) ([]model.Record, error) {
 	if err := in.Check(); err != nil {
 		return nil, err
@@ -54,7 +61,7 @@ func Context(st *store.Store, in ContextInput) ([]model.Record, error) {
 	if err != nil {
 		return nil, err
 	}
-	f := query.Filter{Status: model.StatusDecided}
+	f := query.Filter{Status: model.StatusDecided, Refs: in.Refs}
 	for _, tag := range in.Tags {
 		f.Tags = append(f.Tags, strings.TrimSpace(tag))
 	}

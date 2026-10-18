@@ -52,7 +52,7 @@
       "id": "S20",
       "title": "Slicer integration",
       "short_title": "Slicer integration",
-      "status": "open",
+      "status": "done",
       "has_slice": true,
       "depends_on": [
         "S08"
@@ -101,6 +101,17 @@
           "verified_by": "",
           "verified_at": "",
           "stale_after": ""
+        },
+        {
+          "id": "e4379fc3-805b-4b9b-9c6f-128822ca46e0",
+          "kind": "",
+          "text": "**2026-10-18** — C32 decision: --ref filters match exact, case-sensitive values as typed (no trimming), because refs are opaque strings stored as typed; whitespace-only values exit 2 before store access.",
+          "created_at": "2026-10-18T19:14:08Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
         }
       ],
       "claim": null,
@@ -122,7 +133,7 @@
         "importance": 2,
         "urgency": 2,
         "effort": 2,
-        "attempts": 0
+        "attempts": 1
       }
     },
     {

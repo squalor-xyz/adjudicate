@@ -13,12 +13,14 @@ import (
 
 // Filter is the conditions a record must meet; a zero field is no condition.
 // Every condition given must hold (AND). Status is one of the five statuses;
-// Tags must all be on the record; Key must equal the record's key exactly;
+// Tags and Refs must all be on the record (exact, case-sensitive matches);
+// Key must equal the record's key exactly;
 // KeyPrefix must be a prefix of the record's key (a record with no key never
 // matches it).
 type Filter struct {
 	Status    model.Status
 	Tags      []string
+	Refs      []string
 	Key       string
 	KeyPrefix string
 }
@@ -36,6 +38,11 @@ func (f Filter) match(r model.Record) bool {
 	}
 	for _, tag := range f.Tags {
 		if !slices.Contains(r.Tags, tag) {
+			return false
+		}
+	}
+	for _, ref := range f.Refs {
+		if !slices.Contains(r.Refs, ref) {
 			return false
 		}
 	}

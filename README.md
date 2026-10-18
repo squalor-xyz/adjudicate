@@ -148,6 +148,21 @@ In GitHub Actions:
 - run: adj lint
 ```
 
+## Linking to slicer
+
+Use refs to link a question to a slicer slice, then retrieve its records:
+
+```sh
+adj ask "Which cache?" --ref S20 --recommend-text "Use files"
+adj list --ref S20 --json
+adj context --ref S20
+```
+
+`list` includes every status; `context` includes only decisions in force.
+Repeat `--ref` to require every reference, for example `--ref S20 --ref C12`.
+Matching is exact and case-sensitive: `S20` does not match `S200` or `s20`.
+Neither tool depends on the other; refs are opaque strings.
+
 ## Exit codes
 
 For every command: 0 success; 1 a failed operation or failed check (no repo,
@@ -257,11 +272,14 @@ Lists records in ID order, one line each (ID, status, title).
 --status S   only records with status S: open, decided, rejected, withdrawn
              or superseded
 --tag T      only records with tag T; repeat to require several tags
+--ref REF    only records with this exact ref; repeat to require every ref
 --key K      only records whose key is K exactly
 --json       print {"records": [...]}
 ```
 
-Every filter given must match. No match is not an error.
+Every filter given must match. Refs are case-sensitive and matched as typed,
+including surrounding whitespace; a blank `--ref` exits 2 before store access.
+No match is not an error.
 
 ### `adj inbox [--json]`
 
@@ -293,11 +311,14 @@ rejected, withdrawn and superseded records are left out.
 
 ```
 --tag T          only records with tag T; repeat to require several tags
+--ref REF        only records with this exact ref; repeat to require every ref
 --key-prefix P   only records whose key starts with P
 --format F       md (the default) or json
 --max-bytes N    keep the newest decisions that fit in N bytes
 ```
 
+Every filter given must match. Refs are case-sensitive and matched as typed,
+including surrounding whitespace; a blank `--ref` exits 2 before store access.
 The same store gives the same bytes. With `--max-bytes N` (N at least 1) the
 output is at most N bytes, the omitted line included: the newest decisions
 (`decided_at`, latest first, then the higher ID) that fit are kept and still

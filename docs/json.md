@@ -322,8 +322,8 @@ With no match: `{"query": "...", "result": "not found", "decided": [], "open": [
 The decided records as compact context for an agent. One JSON object with one
 key, `decisions`: an array of objects in ID order, one per record with status
 `decided` (open, rejected, withdrawn and superseded records are not listed, so
-a replaced decision gives way to the one that replaced it). `--tag` and
-`--key-prefix` narrow the list; every filter given must match. Unlike the
+a replaced decision gives way to the one that replaced it). `--tag`, `--ref`
+and `--key-prefix` narrow the list; every filter given must match. Unlike the
 record objects above, an entry has only these keys:
 
 | Key | Type | Meaning |

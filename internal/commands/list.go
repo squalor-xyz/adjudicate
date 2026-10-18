@@ -17,12 +17,13 @@ type ListInput struct {
 	Status    string
 	HasStatus bool
 	Tags      []string
+	Refs      []string
 	Key       string
 	HasKey    bool
 }
 
 // Check reports a *UsageError if a filter cannot be used: a status that is not
-// one of the five, or a blank tag or key (C91). The CLI runs it before the
+// one of the five, or a blank tag, ref or key (C91). The CLI runs it before the
 // store is looked for.
 func (in ListInput) Check() error {
 	if in.HasStatus && !model.Status(strings.TrimSpace(in.Status)).Valid() {
@@ -33,6 +34,11 @@ func (in ListInput) Check() error {
 			return usagef("--tag must not be blank")
 		}
 	}
+	for _, ref := range in.Refs {
+		if strings.TrimSpace(ref) == "" {
+			return usagef("--ref must not be blank")
+		}
+	}
 	if in.HasKey && strings.TrimSpace(in.Key) == "" {
 		return usagef("--key must not be blank")
 	}
@@ -41,7 +47,8 @@ func (in ListInput) Check() error {
 
 // List returns the records of st that meet every filter in in, in ID order.
 // Tags and status are trimmed as ask and decide trim their values; the key is
-// matched as stored (C91). Bad input is a *UsageError and nothing is read.
+// matched as stored (C91). Refs match exactly as typed. Bad input is a
+// *UsageError and nothing is read.
 func List(st *store.Store, in ListInput) ([]model.Record, error) {
 	if err := in.Check(); err != nil {
 		return nil, err
@@ -50,7 +57,7 @@ func List(st *store.Store, in ListInput) ([]model.Record, error) {
 	if err != nil {
 		return nil, err
 	}
-	var f query.Filter
+	f := query.Filter{Refs: in.Refs}
 	if in.HasStatus {
 		f.Status = model.Status(strings.TrimSpace(in.Status))
 	}

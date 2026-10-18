@@ -18,6 +18,8 @@ List records in ID order. Every filter given must match. With --json, print
   --status S   only records with status S: open, decided, rejected, withdrawn
                or superseded
   --tag T      only records with tag T; repeat to require several tags
+  --ref REF    only records with this exact ref, as typed (case-sensitive);
+               repeat to require every ref; blank values are refused
   --key K      only records whose key is K exactly
   --json       print JSON instead of one line per record
   --root DIR   the repo root; default: found from the working directory
@@ -27,8 +29,9 @@ List records in ID order. Every filter given must match. With --json, print
 func (c *invocation) runList(args []string) int {
 	fs, root := newFlagSet("list")
 	status := fs.String("status", "", "")
-	var tags stringList
+	var tags, refs stringList
 	fs.Var(&tags, "tag", "")
+	fs.Var(&refs, "ref", "")
 	key := fs.String("key", "", "")
 	asJSON := fs.Bool("json", false, "")
 
@@ -43,6 +46,7 @@ func (c *invocation) runList(args []string) int {
 		Status:    *status,
 		HasStatus: fsSet(fs, "status"),
 		Tags:      tags,
+		Refs:      refs,
 		Key:       *key,
 		HasKey:    fsSet(fs, "key"),
 	}

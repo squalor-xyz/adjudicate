@@ -53,7 +53,7 @@ Each goal is a catalog record (C01-C08) and each is met in 0.1.0.
 3. **Record a decision with a rationale** on the record of the question it
    answers: `adj decide` (C03).
 4. **Supersede a decision** while keeping its history: `adj supersede` (C04).
-5. **Export the decisions in force as compact context**, filtered by tag or
+5. **Export the decisions in force as compact context**, filtered by tag, ref or
    key prefix: `adj context` (C05).
 6. **Let an agent ask "has X been decided?"** before it asks the owner:
    `adj check` (C06).
@@ -235,10 +235,10 @@ when it finds an error and 0 for a clean store or warnings only.
 | `adj supersede OLD --by NEW` | Replace a decided record with another decided one; OLD leaves `adj context` and stays readable. |
 | `adj amend ID [--title T] [--context T \| --stdin] [--summary LABEL:TEXT]... [--tradeoffs LABEL:TEXT]... [--rationale T]` | Correct text on a record of any status; the old text is kept in the history. |
 | `adj show ID [--json]` | Print one record and its history. |
-| `adj list [--status S] [--tag T]... [--key K] [--json]` | List records in ID order; every filter given must match. |
+| `adj list [--status S] [--tag T]... [--ref REF]... [--key K] [--json]` | List records in ID order; every filter given must match. |
 | `adj inbox [--json]` | List the open questions, oldest first, with options and recommendation. |
 | `adj check QUERY [--json]` | Is QUERY decided? One substring, matched ignoring case against titles, keys, tags, refs and decision text. Line 1 of the output is `decided`, `open`, `closed` or `not found`. |
-| `adj context [--tag T]... [--key-prefix P] [--format md\|json] [--max-bytes N]` | Print the decided records as compact context for an agent. With `--max-bytes N`, keep the newest decisions whose output fits in N bytes (ID order, an `N decisions omitted` line, JSON `omitted`). |
+| `adj context [--tag T]... [--ref REF]... [--key-prefix P] [--format md\|json] [--max-bytes N]` | Print the decided records as compact context for an agent. With `--max-bytes N`, keep the newest decisions whose output fits in N bytes (ID order, an `N decisions omitted` line, JSON `omitted`). |
 | `adj lint [--json]` | Check the store for broken records, links, cycles and conflicts. |
 | `adj renumber [--keep-links]` | Owner-only. Give record files that share an ID new IDs. |
 | `adj version`, `adj --version` | Print the version (see below). |
@@ -248,6 +248,13 @@ when it finds an error and 0 for a clean store or warnings only.
 not both. Before the command `adj` takes `--root DIR`; `--help` and `-h` print
 the main usage, and `adj --version` as the first argument prints the version.
 Any other flag there is a usage error.
+
+`list` and `context` accept repeatable `--ref REF`: every value must be among
+that record's refs, matched exactly and case-sensitively as typed (including
+surrounding whitespace). A blank value exits 2 before store access. Ref filters
+combine with the other filters, before the context size budget is applied.
+For slicer slice records use `adj list --ref S20 --json` (S20); neither tool
+depends on the other.
 
 **The version.** `adj version` prints one line. A binary built with
 `-ldflags "-X github.com/squalor-xyz/adjudicate/internal/cli.versionOverride=v0.1.0"`
@@ -389,8 +396,6 @@ owner re-prioritized them on 2026-10-18, so they are open work, not parked:
 - A cross-repo inbox: aggregate open questions from several configured repos
   (S18).
 - A TUI or a local static HTML page for clearing the inbox faster (S19).
-- A slicer integration: link decisions to slice IDs and show them in `slicer
-  show` notes (S20).
 - Import from existing ADR folders (S22).
 - Windows support: the ID lock and a release archive (S36).
 - A 1.0 release that freezes the JSON shapes (S37).
@@ -411,7 +416,8 @@ is no longer planned; owner-only decide stays a convention (C11, C27).
   `adj renumber`; two clones or branches can still collide until one of them
   runs `adj renumber`.
 - **Overlap with slicer's catalog (decisions and assumptions):** the boundary is
-  in the Non-goals; a closer link is a Later item.
+  in the Non-goals; exact ref filters link records to slice IDs without a
+  dependency between the tools (S20).
 
 ## Dependencies and licensing
 

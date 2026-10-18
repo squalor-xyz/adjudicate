@@ -72,3 +72,23 @@ func TestSelectKeepsTheInputOrder(t *testing.T) {
 		t.Errorf("Select IDs = %v, want [4 1]", got)
 	}
 }
+
+func TestSelectRefs(t *testing.T) {
+	records := []model.Record{{ID: 1, Refs: []string{"S20", "C12"}}, {ID: 2, Refs: []string{"S200"}}, {ID: 3, Refs: []string{"s20"}}, {ID: 4}, {ID: 5, Refs: []string{" S20 "}}, {ID: 6, Refs: []string{"S20"}}}
+	for _, tt := range []struct {
+		name string
+		refs []string
+		want []int
+	}{
+		{"exact", []string{"S20"}, []int{1, 6}},
+		{"every ref", []string{"S20", "C12"}, []int{1}},
+		{"as typed", []string{" S20 "}, []int{5}},
+		{"none", []string{"missing"}, []int{}},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := idsOf(Select(records, Filter{Refs: tt.refs})); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("IDs = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

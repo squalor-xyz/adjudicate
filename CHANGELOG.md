@@ -8,6 +8,11 @@ but never renames, removes or retypes an existing key.
 ## Unreleased
 
 ### Commands
+- `adj list` and `adj context` accept repeatable `--ref REF` filters: every ref
+  must match exactly, case-sensitively and as typed. Blank values exit 2 before
+  store access. Filters combine with the other criteria, before the context
+  byte budget. Use `adj list --ref S20 --json` to find slicer slice records;
+  neither tool depends on the other. JSON shapes are unchanged.
 - `adj context --max-bytes N` keeps the newest decided records whose output fits
   in N bytes (newest by `decided_at`, then ID), prints them in ID order, and
   ends the Markdown with `N decisions omitted`. The budget counts every byte,
