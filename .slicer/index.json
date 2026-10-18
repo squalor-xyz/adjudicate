@@ -416,7 +416,7 @@
       ],
       "claim": null,
       "fields": {
-        "size": "M",
+        "size": "L",
         "flags": [],
         "trees": [
           "cli"
