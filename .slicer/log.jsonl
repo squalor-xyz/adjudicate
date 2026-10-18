@@ -634,3 +634,12 @@
 {"when": "2026-10-18T15:01:39Z", "item": "S37", "action": "note", "from": "", "to": "", "note": "2026-10-18 from S34 review (low): PROJECT.md Later (~387-388", "by": "Jon R"}
 {"when": "2026-10-18T19:04:22Z", "item": "C195", "action": "catalog", "from": "", "to": "adj context --max-bytes: selection and output", "note": "add"}
 {"when": "2026-10-18T19:04:22Z", "item": "S37", "action": "note", "from": "", "to": "", "note": "2026-10-18 from S35 review (comment-only): internal/commands", "by": "Jon R"}
+{"when": "2026-10-18T19:12:49Z", "item": "S36", "action": "promote", "from": "", "to": "", "note": ""}
+{"when": "2026-10-18T19:12:49Z", "item": "S36", "action": "edit", "from": "", "to": "", "note": "lead"}
+{"when": "2026-10-18T19:12:49Z", "item": "S36", "action": "edit", "from": "", "to": "", "note": "boundary"}
+{"when": "2026-10-18T19:12:49Z", "item": "S36", "action": "edit", "from": "", "to": "", "note": "Why"}
+{"when": "2026-10-18T19:12:50Z", "item": "S36", "action": "edit", "from": "", "to": "", "note": "Files"}
+{"when": "2026-10-18T19:12:50Z", "item": "S36", "action": "edit", "from": "", "to": "", "note": "Failing tests"}
+{"when": "2026-10-18T19:12:50Z", "item": "S36", "action": "edit", "from": "", "to": "", "note": "Implement"}
+{"when": "2026-10-18T19:12:50Z", "item": "S36", "action": "edit", "from": "", "to": "", "note": "Check"}
+{"when": "2026-10-18T19:12:50Z", "item": "S36", "action": "edit", "from": "", "to": "", "note": "Git"}

@@ -260,7 +260,7 @@
       "title": "Windows support: ID lock and release archive",
       "short_title": "Windows support",
       "status": "open",
-      "has_slice": false,
+      "has_slice": true,
       "depends_on": [],
       "note_records": [],
       "claim": null,
