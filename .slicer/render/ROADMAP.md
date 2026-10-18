@@ -814,7 +814,7 @@ PENDING OWNER CONFIRMATION - not decided. Source: Dependency/licensing notes (ma
 |---|---|---|---|---|---|---|---|
 | 1 | S34 | Dogfood conventions | S | 1 | decisions | S20 notes 2026-10-16/17, items 2 (tag case) and 3 (keys) | — |
 | 2 | [S20](slices/S20.md) | Slicer integration | M | 2 | cli | PROJECT.md Feature tiers (Later); Non-goals (not replacing slicer); Risks (overlap with slicer catalog) | — |
-| 3 | S35 | adj context size budget | S | 1 | cli | PROJECT.md Non-goals (not in 0.1.0: size budget flag); Risks: context bloat | — |
+| 3 | [S35](slices/S35.md) | adj context size budget | S | 1 | cli | PROJECT.md Non-goals (not in 0.1.0: size budget flag); Risks: context bloat | — |
 | 4 | S36 | Windows support | M | 2 | store | AGENTS.md Store and config (lock_other.go: no lock, bounded retry only); release.yml builds no windows archive | — |
 | 5 | [S18](slices/S18.md) | Cross-repo inbox | M | 2 | cli | PROJECT.md Feature tiers (Later); Open decisions 6 | — |
 | 6 | [S19](slices/S19.md) | TUI or static HTML inbox | M | 2 | cli | PROJECT.md Feature tiers (Later) | — |

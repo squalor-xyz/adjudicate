@@ -130,7 +130,7 @@
       "title": "adj context size budget",
       "short_title": "adj context size budget",
       "status": "open",
-      "has_slice": false,
+      "has_slice": true,
       "depends_on": [],
       "note_records": [],
       "claim": null,
