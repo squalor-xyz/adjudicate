@@ -248,6 +248,30 @@ no current repo is needed. Without `--all`, output is unchanged.
 Repo order, empty-repo headers and the JSON shape are owner-delegated
 implementer decisions (S18). Per-repo stores and decision IDs stay independent.
 
+With `-i`, the owner walks through this repo's open questions in the same
+oldest-first order. Each question shows the usual inbox block, then prompts:
+
+```text
+Action [d=option, t=text, r=reject, w=withdraw, s=skip, q=quit, ?=help]:
+```
+
+`d` asks for an option label; `t` asks for free-text decision text. `r` rejects,
+`w` withdraws, `s` skips and `q` quits; `?` prints help. Each write asks for a
+non-blank rationale. Unknown labels and blank text or rationale re-prompt the
+same field. Decision text and rationale keep their surrounding whitespace;
+option labels are trimmed, as with `adj decide`. `--by NAME` sets the owner,
+falling back to `$ADJ_DECIDED_BY` when empty or absent. Writes use the same
+validation, dates and history as `decide`, `reject` and `withdraw`.
+
+Quit or EOF stops without writing an incomplete answer, including a last line
+without a newline. A nonempty walk ends with `N decided, N rejected, N withdrawn,
+N skipped, N failed`, counting only completed actions; unvisited questions stay
+open. A failed write reports its error on stderr and advances to the next
+question; any failed write makes the final exit code 1. An input read error also
+exits 1. An empty inbox prints nothing and exits 0. `-i` with `--json`, `--all`
+or an argument exits 2, as does `--by` without `-i`. This mode is owner-only;
+agents must not run it. It uses ordinary stdin lines, without terminal raw mode.
+
 ## Commands
 
 Every command takes `--root DIR` except `adj ai` and `adj inbox --all`.
@@ -268,7 +292,7 @@ when it finds an error and 0 for a clean store or warnings only.
 | `adj amend ID [--title T] [--context T \| --stdin] [--summary LABEL:TEXT]... [--tradeoffs LABEL:TEXT]... [--rationale T]` | Correct text on a record of any status; the old text is kept in the history. |
 | `adj show ID [--json]` | Print one record and its history. |
 | `adj list [--status S] [--tag T]... [--ref REF]... [--key K] [--json]` | List records in ID order; every filter given must match. |
-| `adj inbox [--all] [--json]` | List open questions oldest first, with options and recommendation; `--all` groups the user repo list by root. |
+| `adj inbox [-i [--by NAME] \| --all] [--json]` | List open questions oldest first, with options and recommendation; `--all` groups the user repo list by root; owner-only `-i` walks one repo to decide, reject, withdraw or skip. |
 | `adj check QUERY [--json]` | Is QUERY decided? One substring, matched ignoring case against titles, keys, tags, refs and decision text. Line 1 of the output is `decided`, `open`, `closed` or `not found`. |
 | `adj context [--tag T]... [--ref REF]... [--key-prefix P] [--format md\|json] [--max-bytes N]` | Print the decided records as compact context for an agent. With `--max-bytes N`, keep the newest decisions whose output fits in N bytes (ID order, an `N decisions omitted` line, JSON `omitted`). |
 | `adj lint [--json]` | Check the store for broken records, links, cycles and conflicts. |
@@ -430,7 +454,6 @@ All met in 0.1.0.
 Not in 0.1.0. These are planned after 0.1.0 (C165), in the slices named; the
 owner re-prioritized them on 2026-10-18, so they are open work, not parked:
 
-- A TUI or a local static HTML page for clearing the inbox faster (S19).
 - Import from existing ADR folders (S22).
 - A 1.0 release that freezes the JSON shapes (S37).
 

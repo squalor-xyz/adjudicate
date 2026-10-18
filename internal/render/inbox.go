@@ -23,18 +23,30 @@ func InboxText(w io.Writer, recs []model.Record) error {
 		if i > 0 {
 			b.WriteByte('\n')
 		}
-		fmt.Fprintf(&b, "%d  %s\n", r.ID, r.Title)
-		writeField(&b, "  ", "Created", r.Created)
-		writeField(&b, "  ", "Refs", strings.Join(r.Refs, ", "))
-		writeField(&b, "  ", "Context", r.Context)
-		writeOptions(&b, "  ", r.Options)
-		if rec := r.Recommendation; rec != nil {
-			writeField(&b, "  ", "Recommendation", recommended(rec))
-			writeField(&b, "  ", "Reasoning", rec.Reasoning)
-		}
+		writeInboxRecord(&b, r)
 	}
 	_, err := io.WriteString(w, b.String())
 	return err
+}
+
+// InboxRecordText writes the same per-record block as InboxText, without a separator.
+func InboxRecordText(w io.Writer, r model.Record) error {
+	var b strings.Builder
+	writeInboxRecord(&b, r)
+	_, err := io.WriteString(w, b.String())
+	return err
+}
+
+func writeInboxRecord(b *strings.Builder, r model.Record) {
+	fmt.Fprintf(b, "%d  %s\n", r.ID, r.Title)
+	writeField(b, "  ", "Created", r.Created)
+	writeField(b, "  ", "Refs", strings.Join(r.Refs, ", "))
+	writeField(b, "  ", "Context", r.Context)
+	writeOptions(b, "  ", r.Options)
+	if rec := r.Recommendation; rec != nil {
+		writeField(b, "  ", "Recommendation", recommended(rec))
+		writeField(b, "  ", "Reasoning", rec.Reasoning)
+	}
 }
 
 // InboxAllText writes a root header and the existing record blocks per repo.

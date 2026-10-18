@@ -296,7 +296,7 @@ Every filter given must match. Refs are case-sensitive and matched as typed,
 including surrounding whitespace; a blank `--ref` exits 2 before store access.
 No match is not an error.
 
-### `adj inbox [--all] [--json]`
+### `adj inbox [-i [--by NAME] | --all] [--json]`
 
 Lists the open questions, oldest first, each with its references, options and
 recommendation. An empty inbox prints nothing.
@@ -311,6 +311,30 @@ naming that repo; the others are still printed, and the command exits 1.
 (see `docs/json.md`); per-repo errors appear in JSON as well as stderr. The
 arrays are always arrays, including when empty. `--all` with `--root` exits 2;
 no current repo is needed. Without `--all`, output is unchanged.
+
+With `-i`, the owner walks through this repo's open questions in the same
+oldest-first order. Each question shows the usual inbox block, then prompts:
+
+```text
+Action [d=option, t=text, r=reject, w=withdraw, s=skip, q=quit, ?=help]:
+```
+
+`d` asks for an option label; `t` asks for free-text decision text. `r` rejects,
+`w` withdraws, `s` skips and `q` quits; `?` prints help. Each write asks for a
+non-blank rationale. Unknown labels and blank text or rationale re-prompt the
+same field. Decision text and rationale keep their surrounding whitespace;
+option labels are trimmed, as with `adj decide`. `--by NAME` sets the owner,
+falling back to `$ADJ_DECIDED_BY` when empty or absent. Writes use the same
+validation, dates and history as `decide`, `reject` and `withdraw`.
+
+Quit or EOF stops without writing an incomplete answer, including a last line
+without a newline. A nonempty walk ends with `N decided, N rejected, N withdrawn,
+N skipped, N failed`, counting only completed actions; unvisited questions stay
+open. A failed write reports its error on stderr and advances to the next
+question; any failed write makes the final exit code 1. An input read error also
+exits 1. An empty inbox prints nothing and exits 0. `-i` with `--json`, `--all`
+or an argument exits 2, as does `--by` without `-i`. This mode is owner-only;
+agents must not run it. It uses ordinary stdin lines, without terminal raw mode.
 
 ### `adj check QUERY [--json]`
 

@@ -20,6 +20,12 @@ but never renames, removes or retypes an existing key.
 - CI runs `go vet` and `go test` on Windows.
 
 ### Commands
+- Owner-only `adj inbox -i` walks open questions oldest first with line prompts
+  to decide by option or free text, reject, withdraw, skip or quit. Writes require
+  a rationale and use one-shot command validation and history; `--by` falls back
+  to `$ADJ_DECIDED_BY`. EOF discards an incomplete answer. A summary counts
+  outcomes; failed writes report stderr, continue and make the final exit 1.
+  `-i` with `--all`, `--json` or an argument, and `--by` without `-i`, exit 2.
 - `adj inbox --all` groups the user repo list's open records by root, in config
   order, including empty repos. Unreadable repos warn on stderr while other
   results remain available; partial failure exits 1. `--all --json` adds a new

@@ -554,12 +554,24 @@
       "id": "S19",
       "title": "Interactive inbox: adj inbox -i",
       "short_title": "adj inbox -i",
-      "status": "open",
+      "status": "done",
       "has_slice": true,
       "depends_on": [
         "S18"
       ],
-      "note_records": [],
+      "note_records": [
+        {
+          "id": "6ec542b3-5280-4d6e-aae1-e5b6321cbc29",
+          "kind": "",
+          "text": "**2026-10-18** — C32: Use -i only (no long alias); --by requires -i. Actions d/t/r/w/s/q/? select option/text/reject/withdraw/skip/quit/help. Prompt Action [d=option, t=text, r=reject, w=withdraw, s=skip, q=quit, ?=help]: ; d prompts Option label: ; t prompts Decision text: ; writes prompt Rationale: . Unknown labels and blank fields re-prompt that field; other action input re-prompts action. Summary: N decided, N rejected, N withdrawn, N skipped, N failed. Counts cover visited outcomes only; quit/EOF do not count remaining records. EOF discards an incomplete answer; input read errors exit 1. Failed commands report stderr, advance to next question, and cause exit 1. Keep typed text and rationale, trim option labels as decide does. These line-mode choices keep scripts simple and preserve one-shot command behavior.",
+          "created_at": "2026-10-18T20:11:42Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        }
+      ],
       "claim": null,
       "fields": {
         "size": "M",
@@ -579,7 +591,7 @@
         "importance": 2,
         "urgency": 2,
         "effort": 2,
-        "attempts": 0
+        "attempts": 1
       }
     },
     {
