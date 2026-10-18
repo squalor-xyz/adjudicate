@@ -354,8 +354,9 @@ command, flag or variable that does not exist.
 - `internal/render`: text and JSON output.
 
 - **ID allocation:** the next ID is one past the highest ID in the file names.
-  `adj ask` takes the ID under an advisory `flock` on `<store>/.adj.lock`, so
-  two asks on one checkout cannot take one ID (C114). Branches and clones can
+  `adj ask` takes the ID under a lock on `<store>/.adj.lock` (advisory `flock` on
+  unix, mandatory `LockFileEx` on Windows), so two asks on one checkout cannot take
+  one ID (C114, S36). Branches and clones can
   still collide: `adj lint` reports files that share an ID as `duplicate-id`
   and `adj renumber` resolves them (C26, C146-C156).
 - **Determinism:** the same store always produces the same output, so
@@ -368,14 +369,16 @@ command, flag or variable that does not exist.
 ## Distribution
 
 - **Install:** a GitHub release archive (`adj_VERSION_OS_ARCH.tar.gz` for
-  linux, darwin and freebsd on amd64 and arm64, with `SHA256SUMS`), or
+  linux, darwin and freebsd on amd64 and arm64, and
+  `adj_VERSION_windows_ARCH.zip` holding `adj.exe` for windows on amd64 and
+  arm64, with `SHA256SUMS`), or
   `go install github.com/squalor-xyz/adjudicate/cmd/adj@VERSION` (C193). The
   README shows both.
 - **CI:** `.github/workflows/ci.yml` runs `go vet`, `gofmt -l`, `go test` and
   `adj lint` on this repo's `decisions/` for each push to `main` and each pull
-  request, and `go test` on macOS too.
+  request, and `go test` on macOS and `go vet` and `go test` on Windows too.
 - **Release:** pushing a tag `vX.Y.Z` runs `.github/workflows/release.yml`. It
-  runs the same checks, builds the six archives with plain `go build -trimpath`
+  runs the same checks, builds the eight archives with plain `go build -trimpath`
   and the version set from the tag (`-ldflags -X`), and publishes a GitHub
   release with `gh` whose notes are the tag's `## X.Y.Z` section of the
   CHANGELOG. The release fails without that section. There is no GoReleaser
@@ -406,7 +409,6 @@ owner re-prioritized them on 2026-10-18, so they are open work, not parked:
   (S18).
 - A TUI or a local static HTML page for clearing the inbox faster (S19).
 - Import from existing ADR folders (S22).
-- Windows support: the ID lock and a release archive (S36).
 - A 1.0 release that freezes the JSON shapes (S37).
 
 Optional enforcement of owner-only decide (a git hook or signed-commit check)

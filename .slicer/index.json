@@ -270,10 +270,88 @@
       "id": "S36",
       "title": "Windows support: ID lock and release archive",
       "short_title": "Windows support",
-      "status": "open",
-      "has_slice": false,
+      "status": "done",
+      "has_slice": true,
       "depends_on": [],
-      "note_records": [],
+      "note_records": [
+        {
+          "id": "2c6c4181-feb9-431e-b186-6d2168a86bb4",
+          "kind": "",
+          "text": "**2026-10-18** — C32: acquire tests live in internal/store/lock_acquire_test.go (build tag: every system with a lock, windows included) instead of a windows-only lock_windows_test.go, so they also run and can be mutation-checked on unix; lock_test.go is widened to windows the same way.",
+          "created_at": "2026-10-18T19:19:01Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "24df8940-8cfc-4654-9610-5212396ccc8c",
+          "kind": "",
+          "text": "**2026-10-18** — C32: tests that need unix permission bits or errno values (read-only lock file fallback, unwritable directory, EISDIR) moved to lock_unix_test.go and are not built on Windows rather than skipped at run time; TestFilePermissions skips on Windows with a reason, TestRenumberGivesTheLosersTheNextFreeIDs runs there without its 0640 chmod and mode check, and the unreadable-file lint test already skips when mode 000 does not make a file unreadable.",
+          "created_at": "2026-10-18T19:19:01Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "6cdb9372-f6fe-4246-8ad5-5550d22cb707",
+          "kind": "",
+          "text": "**2026-10-18** — C32: lock_windows.go has no read-only fallback open (the unix EACCES case): Windows has no mode bits, and a read-only open of a directory would succeed there; the lock file is opened read-write. The lock range is the whole file (offset 0, length 2^64-1), ERROR_LOCK_VIOLATION is the held signal, and any other LockFileEx error fails with the lock file named.",
+          "created_at": "2026-10-18T19:19:01Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "5416a442-5738-4c8f-870e-2a12b2ff4fc2",
+          "kind": "",
+          "text": "**2026-10-18** — C32: the Windows CI job runs git config --global core.autocrlf false before checkout so fixtures and the embedded ai.md keep LF; no .gitattributes was added (not in the slice's files). The roundtrip test builds adj.exe on Windows.",
+          "created_at": "2026-10-18T19:19:02Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "e39fd3ee-6dde-4744-a5e7-7396e6b28caa",
+          "kind": "",
+          "text": "**2026-10-18** — C32 (fix round 2): .gitattributes is '* text=auto eol=lf' with '-text' on internal/model/testdata/malformed/crlf*.md and 'binary' on *.png. text=auto lets git detect binaries (the one PNG) while the explicit exemptions keep the deliberate CRLF fixtures byte for byte; '* text eol=lf' would have rewritten them and the PNG. git ls-files --eol shows every other tracked file already LF in the index, so nothing is renormalised. This replaces the CI 'git config core.autocrlf false' step, which is removed.",
+          "created_at": "2026-10-18T19:29:54Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "0c504edb-23c7-4e18-a4e2-54f5757fad75",
+          "kind": "",
+          "text": "**2026-10-18** — C32 (fix round 2): Windows read-only fallback (C164): the open logic moved to openLockFile in internal/store/lock_open.go (built on unix and windows), taking the open function and the permission-error test as parameters; lock_unix.go passes EACCES, lock_windows.go passes ERROR_ACCESS_DENIED. That seam lets the fallback be tested on any system with a fake denied open (lock_open_test.go); a real read-only-attribute test is windows-only (lock_windows_test.go) and runs in CI only. The read-only open never creates the file, and a directory is never taken as the lock file (its read-only open would succeed). Behaviour on unix is unchanged. This supersedes the earlier C32 note that Windows has no fallback.",
+          "created_at": "2026-10-18T19:29:54Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "3da57cd2-e1ea-461c-8a9e-1e299dda89e3",
+          "kind": "",
+          "text": "**2026-10-18** — Fix round 2026-10-18: Windows read-only fallback for .adj.lock (openLockFile seam, lock_open.go), .gitattributes (* text=auto eol=lf) replacing the CI autocrlf step; darwin tests green, Windows vet/compile clean, Windows runtime unverified until CI",
+          "created_at": "2026-10-18T19:33:26Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        }
+      ],
       "claim": null,
       "fields": {
         "size": "M",
@@ -293,7 +371,7 @@
         "importance": 2,
         "urgency": 2,
         "effort": 2,
-        "attempts": 0
+        "attempts": 1
       }
     },
     {
@@ -544,6 +622,17 @@
           "kind": "",
           "text": "**2026-10-18** — 2026-10-18 from S20 review (cosmetic): AGENTS.md ~203 is a 100-column line (predates S20). Wrap it in the release docs pass.",
           "created_at": "2026-10-18T19:27:00Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "76f33ef0-3c1b-4f27-b8f5-6ffddef8f58c",
+          "kind": "",
+          "text": "**2026-10-18** — 2026-10-18 from S36 review: before releasing 0.2.0, confirm the Windows CI job is green after the push (existing-suite behaviour on Windows: rename/remove of open files, 8.3 temp paths, os.Link; lock_windows_test.go runs only there) and that zip exists on ubuntu-latest for release.yml. Docs nits: README CI paragraph does not mention go vet on Windows; over-width lines in lock_unix.go:23, lock_windows.go:61, lock_open.go:18 and two AGENTS.md lines. No test covers lock release at process death (also true on unix).",
+          "created_at": "2026-10-18T19:34:28Z",
           "attempt": 0,
           "by": "Jon R",
           "verified_by": "",
@@ -2323,7 +2412,7 @@
   "goals": "adjudicate is a small CLI (`adj`) with a plain-text store that records project decisions as a loop: an agent asks, the owner decides in batches, and every later agent reads the decision. The goal and non-goal records below come from PROJECT.md; the owner's decisions on its open questions are catalog records C23-C33, and they override PROJECT.md where it differs (name, runtime, record format, license).",
   "non_goals": "",
   "catalog": {
-    "next_id": 198,
+    "next_id": 200,
     "id_prefix": "C",
     "id_width": 2,
     "records": [
@@ -4096,6 +4185,24 @@
         "kind": "decision",
         "title": "--ref filter values are matched as typed",
         "body": "Implementer decision under C32 (S20). --ref values on adj list and adj context match exact, case-sensitive values as typed, with no trimming, because refs are opaque strings stored as typed; a blank or whitespace-only value exits 2 before store access.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C198",
+        "kind": "decision",
+        "title": "Windows support: LockFileEx lock, Windows CI, Windows zips",
+        "body": "Owner decisions 2026-10-18 (S36). The Windows ID lock is kernel32 LockFileEx through the standard library syscall package, on the same <store>/.adj.lock, with flock's semantics (held from ID scan to link, released on return or process death, never deleted, 5 s wait polling every 10 ms, error names .adj.lock). A read-only .adj.lock falls back to a read-only open, as C164 on unix. CI runs go vet and go test on windows-latest. release.yml adds windows amd64/arm64 .zip archives (adj.exe) in SHA256SUMS. Line endings are pinned by .gitattributes rather than a CI autocrlf step.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C199",
+        "kind": "decision",
+        "title": "Windows support: test layout, lock open seam, .gitattributes form",
+        "body": "Implementer decisions under C32 (S36), confirmed by the owner 2026-10-18. Acquire tests are built on every system with a lock (lock_acquire_test.go) so they run on unix too; tests that need unix mode bits or errno values live in lock_unix_test.go (not built on Windows); TestFilePermissions skips on Windows and the renumber test drops its chmod check there. The open logic is openLockFile (lock_open.go), parameterised by the open function and the permission-error test (EACCES on unix, ERROR_ACCESS_DENIED on Windows); the read-only open never creates the file and never accepts a directory. Lock range is the whole file; ERROR_LOCK_VIOLATION means held. .gitattributes is '* text=auto eol=lf' with -text on the deliberate CRLF fixtures and binary on *.png. The roundtrip test builds adj.exe on Windows.",
         "status": "active",
         "reason": "",
         "successor": ""

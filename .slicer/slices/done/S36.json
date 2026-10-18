@@ -1,0 +1,41 @@
+{
+  "id": "S36",
+  "title": "Windows support: ID lock and release archive",
+  "lead": [
+    "Give adj an ID lock on Windows (LockFileEx), run the test suite on Windows in CI, and publish Windows release archives."
+  ],
+  "depends_note": null,
+  "findings_note": "AGENTS.md Store and config (lock_other.go: no lock, bounded retry only); release.yml builds no windows archive",
+  "size": "M",
+  "flags": [],
+  "trees_note": "store",
+  "trees_plural": false,
+  "boundary": "**Not in this slice:** new dependencies (golang.org/x/sys is not allowed: use the standard library syscall package); changing lock behaviour on unix; installers, package managers or code signing; slicer catalog records (S20 runs in parallel and would take the same catalog id: record C32 decisions as slicer notes on S36; the outer session files them and the owner decisions at landing).",
+  "sections": [
+    {
+      "heading": "Why",
+      "body": "Owner decisions 2026-10-18: (1) the Windows lock is kernel32 LockFileEx called through the standard library (syscall.NewLazyDLL / NewProc), exclusive, on the same <store>/.adj.lock file, with flock's semantics: held from the ID scan to the link of the new file, released on return or process death, never deleted, the same 5 s wait polling every 10 ms (LOCKFILE_FAIL_IMMEDIATELY in a loop) and the same error naming .adj.lock. (2) CI runs go test on windows-latest; tests that depend on unix permission bits are skipped on Windows with a reason. (3) release.yml adds windows amd64 and arm64 .zip archives holding adj.exe, listed in SHA256SUMS. Today lock_other.go has no lock on Windows (C114) and release.yml builds six tar.gz archives (C193)."
+    },
+    {
+      "heading": "Files",
+      "body": "- internal/store/lock_windows.go (new, //go:build windows): acquire via LockFileEx/UnlockFileEx.\n- internal/store/lock_other.go: build tag narrowed so it no longer covers windows (still the fallback for other systems without flock).\n- internal/store/lock_test.go and other tests: make the lock tests run on Windows where they are portable; skip (t.Skip with a reason, runtime.GOOS == \"windows\") only tests that assert unix permission bits or flock-specific errors (EACCES read-only fallback, ENOLCK). Keep the skips few and named.\n- Any test or code with a path separator or line-ending assumption that breaks on Windows (filepath, not path; \\n handling) found by GOOS=windows vet/compile and by reading.\n- .github/workflows/ci.yml: a windows-latest job running go vet ./... and go test ./... (no scripts/env.sh; plain go, as the macOS job does).\n- .github/workflows/release.yml: windows amd64/arm64 builds of adj.exe, zipped (adj_<version>_windows_<arch>.zip), included in SHA256SUMS and the gh release upload.\n- README.md (install: Windows zip), PROJECT.md (lock on Windows; Later: drop the Windows line), AGENTS.md (Store and config lock paragraph; release.yml description: eight archives), CHANGELOG.md (## Unreleased)."
+    },
+    {
+      "heading": "Failing tests",
+      "body": "Red first where the host allows; this host is darwin, so Windows tests can only be compiled here:\n- internal/store/lock_windows_test.go (//go:build windows): a second acquire on the same file waits and then fails with the error naming .adj.lock after the timeout (use a short timeout), and succeeds after the first unlock; the lock file is never deleted.\n- GOOS=windows GOARCH=amd64 go vet ./... and GOOS=windows go test -c for each package with tests must succeed on darwin (this is the local red/green for the build tags: before the change lock_other.go is used on windows, so the new windows test must fail to find its behaviour; show it fails to compile or asserts no-lock today).\n- The existing unix lock tests still pass on darwin unchanged.\nWindows runtime results come only from CI after the owner pushes; the report must say so."
+    },
+    {
+      "heading": "Implement",
+      "body": "1. lock_windows.go with LockFileEx (LOCKFILE_EXCLUSIVE_LOCK | LOCKFILE_FAIL_IMMEDIATELY, an OVERLAPPED struct, whole-file range) polled every 10 ms up to the timeout; UnlockFileEx and Close in unlock. Open the file with os.OpenFile(O_CREATE|O_RDWR) and use its Fd(); mirror lock_unix.go's structure and error messages.\n2. Narrow lock_other.go's build tag; GOOS=windows vet must pass.\n3. Audit tests for Windows: compile them for windows, read the ones touching permissions and paths, add skips with reasons only where the behaviour is unix-only.\n4. CI job and release archives as in Files; keep the workflows standard library and shell only (no new actions beyond actions/checkout and actions/setup-go already used).\n5. Docs. Record C32 decisions (e.g. which tests are skipped and why) as slicer notes on S36."
+    },
+    {
+      "heading": "Check",
+      "body": "- . scripts/env.sh; go test ./...; go vet ./...; gofmt -l cmd internal prints nothing.\n- GOOS=windows GOARCH=amd64 go vet ./...; GOOS=windows GOARCH=arm64 go build ./cmd/adj; GOOS=windows go test -c -o <tmp> for each package with tests.\n- Workflow YAML is valid (parse it with a stdlib-only check or read it carefully); release.yml's archive loop produces eight archives (dry-read).\n- .cache/bin/adj lint --root . is clean.\n- Mutation check each new test that runs on darwin; for windows-only tests, state that they could not run locally.\n- slicer check --json is clean."
+    },
+    {
+      "heading": "Git",
+      "body": "Worktree .worktrees/s36 on branch s36. The orchestrator commits on s36 after VERDICT: PASS and slicer done; no push, no merge; no AI attribution."
+    }
+  ],
+  "notes": []
+}

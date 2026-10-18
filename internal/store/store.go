@@ -73,9 +73,10 @@ const defaultLockTimeout = 5 * time.Second
 // lock takes the store's ID-allocation lock, making the store directory first
 // if it is missing, and returns the function that releases it. It waits up to
 // lockTimeout for another writer; if the lock stays held, or cannot be taken,
-// the error names the lock file. The lock is advisory and held by the open
-// file, so it goes with the process if that dies. On a platform without file
-// locks it does nothing (lock_other.go).
+// the error names the lock file. The lock (advisory on unix, mandatory on Windows)
+// is held by the open file, so it goes with the process if that dies. On a platform without file
+// locks (neither flock nor Windows' LockFileEx) it does nothing
+// (lock_other.go).
 func (s *Store) lock() (unlock func(), err error) {
 	if err := os.MkdirAll(s.dir, 0o755); err != nil {
 		return nil, err

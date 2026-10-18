@@ -634,6 +634,21 @@
 {"when": "2026-10-18T15:01:39Z", "item": "S37", "action": "note", "from": "", "to": "", "note": "2026-10-18 from S34 review (low): PROJECT.md Later (~387-388", "by": "Jon R"}
 {"when": "2026-10-18T19:04:22Z", "item": "C195", "action": "catalog", "from": "", "to": "adj context --max-bytes: selection and output", "note": "add"}
 {"when": "2026-10-18T19:04:22Z", "item": "S37", "action": "note", "from": "", "to": "", "note": "2026-10-18 from S35 review (comment-only): internal/commands", "by": "Jon R"}
+{"when": "2026-10-18T19:12:49Z", "item": "S36", "action": "promote", "from": "", "to": "", "note": ""}
+{"when": "2026-10-18T19:12:49Z", "item": "S36", "action": "edit", "from": "", "to": "", "note": "lead"}
+{"when": "2026-10-18T19:12:49Z", "item": "S36", "action": "edit", "from": "", "to": "", "note": "boundary"}
+{"when": "2026-10-18T19:12:49Z", "item": "S36", "action": "edit", "from": "", "to": "", "note": "Why"}
+{"when": "2026-10-18T19:12:50Z", "item": "S36", "action": "edit", "from": "", "to": "", "note": "Files"}
+{"when": "2026-10-18T19:12:50Z", "item": "S36", "action": "edit", "from": "", "to": "", "note": "Failing tests"}
+{"when": "2026-10-18T19:12:50Z", "item": "S36", "action": "edit", "from": "", "to": "", "note": "Implement"}
+{"when": "2026-10-18T19:12:50Z", "item": "S36", "action": "edit", "from": "", "to": "", "note": "Check"}
+{"when": "2026-10-18T19:12:50Z", "item": "S36", "action": "edit", "from": "", "to": "", "note": "Git"}
+{"when": "2026-10-18T19:14:07Z", "item": "S36", "action": "status", "from": "open", "to": "started", "note": "", "by": "Jon R"}
+{"when": "2026-10-18T19:19:01Z", "item": "S36", "action": "note", "from": "", "to": "", "note": "C32: acquire tests live in internal/store/lock_acquire_test.", "by": "Jon R"}
+{"when": "2026-10-18T19:19:01Z", "item": "S36", "action": "note", "from": "", "to": "", "note": "C32: tests that need unix permission bits or errno values (r", "by": "Jon R"}
+{"when": "2026-10-18T19:19:01Z", "item": "S36", "action": "note", "from": "", "to": "", "note": "C32: lock_windows.go has no read-only fallback open (the uni", "by": "Jon R"}
+{"when": "2026-10-18T19:19:02Z", "item": "S36", "action": "note", "from": "", "to": "", "note": "C32: the Windows CI job runs git config --global core.autocr", "by": "Jon R"}
+{"when": "2026-10-18T19:25:33Z", "item": "S36", "action": "status", "from": "started", "to": "done", "note": "Windows LockFileEx ID lock (lock_windows.go), Windows CI job, windows amd64/arm64 zips in the release; darwin tests green, windows vet/compile clean, Windows runtime unverified until CI", "by": "Jon R"}
 {"when": "2026-10-18T19:12:24Z", "item": "S20", "action": "edit", "from": "", "to": "", "note": "lead"}
 {"when": "2026-10-18T19:12:24Z", "item": "S20", "action": "edit", "from": "", "to": "", "note": "boundary"}
 {"when": "2026-10-18T19:12:24Z", "item": "S20", "action": "edit", "from": "", "to": "", "note": "Why"}
@@ -648,6 +663,9 @@
 {"when": "2026-10-18T19:27:00Z", "item": "C196", "action": "catalog", "from": "", "to": "Slicer integration: --ref filter on list and context", "note": "add"}
 {"when": "2026-10-18T19:27:00Z", "item": "C197", "action": "catalog", "from": "", "to": "--ref filter values are matched as typed", "note": "add"}
 {"when": "2026-10-18T19:27:00Z", "item": "S37", "action": "note", "from": "", "to": "", "note": "2026-10-18 from S20 review (cosmetic): AGENTS.md ~203 is a 1", "by": "Jon R"}
+{"when": "2026-10-18T19:29:54Z", "item": "S36", "action": "note", "from": "", "to": "", "note": "C32 (fix round 2): .gitattributes is '* text=auto eol=lf' wi", "by": "Jon R"}
+{"when": "2026-10-18T19:29:54Z", "item": "S36", "action": "note", "from": "", "to": "", "note": "C32 (fix round 2): Windows read-only fallback (C164): the op", "by": "Jon R"}
+{"when": "2026-10-18T19:33:26Z", "item": "S36", "action": "note", "from": "", "to": "", "note": "Fix round 2026-10-18: Windows read-only fallback for .adj.lo", "by": "Jon R"}
 {"when": "2026-10-18T19:27:54Z", "item": "S38", "action": "add", "from": "", "to": "open", "note": "adj repos: manage the user repo list"}
 {"when": "2026-10-18T19:27:54Z", "item": "S18", "action": "set", "from": "", "to": "", "note": "depends_on S09,S01→S38"}
 {"when": "2026-10-18T19:27:54Z", "item": "S37", "action": "set", "from": "", "to": "", "note": "title Release 1.0: freeze JSON shapes→Release 0.2.0; short_title Release 1.0→Release 0.2.0"}
@@ -672,3 +690,6 @@
 {"when": "2026-10-18T19:30:07Z", "item": "S38", "action": "note", "from": "", "to": "", "note": "C32 decision: compare cleaned absolute path strings without ", "by": "Jon R"}
 {"when": "2026-10-18T19:42:59Z", "item": "S38", "action": "note", "from": "", "to": "", "note": "Review round 1: VERDICT PASS, no blockers. Accepted lows: AG", "by": "Jon R"}
 {"when": "2026-10-18T19:45:43Z", "item": "S38", "action": "status", "from": "started", "to": "done", "note": "adj repos add/remove/list manage the per-user repo list in $XDG_CONFIG_HOME/adjudicate/config.json (HOME/.config fallback); strict Load, atomic Save; go test, vet, gofmt clean; reviewer and gate PASS", "by": "Jon R"}
+{"when": "2026-10-18T19:34:28Z", "item": "C198", "action": "catalog", "from": "", "to": "Windows support: LockFileEx lock, Windows CI, Windows zips", "note": "add"}
+{"when": "2026-10-18T19:34:28Z", "item": "C199", "action": "catalog", "from": "", "to": "Windows support: test layout, lock open seam, .gitattributes form", "note": "add"}
+{"when": "2026-10-18T19:34:28Z", "item": "S37", "action": "note", "from": "", "to": "", "note": "2026-10-18 from S36 review: before releasing 0.2.0, confirm ", "by": "Jon R"}
