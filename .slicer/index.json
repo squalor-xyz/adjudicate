@@ -848,6 +848,17 @@
           "verified_by": "",
           "verified_at": "",
           "stale_after": ""
+        },
+        {
+          "id": "32c2abaa-7d8d-4cfe-b27f-6bbe8deeebae",
+          "kind": "",
+          "text": "**2026-10-18** — 2026-10-18 from S22 review: (1) test nit internal/commands/importadr_test.go ~1308 (seen[0] panics on empty). (2) README ~393 and CHANGELOG ~41 over wrap width. (3) re-run warnings list adj supersede commands in ADR-number order; hand-numbered chains may need oldest-first. (4) a new ADR naming an already-imported ADR as replacement gets only a warning, no command; links to targets from an earlier run are warned, not written. (5) CHANGELOG claim that adj 0.1.0 refuses a store with an import entry was checked against a HEAD binary; verify with the real v0.1.0 binary. (6) refuse the store directory as DIR; concurrent imports of one folder can duplicate (skip index read outside the lock); symlinked DIR paths and ref case can cause a double import. (7) PROJECT.md Later: the 1.0 line still says S37; it is S39 now.",
+          "created_at": "2026-10-18T21:58:35Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
         }
       ],
       "claim": null,
@@ -2645,7 +2656,7 @@
   "goals": "adjudicate is a small CLI (`adj`) with a plain-text store that records project decisions as a loop: an agent asks, the owner decides in batches, and every later agent reads the decision. The goal and non-goal records below come from PROJECT.md; the owner's decisions on its open questions are catalog records C23-C33, and they override PROJECT.md where it differs (name, runtime, record format, license).",
   "non_goals": "",
   "catalog": {
-    "next_id": 203,
+    "next_id": 205,
     "id_prefix": "C",
     "id_width": 2,
     "records": [
@@ -4463,6 +4474,24 @@
         "kind": "decision",
         "title": "adj inbox --all: order, empty repos, JSON shape, config lock",
         "body": "Implementer decisions under C32 (S18). adj inbox --all lists repos in the user config's insertion order; a repo read successfully with no open records still prints its header. --all --json is {\"repos\": [{\"root\", \"records\"}], \"errors\": [...]}, with per-repo errors in JSON as well as warnings on stderr. adj repos add/remove lock config.json.lock beside config.json through a wrapper over the store lock (store.AcquireLock), with the same wait and error naming the lock file.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C203",
+        "kind": "decision",
+        "title": "ADR import: formats, import event, decided_by order",
+        "body": "Owner decisions 2026-10-18 (S22). adj import-adr DIR imports Nygard (adr-tools) and MADR ADR folders, one record per ADR. Imported records carry one new history event, 'import' (note 'from FILE'), instead of fake ask/decide entries; this changes the valid event set, so adj 0.1.0 refuses a store holding imported records (readers that accept unknown events are S39 scope). decided_by is --by, else the ADR's deciders (MADR), else $ADJ_DECIDED_BY, else blank.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C204",
+        "kind": "decision",
+        "title": "ADR import: command, mapping, links, re-runs",
+        "body": "Implementer decisions under C32 (S22, confirmed at landing 2026-10-18; full text in the S22 notes). adj import-adr DIR [--tag T]... [--by NAME] [--dry-run]; DIR inside the repo root. Status by first word: accepted->decided, proposed->open (decision text becomes the recommendation), rejected, deprecated->withdrawn, superseded; any other word is an error. Records take the next free IDs in ADR-number order with refs [FILE from root, ADR-NNNN]. Decision = Decision section or MADR chosen-option label; rationale = MADR justification, else Consequences, else Context. ADR date gives created/decided_at; a missing, malformed, impossible or future date uses the run date with a warning. Every file is validated before any write. A superseded ADR is linked only to a target in the same run (by file name, else a unique number) that is accepted or superseded with no loop; otherwise imported as decided with a warning; a failed new-record write does not restore the old record. A file is already imported when a record has an 'import' entry 'from FILE'; re-runs skip it and only warn with an 'adj supersede' command for newly superseded ADRs. Symlinked ADR files are skipped with a warning. Owner-only; not in the agent snippet.",
         "status": "active",
         "reason": "",
         "successor": ""

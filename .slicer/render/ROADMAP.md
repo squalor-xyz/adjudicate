@@ -770,6 +770,26 @@ Owner decisions 2026-10-18 (S36). The Windows ID lock is kernel32 LockFileEx thr
 
 Implementer decisions under C32 (S36), confirmed by the owner 2026-10-18. Acquire tests are built on every system with a lock (lock_acquire_test.go) so they run on unix too; tests that need unix mode bits or errno values live in lock_unix_test.go (not built on Windows); TestFilePermissions skips on Windows and the renumber test drops its chmod check there. The open logic is openLockFile (lock_open.go), parameterised by the open function and the permission-error test (EACCES on unix, ERROR_ACCESS_DENIED on Windows); the read-only open never creates the file and never accepts a directory. Lock range is the whole file; ERROR_LOCK_VIOLATION means held. .gitattributes is '* text=auto eol=lf' with -text on the deliberate CRLF fixtures and binary on *.png. The roundtrip test builds adj.exe on Windows.
 
+### C200 User repo list: adj repos and the user config file
+
+Owner decisions 2026-10-18 (S18 split into S38 and S18). The per-user repo list lives in $XDG_CONFIG_HOME/adjudicate/config.json (fallback $HOME/.config/adjudicate/config.json), shaped {"repos": [abs paths]}, managed by adj repos add [PATH] / remove PATH / list [--json]; writes are atomic and create the directory; a listed path added again is a no-op. adj inbox --all (S18) reads it and warns and continues on a missing or broken repo, exiting 1. Follow-ups decided for S18: a relative XDG_CONFIG_HOME counts as unset (XDG spec) and a relative HOME is an error; repos add/remove take a lock so concurrent runs cannot drop an entry.
+
+### C201 adj repos: package, --root, unlisted remove, path comparison
+
+Implementer decisions under C32 (S38). The user config is its own package, internal/userconfig. For adj repos, --root only supplies add's default PATH. Removing a path that is not listed exits 1. adj repos list does not mark repos whose path no longer holds .adjudicate.json (S18 warns). Paths are compared as cleaned absolute strings, without resolving symlinks.
+
+### C202 adj inbox --all: order, empty repos, JSON shape, config lock
+
+Implementer decisions under C32 (S18). adj inbox --all lists repos in the user config's insertion order; a repo read successfully with no open records still prints its header. --all --json is {"repos": [{"root", "records"}], "errors": [...]}, with per-repo errors in JSON as well as warnings on stderr. adj repos add/remove lock config.json.lock beside config.json through a wrapper over the store lock (store.AcquireLock), with the same wait and error naming the lock file.
+
+### C203 ADR import: formats, import event, decided_by order
+
+Owner decisions 2026-10-18 (S22). adj import-adr DIR imports Nygard (adr-tools) and MADR ADR folders, one record per ADR. Imported records carry one new history event, 'import' (note 'from FILE'), instead of fake ask/decide entries; this changes the valid event set, so adj 0.1.0 refuses a store holding imported records (readers that accept unknown events are S39 scope). decided_by is --by, else the ADR's deciders (MADR), else $ADJ_DECIDED_BY, else blank.
+
+### C204 ADR import: command, mapping, links, re-runs
+
+Implementer decisions under C32 (S22, confirmed at landing 2026-10-18; full text in the S22 notes). adj import-adr DIR [--tag T]... [--by NAME] [--dry-run]; DIR inside the repo root. Status by first word: accepted->decided, proposed->open (decision text becomes the recommendation), rejected, deprecated->withdrawn, superseded; any other word is an error. Records take the next free IDs in ADR-number order with refs [FILE from root, ADR-NNNN]. Decision = Decision section or MADR chosen-option label; rationale = MADR justification, else Consequences, else Context. ADR date gives created/decided_at; a missing, malformed, impossible or future date uses the run date with a warning. Every file is validated before any write. A superseded ADR is linked only to a target in the same run (by file name, else a unique number) that is accepted or superseded with no loop; otherwise imported as decided with a warning; a failed new-record write does not restore the old record. A file is already imported when a record has an 'import' entry 'from FILE'; re-runs skip it and only warn with an 'adj supersede' command for newly superseded ADRs. Symlinked ADR files are skipped with a warning. Owner-only; not in the agent snippet.
+
 ### C39 LICENSE is a stub until the owner supplies the full GPL-3.0 text and copyright holder
 
 No GPL-3.0 text exists in the adjudicate repo and the workspace has no network, so the stub carries the SPDX line, the or-later notice and TODO(owner) markers.
@@ -832,25 +852,25 @@ PENDING OWNER CONFIRMATION - not decided. Source: Dependency/licensing notes (ma
 
 *Retired: Owner decided 2026-10-15: see decision C31 (GPL-3.0-or-later)..*
 
-39 items · — 5 · done 33 · retired 1
+39 items · — 3 · done 35 · retired 1
 
 | # | Slice | Title | Size | Effort | Trees | Findings | Status |
 |---|---|---|---|---|---|---|---|
-| 1 | S38 | adj repos | M | 2 | cli | Owner decision 2026-10-18 (S18 config): user config file managed by adj repos add/remove/list | — |
-| 2 | [S18](slices/S18.md) | Cross-repo inbox | M | 2 | cli | PROJECT.md Feature tiers (Later); Open decisions 6 | — |
-| 3 | [S19](slices/S19.md) | TUI or static HTML inbox | M | 2 | cli | PROJECT.md Feature tiers (Later) | — |
-| 4 | S37 | Release 0.2.0 | S | 1 | release | CHANGELOG.md and docs/json.md 1.0 rule | — |
-| 5 | S39 | Release 1.0 | S | 1 | release | CHANGELOG.md and docs/json.md 1.0 rule; owner 2026-10-18: 0.2.0 first, 1.0 later | — |
-| 6 | [S21](slices/S21.md) | Later: optional owner-only decide enforcement | M | 2 | later | PROJECT.md Feature tiers (Later); Open decisions 5; Non-goals · Owner 2026-10-18: owner-only decide stays a convention (C11, C27); no enforcement planned | retired |
+| 1 | [S19](slices/S19.md) | TUI or static HTML inbox | M | 2 | cli | PROJECT.md Feature tiers (Later) | — |
+| 2 | S37 | Release 0.2.0 | S | 1 | release | CHANGELOG.md and docs/json.md 1.0 rule | — |
+| 3 | S39 | Release 1.0 | S | 1 | release | CHANGELOG.md and docs/json.md 1.0 rule; owner 2026-10-18: 0.2.0 first, 1.0 later | — |
+| 4 | [S21](slices/S21.md) | Later: optional owner-only decide enforcement | M | 2 | later | PROJECT.md Feature tiers (Later); Open decisions 5; Non-goals · Owner 2026-10-18: owner-only decide stays a convention (C11, C27); no enforcement planned | retired |
 
 ---
 
 | # | Slice | Title | Size | Effort | Trees | Findings | Status |
 |---|---|---|---|---|---|---|---|
-| 7 | [S34](slices/S34.md) | Dogfood conventions | S | 1 | decisions | S20 notes 2026-10-16/17, items 2 (tag case) and 3 (keys) | done |
-| 8 | [S20](slices/S20.md) | Slicer integration | M | 2 | cli | PROJECT.md Feature tiers (Later); Non-goals (not replacing slicer); Risks (overlap with slicer catalog) | done |
-| 9 | [S35](slices/S35.md) | adj context size budget | S | 1 | cli | PROJECT.md Non-goals (not in 0.1.0: size budget flag); Risks: context bloat | done |
-| 10 | [S36](slices/S36.md) | Windows support | M | 2 | store | AGENTS.md Store and config (lock_other.go: no lock, bounded retry only); release.yml builds no windows archive | done |
+| 5 | [S34](slices/S34.md) | Dogfood conventions | S | 1 | decisions | S20 notes 2026-10-16/17, items 2 (tag case) and 3 (keys) | done |
+| 6 | [S20](slices/S20.md) | Slicer integration | M | 2 | cli | PROJECT.md Feature tiers (Later); Non-goals (not replacing slicer); Risks (overlap with slicer catalog) | done |
+| 7 | [S35](slices/S35.md) | adj context size budget | S | 1 | cli | PROJECT.md Non-goals (not in 0.1.0: size budget flag); Risks: context bloat | done |
+| 8 | [S36](slices/S36.md) | Windows support | M | 2 | store | AGENTS.md Store and config (lock_other.go: no lock, bounded retry only); release.yml builds no windows archive | done |
+| 9 | [S38](slices/S38.md) | adj repos | M | 2 | cli | Owner decision 2026-10-18 (S18 config): user config file managed by adj repos add/remove/list | done |
+| 10 | [S18](slices/S18.md) | Cross-repo inbox | M | 2 | cli | PROJECT.md Feature tiers (Later); Open decisions 6 | done |
 | 11 | [S22](slices/S22.md) | Import from ADR folders | L | 2 | cli | PROJECT.md Feature tiers (Later) | done |
 | 12 | [S01](slices/S01.md) | Confirm open decisions | S | 1 | decisions | PROJECT.md Open decisions 1-7; Core concepts (kind); Dependency/licensing notes | done |
 | 13 | [S02](slices/S02.md) | Project scaffolding | S | 1 | scaffold | PROJECT.md Stack recommendation; Dependency/licensing notes | done |
