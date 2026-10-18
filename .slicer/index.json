@@ -2736,6 +2736,17 @@
           "verified_by": "",
           "verified_at": "",
           "stale_after": ""
+        },
+        {
+          "id": "546cd104-5e39-487d-a6eb-84a57227e780",
+          "kind": "",
+          "text": "**2026-10-18** — 2026-10-18 from S37 gate (cosmetic): internal/store/lock_windows.go:64 has a ragged short comment line; CHANGELOG.md:26 is 82 columns.",
+          "created_at": "2026-10-18T23:48:22Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
         }
       ],
       "claim": null,
