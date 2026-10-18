@@ -673,3 +673,6 @@
 {"when": "2026-10-18T19:27:54Z", "item": "S37", "action": "set", "from": "", "to": "", "note": "depends_on S34,S20,S35,S36,S18,S19,S22→S18,S19,S22,S36,S38"}
 {"when": "2026-10-18T19:27:54Z", "item": "S38", "action": "move", "from": "38", "to": "5", "note": ""}
 {"when": "2026-10-18T19:27:54Z", "item": "S39", "action": "move", "from": "39", "to": "10", "note": ""}
+{"when": "2026-10-18T19:34:28Z", "item": "C198", "action": "catalog", "from": "", "to": "Windows support: LockFileEx lock, Windows CI, Windows zips", "note": "add"}
+{"when": "2026-10-18T19:34:28Z", "item": "C199", "action": "catalog", "from": "", "to": "Windows support: test layout, lock open seam, .gitattributes form", "note": "add"}
+{"when": "2026-10-18T19:34:28Z", "item": "S37", "action": "note", "from": "", "to": "", "note": "2026-10-18 from S36 review: before releasing 0.2.0, confirm ", "by": "Jon R"}

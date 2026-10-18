@@ -560,6 +560,17 @@
           "verified_by": "",
           "verified_at": "",
           "stale_after": ""
+        },
+        {
+          "id": "76f33ef0-3c1b-4f27-b8f5-6ffddef8f58c",
+          "kind": "",
+          "text": "**2026-10-18** — 2026-10-18 from S36 review: before releasing 0.2.0, confirm the Windows CI job is green after the push (existing-suite behaviour on Windows: rename/remove of open files, 8.3 temp paths, os.Link; lock_windows_test.go runs only there) and that zip exists on ubuntu-latest for release.yml. Docs nits: README CI paragraph does not mention go vet on Windows; over-width lines in lock_unix.go:23, lock_windows.go:61, lock_open.go:18 and two AGENTS.md lines. No test covers lock release at process death (also true on unix).",
+          "created_at": "2026-10-18T19:34:28Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
         }
       ],
       "claim": null,
@@ -2334,7 +2345,7 @@
   "goals": "adjudicate is a small CLI (`adj`) with a plain-text store that records project decisions as a loop: an agent asks, the owner decides in batches, and every later agent reads the decision. The goal and non-goal records below come from PROJECT.md; the owner's decisions on its open questions are catalog records C23-C33, and they override PROJECT.md where it differs (name, runtime, record format, license).",
   "non_goals": "",
   "catalog": {
-    "next_id": 198,
+    "next_id": 200,
     "id_prefix": "C",
     "id_width": 2,
     "records": [
@@ -4107,6 +4118,24 @@
         "kind": "decision",
         "title": "--ref filter values are matched as typed",
         "body": "Implementer decision under C32 (S20). --ref values on adj list and adj context match exact, case-sensitive values as typed, with no trimming, because refs are opaque strings stored as typed; a blank or whitespace-only value exits 2 before store access.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C198",
+        "kind": "decision",
+        "title": "Windows support: LockFileEx lock, Windows CI, Windows zips",
+        "body": "Owner decisions 2026-10-18 (S36). The Windows ID lock is kernel32 LockFileEx through the standard library syscall package, on the same <store>/.adj.lock, with flock's semantics (held from ID scan to link, released on return or process death, never deleted, 5 s wait polling every 10 ms, error names .adj.lock). A read-only .adj.lock falls back to a read-only open, as C164 on unix. CI runs go vet and go test on windows-latest. release.yml adds windows amd64/arm64 .zip archives (adj.exe) in SHA256SUMS. Line endings are pinned by .gitattributes rather than a CI autocrlf step.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C199",
+        "kind": "decision",
+        "title": "Windows support: test layout, lock open seam, .gitattributes form",
+        "body": "Implementer decisions under C32 (S36), confirmed by the owner 2026-10-18. Acquire tests are built on every system with a lock (lock_acquire_test.go) so they run on unix too; tests that need unix mode bits or errno values live in lock_unix_test.go (not built on Windows); TestFilePermissions skips on Windows and the renumber test drops its chmod check there. The open logic is openLockFile (lock_open.go), parameterised by the open function and the permission-error test (EACCES on unix, ERROR_ACCESS_DENIED on Windows); the read-only open never creates the file and never accepts a directory. Lock range is the whole file; ERROR_LOCK_VIOLATION means held. .gitattributes is '* text=auto eol=lf' with -text on the deliberate CRLF fixtures and binary on *.png. The roundtrip test builds adj.exe on Windows.",
         "status": "active",
         "reason": "",
         "successor": ""
