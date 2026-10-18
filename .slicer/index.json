@@ -301,7 +301,7 @@
       "title": "adj repos: manage the user repo list",
       "short_title": "adj repos",
       "status": "open",
-      "has_slice": false,
+      "has_slice": true,
       "depends_on": [],
       "note_records": [],
       "claim": null,

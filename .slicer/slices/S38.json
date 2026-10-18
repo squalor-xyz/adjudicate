@@ -1,0 +1,41 @@
+{
+  "id": "S38",
+  "title": "adj repos: manage the user repo list",
+  "lead": [
+    "Add adj repos add/remove/list, which manage a per-user list of adj repos in $XDG_CONFIG_HOME/adjudicate/config.json, so a later adj inbox --all (S18) can read it."
+  ],
+  "depends_note": null,
+  "findings_note": "Owner decision 2026-10-18 (S18 config): user config file managed by adj repos add/remove/list",
+  "size": "M",
+  "flags": [],
+  "trees_note": "cli",
+  "trees_plural": false,
+  "boundary": "**Not in this slice:** adj inbox --all and anything that reads the repos for display (S18); any other user setting; changing .adjudicate.json; slicer catalog records (S22 runs in parallel and would take the same catalog id: record C32 decisions as slicer notes on S38; the outer session files them at landing).",
+  "sections": [
+    {
+      "heading": "Why",
+      "body": "Owner decisions 2026-10-18 (S18 cross-repo inbox, split into this slice and S18): the repo list lives in a user config file $XDG_CONFIG_HOME/adjudicate/config.json, falling back to $HOME/.config/adjudicate/config.json when XDG_CONFIG_HOME is unset or empty (not os.UserConfigDir, which is ~/Library/Application Support on macOS). Shape: {\"repos\": [\"/abs/path\", ...]}. adj manages it: adj repos add [PATH] (default: the current repo root; stored as an absolute, cleaned path; must hold .adjudicate.json; a path already listed is a no-op, exit 0), adj repos remove PATH, adj repos list [--json]. Writes are atomic (temp file in the same directory + rename) and create the directory if missing. This is the first file adj writes outside a repo."
+    },
+    {
+      "heading": "Files",
+      "body": "- internal/userconfig/ (new package; or internal/store/userconfig.go if that reads better under C32): path resolution from an injected getenv, Load (a missing file is an empty list; unknown keys, a non-absolute path or bad JSON are errors, as store config is strict), Save (atomic, 0644 file, 0755 dir), Add, Remove.\n- internal/commands/repos.go (+ test) and internal/cli/repos.go (+ test): the three subcommands; dispatch and usage in internal/cli/cli.go.\n- internal/render: list text (one path per line) and JSON ({\"repos\": [...]}); docs/json.md and internal/cli/jsonshape_test.go pin it.\n- README.md, PROJECT.md (Commands; data model: the user config), AGENTS.md (Commands entry, Layout), CHANGELOG.md (## Unreleased).\n- internal/commands/ai.md: do not change (agents do not manage the repo list; 1799/1800 bytes)."
+    },
+    {
+      "heading": "Failing tests",
+      "body": "Table-driven, red first; every test injects XDG_CONFIG_HOME/HOME through cli.Env.Getenv pointing into t.TempDir(), so no test touches the real home:\n- Path resolution: XDG_CONFIG_HOME set; unset or empty falls back to HOME/.config; neither set is an error (exit 1).\n- add with no PATH adds the current root (Env.Root / --root); add PATH adds that repo; relative PATH is made absolute against the working directory (Env.Getwd); a PATH without .adjudicate.json exits 1 and writes nothing; adding a listed path again is a no-op (exit 0, file unchanged byte for byte).\n- remove PATH removes it; removing a path not listed exits 1 (or is a no-op: decide under C32 and test it); list after each operation.\n- list on a missing file prints nothing (JSON: {\"repos\": []}) and exits 0; list --json shape pinned.\n- A malformed config file (bad JSON, unknown key, relative path) makes every repos command exit 1 naming the file, and add/remove do not overwrite it.\n- Save is atomic: no temp file is left behind; the directory is created.\n- Usage errors (unknown subcommand, extra argument, blank PATH) exit 2."
+    },
+    {
+      "heading": "Implement",
+      "body": "1. Decide under C32 and record as slicer notes on S38: package placement; what --root means for repos (recommend: the default PATH for add, else unused); removing an unlisted path (recommend exit 1); whether list marks repos whose path no longer holds .adjudicate.json (recommend: not in this slice; S18 warns); path comparison (cleaned absolute string, no symlink resolution).\n2. Red tests, then the code, following the existing command split (cli parses, commands acts, render prints).\n3. Docs as in Files."
+    },
+    {
+      "heading": "Check",
+      "body": "- . scripts/env.sh; go test ./...; go vet ./...; gofmt -l cmd internal prints nothing.\n- go build -o .cache/bin/adj ./cmd/adj; with XDG_CONFIG_HOME=<worktree>/.cache/tmp/s38-check: adj repos add --root <worktree>, adj repos list, adj repos list --json, adj repos remove <worktree> behave as documented. Never run it against the real home config.\n- .cache/bin/adj lint --root . is clean; mutation check each new test; slicer check --json is clean."
+    },
+    {
+      "heading": "Git",
+      "body": "Worktree .worktrees/s38 on branch s38. The orchestrator commits on s38 after VERDICT: PASS and slicer done; no push, no merge; no AI attribution."
+    }
+  ],
+  "notes": []
+}
