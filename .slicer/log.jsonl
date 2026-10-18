@@ -757,3 +757,5 @@
 {"when": "2026-10-18T21:58:34Z", "item": "C203", "action": "catalog", "from": "", "to": "ADR import: formats, import event, decided_by order", "note": "add"}
 {"when": "2026-10-18T21:58:34Z", "item": "C204", "action": "catalog", "from": "", "to": "ADR import: command, mapping, links, re-runs", "note": "add"}
 {"when": "2026-10-18T21:58:35Z", "item": "S37", "action": "note", "from": "", "to": "", "note": "2026-10-18 from S22 review: (1) test nit internal/commands/i", "by": "Jon R"}
+{"when": "2026-10-18T22:00:33Z", "item": "C205", "action": "catalog", "from": "", "to": "Interactive inbox: adj inbox -i", "note": "add"}
+{"when": "2026-10-18T22:00:35Z", "item": "S37", "action": "note", "from": "", "to": "", "note": "2026-10-18 from S19 review: the inbox usage line 'adj inbox ", "by": "Jon R"}

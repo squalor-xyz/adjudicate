@@ -782,6 +782,18 @@ Implementer decisions under C32 (S38). The user config is its own package, inter
 
 Implementer decisions under C32 (S18). adj inbox --all lists repos in the user config's insertion order; a repo read successfully with no open records still prints its header. --all --json is {"repos": [{"root", "records"}], "errors": [...]}, with per-repo errors in JSON as well as warnings on stderr. adj repos add/remove lock config.json.lock beside config.json through a wrapper over the store lock (store.AcquireLock), with the same wait and error naming the lock file.
 
+### C203 ADR import: formats, import event, decided_by order
+
+Owner decisions 2026-10-18 (S22). adj import-adr DIR imports Nygard (adr-tools) and MADR ADR folders, one record per ADR. Imported records carry one new history event, 'import' (note 'from FILE'), instead of fake ask/decide entries; this changes the valid event set, so adj 0.1.0 refuses a store holding imported records (readers that accept unknown events are S39 scope). decided_by is --by, else the ADR's deciders (MADR), else $ADJ_DECIDED_BY, else blank.
+
+### C204 ADR import: command, mapping, links, re-runs
+
+Implementer decisions under C32 (S22, confirmed at landing 2026-10-18; full text in the S22 notes). adj import-adr DIR [--tag T]... [--by NAME] [--dry-run]; DIR inside the repo root. Status by first word: accepted->decided, proposed->open (decision text becomes the recommendation), rejected, deprecated->withdrawn, superseded; any other word is an error. Records take the next free IDs in ADR-number order with refs [FILE from root, ADR-NNNN]. Decision = Decision section or MADR chosen-option label; rationale = MADR justification, else Consequences, else Context. ADR date gives created/decided_at; a missing, malformed, impossible or future date uses the run date with a warning. Every file is validated before any write. A superseded ADR is linked only to a target in the same run (by file name, else a unique number) that is accepted or superseded with no loop; otherwise imported as decided with a warning; a failed new-record write does not restore the old record. A file is already imported when a record has an 'import' entry 'from FILE'; re-runs skip it and only warn with an 'adj supersede' command for newly superseded ADRs. Symlinked ADR files are skipped with a warning. Owner-only; not in the agent snippet.
+
+### C205 Interactive inbox: adj inbox -i
+
+Owner decisions 2026-10-18 (S19): a line-mode walk invoked as adj inbox -i (stdlib only, no raw terminal mode), owner-only and not in the agent snippet; writes go through commands.Decide/Reject/Withdraw. Implementer decisions under C32, confirmed: -i only (no long alias), --by requires -i; -i with --json, --all or an argument exits 2. Actions d=decide by option label, t=decide with text, r=reject, w=withdraw, s=skip, q=quit, ?=help; decide/reject/withdraw then ask a required Rationale. Unknown labels and blank fields re-prompt; d on a record with no options is refused pointing to t, and a blank label returns to the action prompt (owner fix round). EOF is quit and discards a partial line. A failed write is reported on stderr, the walk continues, and the exit is 1. Summary: 'N decided, N rejected, N withdrawn, N skipped, N failed'.
+
 ### C39 LICENSE is a stub until the owner supplies the full GPL-3.0 text and copyright holder
 
 No GPL-3.0 text exists in the adjudicate repo and the workspace has no network, so the stub carries the SPDX line, the or-later notice and TODO(owner) markers.
@@ -844,26 +856,26 @@ PENDING OWNER CONFIRMATION - not decided. Source: Dependency/licensing notes (ma
 
 *Retired: Owner decided 2026-10-15: see decision C31 (GPL-3.0-or-later)..*
 
-39 items · — 3 · done 35 · retired 1
+39 items · — 2 · done 36 · retired 1
 
 | # | Slice | Title | Size | Effort | Trees | Findings | Status |
 |---|---|---|---|---|---|---|---|
-| 1 | [S22](slices/S22.md) | Import from ADR folders | M | 2 | cli | PROJECT.md Feature tiers (Later) | — |
-| 2 | S37 | Release 0.2.0 | S | 1 | release | CHANGELOG.md and docs/json.md 1.0 rule | — |
-| 3 | S39 | Release 1.0 | S | 1 | release | CHANGELOG.md and docs/json.md 1.0 rule; owner 2026-10-18: 0.2.0 first, 1.0 later | — |
-| 4 | [S21](slices/S21.md) | Later: optional owner-only decide enforcement | M | 2 | later | PROJECT.md Feature tiers (Later); Open decisions 5; Non-goals · Owner 2026-10-18: owner-only decide stays a convention (C11, C27); no enforcement planned | retired |
+| 1 | S37 | Release 0.2.0 | S | 1 | release | CHANGELOG.md and docs/json.md 1.0 rule | — |
+| 2 | S39 | Release 1.0 | S | 1 | release | CHANGELOG.md and docs/json.md 1.0 rule; owner 2026-10-18: 0.2.0 first, 1.0 later | — |
+| 3 | [S21](slices/S21.md) | Later: optional owner-only decide enforcement | M | 2 | later | PROJECT.md Feature tiers (Later); Open decisions 5; Non-goals · Owner 2026-10-18: owner-only decide stays a convention (C11, C27); no enforcement planned | retired |
 
 ---
 
 | # | Slice | Title | Size | Effort | Trees | Findings | Status |
 |---|---|---|---|---|---|---|---|
-| 5 | [S34](slices/S34.md) | Dogfood conventions | S | 1 | decisions | S20 notes 2026-10-16/17, items 2 (tag case) and 3 (keys) | done |
-| 6 | [S20](slices/S20.md) | Slicer integration | M | 2 | cli | PROJECT.md Feature tiers (Later); Non-goals (not replacing slicer); Risks (overlap with slicer catalog) | done |
-| 7 | [S35](slices/S35.md) | adj context size budget | S | 1 | cli | PROJECT.md Non-goals (not in 0.1.0: size budget flag); Risks: context bloat | done |
-| 8 | [S36](slices/S36.md) | Windows support | M | 2 | store | AGENTS.md Store and config (lock_other.go: no lock, bounded retry only); release.yml builds no windows archive | done |
-| 9 | [S38](slices/S38.md) | adj repos | M | 2 | cli | Owner decision 2026-10-18 (S18 config): user config file managed by adj repos add/remove/list | done |
-| 10 | [S18](slices/S18.md) | Cross-repo inbox | M | 2 | cli | PROJECT.md Feature tiers (Later); Open decisions 6 | done |
-| 11 | [S19](slices/S19.md) | adj inbox -i | M | 2 | cli | PROJECT.md Feature tiers (Later) | done |
+| 4 | [S34](slices/S34.md) | Dogfood conventions | S | 1 | decisions | S20 notes 2026-10-16/17, items 2 (tag case) and 3 (keys) | done |
+| 5 | [S20](slices/S20.md) | Slicer integration | M | 2 | cli | PROJECT.md Feature tiers (Later); Non-goals (not replacing slicer); Risks (overlap with slicer catalog) | done |
+| 6 | [S35](slices/S35.md) | adj context size budget | S | 1 | cli | PROJECT.md Non-goals (not in 0.1.0: size budget flag); Risks: context bloat | done |
+| 7 | [S36](slices/S36.md) | Windows support | M | 2 | store | AGENTS.md Store and config (lock_other.go: no lock, bounded retry only); release.yml builds no windows archive | done |
+| 8 | [S38](slices/S38.md) | adj repos | M | 2 | cli | Owner decision 2026-10-18 (S18 config): user config file managed by adj repos add/remove/list | done |
+| 9 | [S18](slices/S18.md) | Cross-repo inbox | M | 2 | cli | PROJECT.md Feature tiers (Later); Open decisions 6 | done |
+| 10 | [S19](slices/S19.md) | adj inbox -i | M | 2 | cli | PROJECT.md Feature tiers (Later) | done |
+| 11 | [S22](slices/S22.md) | Import from ADR folders | L | 2 | cli | PROJECT.md Feature tiers (Later) | done |
 | 12 | [S01](slices/S01.md) | Confirm open decisions | S | 1 | decisions | PROJECT.md Open decisions 1-7; Core concepts (kind); Dependency/licensing notes | done |
 | 13 | [S02](slices/S02.md) | Project scaffolding | S | 1 | scaffold | PROJECT.md Stack recommendation; Dependency/licensing notes | done |
 | 14 | [S03](slices/S03.md) | Record model and lifecycle transitions | M | 2 | model | PROJECT.md Core concepts / data model; Milestone 1 | done |

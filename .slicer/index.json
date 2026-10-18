@@ -882,6 +882,17 @@
           "verified_by": "",
           "verified_at": "",
           "stale_after": ""
+        },
+        {
+          "id": "58ce211b-3d86-4f2a-bcd2-3401c5b10a80",
+          "kind": "",
+          "text": "**2026-10-18** — 2026-10-18 from S19 review: the inbox usage line 'adj inbox [[--all] [--json] | -i [--by NAME]] [--root DIR]' still reads as if --all --root were allowed (it exits 2; the help body says so); a precise form is '[--all [--json] | [--json] [--root DIR] | -i [--by NAME] [--root DIR]]'. The PROJECT.md command table row ends in [--root DIR], which other rows omit. Windows runtime of -i only vetted.",
+          "created_at": "2026-10-18T22:00:35Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
         }
       ],
       "claim": null,
@@ -2679,7 +2690,7 @@
   "goals": "adjudicate is a small CLI (`adj`) with a plain-text store that records project decisions as a loop: an agent asks, the owner decides in batches, and every later agent reads the decision. The goal and non-goal records below come from PROJECT.md; the owner's decisions on its open questions are catalog records C23-C33, and they override PROJECT.md where it differs (name, runtime, record format, license).",
   "non_goals": "",
   "catalog": {
-    "next_id": 205,
+    "next_id": 206,
     "id_prefix": "C",
     "id_width": 2,
     "records": [
@@ -4515,6 +4526,15 @@
         "kind": "decision",
         "title": "ADR import: command, mapping, links, re-runs",
         "body": "Implementer decisions under C32 (S22, confirmed at landing 2026-10-18; full text in the S22 notes). adj import-adr DIR [--tag T]... [--by NAME] [--dry-run]; DIR inside the repo root. Status by first word: accepted->decided, proposed->open (decision text becomes the recommendation), rejected, deprecated->withdrawn, superseded; any other word is an error. Records take the next free IDs in ADR-number order with refs [FILE from root, ADR-NNNN]. Decision = Decision section or MADR chosen-option label; rationale = MADR justification, else Consequences, else Context. ADR date gives created/decided_at; a missing, malformed, impossible or future date uses the run date with a warning. Every file is validated before any write. A superseded ADR is linked only to a target in the same run (by file name, else a unique number) that is accepted or superseded with no loop; otherwise imported as decided with a warning; a failed new-record write does not restore the old record. A file is already imported when a record has an 'import' entry 'from FILE'; re-runs skip it and only warn with an 'adj supersede' command for newly superseded ADRs. Symlinked ADR files are skipped with a warning. Owner-only; not in the agent snippet.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C205",
+        "kind": "decision",
+        "title": "Interactive inbox: adj inbox -i",
+        "body": "Owner decisions 2026-10-18 (S19): a line-mode walk invoked as adj inbox -i (stdlib only, no raw terminal mode), owner-only and not in the agent snippet; writes go through commands.Decide/Reject/Withdraw. Implementer decisions under C32, confirmed: -i only (no long alias), --by requires -i; -i with --json, --all or an argument exits 2. Actions d=decide by option label, t=decide with text, r=reject, w=withdraw, s=skip, q=quit, ?=help; decide/reject/withdraw then ask a required Rationale. Unknown labels and blank fields re-prompt; d on a record with no options is refused pointing to t, and a blank label returns to the action prompt (owner fix round). EOF is quit and discards a partial line. A failed write is reported on stderr, the walk continues, and the exit is 1. Summary: 'N decided, N rejected, N withdrawn, N skipped, N failed'.",
         "status": "active",
         "reason": "",
         "successor": ""
