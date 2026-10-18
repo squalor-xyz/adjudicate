@@ -12,27 +12,27 @@ in batches, and every later agent reads the decisions instead of asking again.
   `superseded`, and keeps its history.
 - No server, no database, no network, no LLM calls. Go standard library only.
 
-This is version 0.1.0. [CHANGELOG.md](CHANGELOG.md) lists what each release
+This is version 0.2.0. [CHANGELOG.md](CHANGELOG.md) lists what each release
 changed; [PROJECT.md](PROJECT.md) says what adjudicate is for and what it does.
 
 ## Install
 
-Each release on GitHub
-(<https://github.com/squalor-xyz/adjudicate/releases>) has an archive per
-system: linux, darwin (macOS) and freebsd, each on amd64 and arm64, named
-`adj_VERSION_OS_ARCH.tar.gz`, and windows on amd64 and arm64, named
-`adj_VERSION_windows_ARCH.zip`, and a `SHA256SUMS` file that lists all of them.
-Each archive holds `adj` (`adj.exe` on Windows), `LICENSE`, `NOTICE`,
-`README.md` and `CHANGELOG.md`. For 0.1.0 on an Apple silicon Mac:
+From 0.2.0, each release on GitHub
+(<https://github.com/squalor-xyz/adjudicate/releases>) has eight archives (six
+tar.gz and two zip): linux, darwin (macOS) and freebsd, each on amd64 and
+arm64, named `adj_VERSION_OS_ARCH.tar.gz`, and windows on amd64 and arm64,
+named `adj_VERSION_windows_ARCH.zip`, and a `SHA256SUMS` file that lists all
+of them. Each archive holds `adj` (`adj.exe` on Windows), `LICENSE`, `NOTICE`,
+`README.md` and `CHANGELOG.md`. For 0.2.0 on an Apple silicon Mac:
 
 ```sh
-curl -LO https://github.com/squalor-xyz/adjudicate/releases/download/v0.1.0/adj_0.1.0_darwin_arm64.tar.gz
-curl -LO https://github.com/squalor-xyz/adjudicate/releases/download/v0.1.0/SHA256SUMS
+curl -LO https://github.com/squalor-xyz/adjudicate/releases/download/v0.2.0/adj_0.2.0_darwin_arm64.tar.gz
+curl -LO https://github.com/squalor-xyz/adjudicate/releases/download/v0.2.0/SHA256SUMS
 shasum -a 256 --check --ignore-missing SHA256SUMS   # Linux: sha256sum --check --ignore-missing SHA256SUMS
-tar -xzf adj_0.1.0_darwin_arm64.tar.gz
+tar -xzf adj_0.2.0_darwin_arm64.tar.gz
 mkdir -p ~/.local/bin
-install -m 0755 adj_0.1.0_darwin_arm64/adj ~/.local/bin/adj   # or any directory on your PATH
-adj version                                                   # v0.1.0
+install -m 0755 adj_0.2.0_darwin_arm64/adj ~/.local/bin/adj   # or any directory on your PATH
+adj version                                                   # v0.2.0
 ```
 
 On Windows (the zips come with the releases after 0.1.0), in PowerShell, for
@@ -50,10 +50,10 @@ Expand-Archive adj_VERSION_windows_amd64.zip -DestinationPath .
 ```
 
 With Go (the version in `go.mod`, 1.27.2, or later) you can install from the
-module instead; `adj version` then prints the module version, `v0.1.0`:
+module instead; `adj version` then prints the module version, `v0.2.0`:
 
 ```sh
-go install github.com/squalor-xyz/adjudicate/cmd/adj@v0.1.0
+go install github.com/squalor-xyz/adjudicate/cmd/adj@v0.2.0
 ```
 
 `go install` puts `adj` in `$(go env GOPATH)/bin`. To build from a checkout,
@@ -87,7 +87,7 @@ the whole life of a decision (`cmd/adj/roundtrip_test.go`).
 version with the linker, as the release workflow does:
 
 ```sh
-go build -ldflags "-X github.com/squalor-xyz/adjudicate/internal/cli.versionOverride=v0.1.0" -o .cache/bin/adj ./cmd/adj
+go build -ldflags "-X github.com/squalor-xyz/adjudicate/internal/cli.versionOverride=v0.2.0" -o .cache/bin/adj ./cmd/adj
 ```
 
 Without that, `adj` prints the main module version that Go records in the
@@ -159,7 +159,7 @@ In GitHub Actions:
 - uses: actions/setup-go@v5
   with:
     go-version: stable
-- run: go install github.com/squalor-xyz/adjudicate/cmd/adj@v0.1.0
+- run: go install github.com/squalor-xyz/adjudicate/cmd/adj@v0.2.0
 - run: adj lint
 ```
 
@@ -296,7 +296,13 @@ Every filter given must match. Refs are case-sensitive and matched as typed,
 including surrounding whitespace; a blank `--ref` exits 2 before store access.
 No match is not an error.
 
-### `adj inbox [[--all] [--json] | -i [--by NAME]] [--root DIR]`
+### `adj inbox`
+
+```text
+adj inbox [--json] [--root DIR]
+adj inbox --all [--json]
+adj inbox -i [--by NAME] [--root DIR]
+```
 
 Lists the open questions, oldest first, each with its references, options and
 recommendation. An empty inbox prints nothing.
@@ -420,17 +426,22 @@ The first word of the status gives the record's status: `accepted` is
 `decided`, `proposed` is `open`, `rejected` is `rejected`, `deprecated` is
 `withdrawn`, and `superseded` (`Superseded by [4. Title](0004-title.md)` or
 `superseded by ADR-0004`) is `superseded` and linked to the record made from
-that ADR, if it is in the same run and is accepted or itself superseded and the
-links make no loop; if not, the record is `decided` and a warning says why. The
-ADR's Decision section (MADR: the chosen option) is the decision. The rationale
-is the MADR justification (the text after "because"), else the Consequences
-section, else the Context; for a rejected or withdrawn ADR it is the
-justification, then the Decision text, then the Consequences, then the Context.
-The ADR's date is `created` and `decided_at`; an ADR with no date, a date that
-is not `YYYY-MM-DD` or not a real date, or a date after the run date gets the
-run date and a warning. `decided_by` is `--by NAME`, else the ADR's deciders field (MADR),
-else `$ADJ_DECIDED_BY`, else blank. Each record has the refs `FILE` (its path from the
-repo root) and `ADR-0007`, and one `import` history entry.
+that ADR, if it is in the same run and is accepted or itself superseded and
+the links make no loop; if not, the record is `decided` and a warning says
+why. The ADR's Decision section (MADR: the chosen option) is the decision. The
+rationale is the MADR justification (the text after "because"), else the
+Consequences section, else the Context; for a rejected or withdrawn ADR it is
+the justification, then the Decision text, then the Consequences, then the
+Context. The ADR's date is `created` and `decided_at`; an ADR with no date, a
+date that is not `YYYY-MM-DD` or not a real date, or a date after the run date
+gets the run date and a warning. `decided_by` is `--by NAME`, else the ADR's
+deciders field (MADR), else `$ADJ_DECIDED_BY`, else blank. Each record has the
+refs `FILE` (its path from the repo root) and `ADR-0007`, and one `import`
+history entry.
+Version 0.1.0 cannot read these records: `show`, `list`, `check` and `context`
+exit 1 with `invalid record: history: entry 0: unknown event "import"`.
+Its `lint` exits 1 and reports a `fields` error with the same unknown-event
+message. Upgrade before sharing a store containing imported records.
 
 Every file is checked first: a file with no title, no known status, no decision
 (when accepted) or no rationale, or that cannot be read, stops the import with
@@ -465,13 +476,13 @@ An empty list prints nothing (JSON: `{"repos": []}`). `--root` is accepted but
 unused for explicit paths and for list/remove; these need no current repo.
 
 The list lives in `$XDG_CONFIG_HOME/adjudicate/config.json`, falling back to
-`$HOME/.config/adjudicate/config.json` when XDG_CONFIG_HOME is unset, empty or relative,
-on every OS. If HOME is needed, it must be absolute; an unset, empty or relative HOME
-causes exit 1.
-A missing file is an empty list. Bad JSON, unknown keys or non-absolute repo
-paths exit 1 and leave the file unchanged. Writes create the directory (0755)
-and replace the config (0644) atomically using a temp file in the same directory
-and rename. This user config is separate from `.adjudicate.json`.
+`$HOME/.config/adjudicate/config.json` when XDG_CONFIG_HOME is unset, empty or
+relative, on every OS. If HOME is needed, it must be absolute; an unset, empty
+or relative HOME causes exit 1. A missing file is an empty list. Bad JSON,
+unknown keys or non-absolute repo paths exit 1 and leave the file unchanged.
+Writes create the directory (0755) and replace the config (0644) atomically
+using a temp file in the same directory and rename. This user config is
+separate from `.adjudicate.json`.
 
 Removing from a missing config fails as unlisted without creating a directory
 or lock file.
@@ -496,11 +507,11 @@ and takes no argument.
 
 ## Output for scripts
 
-`show`, `list`, `inbox`, `check`, `lint` and `repos list` print JSON with `--json`; `context`
-does it with `--format json`. The shapes are in [docs/json.md](docs/json.md).
-Until 1.0 a shape may change in a minor release; the CHANGELOG names every
-change. From 1.0 a release may add keys but never renames, removes or retypes
-an existing key.
+`show`, `list`, `inbox`, `check`, `lint` and `repos list` print JSON with
+`--json`; `context` does it with `--format json`. The shapes are in
+[docs/json.md](docs/json.md). Until 1.0 a shape may change in a minor release;
+the CHANGELOG names every change. From 1.0 a release may add keys but never
+renames, removes or retypes an existing key.
 
 ## Environment
 
@@ -512,12 +523,12 @@ an existing key.
 
 CI (`.github/workflows/ci.yml`) runs `go vet`, `gofmt`, `go test` and `adj
 lint` on this repo's own `decisions/` for every push to `main` and every pull
-request, and runs the tests on macOS and Windows too. Pushing a tag `vX.Y.Z`
-runs `.github/workflows/release.yml`: the same checks, then a build for each
-system and architecture above with the version set from the tag, and a GitHub release with the
-archives, `SHA256SUMS`, and the `## X.Y.Z` section of
-[CHANGELOG.md](CHANGELOG.md) as its notes. The release fails if that section
-is missing, so write it before you tag.
+request. It also runs `go test` on macOS and `go vet` and `go test` on
+Windows. Pushing a tag `vX.Y.Z` runs `.github/workflows/release.yml`: the same
+checks, then a build for each system and architecture above with the version
+set from the tag, and a GitHub release with the archives, `SHA256SUMS`, and
+the `## X.Y.Z` section of [CHANGELOG.md](CHANGELOG.md) as its notes. The
+release fails if that section is missing, so write it before you tag.
 
 ## License
 

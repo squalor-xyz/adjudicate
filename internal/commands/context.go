@@ -88,7 +88,7 @@ type ContextMeasure func(kept []model.Record, omitted int) (int, error)
 //
 // If everything fits, that is the answer (one measurement). Otherwise some
 // record is omitted for every k below len(recs), and in that range the output
-// grows with k: one more entry adds more bytes (an entry is at least ten) than
+// grows with k: one more entry adds more bytes (an entry is at least nine) than
 // the omitted line can lose (one digit when the count drops from 10 to 9, one
 // byte when "decisions" becomes "decision"; the blank line before it is only
 // added). So the k that fit are a prefix 0..K of the range and a binary search

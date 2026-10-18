@@ -5,7 +5,7 @@ Until 1.0 a JSON shape in [docs/json.md](docs/json.md) may change in a minor
 release, and this file names every such change. From 1.0 a release may add keys
 but never renames, removes or retypes an existing key.
 
-## Unreleased
+## 0.2.0 - 2026-10-18
 
 ### Platforms
 - Windows: `adj ask` and `adj renumber` now take the ID lock on Windows too
@@ -18,6 +18,8 @@ but never renames, removes or retypes an existing key.
   `adj_VERSION_windows_arm64.zip`, each holding `adj.exe`, `LICENSE`, `NOTICE`,
   `README.md` and `CHANGELOG.md`, listed in `SHA256SUMS`.
 - CI runs `go vet` and `go test` on Windows.
+- `.gitattributes` checks text out with LF on every OS; CRLF fixtures and the
+  PNG remain byte-preserved.
 
 ### Commands
 - Owner-only `adj inbox -i` walks open questions oldest first with line prompts
@@ -50,7 +52,6 @@ but never renames, removes or retypes an existing key.
   ends the Markdown with `N decisions omitted`. The budget counts every byte,
   that line included; if not even that line fits, nothing is printed and the
   exit code is 1. Without the flag the output is unchanged.
-
 - `adj import-adr DIR [--tag T]... [--by NAME] [--dry-run]` creates one record
   for each ADR in a folder, in the format adr-tools writes (Michael Nygard's
   template) or MADR. The status word gives the record's status (accepted is
@@ -58,19 +59,25 @@ but never renames, removes or retypes an existing key.
   superseded when the ADR that replaced it is in the same run, else decided with
   a warning); `decided_by` is `--by`, else the ADR's deciders field, else
   `$ADJ_DECIDED_BY`, else blank; the ADR's date is `created` and `decided_at`;
-  the refs name the file (its path from the repo root) and the ADR number. Every file is checked
-  before any record is written, a file already imported (a record with an
-  `import` history entry for it) is skipped, and the ADR files are never
-  changed. A second run warns, with the `adj supersede` command, about a
-  skipped file whose record is still decided although the file now says it is
-  superseded. See the README.
+  the refs name the file (its path from the repo root) and the ADR number.
+  Every file is checked before any record is written. A file already imported
+  (a record with an `import` history entry for it) is skipped, and the ADR
+  files are never changed. A second run warns, with the `adj supersede`
+  command, about a skipped file whose record is still decided although the
+  file now says it is superseded. See the README.
 
 ### JSON shapes
+- `adj inbox --all --json` adds `{"repos": [{"root": "...", "records": [...]}],
+  "errors": [{"root": "...", "error": "..."}]}`; both top-level arrays are
+  present even when empty. Plain `adj inbox --json` is unchanged.
 - A history entry may have the event `import`: `adj import-adr` writes one on
   each record it makes, with the note `from FILE`. Programs that switch on
-  `event` should accept it. No key is added or changed. adj 0.1.0 refuses a
-  store that holds an `import` entry (`list`, `check` and `context` exit 1;
-  `lint` reports `fields` errors), so upgrade before sharing such a store.
+  `event` should accept it. No key is added or changed. Verified against the
+  real v0.1.0 tag: `show`, `list`, `check` and `context` exit 1 on an imported
+  record with `invalid record: history: entry 0: unknown event "import"`.
+  `lint` exits 1 with a `fields` error,
+  `history: entry 0: unknown event "import"`.
+  Upgrade before sharing a store containing imported records.
 - `adj repos list --json` prints `{"repos": [...]}` (empty: `[]`).
 - `adj context --format json --max-bytes N` adds a top-level `omitted` key (the
   number of records left out, `0` included). Without `--max-bytes` the output

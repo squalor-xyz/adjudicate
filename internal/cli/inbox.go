@@ -10,7 +10,9 @@ import (
 	"github.com/squalor-xyz/adjudicate/internal/store"
 )
 
-const inboxUsage = `usage: adj inbox [[--all] [--json] | -i [--by NAME]] [--root DIR]
+const inboxUsage = `usage: adj inbox [--json] [--root DIR]
+       adj inbox --all [--json]
+       adj inbox -i [--by NAME] [--root DIR]
 
 List the open questions, oldest first (by created date, then ID), each with its
 options and recommendation. With --json, print {"records": [...]} (the shape is

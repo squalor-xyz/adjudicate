@@ -3,6 +3,7 @@
 package userconfig
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -144,15 +145,13 @@ func TestUpdateLoadsUnderLock(t *testing.T) {
 	}
 	defer func() { release() }()
 	entered := make(chan struct{})
-	original := acquireLock
-	acquireLock = func(path string, timeout time.Duration) (func(), error) {
+	lock := func(path string, timeout time.Duration) (func(), error) {
 		close(entered)
-		return original(path, timeout)
+		return store.AcquireLock(path, timeout)
 	}
-	defer func() { acquireLock = original }()
 	done := make(chan error, 1)
 	go func() {
-		done <- Update(path, func(cfg *Config) (bool, error) { return cfg.Add(repoB), nil })
+		done <- (Updater{Lock: lock}).Update(path, func(cfg *Config) (bool, error) { return cfg.Add(repoB), nil })
 	}()
 	<-entered
 	// Another writer changes the real config before Update can acquire the lock.
@@ -170,5 +169,50 @@ func TestUpdateLoadsUnderLock(t *testing.T) {
 	want := []string{repoA, repoB}
 	if err != nil || !reflect.DeepEqual(cfg.Repos, want) {
 		t.Fatalf("repos = %v, %v; want %v", cfg.Repos, err, want)
+	}
+}
+
+func TestUpdateShortLockTimeout(t *testing.T) {
+	switch runtime.GOOS {
+	case "darwin", "dragonfly", "freebsd", "illumos", "linux", "netbsd", "openbsd", "windows":
+	default:
+		t.Skip("platform has no flock or LockFileEx")
+	}
+	path := filepath.Join(t.TempDir(), "config.json")
+	release, err := store.AcquireLock(path+".lock", time.Second)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer release()
+	started := time.Now()
+	err = (Updater{Lock: func(path string, _ time.Duration) (func(), error) {
+		return store.AcquireLock(path, 30*time.Millisecond)
+	}}).Update(path, func(c *Config) (bool, error) { return c.Add(filepath.Dir(path)), nil })
+	elapsed := time.Since(started)
+	if err == nil || !strings.Contains(err.Error(), path+".lock") {
+		t.Fatalf("held lock error = %v", err)
+	}
+	if elapsed >= time.Second {
+		t.Errorf("short lock timeout took %v, want under 1s", elapsed)
+	}
+	if elapsed < 30*time.Millisecond {
+		t.Errorf("lock returned too soon: %v", elapsed)
+	}
+	if _, err := os.Stat(path); !os.IsNotExist(err) {
+		t.Errorf("held lock wrote config: %v", err)
+	}
+}
+
+func TestUpdateProductionTimeout(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "config.json")
+	sentinel := errors.New("lock probe")
+	err := (Updater{Lock: func(_ string, timeout time.Duration) (func(), error) {
+		if timeout != 5*time.Second {
+			t.Errorf("production timeout = %v, want 5s", timeout)
+		}
+		return nil, sentinel
+	}}).Update(path, func(*Config) (bool, error) { t.Fatal("change called without lock"); return false, nil })
+	if !errors.Is(err, sentinel) {
+		t.Fatalf("lock error = %v, want probe", err)
 	}
 }

@@ -35,8 +35,8 @@ library only.
 - `internal/commands`: what each command does to the store, apart from
   parsing, output and exit codes (`init.go`, `ask.go`, `decide.go`,
   `supersede.go`, `amend.go`, `show.go`, `list.go`, `inbox.go`, `check.go`,
-  `context.go`, `lint.go`, `renumber.go`, `importadr.go`, `repos.go`, `ai.go`). `ai.md` is the agent
-  snippet, embedded by `ai.go`.
+  `context.go`, `lint.go`, `renumber.go`, `importadr.go`, `repos.go`,
+  `ai.go`). `ai.md` is the agent snippet, embedded by `ai.go`.
   `errors.go` holds `UsageError`, the error that exits 2.
 - `internal/adr`: one ADR file (Nygard/adr-tools or MADR) parsed into a neutral
   struct (`adr.go`); pure functions, no file I/O, fixtures in `testdata/`.
@@ -45,10 +45,13 @@ library only.
   `file.go`.
 - `internal/store`: one repo's record directory (`store.go`), its config
   (`config.go`), `Renumber` (`renumber.go`) and the ID lock (`lock_unix.go`,
-  `lock_windows.go`, `lock_open.go`, `lock_other.go`); see "Store and config" below.
-- `internal/userconfig`: per-user repo list, injected environment path resolution,
-  strict loading, atomic saving and locked updates; separate from repo config.
-  The shared `store.AcquireLock` wrapper reuses the store platform lock.
+  `lock_windows.go`, `lock_open.go`, `lock_other.go`); see "Store and config"
+  below.
+- `internal/userconfig`: per-user repo list, injected environment path
+  resolution, strict loading, atomic saving and locked updates; separate from
+  repo config.
+  The shared `store.AcquireLock` wrapper reuses the store platform lock;
+  `userconfig.Updater` passes a lock function for tests without shared state.
 - `internal/query`: record filters and the `check` search, pure functions over
   records (`filter.go`, `search.go`).
 - `internal/lint`: `adj lint`'s checks (`lint.go`): reads each record file with
@@ -167,9 +170,12 @@ below). `adj lint` exits 1 when it finds an error (see its entry).
   an error (exit 0). `--ref` repeats: every ref must be on the record, matched
   exactly, case-sensitively and as typed, including surrounding whitespace; a
   blank value exits 2 before store access.
-- `adj inbox [[--all] [--json] | -i [--by NAME]] [--root DIR]`: lists the `open` records, oldest first (by
-  `created`, then ID). Text: per record `ID  title`, then indented its created
-  date, its refs when set (C171), its context, every option (`label: summary`,
+- `adj inbox [--json] [--root DIR]`,
+  `adj inbox --all [--json]`, or
+  `adj inbox -i [--by NAME] [--root DIR]`: lists the `open` records,
+  oldest first (by `created`, then ID). Text: per record `ID  title`, then
+  indented its created date, its refs when set (C171), its context, every
+  option (`label: summary`,
   with `tradeoffs:` under it when set) and the recommendation (the option
   label, or the free text) with its reasoning; entries are separated by a blank
   line.
@@ -182,7 +188,8 @@ below). `adj lint` exits 1 when it finds an error (see its entry).
   their header; an empty or missing user config prints nothing. A missing repo,
   missing `.adjudicate.json`, or unreadable store produces a warning on stderr
   naming that repo; the others are still printed, and the command exits 1.
-  `--all --json` prints `{"repos": [{"root": "...", "records": [...]}], "errors": []}`
+  `--all --json` prints
+  `{"repos": [{"root": "...", "records": [...]}], "errors": []}`
   (see `docs/json.md`); per-repo errors appear in JSON as well as stderr. The
   arrays are always arrays, including when empty. `--all` with `--root` exits 2;
   no current repo is needed. Without `--all`, output is unchanged.
@@ -249,8 +256,9 @@ below). `adj lint` exits 1 when it finds an error (see its entry).
   store gives the same bytes. `--format md` (the default) prints per record
   `- ID title [key]: decision` (no brackets without a key; a multi-line
   decision continues on indented lines), then `  Rationale: ` and the first
-  non-blank line of the rationale. `--format json` prints `{"decisions": [...]}` with `id`, `title`,
-  `key` (when set), `decision` and `rationale` (`docs/json.md`). No decision
+  non-blank line of the rationale. `--format json` prints
+  `{"decisions": [...]}` with `id`, `title`, `key` (when set), `decision`
+  and `rationale` (`docs/json.md`). No decision
   prints nothing in md and `{"decisions": []}` in JSON, exit 0. A blank `--tag`,
   `--key-prefix` or `--ref`, a `--format` other than `md` or `json`, or an
   argument, exits 2. `--max-bytes N` (S35; a whole number of at least 1, else
@@ -378,16 +386,18 @@ below). `adj lint` exits 1 when it finds an error (see its entry).
   new record. Any failure after the first create prints the records made so far
   and lists the links not yet written as `adj supersede OLD --by NEW` commands
   in the error. `created` is also the run date, with a warning, when the ADR
-  date is after the run date or is well-shaped but not a real date. Prints `FILE -> ID (STATUS)` per file;
-  warnings go to stderr; `--dry-run` writes nothing. A folder with no ADR file
+  date is after the run date or is well-shaped but not a real date. Prints
+  `FILE -> ID (STATUS)` per file; warnings go to stderr; `--dry-run` writes
+  nothing. A folder with no ADR file
   prints nothing, exit 0. Usage errors exit 2 (no DIR, more than one, blank DIR
   or `--tag`); a folder outside the root, a bad file or a failed write exit 1.
   Owner-only: the agent snippet does not name it. The decisions behind these
   details are the S22 notes (C32).
 - `adj repos add [PATH]`, `adj repos remove PATH`, `adj repos list [--json]`
   (S38): manage `$XDG_CONFIG_HOME/adjudicate/config.json`, falling back to
-  `$HOME/.config/adjudicate/config.json` when XDG_CONFIG_HOME is unset, empty or relative;
-  HOME must be absolute when needed; unset, empty or relative HOME is an error
+  `$HOME/.config/adjudicate/config.json` when XDG_CONFIG_HOME is unset,
+  empty or relative; HOME must be absolute when needed. Unset, empty or
+  relative HOME is an error
   (exit 1). Shape: `{"repos": [...]}`. A missing
   file is empty; bad JSON, unknown keys or non-absolute paths exit 1 naming the
   file, without writing. Add defaults to the repo root (`--root`, else
@@ -493,8 +503,9 @@ below). `adj lint` exits 1 when it finds an error (see its entry).
   bounded retry of C64. Tests that depend on unix permission bits or errno
   values are not built on Windows (`lock_unix_test.go`) or skip there with a
   reason (`runtime.GOOS`); the rest of the suite runs on Windows in CI. A team
-  that does not want the lock file in git adds `decisions/.adj.lock` (its store directory) to
-  its `.gitignore`; `adj` writes no `.gitignore`. A test that lists the store
+  that does not want the lock file in git adds `decisions/.adj.lock` (its
+  store directory) to its `.gitignore`; `adj` writes no `.gitignore`. A test
+  that lists the store
   directory leaves the lock file out.
 
 ## Setup and checks

@@ -71,14 +71,20 @@ func TestReposWritesLock(t *testing.T) {
 				t.Fatal(err)
 			}
 			defer func() { release() }()
-			operation := ReposAdd
+			updater := userconfig.Updater{Lock: func(path string, _ time.Duration) (func(), error) {
+				return store.AcquireLock(path, 30*time.Millisecond)
+			}}
+			operation := func(path, repo string) error { return reposAdd(path, repo, updater) }
 			if op == "remove" {
-				operation = ReposRemove
+				operation = func(path, repo string) error { return reposRemove(path, repo, updater) }
 			}
 			started := time.Now()
 			err = operation(path, repo)
 			if err == nil || !strings.Contains(err.Error(), lock) {
 				t.Errorf("%s while held: %v; want error naming %s", op, err, lock)
+			}
+			if elapsed := time.Since(started); elapsed >= time.Second {
+				t.Errorf("short lock timeout took %v, want under 1s", elapsed)
 			}
 			if time.Since(started) < 30*time.Millisecond {
 				t.Error("writer did not wait for held lock")
@@ -112,6 +118,23 @@ func TestReposWritesLock(t *testing.T) {
 			}
 			if len(got) != want || (want == 1 && got[0] != repo) {
 				t.Fatalf("repo list = %v, want count %d", got, want)
+			}
+
+			// A fresh config has no lock from the injected-lock checks above.
+			// Exercise the public entry point's production default separately.
+			fresh := filepath.Join(base, "fresh-config.json")
+			if err := userconfig.Save(fresh, cfg); err != nil {
+				t.Fatal(err)
+			}
+			publicOperation := ReposAdd
+			if op == "remove" {
+				publicOperation = ReposRemove
+			}
+			if err := publicOperation(fresh, repo); err != nil {
+				t.Fatal(err)
+			}
+			if _, err := os.Stat(fresh + ".lock"); err != nil {
+				t.Fatalf("public %s did not create production lock: %v", op, err)
 			}
 		})
 	}

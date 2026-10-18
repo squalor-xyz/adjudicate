@@ -1,6 +1,6 @@
 # adjudicate — decision log for owner and agent work
 
-Version 0.1.0 (see [CHANGELOG.md](CHANGELOG.md)). CLI `adj`, Go module
+Version 0.2.0 (see [CHANGELOG.md](CHANGELOG.md)). CLI `adj`, Go module
 `github.com/squalor-xyz/adjudicate`, Go standard library only, licensed
 GPL-3.0-or-later (Squalor LLC).
 
@@ -236,47 +236,6 @@ up to 5 seconds, then exit 1 naming the lock file without changing the config.
 The empty lock file remains after release; list ignores it. Other platforms
 without either locking primitive retain the store lock's no-lock fallback.
 
-With `adj inbox --all`, read the user repo list managed by `adj repos` and show each
-repo's open questions under its absolute path, in config insertion order.
-Records remain oldest first within each repo. Successful empty repos keep
-their header; an empty or missing user config prints nothing. A missing repo,
-missing `.adjudicate.json`, or unreadable store produces a warning on stderr
-naming that repo; the others are still printed, and the command exits 1.
-`--all --json` prints `{"repos": [{"root": "...", "records": [...]}], "errors": []}`
-(see `docs/json.md`); per-repo errors appear in JSON as well as stderr. The
-arrays are always arrays, including when empty. `--all` with `--root` exits 2;
-no current repo is needed. Without `--all`, output is unchanged.
-
-Repo order, empty-repo headers and the JSON shape are owner-delegated
-implementer decisions (S18). Per-repo stores and decision IDs stay independent.
-
-With `-i`, the owner walks through this repo's open questions in the same
-oldest-first order. Each question shows the usual inbox block, then prompts:
-
-```text
-Action [d=option, t=text, r=reject, w=withdraw, s=skip, q=quit, ?=help]:
-```
-
-`d` asks for an option label; a blank label returns to the action prompt.
-If the record has no options, `d` reports an error pointing to `t` and returns
-to the action prompt without asking for a label. `t` asks for free-text decision
-text. `r` rejects,
-`w` withdraws, `s` skips and `q` quits; `?` prints help. Each write asks for a
-non-blank rationale. Unknown labels and blank text or rationale re-prompt the
-same field. Decision text and rationale keep their surrounding whitespace;
-option labels are trimmed, as with `adj decide`. `--by NAME` sets the owner,
-falling back to `$ADJ_DECIDED_BY` when empty or absent. Writes use the same
-validation, dates and history as `decide`, `reject` and `withdraw`.
-
-Quit or EOF stops without writing an incomplete answer, including a last line
-without a newline. A nonempty walk ends with `N decided, N rejected, N withdrawn,
-N skipped, N failed`, counting only completed actions; unvisited questions stay
-open. A failed write reports its error on stderr and advances to the next
-question; any failed write makes the final exit code 1. An input read error also
-exits 1. An empty inbox prints nothing and exits 0. `-i` with `--json`, `--all`
-or an argument exits 2, as does `--by` without `-i`. This mode is owner-only;
-agents must not run it. It uses ordinary stdin lines, without terminal raw mode.
-
 ## Commands
 
 Every command takes `--root DIR` except `adj ai` and `adj inbox --all`.
@@ -297,7 +256,7 @@ when it finds an error and 0 for a clean store or warnings only.
 | `adj amend ID [--title T] [--context T \| --stdin] [--summary LABEL:TEXT]... [--tradeoffs LABEL:TEXT]... [--rationale T]` | Correct text on a record of any status; the old text is kept in the history. |
 | `adj show ID [--json]` | Print one record and its history. |
 | `adj list [--status S] [--tag T]... [--ref REF]... [--key K] [--json]` | List records in ID order; every filter given must match. |
-| `adj inbox [[--all] [--json] \| -i [--by NAME]] [--root DIR]` | List open questions oldest first, with options and recommendation; `--all` groups the user repo list by root; owner-only `-i` walks one repo to decide, reject, withdraw or skip. |
+| `adj inbox [--json]`, `adj inbox --all [--json]`, `adj inbox -i [--by NAME]` | List open questions oldest first, with options and recommendation; `--all` groups the user repo list by root; owner-only `-i` walks one repo to decide, reject, withdraw or skip. |
 | `adj check QUERY [--json]` | Is QUERY decided? One substring, matched ignoring case against titles, keys, tags, refs and decision text. Line 1 of the output is `decided`, `open`, `closed` or `not found`. |
 | `adj context [--tag T]... [--ref REF]... [--key-prefix P] [--format md\|json] [--max-bytes N]` | Print the decided records as compact context for an agent. With `--max-bytes N`, keep the newest decisions whose output fits in N bytes (ID order, an `N decisions omitted` line, JSON `omitted`). |
 | `adj lint [--json]` | Check the store for broken records, links, cycles and conflicts. |
@@ -318,6 +277,27 @@ surrounding whitespace). A blank value exits 2 before store access. Ref filters
 combine with the other filters, before the context size budget is applied.
 For slicer slice records use `adj list --ref S20 --json` (S20); neither tool
 depends on the other.
+
+**Inbox modes.**
+
+```text
+adj inbox [--json] [--root DIR]
+adj inbox --all [--json]
+adj inbox -i [--by NAME] [--root DIR]
+```
+
+`--all` groups the user repo list's open questions by root, in config order,
+including empty repos. A per-repo failure warns and exits 1 after showing the
+other repos. It needs no current repo and cannot combine with `--root`.
+`--all --json` has `repos` and `errors` arrays (see [docs/json.md](docs/json.md)).
+Repo order, empty headers and the JSON shape are C32 decisions from S18.
+
+Owner-only `-i` walks one repo's questions oldest first with line prompts to
+answer by option or free text, reject, withdraw, skip or quit. It requires a
+rationale for writes; `--by` falls back to `$ADJ_DECIDED_BY`. EOF discards an
+incomplete answer. Failed writes report errors and continue; the summary counts
+completed outcomes, and any failed write makes the exit code 1. `-i` cannot
+combine with `--all` or `--json`; `--by` requires `-i`. See README for prompts.
 
 **Importing ADRs.** `adj import-adr DIR` (S22) moves a team that keeps ADRs
 to adj with its history. DIR must be inside the repo; the files in it (not in
@@ -355,7 +335,7 @@ question, an imported record was never asked or decided with adj, so it has no
 `ask` or `decide` entry (C32 decision S22).
 
 **The version.** `adj version` prints one line. A binary built with
-`-ldflags "-X github.com/squalor-xyz/adjudicate/internal/cli.versionOverride=v0.1.0"`
+`-ldflags "-X github.com/squalor-xyz/adjudicate/internal/cli.versionOverride=v0.2.0"`
 prints that string. Otherwise it prints the main module version from Go's build
 information (`runtime/debug.ReadBuildInfo`); if that version is empty or
 `(devel)`, it prints `(devel)`, followed by a space and the `vcs.revision` build
@@ -493,9 +473,11 @@ All met in 0.1.0.
 ## Later
 
 Not in 0.1.0. These are planned after 0.1.0 (C165), in the slices named; the
-owner re-prioritized them on 2026-10-18, so they are open work, not parked:
+owner re-prioritized or added them on 2026-10-18, so they are open work,
+not parked:
 
-- A 0.2.0 release (S37), then a 1.0 release that freezes the JSON shapes (S39).
+- A 1.0 release that freezes the JSON shapes (S39).
+- Deferred import and config/lock edge cases (S40).
 
 Optional enforcement of owner-only decide (a git hook or signed-commit check)
 is no longer planned; owner-only decide stays a convention (C11, C27).

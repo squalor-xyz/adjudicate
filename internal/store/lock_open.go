@@ -18,7 +18,11 @@ import (
 // if it is not there, or this fails too, or it is a directory (a read-only
 // open of one succeeds, and locking it would lock the directory), the error of
 // the first open stands. open is os.OpenFile outside the tests.
-func openLockFile(path string, open func(name string, flag int, perm os.FileMode) (*os.File, error), denied func(error) bool) (*os.File, error) {
+func openLockFile(
+	path string,
+	open func(name string, flag int, perm os.FileMode) (*os.File, error),
+	denied func(error) bool,
+) (*os.File, error) {
 	f, err := open(path, os.O_RDWR|os.O_CREATE, 0o644)
 	if err == nil || !denied(err) {
 		return f, err

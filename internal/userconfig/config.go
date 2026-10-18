@@ -132,16 +132,29 @@ func (c *Config) Remove(repo string) bool {
 	return found
 }
 
-var acquireLock = store.AcquireLock
+// Updater permits a caller to supply a lock function. The zero value uses
+// the platform lock; tests supply a shorter wait without shared state.
+type Updater struct {
+	Lock func(path string, timeout time.Duration) (func(), error)
+}
 
 // Update serializes the complete read-modify-write operation with other repo
 // writers. The lock remains beside config.json and is never removed. A false
 // result from change preserves the existing config bytes.
 func Update(path string, change func(*Config) (bool, error)) error {
+	return (Updater{}).Update(path, change)
+}
+
+// Update performs the same locked update using u's lock function.
+func (u Updater) Update(path string, change func(*Config) (bool, error)) error {
 	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
 		return err
 	}
-	unlock, err := acquireLock(path+".lock", 5*time.Second)
+	lock := u.Lock
+	if lock == nil {
+		lock = store.AcquireLock
+	}
+	unlock, err := lock(path+".lock", 5*time.Second)
 	if err != nil {
 		return err
 	}

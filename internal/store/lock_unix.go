@@ -20,10 +20,11 @@ const lockPoll = 10 * time.Millisecond
 // through a read-only open, see openLockFile), and returns the function that
 // releases it (C114). The attempts do not block (LOCK_NB): acquire polls for up
 // to timeout and then returns an error that names path, so a writer stuck
-// behind a hung process fails instead of hanging. busy, if not nil, is called each time the lock is
-// found held. The lock goes with the file descriptor, so it is also released
-// when the process exits; the lock file stays, because removing it would let
-// a waiting writer and a new one lock different files.
+// behind a hung process fails instead of hanging. busy, if not nil, is
+// called each time the lock is found held. The lock goes with the file
+// descriptor, so it is also released when the process exits; the lock file
+// stays, because removing it would let a waiting writer and a new one lock
+// different files.
 //
 // The build tag lists the systems whose syscall package has Flock: the "unix"
 // tag also covers aix and solaris, which do not (illumos does have it).

@@ -818,7 +818,7 @@
       "id": "S37",
       "title": "Release 0.2.0",
       "short_title": "Release 0.2.0",
-      "status": "open",
+      "status": "done",
       "has_slice": true,
       "depends_on": [
         "S18",
@@ -904,6 +904,28 @@
           "verified_by": "",
           "verified_at": "",
           "stale_after": ""
+        },
+        {
+          "id": "25e91ef7-bc4d-4f6e-9868-0d670cfcf39d",
+          "kind": "",
+          "text": "**2026-10-18** — C32: Pass lock acquisition through userconfig.Updater and repo helpers, so tests shorten waits without mutating package globals; the zero value keeps the production 5 s platform lock.",
+          "created_at": "2026-10-18T22:57:42Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "fb13c6bc-a8db-43d3-920c-4911c25b1384",
+          "kind": "",
+          "text": "**2026-10-18** — Review FAIL (round 1): medium: production default lock path untested after the lock seam (no test fails if the default lock in userconfig.Update is a no-op); lows: CHANGELOG.md:66,79 and AGENTS.md:48 over 80 columns, PROJECT.md Later still lists the 0.2.0 release (S37) as open.",
+          "created_at": "2026-10-18T23:13:15Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
         }
       ],
       "claim": null,
@@ -925,7 +947,7 @@
         "importance": 2,
         "urgency": 2,
         "effort": 1,
-        "attempts": 0
+        "attempts": 1
       }
     },
     {

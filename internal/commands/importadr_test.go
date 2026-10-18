@@ -1304,8 +1304,11 @@ func TestImportADRRefusesARecordThatFailsValidation(t *testing.T) {
 	if !errors.As(err, &fe) || len(fe.Problems) != 1 || fe.Problems[0] != "docs/adr/0002-b.md: the record would be invalid: boom" {
 		t.Fatalf("error = %v, want one problem for docs/adr/0002-b.md: the record would be invalid: boom", err)
 	}
-	if len(seen) != 3 || seen[0].ID <= 0 {
-		t.Errorf("validate saw %d records (first id %d), want all 3 with an ID", len(seen), seen[0].ID)
+	if len(seen) != 3 {
+		t.Fatalf("validate saw %d records, want all 3 with an ID", len(seen))
+	}
+	if seen[0].ID <= 0 {
+		t.Errorf("first record ID = %d, want positive", seen[0].ID)
 	}
 	if files := storeFiles(t, root); len(files) != 0 {
 		t.Errorf("the store was touched: %q", files)

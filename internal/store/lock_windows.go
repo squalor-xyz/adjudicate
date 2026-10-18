@@ -58,9 +58,10 @@ func unlockFileEx(h syscall.Handle) error {
 // creating it if it is missing (or, if it exists and cannot be opened for
 // writing (ERROR_ACCESS_DENIED: the read-only attribute, another user's
 // checkout), through a read-only open, see openLockFile), and returns the
-// function that releases it (C114, S36). It behaves like the unix flock, except that the lock is
-// mandatory (it changes nothing for the empty lock file): the attempts do not
-// block (LOCKFILE_FAIL_IMMEDIATELY), acquire polls for up to timeout and then
+// function that releases it (C114, S36). It behaves like the unix flock,
+// except that the lock is mandatory (it changes nothing for the empty lock
+// file): the attempts do not block (LOCKFILE_FAIL_IMMEDIATELY), acquire polls
+// for up to timeout and then
 // returns an error that names path, so a writer stuck behind a hung process
 // fails instead of hanging. busy, if not nil, is called each time the lock is
 // found held. The lock belongs to the open handle, so it is also released
