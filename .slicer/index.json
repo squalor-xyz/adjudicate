@@ -259,10 +259,55 @@
       "id": "S36",
       "title": "Windows support: ID lock and release archive",
       "short_title": "Windows support",
-      "status": "open",
+      "status": "done",
       "has_slice": true,
       "depends_on": [],
-      "note_records": [],
+      "note_records": [
+        {
+          "id": "2c6c4181-feb9-431e-b186-6d2168a86bb4",
+          "kind": "",
+          "text": "**2026-10-18** — C32: acquire tests live in internal/store/lock_acquire_test.go (build tag: every system with a lock, windows included) instead of a windows-only lock_windows_test.go, so they also run and can be mutation-checked on unix; lock_test.go is widened to windows the same way.",
+          "created_at": "2026-10-18T19:19:01Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "24df8940-8cfc-4654-9610-5212396ccc8c",
+          "kind": "",
+          "text": "**2026-10-18** — C32: tests that need unix permission bits or errno values (read-only lock file fallback, unwritable directory, EISDIR) moved to lock_unix_test.go and are not built on Windows rather than skipped at run time; TestFilePermissions skips on Windows with a reason, TestRenumberGivesTheLosersTheNextFreeIDs runs there without its 0640 chmod and mode check, and the unreadable-file lint test already skips when mode 000 does not make a file unreadable.",
+          "created_at": "2026-10-18T19:19:01Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "6cdb9372-f6fe-4246-8ad5-5550d22cb707",
+          "kind": "",
+          "text": "**2026-10-18** — C32: lock_windows.go has no read-only fallback open (the unix EACCES case): Windows has no mode bits, and a read-only open of a directory would succeed there; the lock file is opened read-write. The lock range is the whole file (offset 0, length 2^64-1), ERROR_LOCK_VIOLATION is the held signal, and any other LockFileEx error fails with the lock file named.",
+          "created_at": "2026-10-18T19:19:01Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "5416a442-5738-4c8f-870e-2a12b2ff4fc2",
+          "kind": "",
+          "text": "**2026-10-18** — C32: the Windows CI job runs git config --global core.autocrlf false before checkout so fixtures and the embedded ai.md keep LF; no .gitattributes was added (not in the slice's files). The roundtrip test builds adj.exe on Windows.",
+          "created_at": "2026-10-18T19:19:02Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        }
+      ],
       "claim": null,
       "fields": {
         "size": "M",
@@ -282,7 +327,7 @@
         "importance": 2,
         "urgency": 2,
         "effort": 2,
-        "attempts": 0
+        "attempts": 1
       }
     },
     {

@@ -48,3 +48,20 @@ jobs:
           go-version-file: go.mod
       - name: go test
         run: go test ./...
+
+  test-windows:
+    # The ID lock (LockFileEx) is built for Windows; plain go, as on macOS.
+    runs-on: windows-latest
+    steps:
+      # Windows runners check out with CRLF line endings by default, which would
+      # change the bytes of the test fixtures and of the embedded agent snippet.
+      - name: Keep LF line endings
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: go vet
+        run: go vet ./...
+      - name: go test
+        run: go test ./...

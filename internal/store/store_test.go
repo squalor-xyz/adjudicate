@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -623,6 +624,9 @@ func TestSlug(t *testing.T) {
 }
 
 func TestFilePermissions(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("Windows has no unix permission bits: a file reports 0666, or 0444 when read-only")
+	}
 	t.Run("Create writes 0644", func(t *testing.T) {
 		s := mustOpen(t, t.TempDir())
 		if _, err := s.Create(question(0, "Mode")); err != nil {

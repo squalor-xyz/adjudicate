@@ -42,7 +42,7 @@ library only.
   `file.go`.
 - `internal/store`: one repo's record directory (`store.go`), its config
   (`config.go`), `Renumber` (`renumber.go`) and the ID lock (`lock_unix.go`,
-  `lock_other.go`); see "Store and config" below.
+  `lock_windows.go`, `lock_other.go`); see "Store and config" below.
 - `internal/query`: record filters and the `check` search, pure functions over
   records (`filter.go`, `search.go`).
 - `internal/lint`: `adj lint`'s checks (`lint.go`): reads each record file with
@@ -57,10 +57,13 @@ library only.
   and Later items. `CHANGELOG.md`: release notes.
 - `scripts/env.sh`: Go cache and temp setup (see below).
 - `.github/workflows/ci.yml`: CI on each push to `main` and each pull request
-  (the checks below plus `adj lint` on `decisions/`, and `go test` on macOS).
-  `.github/workflows/release.yml`: on a `v*` tag, the same checks, then six
-  archives (linux, darwin, freebsd on amd64 and arm64, plain `go build` with
-  `versionOverride` set to the tag) and a GitHub release made with `gh`, with
+  (the checks below plus `adj lint` on `decisions/`, and `go test` on macOS,
+  and `go vet` and `go test` on Windows, where the checkout keeps LF line
+  endings).
+  `.github/workflows/release.yml`: on a `v*` tag, the same checks, then eight
+  archives (linux, darwin, freebsd as tar.gz and windows as zip holding
+  `adj.exe`, each on amd64 and arm64, plain `go build` with `versionOverride`
+  set to the tag) and a GitHub release made with `gh`, with
   the tag's CHANGELOG section as its notes (C193). Both stay standard
   library and shell only: no GoReleaser, no new actions without owner approval.
 
@@ -331,7 +334,7 @@ below). `adj lint` exits 1 when it finds an error (see its entry).
   `Update` fail (`ErrDuplicateID`, naming both files); `Store.Renumber` fixes
   them (see `adj renumber`).
 - ID allocation is locked (C114, C159-C162). `Create` and `Renumber` take an
-  exclusive advisory `flock` on `<store>/.adj.lock` (`decisions/.adj.lock` by
+  exclusive `flock` (advisory) on `<store>/.adj.lock` (`decisions/.adj.lock` by
   default) and hold it from the scan of the IDs to the link of the new file, so
   two `adj ask` runs on one checkout cannot take one ID. `Update` is not locked.
   The lock file is an empty dot-file, never taken for a record, made on first
@@ -349,8 +352,18 @@ below). `adj lint` exits 1 when it finds an error (see its entry).
   link names without a file (C155); a file it cannot read keeps its ID by name
   but its links are not known. The lock only serialises one checkout: branches
   and clones still collide, and `adj lint` and `adj renumber` handle that.
-  Locking needs `syscall.Flock` (darwin, linux, the BSDs, illumos); other
-  systems have no lock and only the bounded retry of C64. A team that does not
+  Locking needs `syscall.Flock` (darwin, linux, the BSDs, illumos) or, on
+  Windows, `LockFileEx` (`lock_windows.go`, S36): `kernel32.dll` called through
+  the standard library's `syscall` (no `golang.org/x/sys`), exclusive over the
+  whole file, with the same behaviour (advisory on unix, mandatory on Windows,
+  which changes nothing for the empty lock file; held from the ID scan to the
+  link, polled every 10 ms with `LOCKFILE_FAIL_IMMEDIATELY` for up to 5
+  seconds, released with the handle or the process, the file never deleted, the
+  same error that names `.adj.lock`). Windows has no read-only fallback: the lock file is opened
+  read-write. Other systems have no lock and only the bounded retry of C64.
+  Tests that depend on unix permission bits or errno values are not built on
+  Windows (`lock_unix_test.go`) or skip there with a reason (`runtime.GOOS`);
+  the rest of the suite runs on Windows in CI. A team that does not
   want the lock file in git adds `decisions/.adj.lock` (its store directory) to
   its `.gitignore`; `adj` writes no `.gitignore`. A test that lists the store
   directory leaves the lock file out.

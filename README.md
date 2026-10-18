@@ -20,9 +20,10 @@ changed; [PROJECT.md](PROJECT.md) says what adjudicate is for and what it does.
 Each release on GitHub
 (<https://github.com/squalor-xyz/adjudicate/releases>) has an archive per
 system: linux, darwin (macOS) and freebsd, each on amd64 and arm64, named
-`adj_VERSION_OS_ARCH.tar.gz`, and a `SHA256SUMS` file. Each archive holds `adj`,
-`LICENSE`, `NOTICE`, `README.md` and `CHANGELOG.md`. For 0.1.0 on an Apple
-silicon Mac:
+`adj_VERSION_OS_ARCH.tar.gz`, and windows on amd64 and arm64, named
+`adj_VERSION_windows_ARCH.zip`, and a `SHA256SUMS` file that lists all of them.
+Each archive holds `adj` (`adj.exe` on Windows), `LICENSE`, `NOTICE`,
+`README.md` and `CHANGELOG.md`. For 0.1.0 on an Apple silicon Mac:
 
 ```sh
 curl -LO https://github.com/squalor-xyz/adjudicate/releases/download/v0.1.0/adj_0.1.0_darwin_arm64.tar.gz
@@ -32,6 +33,20 @@ tar -xzf adj_0.1.0_darwin_arm64.tar.gz
 mkdir -p ~/.local/bin
 install -m 0755 adj_0.1.0_darwin_arm64/adj ~/.local/bin/adj   # or any directory on your PATH
 adj version                                                   # v0.1.0
+```
+
+On Windows (the zips come with the releases after 0.1.0), in PowerShell, for
+amd64; the output of `Get-FileHash` must match the line for the zip in
+`SHA256SUMS` (compare ignoring case: `Get-FileHash` prints uppercase hex,
+`SHA256SUMS` has lowercase):
+
+```powershell
+curl.exe -LO https://github.com/squalor-xyz/adjudicate/releases/download/vVERSION/adj_VERSION_windows_amd64.zip
+curl.exe -LO https://github.com/squalor-xyz/adjudicate/releases/download/vVERSION/SHA256SUMS
+Get-FileHash -Algorithm SHA256 adj_VERSION_windows_amd64.zip
+Select-String windows_amd64 SHA256SUMS
+Expand-Archive adj_VERSION_windows_amd64.zip -DestinationPath .
+# put adj_VERSION_windows_amd64\adj.exe in a directory on your PATH
 ```
 
 With Go (the version in `go.mod`, 1.27.2, or later) you can install from the
@@ -356,9 +371,9 @@ an existing key.
 
 CI (`.github/workflows/ci.yml`) runs `go vet`, `gofmt`, `go test` and `adj
 lint` on this repo's own `decisions/` for every push to `main` and every pull
-request, and runs the tests on macOS too. Pushing a tag `vX.Y.Z` runs
-`.github/workflows/release.yml`: the same checks, then a build for the six
-systems above with the version set from the tag, and a GitHub release with the
+request, and runs the tests on macOS and Windows too. Pushing a tag `vX.Y.Z`
+runs `.github/workflows/release.yml`: the same checks, then a build for each
+system and architecture above with the version set from the tag, and a GitHub release with the
 archives, `SHA256SUMS`, and the `## X.Y.Z` section of
 [CHANGELOG.md](CHANGELOG.md) as its notes. The release fails if that section
 is missing, so write it before you tag.

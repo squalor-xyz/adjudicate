@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"runtime"
 	"slices"
 	"strings"
 	"testing"
@@ -94,9 +95,14 @@ func TestRenumberGivesTheLosersTheNextFreeIDs(t *testing.T) {
 	s := mustOpen(t, root)
 	dir := s.Dir()
 	before := tree(t, root)
-	// A permission bit a user chose survives, as for Update (C64).
-	if err := os.Chmod(filepath.Join(dir, "0002-beta.md"), 0o640); err != nil {
-		t.Fatal(err)
+	// A permission bit a user chose survives, as for Update (C64). Windows has
+	// no permission bits to choose (a file reports 0666 or 0444), so the rest
+	// of the test runs there without this part.
+	unixModes := runtime.GOOS != "windows"
+	if unixModes {
+		if err := os.Chmod(filepath.Join(dir, "0002-beta.md"), 0o640); err != nil {
+			t.Fatal(err)
+		}
 	}
 
 	got, err := s.Renumber(renumberDate, false)
@@ -140,7 +146,7 @@ func TestRenumberGivesTheLosersTheNextFreeIDs(t *testing.T) {
 	if !reflect.DeepEqual(moved.History, wantHistory) {
 		t.Errorf("history = %+v, want %+v", moved.History, wantHistory)
 	}
-	if fi, err := os.Stat(filepath.Join(dir, "0004-beta.md")); err != nil || fi.Mode().Perm() != 0o640 {
+	if fi, err := os.Stat(filepath.Join(dir, "0004-beta.md")); unixModes && (err != nil || fi.Mode().Perm() != 0o640) {
 		t.Errorf("0004-beta.md mode = %v, %v; want 0640 kept", fi.Mode().Perm(), err)
 	}
 	if r := mustRead(t, filepath.Join(dir, "0006-aaa-late.md")); r.ID != 6 || r.Title != "Late" || len(r.History) != 1 || r.History[0].Note != "from 3" {

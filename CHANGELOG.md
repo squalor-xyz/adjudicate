@@ -7,6 +7,16 @@ but never renames, removes or retypes an existing key.
 
 ## Unreleased
 
+### Platforms
+- Windows: `adj ask` and `adj renumber` now take the ID lock on Windows too
+  (`LockFileEx` on `<store>/.adj.lock`, with the semantics of the unix `flock`:
+  held from the ID scan to the link, a 5 second wait, the same error). Until
+  now Windows had no lock, only the bounded retry for a name that is taken.
+- Releases add `adj_VERSION_windows_amd64.zip` and
+  `adj_VERSION_windows_arm64.zip`, each holding `adj.exe`, `LICENSE`, `NOTICE`,
+  `README.md` and `CHANGELOG.md`, listed in `SHA256SUMS`.
+- CI runs `go vet` and `go test` on Windows.
+
 ### Commands
 - `adj context --max-bytes N` keeps the newest decided records whose output fits
   in N bytes (newest by `decided_at`, then ID), prints them in ID order, and
