@@ -311,7 +311,19 @@
         "S19",
         "S22"
       ],
-      "note_records": [],
+      "note_records": [
+        {
+          "id": "fe2e046b-f599-415b-8c21-02c0b07b3938",
+          "kind": "",
+          "text": "**2026-10-18** — 2026-10-18 from S34 review (low): PROJECT.md Later (~387-388) says the owner re-prioritized them on 2026-10-18; S35-S37 were added then, so 're-prioritized or added' is more exact. Fix with the release docs pass.",
+          "created_at": "2026-10-18T15:01:39Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        }
+      ],
       "claim": null,
       "fields": {
         "size": "S",
