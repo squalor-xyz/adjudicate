@@ -778,6 +778,10 @@ Owner decisions 2026-10-18 (S18 split into S38 and S18). The per-user repo list 
 
 Implementer decisions under C32 (S38). The user config is its own package, internal/userconfig. For adj repos, --root only supplies add's default PATH. Removing a path that is not listed exits 1. adj repos list does not mark repos whose path no longer holds .adjudicate.json (S18 warns). Paths are compared as cleaned absolute strings, without resolving symlinks.
 
+### C202 adj inbox --all: order, empty repos, JSON shape, config lock
+
+Implementer decisions under C32 (S18). adj inbox --all lists repos in the user config's insertion order; a repo read successfully with no open records still prints its header. --all --json is {"repos": [{"root", "records"}], "errors": [...]}, with per-repo errors in JSON as well as warnings on stderr. adj repos add/remove lock config.json.lock beside config.json through a wrapper over the store lock (store.AcquireLock), with the same wait and error naming the lock file.
+
 ### C39 LICENSE is a stub until the owner supplies the full GPL-3.0 text and copyright holder
 
 No GPL-3.0 text exists in the adjudicate repo and the workspace has no network, so the stub carries the SPDX line, the or-later notice and TODO(owner) markers.

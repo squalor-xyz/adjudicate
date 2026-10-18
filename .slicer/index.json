@@ -683,6 +683,17 @@
           "verified_by": "",
           "verified_at": "",
           "stale_after": ""
+        },
+        {
+          "id": "e98bf3b4-ccfa-45c3-8166-292b9be5e51c",
+          "kind": "",
+          "text": "**2026-10-18** — 2026-10-18 from S18 review: (1) lock tests in internal/commands and internal/userconfig use the production 5 s timeout (about +10 s per test run); add a hook to shorten it. (2) userconfig.acquireLock is a package-level var replaced in tests; a parallel test would race. (3) PROJECT.md ~235-247: the inbox --all text sits in the data-model User config block and repeats README; move or trim. (4) S38 lows kept: Save replaces a symlinked config.json and does not fsync.",
+          "created_at": "2026-10-18T20:10:16Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
         }
       ],
       "claim": null,
@@ -716,7 +727,19 @@
       "depends_on": [
         "S37"
       ],
-      "note_records": [],
+      "note_records": [
+        {
+          "id": "ff1ea5f0-e9e9-4b7b-9944-7f2aca146f55",
+          "kind": "",
+          "text": "**2026-10-18** — 2026-10-18 from S18 review: docs/json.md says inbox --all errors[].error text varies by OS; when freezing JSON, freeze the keys, not that text.",
+          "created_at": "2026-10-18T20:10:16Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        }
+      ],
       "claim": null,
       "fields": {
         "size": "S",
@@ -2457,7 +2480,7 @@
   "goals": "adjudicate is a small CLI (`adj`) with a plain-text store that records project decisions as a loop: an agent asks, the owner decides in batches, and every later agent reads the decision. The goal and non-goal records below come from PROJECT.md; the owner's decisions on its open questions are catalog records C23-C33, and they override PROJECT.md where it differs (name, runtime, record format, license).",
   "non_goals": "",
   "catalog": {
-    "next_id": 202,
+    "next_id": 203,
     "id_prefix": "C",
     "id_width": 2,
     "records": [
@@ -4266,6 +4289,15 @@
         "kind": "decision",
         "title": "adj repos: package, --root, unlisted remove, path comparison",
         "body": "Implementer decisions under C32 (S38). The user config is its own package, internal/userconfig. For adj repos, --root only supplies add's default PATH. Removing a path that is not listed exits 1. adj repos list does not mark repos whose path no longer holds .adjudicate.json (S18 warns). Paths are compared as cleaned absolute strings, without resolving symlinks.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C202",
+        "kind": "decision",
+        "title": "adj inbox --all: order, empty repos, JSON shape, config lock",
+        "body": "Implementer decisions under C32 (S18). adj inbox --all lists repos in the user config's insertion order; a repo read successfully with no open records still prints its header. --all --json is {\"repos\": [{\"root\", \"records\"}], \"errors\": [...]}, with per-repo errors in JSON as well as warnings on stderr. adj repos add/remove lock config.json.lock beside config.json through a wrapper over the store lock (store.AcquireLock), with the same wait and error naming the lock file.",
         "status": "active",
         "reason": "",
         "successor": ""
