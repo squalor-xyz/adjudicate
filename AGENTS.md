@@ -147,14 +147,17 @@ below). `adj lint` exits 1 when it finds an error (see its entry).
   the history; with `--json` it prints the record object (`docs/json.md`). A
   non-number or 0 ID, or an extra argument, exits 2; an unknown or duplicate
   ID exits 1.
-- `adj list [--status S] [--tag T]... [--key K] [--json] [--root DIR]`: lists
-  records in ID order, one line each (ID, status, title); with `--json` it
-  prints `{"records": [...]}` (`docs/json.md`). Every filter given must match.
+- `adj list [--status S] [--tag T]... [--ref REF]... [--key K] [--json]
+  [--root DIR]`: lists records in ID order, one line each (ID, status, title);
+  with `--json` it prints `{"records": [...]}` (`docs/json.md`). Every filter
+  given must match.
   `--tag` repeats, and every tag given must be on the record. `--status` is one
   of the five statuses; its value and each `--tag` value are trimmed, while
   `--key` is matched as typed against the stored key. A bad status, a blank
-  `--tag` or `--key`, or an argument, exits 2. No match is not
-  an error (exit 0).
+  `--tag`, `--ref` or `--key`, or an argument, exits 2. No match is not
+  an error (exit 0). `--ref` repeats: every ref must be on the record, matched
+  exactly, case-sensitively and as typed, including surrounding whitespace; a
+  blank value exits 2 before store access.
 - `adj inbox [--json] [--root DIR]`: lists the `open` records, oldest first (by
   `created`, then ID). Text: per record `ID  title`, then indented its created
   date, its refs when set (C171), its context, every option (`label: summary`,
@@ -186,23 +189,26 @@ below). `adj lint` exits 1 when it finds an error (see its entry).
   means the check itself failed (no repo, an unreadable record file), which is
   never a "not found"; exit 2 is a usage error: no QUERY, more than one, or a
   blank one (C108, C109).
-- `adj context [--tag T]... [--key-prefix P] [--format md|json]
+- `adj context [--tag T]... [--ref REF]... [--key-prefix P] [--format md|json]
   [--max-bytes N] [--root DIR]`:
   prints the `decided` records as compact context for an agent; open, rejected,
   withdrawn and superseded records are left out (a superseded decision gives
   way to its replacement, which is `decided`). Every filter given must match.
   `--tag` repeats and every tag must be on the record (trimmed); `--key-prefix`
   is a plain string prefix of the stored key, as typed, so a record with no key
-  never matches it. Records are in ID order, so the same store gives the same
-  bytes. `--format md` (the default) prints per record `- ID title [key]:
-  decision` (no brackets without a key; a multi-line decision continues on
-  indented lines), then `  Rationale: ` and the first non-blank line of the
-  rationale. `--format json` prints `{"decisions": [...]}` with `id`, `title`,
+  never matches it. `--ref` repeats: every ref must be on the record, matched
+  exactly, case-sensitively and as typed, including surrounding whitespace; a
+  blank value exits 2 before store access. Refs combine with all other filters
+  before the size budget is applied. Records are in ID order, so the same
+  store gives the same bytes. `--format md` (the default) prints per record
+  `- ID title [key]: decision` (no brackets without a key; a multi-line
+  decision continues on indented lines), then `  Rationale: ` and the first
+  non-blank line of the rationale. `--format json` prints `{"decisions": [...]}` with `id`, `title`,
   `key` (when set), `decision` and `rationale` (`docs/json.md`). No decision
-  prints nothing in md and `{"decisions": []}` in JSON, exit 0. A blank `--tag`
-  or `--key-prefix`, a `--format` other than `md` or `json`, or an argument,
-  exits 2. `--max-bytes N` (S35; a whole number of at least 1, else exit 2
-  before the store is looked for; given twice the last counts) bounds the
+  prints nothing in md and `{"decisions": []}` in JSON, exit 0. A blank `--tag`,
+  `--key-prefix` or `--ref`, a `--format` other than `md` or `json`, or an
+  argument, exits 2. `--max-bytes N` (S35; a whole number of at least 1, else
+  exit 2 before the store is looked for; given twice the last counts) bounds the
   output to N bytes, the omitted line included: after the filters, it keeps
   the newest decisions (`decided_at` latest first, then the higher ID) that
   fit, the k newest for the largest k that fits, and prints them in ID order.

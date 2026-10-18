@@ -1,0 +1,41 @@
+{
+  "id": "S20",
+  "title": "Slicer integration",
+  "lead": [
+    "Add a --ref filter to adj list and adj context so a tool such as slicer can ask adj for the records that reference a slice (adj list --ref S20 --json), with no dependency either way."
+  ],
+  "depends_note": null,
+  "findings_note": "PROJECT.md Feature tiers (Later); Non-goals (not replacing slicer); Risks (overlap with slicer catalog)",
+  "size": "M",
+  "flags": [],
+  "trees_note": "cli",
+  "trees_plural": false,
+  "boundary": "**Not in this slice:** any change to slicer or a dependency between the tools (C12); --ref on other commands (adj check already searches refs); changing records; slicer catalog records (S36 runs in parallel and would take the same catalog id: record C32 decisions as slicer notes on S20; the outer session files them and the owner decision at landing).",
+  "sections": [
+    {
+      "heading": "Why",
+      "body": "Owner decision 2026-10-18: the adj side of the slicer integration is a --ref filter on adj list and adj context: exact match against a record's refs, repeatable, every --ref given must be among the record's refs; plus a documented recipe (adj list --ref S20 --json). No slicer-side change. Refs exist since S27 (--ref on ask, C171); today only adj check finds them, by substring. The older notes below (dogfood frictions) are already handled by S26-S30 and S34."
+    },
+    {
+      "heading": "Files",
+      "body": "- internal/query/filter.go (+ test): a refs criterion beside tag and key.\n- internal/cli/list.go and internal/cli/context.go (+ tests): parse repeatable --ref (internal/cli/flags.go repeatable string flags), pass it to the filter.\n- internal/commands/list.go and internal/commands/context.go if the filter input lives there.\n- README.md (list and context usage, plus a short 'Linking to slicer' recipe), PROJECT.md (Commands; Later: drop the slicer integration line, it ships), AGENTS.md (adj list and adj context entries), CHANGELOG.md (## Unreleased, which exists on main after S35), usage text in the CLI.\n- internal/commands/ai.md: do not change (1799/1800 bytes)."
+    },
+    {
+      "heading": "Failing tests",
+      "body": "Table-driven on t.TempDir() stores, red first:\n- adj list --ref S20 lists only records whose refs contain exactly S20 (not S200, not s20: exact and case-sensitive, as --key is matched as typed).\n- Repeated --ref: every value must be on the record.\n- --ref combines with --status, --tag and --key (list) and with --tag, --key-prefix and --max-bytes (context: filter first, then budget).\n- A blank --ref exits 2 before store access.\n- adj list --json shape is unchanged; no match exits 0 with an empty list.\n- Usage/help text names --ref for both commands."
+    },
+    {
+      "heading": "Implement",
+      "body": "1. Decide under C32 and record as slicer notes on S20: whether --ref values are trimmed (recommend: matched as typed like --key, since refs are opaque strings kept as typed; a blank value exits 2).\n2. Red tests, then the filter in internal/query and the flag parsing in internal/cli, following how --tag is done.\n3. Update the docs listed in Files; docs must match the code."
+    },
+    {
+      "heading": "Check",
+      "body": "- . scripts/env.sh; go test ./...; go vet ./...; gofmt -l cmd internal prints nothing.\n- go build -o .cache/bin/adj ./cmd/adj; .cache/bin/adj list --root . --ref C166 lists record 12 only; .cache/bin/adj lint --root . is clean.\n- Mutation check each new test.\n- slicer check --json is clean."
+    },
+    {
+      "heading": "Git",
+      "body": "Worktree .worktrees/s20 on branch s20. The orchestrator commits on s20 after VERDICT: PASS and slicer done; no push, no merge; no AI attribution."
+    }
+  ],
+  "notes": []
+}

@@ -30,6 +30,8 @@ decided_at, then ID) that fit are kept and printed in ID order, and md ends with
 even the omitted line fits, nothing is printed and the exit code is 1.
 
   --tag T          only records with tag T; repeat to require several tags
+  --ref REF        only records with this exact ref, as typed (case-sensitive);
+                   repeat to require every ref; blank values are refused
   --key-prefix P   only records whose key starts with P (a plain prefix, as
                    typed: storage matches storage.engine and storagex)
   --format F       md (the default, a Markdown list) or json
@@ -40,8 +42,9 @@ even the omitted line fits, nothing is printed and the exit code is 1.
 
 func (c *invocation) runContext(args []string) int {
 	fs, root := newFlagSet("context")
-	var tags stringList
+	var tags, refs stringList
 	fs.Var(&tags, "tag", "")
+	fs.Var(&refs, "ref", "")
 	keyPrefix := fs.String("key-prefix", "", "")
 	format := fs.String("format", "md", "")
 	maxBytes := fs.String("max-bytes", "", "")
@@ -58,6 +61,7 @@ func (c *invocation) runContext(args []string) int {
 	}
 	in := commands.ContextInput{
 		Tags:         tags,
+		Refs:         refs,
 		KeyPrefix:    *keyPrefix,
 		HasKeyPrefix: fsSet(fs, "key-prefix"),
 	}
