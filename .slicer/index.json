@@ -819,7 +819,7 @@
       "title": "Release 0.2.0",
       "short_title": "Release 0.2.0",
       "status": "open",
-      "has_slice": false,
+      "has_slice": true,
       "depends_on": [
         "S18",
         "S19",
