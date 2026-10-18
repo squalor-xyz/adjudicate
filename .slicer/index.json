@@ -480,7 +480,19 @@
       "depends_on": [
         "S38"
       ],
-      "note_records": [],
+      "note_records": [
+        {
+          "id": "127eb98f-9a3a-4e17-96e7-0b6a9d9d1c47",
+          "kind": "",
+          "text": "**2026-10-18** — 2026-10-18 from S38 (owner decisions at landing): also in S18: (1) a relative XDG_CONFIG_HOME counts as unset (fallback to HOME/.config), a relative HOME is an error, exit 1; (2) adj repos add/remove take a lock (store lock pattern: flock / LockFileEx on a lock file beside config.json) so concurrent runs cannot drop an entry. Review lows still open: Save replaces a symlinked config.json with a regular file and does not fsync; the dir-mode test only checks mode within 0755.",
+          "created_at": "2026-10-18T19:47:35Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        }
+      ],
       "claim": null,
       "fields": {
         "size": "M",
@@ -2412,7 +2424,7 @@
   "goals": "adjudicate is a small CLI (`adj`) with a plain-text store that records project decisions as a loop: an agent asks, the owner decides in batches, and every later agent reads the decision. The goal and non-goal records below come from PROJECT.md; the owner's decisions on its open questions are catalog records C23-C33, and they override PROJECT.md where it differs (name, runtime, record format, license).",
   "non_goals": "",
   "catalog": {
-    "next_id": 200,
+    "next_id": 202,
     "id_prefix": "C",
     "id_width": 2,
     "records": [
@@ -4203,6 +4215,24 @@
         "kind": "decision",
         "title": "Windows support: test layout, lock open seam, .gitattributes form",
         "body": "Implementer decisions under C32 (S36), confirmed by the owner 2026-10-18. Acquire tests are built on every system with a lock (lock_acquire_test.go) so they run on unix too; tests that need unix mode bits or errno values live in lock_unix_test.go (not built on Windows); TestFilePermissions skips on Windows and the renumber test drops its chmod check there. The open logic is openLockFile (lock_open.go), parameterised by the open function and the permission-error test (EACCES on unix, ERROR_ACCESS_DENIED on Windows); the read-only open never creates the file and never accepts a directory. Lock range is the whole file; ERROR_LOCK_VIOLATION means held. .gitattributes is '* text=auto eol=lf' with -text on the deliberate CRLF fixtures and binary on *.png. The roundtrip test builds adj.exe on Windows.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C200",
+        "kind": "decision",
+        "title": "User repo list: adj repos and the user config file",
+        "body": "Owner decisions 2026-10-18 (S18 split into S38 and S18). The per-user repo list lives in $XDG_CONFIG_HOME/adjudicate/config.json (fallback $HOME/.config/adjudicate/config.json), shaped {\"repos\": [abs paths]}, managed by adj repos add [PATH] / remove PATH / list [--json]; writes are atomic and create the directory; a listed path added again is a no-op. adj inbox --all (S18) reads it and warns and continues on a missing or broken repo, exiting 1. Follow-ups decided for S18: a relative XDG_CONFIG_HOME counts as unset (XDG spec) and a relative HOME is an error; repos add/remove take a lock so concurrent runs cannot drop an entry.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C201",
+        "kind": "decision",
+        "title": "adj repos: package, --root, unlisted remove, path comparison",
+        "body": "Implementer decisions under C32 (S38). The user config is its own package, internal/userconfig. For adj repos, --root only supplies add's default PATH. Removing a path that is not listed exits 1. adj repos list does not mark repos whose path no longer holds .adjudicate.json (S18 warns). Paths are compared as cleaned absolute strings, without resolving symlinks.",
         "status": "active",
         "reason": "",
         "successor": ""

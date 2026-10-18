@@ -762,6 +762,22 @@ Owner decision 2026-10-18 (S20). The adj side of the slicer integration is a --r
 
 Implementer decision under C32 (S20). --ref values on adj list and adj context match exact, case-sensitive values as typed, with no trimming, because refs are opaque strings stored as typed; a blank or whitespace-only value exits 2 before store access.
 
+### C198 Windows support: LockFileEx lock, Windows CI, Windows zips
+
+Owner decisions 2026-10-18 (S36). The Windows ID lock is kernel32 LockFileEx through the standard library syscall package, on the same <store>/.adj.lock, with flock's semantics (held from ID scan to link, released on return or process death, never deleted, 5 s wait polling every 10 ms, error names .adj.lock). A read-only .adj.lock falls back to a read-only open, as C164 on unix. CI runs go vet and go test on windows-latest. release.yml adds windows amd64/arm64 .zip archives (adj.exe) in SHA256SUMS. Line endings are pinned by .gitattributes rather than a CI autocrlf step.
+
+### C199 Windows support: test layout, lock open seam, .gitattributes form
+
+Implementer decisions under C32 (S36), confirmed by the owner 2026-10-18. Acquire tests are built on every system with a lock (lock_acquire_test.go) so they run on unix too; tests that need unix mode bits or errno values live in lock_unix_test.go (not built on Windows); TestFilePermissions skips on Windows and the renumber test drops its chmod check there. The open logic is openLockFile (lock_open.go), parameterised by the open function and the permission-error test (EACCES on unix, ERROR_ACCESS_DENIED on Windows); the read-only open never creates the file and never accepts a directory. Lock range is the whole file; ERROR_LOCK_VIOLATION means held. .gitattributes is '* text=auto eol=lf' with -text on the deliberate CRLF fixtures and binary on *.png. The roundtrip test builds adj.exe on Windows.
+
+### C200 User repo list: adj repos and the user config file
+
+Owner decisions 2026-10-18 (S18 split into S38 and S18). The per-user repo list lives in $XDG_CONFIG_HOME/adjudicate/config.json (fallback $HOME/.config/adjudicate/config.json), shaped {"repos": [abs paths]}, managed by adj repos add [PATH] / remove PATH / list [--json]; writes are atomic and create the directory; a listed path added again is a no-op. adj inbox --all (S18) reads it and warns and continues on a missing or broken repo, exiting 1. Follow-ups decided for S18: a relative XDG_CONFIG_HOME counts as unset (XDG spec) and a relative HOME is an error; repos add/remove take a lock so concurrent runs cannot drop an entry.
+
+### C201 adj repos: package, --root, unlisted remove, path comparison
+
+Implementer decisions under C32 (S38). The user config is its own package, internal/userconfig. For adj repos, --root only supplies add's default PATH. Removing a path that is not listed exits 1. adj repos list does not mark repos whose path no longer holds .adjudicate.json (S18 warns). Paths are compared as cleaned absolute strings, without resolving symlinks.
+
 ### C39 LICENSE is a stub until the owner supplies the full GPL-3.0 text and copyright holder
 
 No GPL-3.0 text exists in the adjudicate repo and the workspace has no network, so the stub carries the SPDX line, the or-later notice and TODO(owner) markers.
@@ -824,25 +840,25 @@ PENDING OWNER CONFIRMATION - not decided. Source: Dependency/licensing notes (ma
 
 *Retired: Owner decided 2026-10-15: see decision C31 (GPL-3.0-or-later)..*
 
-39 items · — 6 · done 32 · retired 1
+39 items · — 5 · done 33 · retired 1
 
 | # | Slice | Title | Size | Effort | Trees | Findings | Status |
 |---|---|---|---|---|---|---|---|
-| 1 | S36 | Windows support | M | 2 | store | AGENTS.md Store and config (lock_other.go: no lock, bounded retry only); release.yml builds no windows archive | — |
-| 2 | [S18](slices/S18.md) | Cross-repo inbox | M | 2 | cli | PROJECT.md Feature tiers (Later); Open decisions 6 | — |
-| 3 | [S19](slices/S19.md) | TUI or static HTML inbox | M | 2 | cli | PROJECT.md Feature tiers (Later) | — |
-| 4 | [S22](slices/S22.md) | Import from ADR folders | M | 2 | cli | PROJECT.md Feature tiers (Later) | — |
-| 5 | S37 | Release 0.2.0 | S | 1 | release | CHANGELOG.md and docs/json.md 1.0 rule | — |
-| 6 | S39 | Release 1.0 | S | 1 | release | CHANGELOG.md and docs/json.md 1.0 rule; owner 2026-10-18: 0.2.0 first, 1.0 later | — |
-| 7 | [S21](slices/S21.md) | Later: optional owner-only decide enforcement | M | 2 | later | PROJECT.md Feature tiers (Later); Open decisions 5; Non-goals · Owner 2026-10-18: owner-only decide stays a convention (C11, C27); no enforcement planned | retired |
+| 1 | [S18](slices/S18.md) | Cross-repo inbox | M | 2 | cli | PROJECT.md Feature tiers (Later); Open decisions 6 | — |
+| 2 | [S19](slices/S19.md) | TUI or static HTML inbox | M | 2 | cli | PROJECT.md Feature tiers (Later) | — |
+| 3 | [S22](slices/S22.md) | Import from ADR folders | M | 2 | cli | PROJECT.md Feature tiers (Later) | — |
+| 4 | S37 | Release 0.2.0 | S | 1 | release | CHANGELOG.md and docs/json.md 1.0 rule | — |
+| 5 | S39 | Release 1.0 | S | 1 | release | CHANGELOG.md and docs/json.md 1.0 rule; owner 2026-10-18: 0.2.0 first, 1.0 later | — |
+| 6 | [S21](slices/S21.md) | Later: optional owner-only decide enforcement | M | 2 | later | PROJECT.md Feature tiers (Later); Open decisions 5; Non-goals · Owner 2026-10-18: owner-only decide stays a convention (C11, C27); no enforcement planned | retired |
 
 ---
 
 | # | Slice | Title | Size | Effort | Trees | Findings | Status |
 |---|---|---|---|---|---|---|---|
-| 8 | [S34](slices/S34.md) | Dogfood conventions | S | 1 | decisions | S20 notes 2026-10-16/17, items 2 (tag case) and 3 (keys) | done |
-| 9 | [S20](slices/S20.md) | Slicer integration | M | 2 | cli | PROJECT.md Feature tiers (Later); Non-goals (not replacing slicer); Risks (overlap with slicer catalog) | done |
-| 10 | [S35](slices/S35.md) | adj context size budget | S | 1 | cli | PROJECT.md Non-goals (not in 0.1.0: size budget flag); Risks: context bloat | done |
+| 7 | [S34](slices/S34.md) | Dogfood conventions | S | 1 | decisions | S20 notes 2026-10-16/17, items 2 (tag case) and 3 (keys) | done |
+| 8 | [S20](slices/S20.md) | Slicer integration | M | 2 | cli | PROJECT.md Feature tiers (Later); Non-goals (not replacing slicer); Risks (overlap with slicer catalog) | done |
+| 9 | [S35](slices/S35.md) | adj context size budget | S | 1 | cli | PROJECT.md Non-goals (not in 0.1.0: size budget flag); Risks: context bloat | done |
+| 10 | [S36](slices/S36.md) | Windows support | M | 2 | store | AGENTS.md Store and config (lock_other.go: no lock, bounded retry only); release.yml builds no windows archive | done |
 | 11 | [S38](slices/S38.md) | adj repos | M | 2 | cli | Owner decision 2026-10-18 (S18 config): user config file managed by adj repos add/remove/list | done |
 | 12 | [S01](slices/S01.md) | Confirm open decisions | S | 1 | decisions | PROJECT.md Open decisions 1-7; Core concepts (kind); Dependency/licensing notes | done |
 | 13 | [S02](slices/S02.md) | Project scaffolding | S | 1 | scaffold | PROJECT.md Stack recommendation; Dependency/licensing notes | done |

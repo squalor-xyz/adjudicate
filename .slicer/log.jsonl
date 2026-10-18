@@ -693,3 +693,6 @@
 {"when": "2026-10-18T19:34:28Z", "item": "C198", "action": "catalog", "from": "", "to": "Windows support: LockFileEx lock, Windows CI, Windows zips", "note": "add"}
 {"when": "2026-10-18T19:34:28Z", "item": "C199", "action": "catalog", "from": "", "to": "Windows support: test layout, lock open seam, .gitattributes form", "note": "add"}
 {"when": "2026-10-18T19:34:28Z", "item": "S37", "action": "note", "from": "", "to": "", "note": "2026-10-18 from S36 review: before releasing 0.2.0, confirm ", "by": "Jon R"}
+{"when": "2026-10-18T19:47:35Z", "item": "C200", "action": "catalog", "from": "", "to": "User repo list: adj repos and the user config file", "note": "add"}
+{"when": "2026-10-18T19:47:35Z", "item": "C201", "action": "catalog", "from": "", "to": "adj repos: package, --root, unlisted remove, path comparison", "note": "add"}
+{"when": "2026-10-18T19:47:35Z", "item": "S18", "action": "note", "from": "", "to": "", "note": "2026-10-18 from S38 (owner decisions at landing): also in S1", "by": "Jon R"}
