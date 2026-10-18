@@ -7,6 +7,7 @@ import (
 	"io"
 	"strings"
 
+	"github.com/squalor-xyz/adjudicate/internal/commands"
 	"github.com/squalor-xyz/adjudicate/internal/model"
 )
 
@@ -34,4 +35,39 @@ func InboxText(w io.Writer, recs []model.Record) error {
 	}
 	_, err := io.WriteString(w, b.String())
 	return err
+}
+
+// InboxAllText writes a root header and the existing record blocks per repo.
+func InboxAllText(w io.Writer, result commands.AllInbox) error {
+	for i, repo := range result.Repos {
+		if i > 0 {
+			if _, err := io.WriteString(w, "\n"); err != nil {
+				return err
+			}
+		}
+		if _, err := fmt.Fprintln(w, repo.Root); err != nil {
+			return err
+		}
+		if err := InboxText(w, repo.Records); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// InboxAllJSON writes non-null arrays, including the per-repo warnings.
+func InboxAllJSON(w io.Writer, result commands.AllInbox) error {
+	type repoJSON struct {
+		Root    string       `json:"root"`
+		Records []jsonRecord `json:"records"`
+	}
+	out := struct {
+		Repos  []repoJSON            `json:"repos"`
+		Errors []commands.InboxError `json:"errors"`
+	}{Repos: []repoJSON{}, Errors: []commands.InboxError{}}
+	for _, repo := range result.Repos {
+		out.Repos = append(out.Repos, repoJSON{Root: repo.Root, Records: jsonRecords(repo.Records)})
+	}
+	out.Errors = append(out.Errors, result.Errors...)
+	return encodeJSON(w, out)
 }

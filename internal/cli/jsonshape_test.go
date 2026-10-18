@@ -497,3 +497,24 @@ func TestReposJSONShape(t *testing.T) {
 		t.Fatalf("documented JSON shape: %v", example)
 	}
 }
+
+func TestInboxAllJSONShape(t *testing.T) {
+	env, path, repo := reposEnv(t)
+	missing := filepath.Join(t.TempDir(), "missing")
+	writeReposConfig(t, path, `{"repos":[`+quoteRepo(repo)+`,`+quoteRepo(missing)+`]}`)
+	got := run(env, "", "inbox", "--all", "--json")
+	if got.code != 1 {
+		t.Fatalf("exit = %d, want partial failure: %s", got.code, got.stderr)
+	}
+	obj := decodeObject(t, got.stdout)
+	example := decodeObject(t, docsJSONExample(t, "## `adj inbox --all --json`"))
+	check := func(name string, got, example map[string]any, want []string) {
+		t.Helper()
+		if !reflect.DeepEqual(keysOf(got), want) || !reflect.DeepEqual(keysOf(example), want) {
+			t.Fatalf("%s keys: output %v, docs %v, want %v", name, keysOf(got), keysOf(example), want)
+		}
+	}
+	check("top", obj, example, []string{"errors", "repos"})
+	check("repo", obj["repos"].([]any)[0].(map[string]any), example["repos"].([]any)[0].(map[string]any), []string{"records", "root"})
+	check("error", obj["errors"].([]any)[0].(map[string]any), example["errors"].([]any)[0].(map[string]any), []string{"error", "root"})
+}

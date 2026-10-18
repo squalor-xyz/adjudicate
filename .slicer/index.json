@@ -475,7 +475,7 @@
       "id": "S18",
       "title": "Cross-repo inbox",
       "short_title": "Cross-repo inbox",
-      "status": "open",
+      "status": "done",
       "has_slice": true,
       "depends_on": [
         "S38"
@@ -487,6 +487,39 @@
           "text": "**2026-10-18** — 2026-10-18 from S38 (owner decisions at landing): also in S18: (1) a relative XDG_CONFIG_HOME counts as unset (fallback to HOME/.config), a relative HOME is an error, exit 1; (2) adj repos add/remove take a lock (store lock pattern: flock / LockFileEx on a lock file beside config.json) so concurrent runs cannot drop an entry. Review lows still open: Save replaces a symlinked config.json with a regular file and does not fsync; the dir-mode test only checks mode within 0755.",
           "created_at": "2026-10-18T19:47:35Z",
           "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "3c835061-83eb-4699-8796-2825987b3446",
+          "kind": "",
+          "text": "**2026-10-18** — C32 decision: Keep config insertion order and show successful empty repos as headers (preserves the owner’s repo list and makes empty inboxes visible).",
+          "created_at": "2026-10-18T19:49:27Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "0d40c08e-1045-4519-9879-de6d40171bb0",
+          "kind": "",
+          "text": "**2026-10-18** — C32 decision: --all JSON is {repos:[{root,records}],errors:[{root,error}]} with non-null arrays; warnings also go to stderr (scripts retain partial results and diagnostics).",
+          "created_at": "2026-10-18T19:49:27Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "b5f0f8e7-45e2-42f6-b56f-0c0df4f78461",
+          "kind": "",
+          "text": "**2026-10-18** — C32 decision: Export a small store lock wrapper and use userconfig.Update around ReposAdd/ReposRemove read-modify-write; commands/repos.go is necessarily touched (reuses the tested platform lock without moving it).",
+          "created_at": "2026-10-18T19:49:27Z",
+          "attempt": 1,
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
@@ -514,7 +547,7 @@
         "importance": 2,
         "urgency": 2,
         "effort": 2,
-        "attempts": 0
+        "attempts": 1
       }
     },
     {

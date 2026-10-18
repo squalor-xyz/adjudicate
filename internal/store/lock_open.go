@@ -4,7 +4,10 @@
 
 package store
 
-import "os"
+import (
+	"os"
+	"time"
+)
 
 // openLockFile opens the lock file at path for acquire, creating it if it is
 // missing. If the read-write open fails with a permission error (denied says
@@ -29,4 +32,10 @@ func openLockFile(path string, open func(name string, flag int, perm os.FileMode
 		return nil, err
 	}
 	return ro, nil
+}
+
+// AcquireLock takes the same platform lock as ID allocation on an arbitrary
+// lock file. The parent directory must exist. The caller must release it.
+func AcquireLock(path string, timeout time.Duration) (func(), error) {
+	return acquire(path, timeout, nil)
 }

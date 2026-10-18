@@ -11,6 +11,9 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"time"
+
+	"github.com/squalor-xyz/adjudicate/internal/store"
 )
 
 // Config is the user config's complete JSON shape.
@@ -21,10 +24,13 @@ type Config struct {
 // Path resolves the config using the injected environment, including on macOS.
 func Path(getenv func(string) string) (string, error) {
 	base := getenv("XDG_CONFIG_HOME")
-	if base == "" {
+	if !filepath.IsAbs(base) {
 		home := getenv("HOME")
 		if home == "" {
-			return "", errors.New("XDG_CONFIG_HOME and HOME are both unset or empty")
+			return "", errors.New("HOME is unset or empty and XDG_CONFIG_HOME is unset, empty or relative")
+		}
+		if !filepath.IsAbs(home) {
+			return "", errors.New("HOME must be an absolute path")
 		}
 		base = filepath.Join(home, ".config")
 	}
@@ -124,4 +130,32 @@ func (c *Config) Remove(repo string) bool {
 		c.Repos = out
 	}
 	return found
+}
+
+var acquireLock = store.AcquireLock
+
+// Update serializes the complete read-modify-write operation with other repo
+// writers. The lock remains beside config.json and is never removed. A false
+// result from change preserves the existing config bytes.
+func Update(path string, change func(*Config) (bool, error)) error {
+	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
+		return err
+	}
+	unlock, err := acquireLock(path+".lock", 5*time.Second)
+	if err != nil {
+		return err
+	}
+	defer unlock()
+	cfg, err := Load(path)
+	if err != nil {
+		return err
+	}
+	changed, err := change(&cfg)
+	if err != nil {
+		return err
+	}
+	if !changed {
+		return nil
+	}
+	return Save(path, cfg)
 }

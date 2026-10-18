@@ -296,10 +296,21 @@ Every filter given must match. Refs are case-sensitive and matched as typed,
 including surrounding whitespace; a blank `--ref` exits 2 before store access.
 No match is not an error.
 
-### `adj inbox [--json]`
+### `adj inbox [--all] [--json]`
 
 Lists the open questions, oldest first, each with its references, options and
 recommendation. An empty inbox prints nothing.
+
+With `--all`, read the user repo list managed by `adj repos` and show each
+repo's open questions under its absolute path, in config insertion order.
+Records remain oldest first within each repo. Successful empty repos keep
+their header; an empty or missing user config prints nothing. A missing repo,
+missing `.adjudicate.json`, or unreadable store produces a warning on stderr
+naming that repo; the others are still printed, and the command exits 1.
+`--all --json` prints `{"repos": [{"root": "...", "records": [...]}], "errors": []}`
+(see `docs/json.md`); per-repo errors appear in JSON as well as stderr. The
+arrays are always arrays, including when empty. `--all` with `--root` exits 2;
+no current repo is needed. Without `--all`, output is unchanged.
 
 ### `adj check QUERY [--json]`
 
@@ -377,12 +388,21 @@ An empty list prints nothing (JSON: `{"repos": []}`). `--root` is accepted but
 unused for explicit paths and for list/remove; these need no current repo.
 
 The list lives in `$XDG_CONFIG_HOME/adjudicate/config.json`, falling back to
-`$HOME/.config/adjudicate/config.json` when XDG_CONFIG_HOME is unset or empty,
-on every OS. If both variables are unset or empty, the command exits 1.
+`$HOME/.config/adjudicate/config.json` when XDG_CONFIG_HOME is unset, empty or relative,
+on every OS. If HOME is needed, it must be absolute; an unset, empty or relative HOME
+causes exit 1.
 A missing file is an empty list. Bad JSON, unknown keys or non-absolute repo
 paths exit 1 and leave the file unchanged. Writes create the directory (0755)
 and replace the config (0644) atomically using a temp file in the same directory
 and rename. This user config is separate from `.adjudicate.json`.
+
+Removing from a missing config fails as unlisted without creating a directory
+or lock file.
+Add/remove hold `config.json.lock` beside the user config for the complete
+read-modify-write operation (flock on Unix, LockFileEx on Windows). They wait
+up to 5 seconds, then exit 1 naming the lock file without changing the config.
+The empty lock file remains after release; list ignores it. Other platforms
+without either locking primitive retain the store lock's no-lock fallback.
 
 ### `adj version [--root DIR]`
 

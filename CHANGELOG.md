@@ -20,6 +20,14 @@ but never renames, removes or retypes an existing key.
 - CI runs `go vet` and `go test` on Windows.
 
 ### Commands
+- `adj inbox --all` groups the user repo list's open records by root, in config
+  order, including empty repos. Unreadable repos warn on stderr while other
+  results remain available; partial failure exits 1. `--all --json` adds a new
+  shape with `repos` and `errors` arrays. `--all` with `--root` exits 2.
+- Relative XDG_CONFIG_HOME is ignored in favor of HOME/.config. HOME must be
+  absolute when used. Repo add/remove now lock config.json.lock for the whole
+  update, with the store's 5 second wait and Unix/Windows locking behavior.
+  Removing from a missing config creates no directory or lock file.
 - `adj repos add [PATH]`, `remove PATH` and `list [--json]` manage a user repo
   list in `$XDG_CONFIG_HOME/adjudicate/config.json` (fallback:
   `$HOME/.config/adjudicate/config.json`). Add defaults to the current root,
