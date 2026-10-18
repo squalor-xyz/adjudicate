@@ -383,16 +383,20 @@ All met in 0.1.0.
 
 ## Later
 
-Not in 0.1.0. These are the slices S18-S22, marked `later`; they stay later,
-after 0.1.0 (C165):
+Not in 0.1.0. These are planned after 0.1.0 (C165), in the slices named; the
+owner re-prioritized them on 2026-10-18, so they are open work, not parked:
 
-- A cross-repo inbox: aggregate open questions from several configured repos.
-- A TUI or a local static HTML page for clearing the inbox faster.
+- A cross-repo inbox: aggregate open questions from several configured repos
+  (S18).
+- A TUI or a local static HTML page for clearing the inbox faster (S19).
 - A slicer integration: link decisions to slice IDs and show them in `slicer
-  show` notes.
-- Optional enforcement: a git hook or signed-commit check that `decide`
-  transitions are made by the owner.
-- Import from existing ADR folders.
+  show` notes (S20).
+- Import from existing ADR folders (S22).
+- Windows support: the ID lock and a release archive (S36).
+- A 1.0 release that freezes the JSON shapes (S37).
+
+Optional enforcement of owner-only decide (a git hook or signed-commit check)
+is no longer planned; owner-only decide stays a convention (C11, C27).
 
 ## Risks
 
