@@ -609,3 +609,5 @@
 {"when": "2026-10-18T14:57:56Z", "item": "S34", "action": "edit", "from": "", "to": "", "note": "Git"}
 {"when": "2026-10-18T14:58:29Z", "item": "S34", "action": "edit", "from": "", "to": "", "note": "Files"}
 {"when": "2026-10-18T14:58:29Z", "item": "S34", "action": "edit", "from": "", "to": "", "note": "Implement"}
+{"when": "2026-10-18T14:59:24Z", "item": "S34", "action": "status", "from": "open", "to": "started", "note": "", "by": "Jon R"}
+{"when": "2026-10-18T15:01:13Z", "item": "S34", "action": "status", "from": "started", "to": "done", "note": "AGENTS.md Dogfood store conventions rule (C194) added under Rules; PROJECT.md Later rewritten for the re-prioritized roadmap (S18, S19, S20, S22, S35, S36, S37; enforcement item dropped), Non-goals and Risks kept consistent. go test, go vet, gofmt clean; adj lint on decisions/ clean; slicer check clean.", "by": "Jon R"}

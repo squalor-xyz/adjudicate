@@ -77,7 +77,8 @@ Each goal is a catalog record (C01-C08) and each is met in 0.1.0.
 - Syncing across machines beyond what git already does (C13).
 
 Also not in 0.1.0: a size budget flag for `adj context` (an owner scope call;
-filter with `--tag` and `--key-prefix` instead).
+filter with `--tag` and `--key-prefix` instead). It is planned after 0.1.0
+(S35, see Later).
 
 ## Owner decisions that shaped the tool
 
@@ -383,16 +384,21 @@ All met in 0.1.0.
 
 ## Later
 
-Not in 0.1.0. These are the slices S18-S22, marked `later`; they stay later,
-after 0.1.0 (C165):
+Not in 0.1.0. These are planned after 0.1.0 (C165), in the slices named; the
+owner re-prioritized them on 2026-10-18, so they are open work, not parked:
 
-- A cross-repo inbox: aggregate open questions from several configured repos.
-- A TUI or a local static HTML page for clearing the inbox faster.
+- A cross-repo inbox: aggregate open questions from several configured repos
+  (S18).
+- A TUI or a local static HTML page for clearing the inbox faster (S19).
 - A slicer integration: link decisions to slice IDs and show them in `slicer
-  show` notes.
-- Optional enforcement: a git hook or signed-commit check that `decide`
-  transitions are made by the owner.
-- Import from existing ADR folders.
+  show` notes (S20).
+- Import from existing ADR folders (S22).
+- A size budget for `adj context` (S35).
+- Windows support: the ID lock and a release archive (S36).
+- A 1.0 release that freezes the JSON shapes (S37).
+
+Optional enforcement of owner-only decide (a git hook or signed-commit check)
+is no longer planned; owner-only decide stays a convention (C11, C27).
 
 ## Risks
 
@@ -401,7 +407,7 @@ after 0.1.0 (C165):
   `adj context`.
 - **Context bloat:** `adj context` output grows with the log. Mitigation: tag
   and key-prefix filters, and superseded records are left out. There is no size
-  budget flag in 0.1.0.
+  budget flag in 0.1.0; one is planned (S35).
 - **Merge conflicts on IDs:** mitigated by the ID lock, `adj lint` and
   `adj renumber`; two clones or branches can still collide until one of them
   runs `adj renumber`.

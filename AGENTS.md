@@ -380,6 +380,12 @@ Never run `go env -w`; it writes outside the repo. Do not add a Makefile.
   `slicer catalog add --kind decision` and a one-line reason. The reviewer
   checks it, and the owner may overrule it.
 - No commits unless the owner asks. No AI attribution in commits or PR text.
+- Dogfood store conventions (C194): when recording a decision in this repo's
+  own `decisions/` store, put slicer catalog and slice IDs in `--ref` as
+  written (`--ref C23`, `--ref S34`), not in tags. Tags are topics, not catalog
+  IDs. Keys are dotted `area.topic` (for example `project.license`). Records
+  0001-0016 stay as they are: no retagging, no keys added, and `adj amend`
+  does not change tags, keys or refs.
 - Releases (C193): the repo is `github.com/squalor-xyz/adjudicate`. A release
   is a `## X.Y.Z - DATE` CHANGELOG section, then an annotated tag `vX.Y.Z`
   pushed to `origin`; `release.yml` fails if the section is missing. Only the
