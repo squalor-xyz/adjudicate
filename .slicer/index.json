@@ -552,8 +552,8 @@
     },
     {
       "id": "S19",
-      "title": "TUI or static HTML inbox",
-      "short_title": "TUI or static HTML inbox",
+      "title": "Interactive inbox: adj inbox -i",
+      "short_title": "adj inbox -i",
       "status": "open",
       "has_slice": true,
       "depends_on": [

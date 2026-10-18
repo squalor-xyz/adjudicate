@@ -712,3 +712,12 @@
 {"when": "2026-10-18T20:10:16Z", "item": "C202", "action": "catalog", "from": "", "to": "adj inbox --all: order, empty repos, JSON shape, config lock", "note": "add"}
 {"when": "2026-10-18T20:10:16Z", "item": "S37", "action": "note", "from": "", "to": "", "note": "2026-10-18 from S18 review: (1) lock tests in internal/comma", "by": "Jon R"}
 {"when": "2026-10-18T20:10:16Z", "item": "S39", "action": "note", "from": "", "to": "", "note": "2026-10-18 from S18 review: docs/json.md says inbox --all er", "by": "Jon R"}
+{"when": "2026-10-18T20:10:42Z", "item": "S19", "action": "set", "from": "", "to": "", "note": "title TUI or static HTML inbox→Interactive inbox: adj inbox -i; short_title TUI or static HTML inbox→adj inbox -i"}
+{"when": "2026-10-18T20:10:42Z", "item": "S19", "action": "edit", "from": "", "to": "", "note": "lead"}
+{"when": "2026-10-18T20:10:42Z", "item": "S19", "action": "edit", "from": "", "to": "", "note": "boundary"}
+{"when": "2026-10-18T20:10:42Z", "item": "S19", "action": "edit", "from": "", "to": "", "note": "Why"}
+{"when": "2026-10-18T20:10:42Z", "item": "S19", "action": "edit", "from": "", "to": "", "note": "Files"}
+{"when": "2026-10-18T20:10:42Z", "item": "S19", "action": "edit", "from": "", "to": "", "note": "Failing tests"}
+{"when": "2026-10-18T20:10:43Z", "item": "S19", "action": "edit", "from": "", "to": "", "note": "Implement"}
+{"when": "2026-10-18T20:10:43Z", "item": "S19", "action": "edit", "from": "", "to": "", "note": "Check"}
+{"when": "2026-10-18T20:10:43Z", "item": "S19", "action": "edit", "from": "", "to": "", "note": "Git"}

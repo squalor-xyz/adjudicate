@@ -1,8 +1,8 @@
 {
   "id": "S19",
-  "title": "TUI or static HTML inbox",
+  "title": "Interactive inbox: adj inbox -i",
   "lead": [
-    "A TUI or a local static HTML page for clearing the inbox faster."
+    "Add adj inbox -i: a line-mode walk through the open questions, oldest first, where the owner decides, rejects, withdraws or skips each one, with a rationale, without retyping IDs and option labels."
   ],
   "depends_note": null,
   "findings_note": "PROJECT.md Feature tiers (Later)",
@@ -10,31 +10,31 @@
   "flags": [],
   "trees_note": "cli",
   "trees_plural": false,
-  "boundary": "**Not in this slice:** a hosted service or web server (v1 non-goal).",
+  "boundary": "**Not in this slice:** a full-screen TUI or curses; HTML output; a web server (C09); -i with --all (cross-repo deciding) or with --json; amend or supersede from the walk; any change to what decide/reject/withdraw validate.",
   "sections": [
     {
       "heading": "Why",
-      "body": "Listed in the Later tier to speed up batch answering."
+      "body": "Listed in the Later tier to speed up batch answering. Owner decisions 2026-10-18: a line-mode TUI, invoked as adj inbox -i (not a new command), standard library only (bufio on stdin, no terminal raw mode), owner-only like decide: the agent snippet must not suggest it. For each open record, oldest first as adj inbox orders them: print the record as adj inbox does, then prompt for an action: decide by option label, decide with free text, reject, withdraw, skip, quit; decide/reject/withdraw then prompt for the rationale (--why), required and not blank. Writes go through commands.Decide / Reject / Withdraw so validation, history and decided_by ($ADJ_DECIDED_BY, or --by) are the same as the one-shot commands."
     },
     {
       "heading": "Files",
-      "body": "Not specified in PROJECT.md (gap)."
+      "body": "- internal/cli/inbox.go (+ test): -i (and --interactive if C32 wants a long form), --by NAME for decided_by; -i with --json, --all or an argument exits 2.\n- internal/cli/inbox_interactive.go (new, + test) or internal/commands: the walk loop reading from the invocation's stdin and writing prompts to stdout, errors to stderr; keep it testable with scripted stdin.\n- internal/render/inbox.go: reuse the per-record block from InboxText for one record.\n- README.md, PROJECT.md (Commands; Later: drop the TUI line), AGENTS.md (inbox entry: -i, owner-only), CHANGELOG.md (## Unreleased).\n- internal/commands/ai.md: do not add -i (owner-only). ai_test must stay green."
     },
     {
       "heading": "Failing tests",
-      "body": "Gap: no acceptance criteria in PROJECT.md. Choose TUI or HTML with the owner\nfirst, then write tests for that surface."
+      "body": "Red first, scripted stdin, stores in t.TempDir():\n- Two open records; script 'decide label a' + rationale for the first and 'skip' for the second: the first is decided with decision a, rationale as typed, decided_by from --by or ADJ_DECIDED_BY, one decide history entry; the second stays open; exit 0.\n- Free-text decide, reject and withdraw each move the record as the one-shot commands would (compare the resulting record with one made by adj decide/reject/withdraw on a copy).\n- An unknown option label or a blank rationale re-prompts (does not write, does not abort the walk).\n- quit stops at once and leaves the rest open; EOF on stdin behaves as quit (exit 0, nothing half-written).\n- A record that changed status under the walk (decided by another process between display and write) reports the error from commands.Decide on stderr and continues (exit 1 at the end, or as C32 decides).\n- Empty inbox: prints nothing, exit 0.\n- -i --json, -i --all and -i with an argument exit 2.\n- Prompts and summary line (e.g. '2 decided, 1 rejected, 3 skipped') are pinned by a golden test."
     },
     {
       "heading": "Implement",
-      "body": "Gap: PROJECT.md leaves the choice between TUI and HTML open. Plan with the\nowner before starting."
+      "body": "1. Decide under C32 and record as slicer notes on S19: the action keys and prompt wording (recommend one-letter keys: d=decide by option, t=decide with text, r=reject, w=withdraw, s=skip, q=quit, ?=help), whether decide by option asks for the label or offers numbered options, the end summary line, and the exit code when a write failed during the walk (recommend 1).\n2. Red tests, then the loop; call commands.Decide/Reject/Withdraw, never write records directly.\n3. Docs as in Files."
     },
     {
       "heading": "Check",
-      "body": "- The project test command passes.\n- `slicer check --json` is clean."
+      "body": "- . scripts/env.sh; go test ./...; go vet ./...; GOOS=windows go vet ./...; gofmt -l cmd internal prints nothing.\n- go build -o .cache/bin/adj ./cmd/adj; in a temp repo under .cache/tmp/s19-check (adj init, two adj ask), pipe a script into adj inbox -i --root <tmp> and confirm the records with adj show; never run -i against this repo's decisions/.\n- .cache/bin/adj lint --root . is clean; mutation check each new test; slicer check --json is clean."
     },
     {
       "heading": "Git",
-      "body": "Worktree under `.worktrees/` on a feature branch. No commit unless the owner\nasks; no AI attribution."
+      "body": "Worktree .worktrees/s19 on branch s19. The orchestrator commits on s19 after VERDICT: PASS and slicer done; no push, no merge; no AI attribution."
     }
   ],
   "notes": []
