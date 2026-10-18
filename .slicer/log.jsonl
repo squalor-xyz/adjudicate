@@ -759,3 +759,4 @@
 {"when": "2026-10-18T21:58:35Z", "item": "S37", "action": "note", "from": "", "to": "", "note": "2026-10-18 from S22 review: (1) test nit internal/commands/i", "by": "Jon R"}
 {"when": "2026-10-18T22:00:33Z", "item": "C205", "action": "catalog", "from": "", "to": "Interactive inbox: adj inbox -i", "note": "add"}
 {"when": "2026-10-18T22:00:35Z", "item": "S37", "action": "note", "from": "", "to": "", "note": "2026-10-18 from S19 review: the inbox usage line 'adj inbox ", "by": "Jon R"}
+{"when": "2026-10-18T21:21:08Z", "item": "S19", "action": "note", "from": "", "to": "", "note": "Overlap: squalor-xyz/ork plans a cross-project TUI with a De", "by": "Jon R"}
