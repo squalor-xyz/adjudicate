@@ -378,10 +378,77 @@
       "id": "S38",
       "title": "adj repos: manage the user repo list",
       "short_title": "adj repos",
-      "status": "open",
-      "has_slice": false,
+      "status": "done",
+      "has_slice": true,
       "depends_on": [],
-      "note_records": [],
+      "note_records": [
+        {
+          "id": "b82ce0ad-a2cd-4282-9a60-ee0ee9ebfa53",
+          "kind": "",
+          "text": "**2026-10-18** — C32 decision: use internal/userconfig for per-user config, separate from the repo-only store package (keeps store scoped to one repo).",
+          "created_at": "2026-10-18T19:30:07Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "be15bfdf-c0c1-4794-ad82-b4ab39f5df1d",
+          "kind": "",
+          "text": "**2026-10-18** — C32 decision: --root supplies the default PATH for repos add only; otherwise it is accepted but unused (explicit PATH and user-wide list/remove do not require a current repo).",
+          "created_at": "2026-10-18T19:30:07Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "d07c0c73-8f69-4df6-86fb-5a6cc938ac04",
+          "kind": "",
+          "text": "**2026-10-18** — C32 decision: removing an unlisted path exits 1 without writing (makes a mistaken removal visible).",
+          "created_at": "2026-10-18T19:30:07Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "da8062b2-271f-4323-936d-5f53edda79cf",
+          "kind": "",
+          "text": "**2026-10-18** — C32 decision: repos list prints stored paths without checking or marking missing repos (S18 owns warnings).",
+          "created_at": "2026-10-18T19:30:07Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "c447985b-5c98-47fc-91c5-72a505032ea3",
+          "kind": "",
+          "text": "**2026-10-18** — C32 decision: compare cleaned absolute path strings without resolving symlinks, preserving insertion order (matches the specified stored paths without filesystem identity checks).",
+          "created_at": "2026-10-18T19:30:07Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "95b1cab0-3701-4a2e-8e9b-04123d6a1c9d",
+          "kind": "",
+          "text": "**2026-10-18** — Review round 1: VERDICT PASS, no blockers. Accepted lows: AGENTS.md comma, AGENTS.md Commands entry wording (Env.Root/Env.Getwd), README stray blank line, config_test.go 0755 dir assert under umask. Later notes: (a) relay config read-modify-write has no lock, concurrent repos add can drop an entry (S18); (b) Save replaces a symlinked config.json and does not fsync; (c) owner call: whether a relative XDG_CONFIG_HOME/HOME counts as unset (XDG spec says ignore).",
+          "created_at": "2026-10-18T19:42:59Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        }
+      ],
       "claim": null,
       "fields": {
         "size": "M",
@@ -401,19 +468,64 @@
         "importance": 2,
         "urgency": 2,
         "effort": 2,
-        "attempts": 0
+        "attempts": 1
       }
     },
     {
       "id": "S18",
       "title": "Cross-repo inbox",
       "short_title": "Cross-repo inbox",
-      "status": "open",
+      "status": "done",
       "has_slice": true,
       "depends_on": [
         "S38"
       ],
-      "note_records": [],
+      "note_records": [
+        {
+          "id": "127eb98f-9a3a-4e17-96e7-0b6a9d9d1c47",
+          "kind": "",
+          "text": "**2026-10-18** — 2026-10-18 from S38 (owner decisions at landing): also in S18: (1) a relative XDG_CONFIG_HOME counts as unset (fallback to HOME/.config), a relative HOME is an error, exit 1; (2) adj repos add/remove take a lock (store lock pattern: flock / LockFileEx on a lock file beside config.json) so concurrent runs cannot drop an entry. Review lows still open: Save replaces a symlinked config.json with a regular file and does not fsync; the dir-mode test only checks mode within 0755.",
+          "created_at": "2026-10-18T19:47:35Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "3c835061-83eb-4699-8796-2825987b3446",
+          "kind": "",
+          "text": "**2026-10-18** — C32 decision: Keep config insertion order and show successful empty repos as headers (preserves the owner’s repo list and makes empty inboxes visible).",
+          "created_at": "2026-10-18T19:49:27Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "0d40c08e-1045-4519-9879-de6d40171bb0",
+          "kind": "",
+          "text": "**2026-10-18** — C32 decision: --all JSON is {repos:[{root,records}],errors:[{root,error}]} with non-null arrays; warnings also go to stderr (scripts retain partial results and diagnostics).",
+          "created_at": "2026-10-18T19:49:27Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "b5f0f8e7-45e2-42f6-b56f-0c0df4f78461",
+          "kind": "",
+          "text": "**2026-10-18** — C32 decision: Export a small store lock wrapper and use userconfig.Update around ReposAdd/ReposRemove read-modify-write; commands/repos.go is necessarily touched (reuses the tested platform lock without moving it).",
+          "created_at": "2026-10-18T19:49:27Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        }
+      ],
       "claim": null,
       "fields": {
         "size": "M",
@@ -435,7 +547,7 @@
         "importance": 2,
         "urgency": 2,
         "effort": 2,
-        "attempts": 0
+        "attempts": 1
       }
     },
     {
@@ -725,6 +837,17 @@
           "verified_by": "",
           "verified_at": "",
           "stale_after": ""
+        },
+        {
+          "id": "e98bf3b4-ccfa-45c3-8166-292b9be5e51c",
+          "kind": "",
+          "text": "**2026-10-18** — 2026-10-18 from S18 review: (1) lock tests in internal/commands and internal/userconfig use the production 5 s timeout (about +10 s per test run); add a hook to shorten it. (2) userconfig.acquireLock is a package-level var replaced in tests; a parallel test would race. (3) PROJECT.md ~235-247: the inbox --all text sits in the data-model User config block and repeats README; move or trim. (4) S38 lows kept: Save replaces a symlinked config.json and does not fsync.",
+          "created_at": "2026-10-18T20:10:16Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
         }
       ],
       "claim": null,
@@ -758,7 +881,30 @@
       "depends_on": [
         "S37"
       ],
-      "note_records": [],
+      "note_records": [
+        {
+          "id": "ff1ea5f0-e9e9-4b7b-9944-7f2aca146f55",
+          "kind": "",
+          "text": "**2026-10-18** — 2026-10-18 from S18 review: docs/json.md says inbox --all errors[].error text varies by OS; when freezing JSON, freeze the keys, not that text.",
+          "created_at": "2026-10-18T20:10:16Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "f1142564-b176-4484-b8ec-4a6a173e0136",
+          "kind": "",
+          "text": "**2026-10-18** — 2026-10-18 owner decision (from S22): before freezing, make readers accept unknown history events (lint warns instead of List/Get failing), so later event additions such as S22's 'import' do not make older adj binaries refuse a store.",
+          "created_at": "2026-10-18T21:52:02Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        }
+      ],
       "claim": null,
       "fields": {
         "size": "S",
@@ -2499,7 +2645,7 @@
   "goals": "adjudicate is a small CLI (`adj`) with a plain-text store that records project decisions as a loop: an agent asks, the owner decides in batches, and every later agent reads the decision. The goal and non-goal records below come from PROJECT.md; the owner's decisions on its open questions are catalog records C23-C33, and they override PROJECT.md where it differs (name, runtime, record format, license).",
   "non_goals": "",
   "catalog": {
-    "next_id": 200,
+    "next_id": 203,
     "id_prefix": "C",
     "id_width": 2,
     "records": [
@@ -4290,6 +4436,33 @@
         "kind": "decision",
         "title": "Windows support: test layout, lock open seam, .gitattributes form",
         "body": "Implementer decisions under C32 (S36), confirmed by the owner 2026-10-18. Acquire tests are built on every system with a lock (lock_acquire_test.go) so they run on unix too; tests that need unix mode bits or errno values live in lock_unix_test.go (not built on Windows); TestFilePermissions skips on Windows and the renumber test drops its chmod check there. The open logic is openLockFile (lock_open.go), parameterised by the open function and the permission-error test (EACCES on unix, ERROR_ACCESS_DENIED on Windows); the read-only open never creates the file and never accepts a directory. Lock range is the whole file; ERROR_LOCK_VIOLATION means held. .gitattributes is '* text=auto eol=lf' with -text on the deliberate CRLF fixtures and binary on *.png. The roundtrip test builds adj.exe on Windows.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C200",
+        "kind": "decision",
+        "title": "User repo list: adj repos and the user config file",
+        "body": "Owner decisions 2026-10-18 (S18 split into S38 and S18). The per-user repo list lives in $XDG_CONFIG_HOME/adjudicate/config.json (fallback $HOME/.config/adjudicate/config.json), shaped {\"repos\": [abs paths]}, managed by adj repos add [PATH] / remove PATH / list [--json]; writes are atomic and create the directory; a listed path added again is a no-op. adj inbox --all (S18) reads it and warns and continues on a missing or broken repo, exiting 1. Follow-ups decided for S18: a relative XDG_CONFIG_HOME counts as unset (XDG spec) and a relative HOME is an error; repos add/remove take a lock so concurrent runs cannot drop an entry.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C201",
+        "kind": "decision",
+        "title": "adj repos: package, --root, unlisted remove, path comparison",
+        "body": "Implementer decisions under C32 (S38). The user config is its own package, internal/userconfig. For adj repos, --root only supplies add's default PATH. Removing a path that is not listed exits 1. adj repos list does not mark repos whose path no longer holds .adjudicate.json (S18 warns). Paths are compared as cleaned absolute strings, without resolving symlinks.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C202",
+        "kind": "decision",
+        "title": "adj inbox --all: order, empty repos, JSON shape, config lock",
+        "body": "Implementer decisions under C32 (S18). adj inbox --all lists repos in the user config's insertion order; a repo read successfully with no open records still prints its header. --all --json is {\"repos\": [{\"root\", \"records\"}], \"errors\": [...]}, with per-repo errors in JSON as well as warnings on stderr. adj repos add/remove lock config.json.lock beside config.json through a wrapper over the store lock (store.AcquireLock), with the same wait and error naming the lock file.",
         "status": "active",
         "reason": "",
         "successor": ""

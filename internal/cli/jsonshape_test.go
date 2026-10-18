@@ -3,6 +3,7 @@
 package cli
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -472,4 +473,48 @@ func TestContextBudgetJSONKeysAndExampleMatchTheDocs(t *testing.T) {
 	if plain := docsTableKeys(t, "## `adj context --format json`"); !reflect.DeepEqual(plain, []string{"decision", "id", "key", "rationale", "title"}) {
 		t.Errorf("context entry table = %v; the omitted key belongs in its own section", plain)
 	}
+}
+
+func TestReposJSONShape(t *testing.T) {
+	env, path, repo := reposEnv(t)
+	writeReposConfig(t, path, `{"repos":[`+quoteRepo(repo)+`]}`)
+	r := run(env, "", "repos", "list", "--json")
+	if r.code != 0 || r.stderr != "" {
+		t.Fatalf("list JSON: %+v", r)
+	}
+	var got map[string][]string
+	if err := json.Unmarshal([]byte(r.stdout), &got); err != nil {
+		t.Fatal(err)
+	}
+	if len(got) != 1 || len(got["repos"]) != 1 || got["repos"][0] != repo {
+		t.Fatalf("JSON shape: %s", r.stdout)
+	}
+	var example map[string][]string
+	if err := json.Unmarshal([]byte(docsJSONExample(t, "## `adj repos list --json`")), &example); err != nil {
+		t.Fatal(err)
+	}
+	if len(example) != 1 || len(example["repos"]) != 1 {
+		t.Fatalf("documented JSON shape: %v", example)
+	}
+}
+
+func TestInboxAllJSONShape(t *testing.T) {
+	env, path, repo := reposEnv(t)
+	missing := filepath.Join(t.TempDir(), "missing")
+	writeReposConfig(t, path, `{"repos":[`+quoteRepo(repo)+`,`+quoteRepo(missing)+`]}`)
+	got := run(env, "", "inbox", "--all", "--json")
+	if got.code != 1 {
+		t.Fatalf("exit = %d, want partial failure: %s", got.code, got.stderr)
+	}
+	obj := decodeObject(t, got.stdout)
+	example := decodeObject(t, docsJSONExample(t, "## `adj inbox --all --json`"))
+	check := func(name string, got, example map[string]any, want []string) {
+		t.Helper()
+		if !reflect.DeepEqual(keysOf(got), want) || !reflect.DeepEqual(keysOf(example), want) {
+			t.Fatalf("%s keys: output %v, docs %v, want %v", name, keysOf(got), keysOf(example), want)
+		}
+	}
+	check("top", obj, example, []string{"errors", "repos"})
+	check("repo", obj["repos"].([]any)[0].(map[string]any), example["repos"].([]any)[0].(map[string]any), []string{"records", "root"})
+	check("error", obj["errors"].([]any)[0].(map[string]any), example["errors"].([]any)[0].(map[string]any), []string{"error", "root"})
 }

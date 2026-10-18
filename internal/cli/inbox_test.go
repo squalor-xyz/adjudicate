@@ -4,6 +4,7 @@ package cli
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -287,5 +288,165 @@ func TestInboxFailsOnAnUnreadableRecordFile(t *testing.T) {
 		if r.code != 1 || !strings.Contains(r.stderr, "0008-broken.md") || r.stdout != "" {
 			t.Errorf("%v: exit %d, stdout %q, stderr %q; want exit 1 naming 0008-broken.md and no output", args, r.code, r.stdout, r.stderr)
 		}
+	}
+}
+
+// Each case changes only the repo list or one repo's state.
+func TestInboxAll(t *testing.T) {
+	for _, mode := range []string{"two", "empty-repo", "missing", "no-config", "malformed", "missing-user-config", "empty-user-config"} {
+		for _, asJSON := range []bool{false, true} {
+			t.Run(fmt.Sprintf("%s/json=%v", mode, asJSON), func(t *testing.T) {
+				env, path, first := reposEnv(t)
+				second := initRoot(t)
+				for _, root := range []string{first, second} {
+					for _, q := range []struct{ title, date string }{{"Newer", "2026-03-05"}, {"Older", "2026-03-03"}, {"Same day", "2026-03-03"}} {
+						e := envOn(t, root, q.date)
+						e.Getenv = env.Getenv
+						if got := run(e, "", "ask", q.title); got.code != 0 {
+							t.Fatal(got)
+						}
+					}
+					e := envOn(t, root, "2026-03-06")
+					e.Getenv = env.Getenv
+					if got := run(e, "", "ask", "Closed"); got.code != 0 {
+						t.Fatal(got)
+					}
+					if got := run(e, "", "withdraw", "4", "--why", "gone"); got.code != 0 {
+						t.Fatal(got)
+					}
+				}
+				roots := []string{second, first} // deliberately reverse fixture order
+				bad := ""
+				switch mode {
+				case "empty-repo":
+					roots = append(roots, initRoot(t))
+				case "missing":
+					bad = filepath.Join(t.TempDir(), "gone")
+				case "no-config":
+					bad = t.TempDir()
+				case "malformed":
+					bad = initRoot(t)
+					if err := os.WriteFile(filepath.Join(bad, "decisions", "0001-bad.md"), []byte("bad"), 0644); err != nil {
+						t.Fatal(err)
+					}
+				}
+				listed := append([]string{}, roots...)
+				if bad != "" {
+					listed = append([]string{bad}, listed...)
+				}
+				if mode != "missing-user-config" {
+					if mode == "empty-user-config" {
+						listed = []string{}
+					}
+					data, err := json.Marshal(map[string]any{"repos": listed})
+					if err != nil {
+						t.Fatal(err)
+					}
+					writeReposConfig(t, path, string(data))
+				}
+				args := []string{"inbox", "--all"}
+				if asJSON {
+					args = append(args, "--json")
+				}
+				got := run(env, "", args...)
+				wantCode := 0
+				if bad != "" {
+					wantCode = 1
+				}
+				if got.code != wantCode {
+					t.Errorf("exit = %d, want %d; stderr: %s", got.code, wantCode, got.stderr)
+				}
+				if bad == "" && got.stderr != "" {
+					t.Errorf("stderr = %q, want empty", got.stderr)
+				}
+				if bad != "" && (!strings.Contains(got.stderr, "warning:") || !strings.Contains(got.stderr, bad)) {
+					t.Errorf("missing repo warning: %q", got.stderr)
+				}
+				if mode == "missing-user-config" || mode == "empty-user-config" {
+					roots = nil
+				}
+				if !asJSON {
+					want := ""
+					for i, root := range roots {
+						if i > 0 {
+							want += "\n"
+						}
+						want += root + "\n"
+						if i < 2 {
+							want += "2  Older\n  Created: 2026-03-03\n\n3  Same day\n  Created: 2026-03-03\n\n1  Newer\n  Created: 2026-03-05\n"
+						}
+					}
+					if got.stdout != want {
+						t.Errorf("grouped stdout = %q, want %q", got.stdout, want)
+					}
+				} else {
+					var obj struct {
+						Repos []struct {
+							Root    string         `json:"root"`
+							Records []model.Record `json:"records"`
+						} `json:"repos"`
+						Errors []struct {
+							Root  string `json:"root"`
+							Error string `json:"error"`
+						} `json:"errors"`
+					}
+					if err := json.Unmarshal([]byte(got.stdout), &obj); err != nil {
+						t.Fatalf("JSON: %v: %s", err, got.stdout)
+					}
+					if obj.Repos == nil || obj.Errors == nil || len(obj.Repos) != len(roots) {
+						t.Fatalf("JSON arrays: %s", got.stdout)
+					}
+					for i, repo := range obj.Repos {
+						if repo.Root != roots[i] {
+							t.Errorf("root = %q, want %q", repo.Root, roots[i])
+						}
+						ids := []int{}
+						for _, rec := range repo.Records {
+							ids = append(ids, rec.ID)
+						}
+						want := []int{2, 3, 1}
+						if i == 2 {
+							want = []int{}
+						}
+						if repo.Records == nil || !reflect.DeepEqual(ids, want) {
+							t.Errorf("records = %v, want %v", ids, want)
+						}
+					}
+					n := 0
+					if bad != "" {
+						n = 1
+					}
+					if len(obj.Errors) != n {
+						t.Errorf("errors = %v, want %d", obj.Errors, n)
+					}
+					if n == 1 && len(obj.Errors) == 1 && (obj.Errors[0].Root != bad || obj.Errors[0].Error == "") {
+						t.Errorf("error detail = %+v", obj.Errors[0])
+					}
+				}
+			})
+		}
+	}
+}
+
+func TestInboxAllUsage(t *testing.T) {
+	env, _, repo := reposEnv(t)
+	for _, args := range [][]string{{"inbox", "--all", "--root", repo}, {"--root", repo, "inbox", "--all"}, {"inbox", "--all", "--root="}, {"inbox", "--all", "extra"}} {
+		got := run(env, "", args...)
+		detail := "--all cannot be combined with --root"
+		if args[len(args)-1] == "extra" {
+			detail = "takes no arguments"
+		}
+		if got.code != 2 || got.stdout != "" || !strings.Contains(got.stderr, detail) {
+			t.Errorf("%v: %+v, want usage error %q", args, got, detail)
+		}
+	}
+}
+
+func TestInboxAllInvalidUserConfig(t *testing.T) {
+	env, path, _ := reposEnv(t)
+	writeReposConfig(t, path, `{"unknown":true}`)
+	got := run(env, "", "inbox", "--all")
+	if got.code != 1 || got.stdout != "" || !strings.Contains(got.stderr, path) {
+		t.Fatalf("invalid user config: %+v", got)
 	}
 }

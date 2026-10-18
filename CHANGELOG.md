@@ -20,6 +20,20 @@ but never renames, removes or retypes an existing key.
 - CI runs `go vet` and `go test` on Windows.
 
 ### Commands
+- `adj inbox --all` groups the user repo list's open records by root, in config
+  order, including empty repos. Unreadable repos warn on stderr while other
+  results remain available; partial failure exits 1. `--all --json` adds a new
+  shape with `repos` and `errors` arrays. `--all` with `--root` exits 2.
+- Relative XDG_CONFIG_HOME is ignored in favor of HOME/.config. HOME must be
+  absolute when used. Repo add/remove now lock config.json.lock for the whole
+  update, with the store's 5 second wait and Unix/Windows locking behavior.
+  Removing from a missing config creates no directory or lock file.
+- `adj repos add [PATH]`, `remove PATH` and `list [--json]` manage a user repo
+  list in `$XDG_CONFIG_HOME/adjudicate/config.json` (fallback:
+  `$HOME/.config/adjudicate/config.json`). Add defaults to the current root,
+  stores cleaned absolute paths and treats duplicates as a no-op. Remove exits
+  1 for an unlisted path; list prints stored paths without probing them.
+  Config writes use a same-directory temporary file and atomic rename.
 - `adj list` and `adj context` accept repeatable `--ref REF` filters: every ref
   must match exactly, case-sensitively and as typed. Blank values exit 2 before
   store access. Filters combine with the other criteria, before the context
@@ -51,6 +65,7 @@ but never renames, removes or retypes an existing key.
   `event` should accept it. No key is added or changed. adj 0.1.0 refuses a
   store that holds an `import` entry (`list`, `check` and `context` exit 1;
   `lint` reports `fields` errors), so upgrade before sharing such a store.
+- `adj repos list --json` prints `{"repos": [...]}` (empty: `[]`).
 - `adj context --format json --max-bytes N` adds a top-level `omitted` key (the
   number of records left out, `0` included). Without `--max-bytes` the output
   has no `omitted` key and is unchanged. See [docs/json.md](docs/json.md).

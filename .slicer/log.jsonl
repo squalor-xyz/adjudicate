@@ -701,3 +701,43 @@
 {"when": "2026-10-18T20:14:20Z", "item": "S22", "action": "status", "from": "started", "to": "done", "note": "Shipped adj import-adr DIR [--tag T]... [--by NAME] [--dry-run]: imports Nygard (adr-tools) and MADR ADR folders as one record per ADR (new internal/adr parser, internal/commands/importadr.go, internal/cli/importadr.go), with a new history event 'import', idempotent re-runs (skip on import history entry), supersede links within the run, stale-link warnings on re-run, all files validated before any write, and docs (README, PROJECT.md, AGENTS.md, CHANGELOG, docs/json.md). Verified: go test ./... all ok (454 top-level tests pass, 0 fail), go vet clean, gofmt clean, build ok, every new test mutation-checked, Check import of the nygard and madr fixtures lints clean and re-runs skip. Two review rounds (round 1 reviewer and architect FAIL, 8 findings fixed in fix round 1; then gate PASS and architect PASS). Record-format change (history event import) is listed as owner needed.", "by": "Jon R"}
 {"when": "2026-10-18T21:53:07Z", "item": "S22", "action": "note", "from": "", "to": "", "note": "Owner overruled C32 decided_by order (2026-10-18): now --by,", "by": "Jon R"}
 {"when": "2026-10-18T21:56:04Z", "item": "S22", "action": "note", "from": "", "to": "", "note": "Fix round 2026-10-18: owner decisions applied. The import hi", "by": "Jon R"}
+{"when": "2026-10-18T19:28:27Z", "item": "S38", "action": "promote", "from": "", "to": "", "note": ""}
+{"when": "2026-10-18T19:28:27Z", "item": "S38", "action": "edit", "from": "", "to": "", "note": "lead"}
+{"when": "2026-10-18T19:28:27Z", "item": "S38", "action": "edit", "from": "", "to": "", "note": "boundary"}
+{"when": "2026-10-18T19:28:27Z", "item": "S38", "action": "edit", "from": "", "to": "", "note": "Why"}
+{"when": "2026-10-18T19:28:27Z", "item": "S38", "action": "edit", "from": "", "to": "", "note": "Files"}
+{"when": "2026-10-18T19:28:27Z", "item": "S38", "action": "edit", "from": "", "to": "", "note": "Failing tests"}
+{"when": "2026-10-18T19:28:27Z", "item": "S38", "action": "edit", "from": "", "to": "", "note": "Implement"}
+{"when": "2026-10-18T19:28:27Z", "item": "S38", "action": "edit", "from": "", "to": "", "note": "Check"}
+{"when": "2026-10-18T19:28:28Z", "item": "S38", "action": "edit", "from": "", "to": "", "note": "Git"}
+{"when": "2026-10-18T19:29:54Z", "item": "S38", "action": "status", "from": "open", "to": "started", "note": "", "by": "Jon R"}
+{"when": "2026-10-18T19:30:07Z", "item": "S38", "action": "note", "from": "", "to": "", "note": "C32 decision: use internal/userconfig for per-user config, s", "by": "Jon R"}
+{"when": "2026-10-18T19:30:07Z", "item": "S38", "action": "note", "from": "", "to": "", "note": "C32 decision: --root supplies the default PATH for repos add", "by": "Jon R"}
+{"when": "2026-10-18T19:30:07Z", "item": "S38", "action": "note", "from": "", "to": "", "note": "C32 decision: removing an unlisted path exits 1 without writ", "by": "Jon R"}
+{"when": "2026-10-18T19:30:07Z", "item": "S38", "action": "note", "from": "", "to": "", "note": "C32 decision: repos list prints stored paths without checkin", "by": "Jon R"}
+{"when": "2026-10-18T19:30:07Z", "item": "S38", "action": "note", "from": "", "to": "", "note": "C32 decision: compare cleaned absolute path strings without ", "by": "Jon R"}
+{"when": "2026-10-18T19:42:59Z", "item": "S38", "action": "note", "from": "", "to": "", "note": "Review round 1: VERDICT PASS, no blockers. Accepted lows: AG", "by": "Jon R"}
+{"when": "2026-10-18T19:45:43Z", "item": "S38", "action": "status", "from": "started", "to": "done", "note": "adj repos add/remove/list manage the per-user repo list in $XDG_CONFIG_HOME/adjudicate/config.json (HOME/.config fallback); strict Load, atomic Save; go test, vet, gofmt clean; reviewer and gate PASS", "by": "Jon R"}
+{"when": "2026-10-18T19:34:28Z", "item": "C198", "action": "catalog", "from": "", "to": "Windows support: LockFileEx lock, Windows CI, Windows zips", "note": "add"}
+{"when": "2026-10-18T19:34:28Z", "item": "C199", "action": "catalog", "from": "", "to": "Windows support: test layout, lock open seam, .gitattributes form", "note": "add"}
+{"when": "2026-10-18T19:34:28Z", "item": "S37", "action": "note", "from": "", "to": "", "note": "2026-10-18 from S36 review: before releasing 0.2.0, confirm ", "by": "Jon R"}
+{"when": "2026-10-18T19:47:35Z", "item": "C200", "action": "catalog", "from": "", "to": "User repo list: adj repos and the user config file", "note": "add"}
+{"when": "2026-10-18T19:47:35Z", "item": "C201", "action": "catalog", "from": "", "to": "adj repos: package, --root, unlisted remove, path comparison", "note": "add"}
+{"when": "2026-10-18T19:47:35Z", "item": "S18", "action": "note", "from": "", "to": "", "note": "2026-10-18 from S38 (owner decisions at landing): also in S1", "by": "Jon R"}
+{"when": "2026-10-18T19:48:04Z", "item": "S18", "action": "edit", "from": "", "to": "", "note": "lead"}
+{"when": "2026-10-18T19:48:04Z", "item": "S18", "action": "edit", "from": "", "to": "", "note": "boundary"}
+{"when": "2026-10-18T19:48:04Z", "item": "S18", "action": "edit", "from": "", "to": "", "note": "Why"}
+{"when": "2026-10-18T19:48:04Z", "item": "S18", "action": "edit", "from": "", "to": "", "note": "Files"}
+{"when": "2026-10-18T19:48:05Z", "item": "S18", "action": "edit", "from": "", "to": "", "note": "Failing tests"}
+{"when": "2026-10-18T19:48:05Z", "item": "S18", "action": "edit", "from": "", "to": "", "note": "Implement"}
+{"when": "2026-10-18T19:48:05Z", "item": "S18", "action": "edit", "from": "", "to": "", "note": "Check"}
+{"when": "2026-10-18T19:48:05Z", "item": "S18", "action": "edit", "from": "", "to": "", "note": "Git"}
+{"when": "2026-10-18T19:48:58Z", "item": "S18", "action": "status", "from": "open", "to": "started", "note": "", "by": "Jon R"}
+{"when": "2026-10-18T19:49:27Z", "item": "S18", "action": "note", "from": "", "to": "", "note": "C32 decision: Keep config insertion order and show successfu", "by": "Jon R"}
+{"when": "2026-10-18T19:49:27Z", "item": "S18", "action": "note", "from": "", "to": "", "note": "C32 decision: --all JSON is {repos:[{root,records}],errors:[", "by": "Jon R"}
+{"when": "2026-10-18T19:49:27Z", "item": "S18", "action": "note", "from": "", "to": "", "note": "C32 decision: Export a small store lock wrapper and use user", "by": "Jon R"}
+{"when": "2026-10-18T20:05:39Z", "item": "S18", "action": "status", "from": "started", "to": "done", "note": "S18 passed review and gate (VERDICT: PASS). Verified outcome reported by the close brief: inbox --all over the user repo list with partial-failure warnings and exit 1; JSON shape documented in docs/json.md; relative XDG_CONFIG_HOME ignored and relative HOME an error; locked repos add/remove. Prior full-run test counts are unavailable in this close-session context and are not restated. Mutation checks reported red. L3 lock-test 5 s timeout remains a later note. C32 decisions remain S18 notes.", "by": "Jon R"}
+{"when": "2026-10-18T20:10:16Z", "item": "C202", "action": "catalog", "from": "", "to": "adj inbox --all: order, empty repos, JSON shape, config lock", "note": "add"}
+{"when": "2026-10-18T20:10:16Z", "item": "S37", "action": "note", "from": "", "to": "", "note": "2026-10-18 from S18 review: (1) lock tests in internal/comma", "by": "Jon R"}
+{"when": "2026-10-18T20:10:16Z", "item": "S39", "action": "note", "from": "", "to": "", "note": "2026-10-18 from S18 review: docs/json.md says inbox --all er", "by": "Jon R"}
+{"when": "2026-10-18T21:52:02Z", "item": "S39", "action": "note", "from": "", "to": "", "note": "2026-10-18 owner decision (from S22): before freezing, make ", "by": "Jon R"}

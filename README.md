@@ -296,10 +296,21 @@ Every filter given must match. Refs are case-sensitive and matched as typed,
 including surrounding whitespace; a blank `--ref` exits 2 before store access.
 No match is not an error.
 
-### `adj inbox [--json]`
+### `adj inbox [--all] [--json]`
 
 Lists the open questions, oldest first, each with its references, options and
 recommendation. An empty inbox prints nothing.
+
+With `--all`, read the user repo list managed by `adj repos` and show each
+repo's open questions under its absolute path, in config insertion order.
+Records remain oldest first within each repo. Successful empty repos keep
+their header; an empty or missing user config prints nothing. A missing repo,
+missing `.adjudicate.json`, or unreadable store produces a warning on stderr
+naming that repo; the others are still printed, and the command exits 1.
+`--all --json` prints `{"repos": [{"root": "...", "records": [...]}], "errors": []}`
+(see `docs/json.md`); per-repo errors appear in JSON as well as stderr. The
+arrays are always arrays, including when empty. `--all` with `--root` exits 2;
+no current repo is needed. Without `--all`, output is unchanged.
 
 ### `adj check QUERY [--json]`
 
@@ -412,6 +423,37 @@ to stderr. `--dry-run` prints `FILE -> would create (STATUS)` and writes
 nothing. A folder with no ADR files prints nothing and succeeds. See
 `adj import-adr --help`.
 
+### `adj repos add [PATH]`, `adj repos remove PATH`, `adj repos list [--json]`
+
+Manage the per-user list of repos. `add` defaults to the current repo root
+(`--root DIR` overrides that default); an explicit PATH is used instead.
+Relative paths are resolved against the working directory and stored as cleaned
+absolute paths, without resolving symlinks. A repo must hold a regular
+`.adjudicate.json` file. Adding a listed path succeeds without rewriting the
+file. `remove` needs a PATH and exits 1 without writing if it is not listed;
+it can remove a repo that no longer exists. Add and remove print nothing.
+`list` prints one stored path per line in insertion order, or
+`{"repos": [...]}` with `--json`; it does not check whether repos still exist.
+An empty list prints nothing (JSON: `{"repos": []}`). `--root` is accepted but
+unused for explicit paths and for list/remove; these need no current repo.
+
+The list lives in `$XDG_CONFIG_HOME/adjudicate/config.json`, falling back to
+`$HOME/.config/adjudicate/config.json` when XDG_CONFIG_HOME is unset, empty or relative,
+on every OS. If HOME is needed, it must be absolute; an unset, empty or relative HOME
+causes exit 1.
+A missing file is an empty list. Bad JSON, unknown keys or non-absolute repo
+paths exit 1 and leave the file unchanged. Writes create the directory (0755)
+and replace the config (0644) atomically using a temp file in the same directory
+and rename. This user config is separate from `.adjudicate.json`.
+
+Removing from a missing config fails as unlisted without creating a directory
+or lock file.
+Add/remove hold `config.json.lock` beside the user config for the complete
+read-modify-write operation (flock on Unix, LockFileEx on Windows). They wait
+up to 5 seconds, then exit 1 naming the lock file without changing the config.
+The empty lock file remains after release; list ignores it. Other platforms
+without either locking primitive retain the store lock's no-lock fallback.
+
 ### `adj version [--root DIR]`
 
 Prints the version: the release override set with `-ldflags -X`, else what Go
@@ -427,7 +469,7 @@ and takes no argument.
 
 ## Output for scripts
 
-`show`, `list`, `inbox`, `check` and `lint` print JSON with `--json`; `context`
+`show`, `list`, `inbox`, `check`, `lint` and `repos list` print JSON with `--json`; `context`
 does it with `--format json`. The shapes are in [docs/json.md](docs/json.md).
 Until 1.0 a shape may change in a minor release; the CHANGELOG names every
 change. From 1.0 a release may add keys but never renames, removes or retypes
@@ -435,6 +477,7 @@ an existing key.
 
 ## Environment
 
+- `XDG_CONFIG_HOME`, else `$HOME/.config`: base directory for the user repo list.
 - `ADJ_ASKED_BY`: the default `--by` for `adj ask`.
 - `ADJ_DECIDED_BY`: the default `--by` for `decide`, `reject` and `withdraw`.
 

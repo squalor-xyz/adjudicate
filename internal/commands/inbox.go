@@ -4,11 +4,15 @@ package commands
 
 import (
 	"cmp"
+	"fmt"
+	"os"
+	"path/filepath"
 	"slices"
 
 	"github.com/squalor-xyz/adjudicate/internal/model"
 	"github.com/squalor-xyz/adjudicate/internal/query"
 	"github.com/squalor-xyz/adjudicate/internal/store"
+	"github.com/squalor-xyz/adjudicate/internal/userconfig"
 )
 
 // Inbox returns the open records of st, oldest first: by created date, then
@@ -31,4 +35,60 @@ func oldestFirst(recs []model.Record) []model.Record {
 		return cmp.Or(cmp.Compare(a.Created, b.Created), cmp.Compare(a.ID, b.ID))
 	})
 	return out
+}
+
+// RepoInbox is a successfully read repo, including those with no open records.
+type RepoInbox struct {
+	Root    string
+	Records []model.Record
+}
+
+// InboxError identifies a repo that could not be read.
+type InboxError struct {
+	Root  string `json:"root"`
+	Error string `json:"error"`
+}
+
+// AllInbox keeps config order and collects failures without losing other repos.
+type AllInbox struct {
+	Repos  []RepoInbox
+	Errors []InboxError
+}
+
+// InboxAll reads only the listed roots, never discovering a parent repo.
+func InboxAll(getenv func(string) string) (AllInbox, error) {
+	out := AllInbox{Repos: []RepoInbox{}, Errors: []InboxError{}}
+	path, err := userconfig.Path(getenv)
+	if err != nil {
+		return out, err
+	}
+	cfg, err := userconfig.Load(path)
+	if err != nil {
+		return out, err
+	}
+	for _, root := range cfg.Repos {
+		recs, err := repoInbox(root)
+		if err != nil {
+			out.Errors = append(out.Errors, InboxError{Root: root, Error: err.Error()})
+			continue
+		}
+		out.Repos = append(out.Repos, RepoInbox{Root: root, Records: recs})
+	}
+	return out, nil
+}
+
+func repoInbox(root string) ([]model.Record, error) {
+	marker := filepath.Join(root, store.ConfigFile)
+	fi, err := os.Stat(marker)
+	if err != nil {
+		return nil, err
+	}
+	if !fi.Mode().IsRegular() {
+		return nil, fmt.Errorf("%s must be a regular file", marker)
+	}
+	st, err := store.Open(root)
+	if err != nil {
+		return nil, err
+	}
+	return Inbox(st)
 }

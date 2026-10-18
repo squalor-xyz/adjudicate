@@ -15,3 +15,8 @@ import "time"
 func acquire(path string, timeout time.Duration, busy func()) (unlock func(), err error) {
 	return func() {}, nil
 }
+
+// AcquireLock is a no-op on platforms without flock or LockFileEx.
+func AcquireLock(path string, timeout time.Duration) (func(), error) {
+	return acquire(path, timeout, nil)
+}

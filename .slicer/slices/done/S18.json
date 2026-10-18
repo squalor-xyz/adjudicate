@@ -1,0 +1,41 @@
+{
+  "id": "S18",
+  "title": "Cross-repo inbox",
+  "lead": [
+    "Add adj inbox --all: list the open questions of every repo in the user repo list (adj repos, S38) in one inbox, each under its repo; plus two S38 follow-ups: XDG-correct path resolution and a lock for adj repos writes."
+  ],
+  "depends_note": null,
+  "findings_note": "PROJECT.md Feature tiers (Later); Open decisions 6",
+  "size": "M",
+  "flags": [],
+  "trees_note": "cli",
+  "trees_plural": false,
+  "boundary": "**Not in this slice:** the interactive inbox (S19); --all on other commands; deciding across repos; changing the per-repo store (C28 stays: one repo's store); slicer catalog records (S22 runs in parallel and would take the same catalog id: record C32 decisions as slicer notes on S18; the outer session files them at landing).",
+  "sections": [
+    {
+      "heading": "Why",
+      "body": "Owner decisions 2026-10-18: the cross-repo inbox reads the repo list that adj repos manages (S38, internal/userconfig); adj inbox --all lists each repo's open records under the repo path; a listed repo that is missing, has no .adjudicate.json or cannot be read gets a warning on stderr naming it, the others are still listed, and the command exits 1 at the end. At S38's landing the owner also decided: a relative XDG_CONFIG_HOME counts as unset (XDG spec) and a relative HOME is an error (exit 1); adj repos add/remove take a lock so two concurrent runs cannot drop an entry. See the S38 note on this item for review lows."
+    },
+    {
+      "heading": "Files",
+      "body": "- internal/commands/inbox.go (+ test): an all-repos function: load the user config (userconfig.Path/Load), open each repo's store (store.Open on the listed root; config via the same path as --root), gather open records oldest first per repo, collect per-repo errors instead of stopping.\n- internal/cli/inbox.go (+ test): --all; --all with --root exits 2; -i is not part of this slice.\n- internal/render/inbox.go (+ test): text grouped by repo (a repo header line, then today's per-record block; a repo with no open records prints its header with nothing or is left out: C32); JSON shape for --all (e.g. {\"repos\": [{\"root\": ..., \"records\": [...]}], \"errors\": [...]}: C32) pinned in docs/json.md and internal/cli/jsonshape_test.go. Without --all, inbox output is byte-identical.\n- internal/userconfig/config.go (+ test): relative XDG_CONFIG_HOME ignored, relative HOME an error; a lock for Add/Remove read-modify-write (reuse the store lock: factor internal/store's acquire so userconfig can lock <config dir>/config.json.lock, or a small shared internal/lockfile package; C32), same 5 s wait and an error naming the lock file.\n- README.md, PROJECT.md (Commands; data model; Later: drop the cross-repo inbox line), AGENTS.md (inbox and repos entries, Layout), CHANGELOG.md (## Unreleased).\n- internal/commands/ai.md: do not change."
+    },
+    {
+      "heading": "Failing tests",
+      "body": "Red first; every test injects XDG_CONFIG_HOME/HOME via cli.Env.Getenv into t.TempDir(), never the real home:\n- inbox --all over two temp repos lists both repos' open records, each under its repo, repos in config order (or sorted: C32), records oldest first within a repo.\n- A listed repo that is missing, lacks .adjudicate.json, or holds a malformed record: warning on stderr naming it, the other repos still listed on stdout, exit 1.\n- Empty or missing user config: prints nothing (JSON: empty), exit 0.\n- --all --json shape pinned; inbox without --all unchanged byte for byte (existing tests stay green).\n- --all with --root, or with an argument, exits 2.\n- userconfig.Path: relative XDG_CONFIG_HOME falls back to HOME/.config; relative HOME exits 1.\n- Lock: a second Add while the lock is held waits and then fails naming the lock file (short timeout in the test); Add/Remove release it; the lock file is never deleted and is not mistaken for config."
+    },
+    {
+      "heading": "Implement",
+      "body": "1. Decide under C32 and record as slicer notes on S18: repo order, empty-repo display, the --all JSON shape (warnings in JSON too?), where the shared lock code lives.\n2. Red tests, then userconfig fixes, the lock, then inbox --all.\n3. Docs as in Files."
+    },
+    {
+      "heading": "Check",
+      "body": "- . scripts/env.sh; go test ./...; go vet ./...; GOOS=windows go vet ./...; gofmt -l cmd internal prints nothing.\n- go build -o .cache/bin/adj ./cmd/adj; with XDG_CONFIG_HOME=<worktree>/.cache/tmp/s18-check and two temp repos (adj init, adj ask): adj repos add each, adj inbox --all and --json behave as documented, including a removed repo dir. Never touch the real home config.\n- .cache/bin/adj lint --root . is clean; mutation check each new test; slicer check --json is clean."
+    },
+    {
+      "heading": "Git",
+      "body": "Worktree .worktrees/s18 on branch s18. The orchestrator commits on s18 after VERDICT: PASS and slicer done; no push, no merge; no AI attribution."
+    }
+  ],
+  "notes": []
+}

@@ -95,7 +95,7 @@ The original brief left these open; the owner decided them on 2026-10-15.
 - **Owner-only decide (C27):** a convention plus an AGENTS.md rule. `decided_by`
   is recorded on each decision and `adj lint` warns when it is missing. No git
   hook, no signed commits.
-- **Scope (C28):** one repo's store; a cross-repo inbox is Later.
+- **Scope (C28):** one repo's store; `adj inbox --all` aggregates the user repo list (S18).
 - **Store (C29):** `decisions/` at the repo root, configurable.
 - **No `kind` field (C30):** the status alone says whether a record is a
   question (`open`) or answered.
@@ -219,9 +219,41 @@ history, so a record shows what happened and when. A record made by
 Commands find the root as the nearest directory, from the working directory
 upwards, that holds `.adjudicate.json`; `--root DIR` names it instead.
 
+**User config:** `$XDG_CONFIG_HOME/adjudicate/config.json`, falling back to
+`$HOME/.config/adjudicate/config.json` when XDG_CONFIG_HOME is unset, empty or relative
+(on every OS), holds `{"repos": ["/absolute/repo/path", ...]}`. A missing file
+is an empty list. Unknown keys, bad JSON and non-absolute repo paths are errors.
+Writes create the directory (0755) and atomically rename a same-directory temp
+file over the config (0644). This is separate from `.adjudicate.json`.
+
+HOME must be absolute when used; otherwise path resolution fails with exit 1.
+
+Removing from a missing config fails as unlisted without creating a directory
+or lock file.
+Add/remove hold `config.json.lock` beside the user config for the complete
+read-modify-write operation (flock on Unix, LockFileEx on Windows). They wait
+up to 5 seconds, then exit 1 naming the lock file without changing the config.
+The empty lock file remains after release; list ignores it. Other platforms
+without either locking primitive retain the store lock's no-lock fallback.
+
+With `adj inbox --all`, read the user repo list managed by `adj repos` and show each
+repo's open questions under its absolute path, in config insertion order.
+Records remain oldest first within each repo. Successful empty repos keep
+their header; an empty or missing user config prints nothing. A missing repo,
+missing `.adjudicate.json`, or unreadable store produces a warning on stderr
+naming that repo; the others are still printed, and the command exits 1.
+`--all --json` prints `{"repos": [{"root": "...", "records": [...]}], "errors": []}`
+(see `docs/json.md`); per-repo errors appear in JSON as well as stderr. The
+arrays are always arrays, including when empty. `--all` with `--root` exits 2;
+no current repo is needed. Without `--all`, output is unchanged.
+
+Repo order, empty-repo headers and the JSON shape are owner-delegated
+implementer decisions (S18). Per-repo stores and decision IDs stay independent.
+
 ## Commands
 
-Every command takes `--root DIR` except `adj ai`. Exit codes for all of them:
+Every command takes `--root DIR` except `adj ai` and `adj inbox --all`.
+Exit codes for all of them:
 0 success; 1 a failed operation or check (no repo, an unknown ID, a record in
 the wrong status); 2 a usage error (C34). Two commands read their result
 differently: `adj check` exits 0 for every completed search, `not found`
@@ -238,12 +270,13 @@ when it finds an error and 0 for a clean store or warnings only.
 | `adj amend ID [--title T] [--context T \| --stdin] [--summary LABEL:TEXT]... [--tradeoffs LABEL:TEXT]... [--rationale T]` | Correct text on a record of any status; the old text is kept in the history. |
 | `adj show ID [--json]` | Print one record and its history. |
 | `adj list [--status S] [--tag T]... [--ref REF]... [--key K] [--json]` | List records in ID order; every filter given must match. |
-| `adj inbox [--json]` | List the open questions, oldest first, with options and recommendation. |
+| `adj inbox [--all] [--json]` | List open questions oldest first, with options and recommendation; `--all` groups the user repo list by root. |
 | `adj check QUERY [--json]` | Is QUERY decided? One substring, matched ignoring case against titles, keys, tags, refs and decision text. Line 1 of the output is `decided`, `open`, `closed` or `not found`. |
 | `adj context [--tag T]... [--ref REF]... [--key-prefix P] [--format md\|json] [--max-bytes N]` | Print the decided records as compact context for an agent. With `--max-bytes N`, keep the newest decisions whose output fits in N bytes (ID order, an `N decisions omitted` line, JSON `omitted`). |
 | `adj lint [--json]` | Check the store for broken records, links, cycles and conflicts. |
 | `adj renumber [--keep-links]` | Owner-only. Give record files that share an ID new IDs. |
 | `adj import-adr DIR [--tag T]... [--by NAME] [--dry-run]` | Owner-only. Create one record for each ADR in DIR, in the format adr-tools writes (Nygard) or MADR; see below. |
+| `adj repos add [PATH]`, `adj repos remove PATH`, `adj repos list [--json]` | Manage the user repo list; add defaults to the current repo root (`--root`), explicit relative paths use the working directory. Store cleaned absolute strings without resolving symlinks. Add requires `.adjudicate.json`; duplicates are a no-op. Remove requires a listed path, else exit 1. Both print nothing. List prints paths in insertion order without probing them; JSON is `{"repos": [...]}` (empty: `[]`). `--root` is otherwise unused; no current repo is required. |
 | `adj version`, `adj --version` | Print the version (see below). |
 | `adj ai` | Print the snippet for an agent's AGENTS.md. |
 
@@ -378,6 +411,7 @@ command, flag or variable that does not exist.
   record file format.
 - `internal/store`: one repo's record directory, its config, ID allocation with
   the lock, and `Renumber`.
+- `internal/userconfig`: per-user config path resolution, strict loading and atomic saving.
 - `internal/query`: record filters and the `check` search.
 - `internal/lint`: the `adj lint` checks.
 - `internal/render`: text and JSON output.
@@ -434,8 +468,6 @@ All met in 0.1.0.
 Not in 0.1.0. These are planned after 0.1.0 (C165), in the slices named; the
 owner re-prioritized them on 2026-10-18, so they are open work, not parked:
 
-- A cross-repo inbox: aggregate open questions from several configured repos
-  (S18).
 - A TUI or a local static HTML page for clearing the inbox faster (S19).
 - A 1.0 release that freezes the JSON shapes (S37).
 

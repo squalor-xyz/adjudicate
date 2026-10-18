@@ -29,12 +29,12 @@ library only.
   its own file (`init.go`, `ask.go`, `decide.go`, which holds decide,
   reject and withdraw, `supersede.go`, `amend.go`, `show.go`, `list.go`,
   `inbox.go`, `check.go`, `context.go`, `lint.go`, `renumber.go`,
-  `importadr.go`, `version.go` and `ai.go`);
+  `importadr.go`, `version.go`, `repos.go` and `ai.go`);
   `cli.go` holds the dispatch and shared helpers.
 - `internal/commands`: what each command does to the store, apart from
   parsing, output and exit codes (`init.go`, `ask.go`, `decide.go`,
   `supersede.go`, `amend.go`, `show.go`, `list.go`, `inbox.go`, `check.go`,
-  `context.go`, `lint.go`, `renumber.go`, `importadr.go`, `ai.go`). `ai.md` is the agent
+  `context.go`, `lint.go`, `renumber.go`, `importadr.go`, `repos.go`, `ai.go`). `ai.md` is the agent
   snippet, embedded by `ai.go`.
   `errors.go` holds `UsageError`, the error that exits 2.
 - `internal/adr`: one ADR file (Nygard/adr-tools or MADR) parsed into a neutral
@@ -45,13 +45,16 @@ library only.
 - `internal/store`: one repo's record directory (`store.go`), its config
   (`config.go`), `Renumber` (`renumber.go`) and the ID lock (`lock_unix.go`,
   `lock_windows.go`, `lock_open.go`, `lock_other.go`); see "Store and config" below.
+- `internal/userconfig`: per-user repo list, injected environment path resolution,
+  strict loading, atomic saving and locked updates; separate from repo config.
+  The shared `store.AcquireLock` wrapper reuses the store platform lock.
 - `internal/query`: record filters and the `check` search, pure functions over
   records (`filter.go`, `search.go`).
 - `internal/lint`: `adj lint`'s checks (`lint.go`): reads each record file with
   `model.Parse` through `store.Files`, so it works on a store that `List`
   refuses, and returns findings; see the `adj lint` entry below.
 - `internal/render`: text and JSON output (`text.go`, `inbox.go`, `check.go`,
-  `context.go`, `lint.go`, `json.go`);
+  `context.go`, `lint.go`, `repos.go`, `json.go`);
   the JSON shapes are in `docs/json.md`, and `internal/cli/jsonshape_test.go`
   pins each read command's `--json` keys to it.
 - `README.md`: what adjudicate is, how to build it and use each command.
@@ -163,7 +166,7 @@ below). `adj lint` exits 1 when it finds an error (see its entry).
   an error (exit 0). `--ref` repeats: every ref must be on the record, matched
   exactly, case-sensitively and as typed, including surrounding whitespace; a
   blank value exits 2 before store access.
-- `adj inbox [--json] [--root DIR]`: lists the `open` records, oldest first (by
+- `adj inbox [--all] [--json] [--root DIR]`: lists the `open` records, oldest first (by
   `created`, then ID). Text: per record `ID  title`, then indented its created
   date, its refs when set (C171), its context, every option (`label: summary`,
   with `tradeoffs:` under it when set) and the recommendation (the option
@@ -172,6 +175,16 @@ below). `adj lint` exits 1 when it finds an error (see its entry).
   `--json` prints `{"records": [...]}`, the same record objects as `adj list`
   (`docs/json.md`). An empty inbox prints nothing (JSON: an empty array) and
   exits 0. An argument or other flag exits 2.
+  With `--all`, read the user repo list managed by `adj repos` and show each
+  repo's open questions under its absolute path, in config insertion order.
+  Records remain oldest first within each repo. Successful empty repos keep
+  their header; an empty or missing user config prints nothing. A missing repo,
+  missing `.adjudicate.json`, or unreadable store produces a warning on stderr
+  naming that repo; the others are still printed, and the command exits 1.
+  `--all --json` prints `{"repos": [{"root": "...", "records": [...]}], "errors": []}`
+  (see `docs/json.md`); per-repo errors appear in JSON as well as stderr. The
+  arrays are always arrays, including when empty. `--all` with `--root` exits 2;
+  no current repo is needed. Without `--all`, output is unchanged.
 - `adj check QUERY [--json] [--root DIR]`: asks whether QUERY has been decided,
   so an agent checks before it asks the owner. QUERY (trimmed, one argument:
   quote it if it has spaces) is one substring, not split into words; it matches
@@ -343,6 +356,30 @@ below). `adj lint` exits 1 when it finds an error (see its entry).
   or `--tag`); a folder outside the root, a bad file or a failed write exit 1.
   Owner-only: the agent snippet does not name it. The decisions behind these
   details are the S22 notes (C32).
+- `adj repos add [PATH]`, `adj repos remove PATH`, `adj repos list [--json]`
+  (S38): manage `$XDG_CONFIG_HOME/adjudicate/config.json`, falling back to
+  `$HOME/.config/adjudicate/config.json` when XDG_CONFIG_HOME is unset, empty or relative;
+  HOME must be absolute when needed; unset, empty or relative HOME is an error
+  (exit 1). Shape: `{"repos": [...]}`. A missing
+  file is empty; bad JSON, unknown keys or non-absolute paths exit 1 naming the
+  file, without writing. Add defaults to the repo root (`--root`, else
+  discovery from the working directory); explicit paths resolve against the
+  working directory. Paths are cleaned absolute strings, compared without
+  resolving symlinks. Add needs
+  a regular `.adjudicate.json`; a listed path is a byte-preserving no-op.
+  Remove needs a PATH; unlisted exits 1 without writing, and stale paths can be
+  removed. Add/remove print nothing. List prints one stored path per line in
+  insertion order, without probing repos; JSON is `{"repos": []}` when empty.
+  `--root` is otherwise accepted but unused. Unknown subcommands, extra args
+  and blank PATH exit 2. Writes create the directory (0755) and atomically
+  replace the file (0644) using a same-directory temp and rename.
+  Removing from a missing config fails as unlisted without creating a directory
+  or lock file.
+  Add/remove hold `config.json.lock` beside the user config for the complete
+  read-modify-write operation (flock on Unix, LockFileEx on Windows). They wait
+  up to 5 seconds, then exit 1 naming the lock file without changing the config.
+  The empty lock file remains after release; list ignores it. Other platforms
+  without either locking primitive retain the store lock's no-lock fallback.
 - `adj version` and `adj --version`: print one line from Go build information,
   or the release override set with `-ldflags -X`. `version` reads no repo and
   needs no config; it accepts `--root` but does not use it. The leading
@@ -359,7 +396,8 @@ below). `adj lint` exits 1 when it finds an error (see its entry).
   `internal/cli/ai_test.go` fails if the snippet names a command, flag or
   variable that does not exist, or runs past 1800 bytes (C124, C125). When a
   command or flag an agent uses changes, change the snippet.
-- Every command except `ai` takes `--root DIR`. Store commands use it as the
+- Every command except `ai` and `inbox --all` takes `--root DIR`. Store commands
+  use it as the
   repo root; without it the root is found from the working directory upwards
   (`store.FindRoot`). With it nothing is searched for. Every store command
   other than `init` needs `DIR/.adjudicate.json`; `version` does not use the
@@ -462,6 +500,8 @@ Never run `go env -w`; it writes outside the repo. Do not add a Makefile.
   (`cli.Env.Root`) and fails on any use of the real working directory; a test
   of root discovery bounds the walk with `cli.Env.Stop`. No test calls
   `os.Chdir`.
+- User config tests inject `Getenv` with XDG_CONFIG_HOME/HOME pointing into
+  worktree temp dirs; never touch the real home or user config.
 - Only the owner makes the decide transition (`adj decide`, C27) and the
   supersede transition (`adj supersede`). Agents ask, check and read; an agent
   may withdraw its own question (`adj withdraw`).

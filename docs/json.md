@@ -196,6 +196,41 @@ there for the owner to read.
 When the inbox is empty, the array is empty: `{"records": []}` (formatted as
 `{`, `  "records": []`, `}`).
 
+## `adj inbox --all --json`
+
+Successful repos are in user config insertion order, including empty repos.
+Records use the same shape as `adj inbox --json`, oldest first per repo.
+Errors are in config order and also produce warnings on stderr. A per-repo
+error gives exit 1 after all repos are attempted. A user config error gives
+exit 1 with no JSON output. `--root` with `--all` is a usage error (exit 2).
+
+```json
+{
+  "repos": [
+    {
+      "root": "/work/project",
+      "records": []
+    }
+  ],
+  "errors": [
+    {
+      "root": "/work/missing",
+      "error": "cannot read repo"
+    }
+  ]
+}
+```
+
+| Key | Type | Meaning |
+|---|---|---|
+| `repos` | array | Successful repos, each with absolute `root` and `records` array. |
+| `errors` | array | Failed repos, each with absolute `root` and nonempty `error` text. |
+
+Both arrays are always present, never null. Empty or missing user config gives
+`{"repos": [], "errors": []}`. Error messages are diagnostic text and may
+vary by OS. Repo order, empty-repo display and this shape are owner-delegated
+implementer decisions (S18).
+
 ## `adj check QUERY --json`
 
 One JSON object with five keys:
@@ -592,5 +627,19 @@ record file is not renamed when the title changes.
       }
     ]
   }
+}
+```
+
+## `adj repos list --json`
+
+One JSON object with exactly one key, `repos`: an array of absolute repo path
+strings, in insertion order. Paths are printed as stored, without checking
+whether the repos still exist. A missing config file gives `{"repos": []}`.
+
+```json
+{
+  "repos": [
+    "/home/owner/project"
+  ]
 }
 ```

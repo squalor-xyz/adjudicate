@@ -4,7 +4,7 @@
 // parameters so tests can run it in-process. Each command's handler is in
 // its own file: init.go, ask.go, decide.go, supersede.go, amend.go, show.go,
 // list.go, inbox.go, check.go, context.go, lint.go, renumber.go, importadr.go,
-// version.go, ai.go.
+// version.go, repos.go, ai.go.
 package cli
 
 import (
@@ -48,6 +48,7 @@ Commands:
   adj lint       check the store for broken records, links, cycles and conflicts
   adj renumber   give records that share an ID new IDs
   adj import-adr create records from a folder of ADRs (Nygard or MADR)
+  adj repos      manage the user repo list (add, remove, list)
   adj version    print the version
   adj ai         print an AGENTS.md snippet that tells agents how to use adj
 
@@ -146,6 +147,8 @@ func RunWith(env Env, args []string, stdin io.Reader, stdout, stderr io.Writer) 
 		return c.runRenumber(args[1:])
 	case "import-adr":
 		return c.runImportADR(args[1:])
+	case "repos":
+		return c.runRepos(args[1:])
 	case "version":
 		return c.runVersion(args[1:])
 	case "ai":
