@@ -295,9 +295,18 @@ rejected, withdrawn and superseded records are left out.
 --tag T          only records with tag T; repeat to require several tags
 --key-prefix P   only records whose key starts with P
 --format F       md (the default) or json
+--max-bytes N    keep the newest decisions that fit in N bytes
 ```
 
-The same store gives the same bytes.
+The same store gives the same bytes. With `--max-bytes N` (N at least 1) the
+output is at most N bytes, the omitted line included: the newest decisions
+(`decided_at`, latest first, then the higher ID) that fit are kept and still
+printed in ID order, the filters are applied first, and the Markdown ends with a
+blank line and `N decisions omitted` (`1 decision omitted` for one). With
+`--format json` the object gains `omitted`, the number left out, `0` included;
+without `--max-bytes` that key is never there. If no decision fits, only the
+omitted line is printed (JSON: `"decisions": []`); if not even that fits in N
+bytes, nothing is printed and the exit code is 1. A bad N exits 2.
 
 ### `adj lint [--json]`
 

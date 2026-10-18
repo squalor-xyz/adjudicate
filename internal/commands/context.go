@@ -3,6 +3,8 @@
 package commands
 
 import (
+	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/squalor-xyz/adjudicate/internal/model"
@@ -12,15 +14,18 @@ import (
 
 // ContextInput is the raw input of adj context: the filters as typed.
 // HasKeyPrefix says whether the flag was given, so an explicit empty value is
-// refused rather than read as no filter (C83).
+// refused rather than read as no filter (C83). MaxBytes is the size budget of
+// --max-bytes, used only when HasMaxBytes is set.
 type ContextInput struct {
 	Tags         []string
 	KeyPrefix    string
 	HasKeyPrefix bool
+	MaxBytes     int
+	HasMaxBytes  bool
 }
 
 // Check reports a *UsageError if a filter cannot be used: a blank tag or a
-// blank key prefix (C91). The CLI runs it before the store is looked for.
+// blank key prefix (C91), or a budget below 1 byte. The CLI runs it before the store is looked for.
 func (in ContextInput) Check() error {
 	for _, tag := range in.Tags {
 		if strings.TrimSpace(tag) == "" {
@@ -29,6 +34,9 @@ func (in ContextInput) Check() error {
 	}
 	if in.HasKeyPrefix && strings.TrimSpace(in.KeyPrefix) == "" {
 		return usagef("--key-prefix must not be blank")
+	}
+	if in.HasMaxBytes && in.MaxBytes < 1 {
+		return usagef("--max-bytes must be a whole number of at least 1; got %d", in.MaxBytes)
 	}
 	return nil
 }
@@ -54,4 +62,75 @@ func Context(st *store.Store, in ContextInput) ([]model.Record, error) {
 		f.KeyPrefix = in.KeyPrefix
 	}
 	return query.Select(recs, f), nil
+}
+
+// ContextMeasure returns the number of bytes the output has for the records
+// kept (in ID order) and the number of records left out. The CLI builds it from
+// the renderer of the chosen format, so the budget counts the real output.
+type ContextMeasure func(kept []model.Record, omitted int) (int, error)
+
+// FitContext chooses the records of recs (in ID order, as Context returns
+// them) that a budget of max bytes allows (S35, C32). The newest decisions
+// are kept: decided_at, latest first, then the higher ID first. Of that order
+// the kept records are the first k, with k the largest for which measure(kept,
+// omitted) is at most max, so an older record never stands in for a newer one
+// that does not fit. kept is in ID order and omitted is the number
+// left out. If even k = 0 does not fit, nothing can be printed within max and
+// the error (not a usage error) names the budget and the smallest size. recs
+// is not changed.
+//
+// If everything fits, that is the answer (one measurement). Otherwise some
+// record is omitted for every k below len(recs), and in that range the output
+// grows with k: one more entry adds more bytes (an entry is at least ten) than
+// the omitted line can lose (one digit when the count drops from 10 to 9, one
+// byte when "decisions" becomes "decision"; the blank line before it is only
+// added). So the k that fit are a prefix 0..K of the range and a binary search
+// finds K in about log2(n) measurements instead of n, which matters for a log
+// of thousands of decisions. The k = len(recs) case is left out of that range
+// on purpose: dropping the omitted line there can shrink the output.
+func FitContext(recs []model.Record, max int, measure ContextMeasure) (kept []model.Record, omitted int, err error) {
+	newest := append([]model.Record(nil), recs...)
+	sort.SliceStable(newest, func(i, j int) bool {
+		if newest[i].DecidedAt != newest[j].DecidedAt {
+			return newest[i].DecidedAt > newest[j].DecidedAt
+		}
+		return newest[i].ID > newest[j].ID
+	})
+	n := len(newest)
+	// try measures the k newest records, kept in ID order.
+	try := func(k int) (kept []model.Record, size int, err error) {
+		kept = append([]model.Record(nil), newest[:k]...)
+		sort.SliceStable(kept, func(i, j int) bool { return kept[i].ID < kept[j].ID })
+		size, err = measure(kept, n-k)
+		return kept, size, err
+	}
+	kept, size, err := try(n)
+	if err != nil {
+		return nil, 0, err
+	}
+	if size <= max {
+		return kept, 0, nil
+	}
+	smallest := size
+	best, lo, hi := -1, 0, n-1
+	var bestKept []model.Record
+	for lo <= hi {
+		mid := lo + (hi-lo)/2
+		kept, size, err := try(mid)
+		if err != nil {
+			return nil, 0, err
+		}
+		if size <= max {
+			best, bestKept, lo = mid, kept, mid+1
+		} else {
+			if size < smallest {
+				smallest = size
+			}
+			hi = mid - 1
+		}
+	}
+	if best < 0 {
+		return nil, 0, fmt.Errorf("--max-bytes %d is too small: the shortest output is %d bytes", max, smallest)
+	}
+	return bestKept, n - best, nil
 }

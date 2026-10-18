@@ -425,3 +425,51 @@ func TestJSONShape(t *testing.T) {
 		})
 	}
 }
+
+// With --max-bytes, adj context --format json gains one top-level key,
+// omitted, and nothing else (S35). It has its own section, so its row is not
+// taken for a key of an entry. The example is the real output for the fixture
+// of the context example, with a budget that leaves the older record out.
+func TestContextBudgetJSONKeysAndExampleMatchTheDocs(t *testing.T) {
+	const heading = "## `adj context --format json --max-bytes N`"
+	root := initRoot(t)
+	steps := [][]string{
+		{"ask", "Pick a store", "--option", "a:Use A", "--key", "storage.engine"},
+		{"ask", "Cache layer", "--option", "redis:Use Redis", "--key", "storage.cache", "--tag", "infra"},
+		{"ask", "Logging format", "--tag", "ops"},
+		{"decide", "2", "redis", "--why", "fast\nand cheap to run", "--by", "owner", "--decided-at", "2026-03-03"},
+		{"decide", "3", "--text", "Use JSON lines.", "--why", "easy to grep"},
+	}
+	for _, args := range steps {
+		if r := run(testEnv(root), "", args...); r.code != 0 {
+			t.Fatalf("%v: exit %d: %s", args, r.code, r.stderr)
+		}
+	}
+	section, err := sectionUnder(docsText(t), heading)
+	if err != nil {
+		t.Fatal(err)
+	}
+	const cmd = "adj context --format json --max-bytes 200"
+	if !strings.Contains(section, cmd) {
+		t.Fatalf("the section does not show %q:\n%s", cmd, section)
+	}
+	r := run(testEnv(root), "", "context", "--format", "json", "--max-bytes", "200")
+	if r.code != 0 {
+		t.Fatalf("exit code = %d, want 0; stderr:\n%s", r.code, r.stderr)
+	}
+	if want := docsJSONExample(t, heading); r.stdout != want {
+		t.Errorf("context --format json --max-bytes 200 =\n%s\nwant the docs/json.md example\n%s", r.stdout, want)
+	}
+	got := keysOf(decodeObject(t, r.stdout))
+	if want := []string{"decisions", "omitted"}; !reflect.DeepEqual(got, want) {
+		t.Errorf("top-level keys with a budget = %v, want %v", got, want)
+	}
+	if got, want := docsTableKeys(t, heading), []string{"omitted"}; !reflect.DeepEqual(got, want) {
+		t.Errorf("budget key table = %v, want %v", got, want)
+	}
+	// The plain context section does not list it: without a budget the key is
+	// never there.
+	if plain := docsTableKeys(t, "## `adj context --format json`"); !reflect.DeepEqual(plain, []string{"decision", "id", "key", "rationale", "title"}) {
+		t.Errorf("context entry table = %v; the omitted key belongs in its own section", plain)
+	}
+}

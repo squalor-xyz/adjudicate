@@ -183,7 +183,8 @@ below). `adj lint` exits 1 when it finds an error (see its entry).
   means the check itself failed (no repo, an unreadable record file), which is
   never a "not found"; exit 2 is a usage error: no QUERY, more than one, or a
   blank one (C108, C109).
-- `adj context [--tag T]... [--key-prefix P] [--format md|json] [--root DIR]`:
+- `adj context [--tag T]... [--key-prefix P] [--format md|json]
+  [--max-bytes N] [--root DIR]`:
   prints the `decided` records as compact context for an agent; open, rejected,
   withdrawn and superseded records are left out (a superseded decision gives
   way to its replacement, which is `decided`). Every filter given must match.
@@ -197,7 +198,22 @@ below). `adj lint` exits 1 when it finds an error (see its entry).
   `key` (when set), `decision` and `rationale` (`docs/json.md`). No decision
   prints nothing in md and `{"decisions": []}` in JSON, exit 0. A blank `--tag`
   or `--key-prefix`, a `--format` other than `md` or `json`, or an argument,
-  exits 2. A size budget flag is not part of v1 (owner scope call).
+  exits 2. `--max-bytes N` (S35; a whole number of at least 1, else exit 2
+  before the store is looked for; given twice the last counts) bounds the
+  output to N bytes, the omitted line included: after the filters, it keeps
+  the newest decisions (`decided_at` latest first, then the higher ID) that
+  fit, the k newest for the largest k that fits, and prints them in ID order.
+  `commands.FitContext` chooses k from a `ContextMeasure` that the CLI builds
+  from the renderer, so the budget counts the real output. md then ends with a
+  blank line and `N decisions omitted` (`1 decision omitted` for one; the
+  blank line is left out when no record is kept); `--format json` gains
+  `"omitted"`, the count, `0` included, and only with `--max-bytes`, so the
+  output without the flag is byte for byte what it was. If no record fits,
+  only the omitted line is printed (JSON: `"decisions": []`) and the exit
+  code is 0; if even that is more than N bytes (or the JSON with no record
+  is), nothing is printed and the exit code is 1, the error naming the bytes
+  needed. No matching record prints nothing in md, which fits any N. The
+  snippet of `adj ai` does not name the flag (it is at its size limit).
 - `adj lint [--json] [--root DIR]`: checks the store for integrity problems
   (C08). It reads the record files itself (`store.Files`, `model.Parse`), so a
   broken or invalid file is a finding where `list` and `check` would fail (C61).

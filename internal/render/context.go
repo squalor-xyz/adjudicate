@@ -17,6 +17,15 @@ import (
 // lines. Nothing else of a record is shown; adj show has it. No records
 // prints nothing.
 func ContextText(w io.Writer, recs []model.Record) error {
+	return ContextTextOmitted(w, recs, 0)
+}
+
+// ContextTextOmitted is ContextText for a budgeted run (--max-bytes): omitted
+// is the number of decided records the budget left out. When it is above 0 the
+// output ends with the line "N decisions omitted" ("1 decision omitted" for
+// one), after a blank line if any record is printed, so that Markdown does not
+// read it as part of the last entry. With 0 it is ContextText.
+func ContextTextOmitted(w io.Writer, recs []model.Record, omitted int) error {
 	var b strings.Builder
 	for _, r := range recs {
 		fmt.Fprintf(&b, "- %d %s", r.ID, r.Title)
@@ -25,6 +34,16 @@ func ContextText(w io.Writer, recs []model.Record) error {
 		}
 		fmt.Fprintf(&b, ": %s\n", cont(trimBreaks(r.Decision), "    "))
 		writeField(&b, "  ", "Rationale", firstLine(r.Rationale))
+	}
+	if omitted > 0 {
+		if len(recs) > 0 {
+			b.WriteString("\n")
+		}
+		noun := "decisions"
+		if omitted == 1 {
+			noun = "decision"
+		}
+		fmt.Fprintf(&b, "%d %s omitted\n", omitted, noun)
 	}
 	_, err := io.WriteString(w, b.String())
 	return err
@@ -42,12 +61,26 @@ type contextEntry struct {
 // contextJSON is the object adj context --format json prints.
 type contextJSON struct {
 	Decisions []contextEntry `json:"decisions"`
+	// Omitted is set only on a budgeted run (--max-bytes), where it is
+	// printed even when 0.
+	Omitted *int `json:"omitted,omitempty"`
 }
 
 // ContextJSON writes {"decisions": [...]} in the order given (docs/json.md),
 // with an empty array when there are no records.
 func ContextJSON(w io.Writer, recs []model.Record) error {
-	out := contextJSON{Decisions: []contextEntry{}}
+	return writeContextJSON(w, recs, nil)
+}
+
+// ContextJSONOmitted is ContextJSON for a budgeted run (--max-bytes): the
+// object also has "omitted", the number of decided records the budget left
+// out, 0 included (docs/json.md).
+func ContextJSONOmitted(w io.Writer, recs []model.Record, omitted int) error {
+	return writeContextJSON(w, recs, &omitted)
+}
+
+func writeContextJSON(w io.Writer, recs []model.Record, omitted *int) error {
+	out := contextJSON{Decisions: []contextEntry{}, Omitted: omitted}
 	for _, r := range recs {
 		out.Decisions = append(out.Decisions, contextEntry{
 			ID:        r.ID,

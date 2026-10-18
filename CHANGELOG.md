@@ -5,6 +5,20 @@ Until 1.0 a JSON shape in [docs/json.md](docs/json.md) may change in a minor
 release, and this file names every such change. From 1.0 a release may add keys
 but never renames, removes or retypes an existing key.
 
+## Unreleased
+
+### Commands
+- `adj context --max-bytes N` keeps the newest decided records whose output fits
+  in N bytes (newest by `decided_at`, then ID), prints them in ID order, and
+  ends the Markdown with `N decisions omitted`. The budget counts every byte,
+  that line included; if not even that line fits, nothing is printed and the
+  exit code is 1. Without the flag the output is unchanged.
+
+### JSON shapes
+- `adj context --format json --max-bytes N` adds a top-level `omitted` key (the
+  number of records left out, `0` included). Without `--max-bytes` the output
+  has no `omitted` key and is unchanged. See [docs/json.md](docs/json.md).
+
 ## 0.1.0 - 2026-10-17
 
 The first release, tagged `v0.1.0` and published on GitHub (C165, C193).

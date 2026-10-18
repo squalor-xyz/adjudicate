@@ -362,6 +362,44 @@ array is empty: `{"decisions": []}` (formatted as `{`, `  "decisions": []`,
 (`--format md`, the default): per record `- ID title [key]: decision`, then
 `  Rationale: first line`. It is not JSON and has no shape here.
 
+## `adj context --format json --max-bytes N`
+
+With `--max-bytes N` the output is at most N bytes, the whole document
+included. The records are the same entries as above and are still in ID order,
+but only the newest decisions that fit are listed: newest means `decided_at`,
+latest first, then the higher ID first, and the listed ones are the newest k for
+the largest k that fits. The object gains one more key, which is there on every
+budgeted run, `0` included, and never without `--max-bytes`:
+
+| Key | Type | Meaning |
+|---|---|---|
+| `omitted` | integer | how many decided records matched the filters but did not fit |
+
+If no record fits, `decisions` is `[]` and `omitted` is the number of matches
+(`{"decisions": [], "omitted": 2}`, formatted as above). If not even that fits
+in N bytes, nothing is printed and the exit code is 1.
+
+`adj context --format json --max-bytes 200` for the records of the example
+above, where record 3 was decided after record 2, so record 2 is the one that does not fit:
+
+```json
+{
+  "decisions": [
+    {
+      "id": 3,
+      "title": "Logging format",
+      "decision": "Use JSON lines.",
+      "rationale": "easy to grep"
+    }
+  ],
+  "omitted": 1
+}
+```
+
+Without `--format json` the Markdown output ends with a blank line and
+`1 decision omitted` (`N decisions omitted` for other counts), or has that line
+alone when no record fits.
+
 ## `adj lint --json`
 
 The integrity problems of the store. One JSON object with three keys:

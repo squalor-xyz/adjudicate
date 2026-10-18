@@ -4,6 +4,7 @@ package render
 
 import (
 	"bytes"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -127,5 +128,72 @@ func TestContextJSONShape(t *testing.T) {
 	}
 	if strings.Contains(got, `"key"`) {
 		t.Errorf("a record with no key has a key entry:\n%s", got)
+	}
+}
+
+// With a budget (C32, S35) the text output may end with an omitted line, set
+// off by a blank line from the entries above it.
+func TestContextTextOmittedLine(t *testing.T) {
+	rec := func(id int) model.Record {
+		return model.Record{ID: id, Title: "T", Status: model.StatusDecided, Created: "2026-03-04", Decision: "yes", Rationale: "because"}
+	}
+	entry := func(id int) string { return fmt.Sprintf("- %d T: yes\n  Rationale: because\n", id) }
+	tests := []struct {
+		name    string
+		recs    []model.Record
+		omitted int
+		want    string
+	}{
+		{name: "nothing omitted adds no line", recs: []model.Record{rec(1), rec(2)}, omitted: 0, want: entry(1) + entry(2)},
+		{name: "nothing omitted and no records prints nothing", want: ""},
+		{name: "several omitted", recs: []model.Record{rec(1), rec(2)}, omitted: 3, want: entry(1) + entry(2) + "\n3 decisions omitted\n"},
+		{name: "one omitted is singular", recs: []model.Record{rec(1)}, omitted: 1, want: entry(1) + "\n1 decision omitted\n"},
+		{name: "all omitted prints the line alone", omitted: 4, want: "4 decisions omitted\n"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var buf bytes.Buffer
+			if err := ContextTextOmitted(&buf, tt.recs, tt.omitted); err != nil {
+				t.Fatal(err)
+			}
+			if got := buf.String(); got != tt.want {
+				t.Errorf("ContextTextOmitted = %q, want %q", got, tt.want)
+			}
+		})
+	}
+}
+
+// The budgeted JSON always has the omitted key, 0 included; ContextJSON, used
+// without a budget, never has it.
+func TestContextJSONOmittedKey(t *testing.T) {
+	rec := model.Record{ID: 3, Title: "T", Status: model.StatusDecided, Created: "2026-03-04", Decision: "yes", Rationale: "because"}
+	tests := []struct {
+		name    string
+		recs    []model.Record
+		omitted int
+		want    string
+	}{
+		{name: "none omitted", recs: []model.Record{rec}, omitted: 0, want: "{\n  \"decisions\": [\n    {\n      \"id\": 3,\n      \"title\": \"T\",\n      \"decision\": \"yes\",\n      \"rationale\": \"because\"\n    }\n  ],\n  \"omitted\": 0\n}\n"},
+		{name: "some omitted", recs: []model.Record{rec}, omitted: 2, want: "{\n  \"decisions\": [\n    {\n      \"id\": 3,\n      \"title\": \"T\",\n      \"decision\": \"yes\",\n      \"rationale\": \"because\"\n    }\n  ],\n  \"omitted\": 2\n}\n"},
+		{name: "all omitted", omitted: 4, want: "{\n  \"decisions\": [],\n  \"omitted\": 4\n}\n"},
+		{name: "no records, none omitted", omitted: 0, want: "{\n  \"decisions\": [],\n  \"omitted\": 0\n}\n"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var buf bytes.Buffer
+			if err := ContextJSONOmitted(&buf, tt.recs, tt.omitted); err != nil {
+				t.Fatal(err)
+			}
+			if got := buf.String(); got != tt.want {
+				t.Errorf("ContextJSONOmitted = %q, want %q", got, tt.want)
+			}
+		})
+	}
+	var buf bytes.Buffer
+	if err := ContextJSON(&buf, []model.Record{rec}); err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(buf.String(), "omitted") {
+		t.Errorf("ContextJSON has an omitted key:\n%s", buf.String())
 	}
 }

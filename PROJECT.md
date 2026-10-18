@@ -76,8 +76,8 @@ Each goal is a catalog record (C01-C08) and each is met in 0.1.0.
   (C12).
 - Syncing across machines beyond what git already does (C13).
 
-Also not in 0.1.0: a size budget flag for `adj context` (an owner scope call;
-filter with `--tag` and `--key-prefix` instead).
+A size budget flag for `adj context` was left out of 0.1.0 (an owner scope
+call) and added after it as `--max-bytes` (S35).
 
 ## Owner decisions that shaped the tool
 
@@ -238,7 +238,7 @@ when it finds an error and 0 for a clean store or warnings only.
 | `adj list [--status S] [--tag T]... [--key K] [--json]` | List records in ID order; every filter given must match. |
 | `adj inbox [--json]` | List the open questions, oldest first, with options and recommendation. |
 | `adj check QUERY [--json]` | Is QUERY decided? One substring, matched ignoring case against titles, keys, tags, refs and decision text. Line 1 of the output is `decided`, `open`, `closed` or `not found`. |
-| `adj context [--tag T]... [--key-prefix P] [--format md\|json]` | Print the decided records as compact context for an agent. |
+| `adj context [--tag T]... [--key-prefix P] [--format md\|json] [--max-bytes N]` | Print the decided records as compact context for an agent. With `--max-bytes N`, keep the newest decisions whose output fits in N bytes (ID order, an `N decisions omitted` line, JSON `omitted`). |
 | `adj lint [--json]` | Check the store for broken records, links, cycles and conflicts. |
 | `adj renumber [--keep-links]` | Owner-only. Give record files that share an ID new IDs. |
 | `adj version`, `adj --version` | Print the version (see below). |
@@ -400,8 +400,9 @@ after 0.1.0 (C165):
   commands are cheap. Mitigation: the `adj ai` snippet, `--json`, a concise
   `adj context`.
 - **Context bloat:** `adj context` output grows with the log. Mitigation: tag
-  and key-prefix filters, and superseded records are left out. There is no size
-  budget flag in 0.1.0.
+  and key-prefix filters, superseded records are left out, and
+  `adj context --max-bytes N` keeps only the newest decisions that fit in N
+  bytes and says how many it left out.
 - **Merge conflicts on IDs:** mitigated by the ID lock, `adj lint` and
   `adj renumber`; two clones or branches can still collide until one of them
   runs `adj renumber`.

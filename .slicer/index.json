@@ -129,10 +129,110 @@
       "id": "S35",
       "title": "adj context size budget",
       "short_title": "adj context size budget",
-      "status": "open",
+      "status": "done",
       "has_slice": true,
       "depends_on": [],
-      "note_records": [],
+      "note_records": [
+        {
+          "id": "b2e3499a-5973-4cea-b50a-9d6c39290ee4",
+          "kind": "",
+          "text": "**2026-10-18** — C32 decision (S35): 'newest' means decided_at descending, then ID descending. Reason: decided_at is the date the decision was taken and --decided-at can backdate it; the higher ID breaks a same-day tie because it was asked later.",
+          "created_at": "2026-10-18T15:07:12Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "dfaa69ab-9235-494a-b492-158cad487143",
+          "kind": "",
+          "text": "**2026-10-18** — C32 decision (S35): the kept records are the k newest with k the largest that fits; an older record is never kept in place of a newer one that does not fit. Reason: a kept set that is a prefix of the newest-first order is easy to state and never drops a newer decision for an older one.",
+          "created_at": "2026-10-18T15:07:12Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "25f66666-9fab-4ef7-b53a-ddbad2c59569",
+          "kind": "",
+          "text": "**2026-10-18** — C32 decision (S35): N counts every byte written, the omitted line included (md), or the whole document (json). Reason: a caller sizing a context window needs a hard ceiling; len(stdout) <= N always.",
+          "created_at": "2026-10-18T15:07:12Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "8639f731-0bf2-4c58-b818-1219b5fd7ced",
+          "kind": "",
+          "text": "**2026-10-18** — C32 decision (S35): md ends with a blank line then 'N decisions omitted' ('1 decision omitted' for one), only when N > 0 omitted; with no record kept the line stands alone. Reason: the blank line stops Markdown from reading the line as part of the last entry's text; the singular reads correctly.",
+          "created_at": "2026-10-18T15:07:12Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "7f671624-a315-42a5-823b-a04f890c3203",
+          "kind": "",
+          "text": "**2026-10-18** — C32 decision (S35): JSON gets 'omitted' (integer, 0 included) only when --max-bytes is given; without the flag the output is unchanged byte for byte. Reason: the default output must not change (slice boundary), and a budgeted caller can rely on the key being there.",
+          "created_at": "2026-10-18T15:07:12Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "b676e982-3ffb-404c-ad62-e4adcda62840",
+          "kind": "",
+          "text": "**2026-10-18** — C32 decision (S35): when no record fits, md prints only the omitted line and JSON prints {\"decisions\": [], \"omitted\": N}; exit 0. If even that is larger than the budget (smallest possible output > N), nothing is printed on stdout and the command exits 1 with an error naming the budget and the bytes needed. Reason: the ceiling is never broken, and an empty stdout would look like 'no decisions'; exit 1 is a failed operation, exit 2 stays for a bad value. With no matching record md prints nothing (0 bytes) and fits any budget.",
+          "created_at": "2026-10-18T15:07:12Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "13aa8bab-b8ca-4b82-97f3-a79a4b5148ac",
+          "kind": "",
+          "text": "**2026-10-18** — C32 decision (S35): --max-bytes takes a whole number >= 1 (surrounding space trimmed); 0, negative, blank, non-numeric, fractional or too large a value exits 2 before the store is looked for; given twice the last counts, as --root. Reason: matches the other flags' validation (C83, C91) and 0 would mean 'nothing', which the omitted line already says.",
+          "created_at": "2026-10-18T15:07:13Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "7a554602-8829-4a3d-bd81-990085ffa20c",
+          "kind": "",
+          "text": "**2026-10-18** — C32 decision (S35): the new JSON key is documented in its own docs/json.md section ('adj context --format json --max-bytes N'), not in the entry table. Reason: the entry-key tests read that table, and omitted is a top-level key, not an entry key.",
+          "created_at": "2026-10-18T15:07:13Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "7e252afc-56c5-475d-9455-ee35bdd3ee53",
+          "kind": "",
+          "text": "**2026-10-18** — Review round 1 (Claude opus): no blocker; accepted medium finding: FitContext selection is quadratic (3000 records, --max-bytes 2000 took 4.5 s); fix round sent to the implementer. Low: repeated --max-bytes takes the last value (matches C32 note; owner design choice).",
+          "created_at": "2026-10-18T15:15:44Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        }
+      ],
       "claim": null,
       "fields": {
         "size": "S",
@@ -152,7 +252,7 @@
         "importance": 2,
         "urgency": 2,
         "effort": 1,
-        "attempts": 0
+        "attempts": 1
       }
     },
     {
