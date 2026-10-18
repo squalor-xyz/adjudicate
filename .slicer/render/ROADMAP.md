@@ -754,6 +754,14 @@ Owner decision 2026-10-18 (S34). In adjudicate's own decisions/ store: slicer ca
 
 Implementer decisions under C32 (S35), confirmed by the owner 2026-10-18. Newest = decided_at descending, then ID descending; the kept records are the largest newest-first prefix that fits, printed in ID order. N counts every byte written (md omitted line included; the whole JSON document). md ends with a blank line then 'N decisions omitted' ('1 decision omitted'), only when something was omitted. JSON gets an integer 'omitted' key (0 included) only when --max-bytes is given; without the flag output is byte-identical to 0.1.0. Nothing fits: md prints only the omitted line, JSON {"decisions": [], "omitted": N}, exit 0; if even that exceeds N, empty stdout and exit 1 naming the budget and bytes needed. The value is a whole number >= 1, trimmed; 0, negative, blank, non-numeric, fractional or overflow exits 2 before store access; repeated, the last counts. The key is documented in its own docs/json.md section.
 
+### C196 Slicer integration: --ref filter on list and context
+
+Owner decision 2026-10-18 (S20). The adj side of the slicer integration is a --ref filter on adj list and adj context: exact match against a record's refs, repeatable, every --ref given must be among the record's refs, plus a documented recipe (adj list --ref S20 --json). No slicer-side change and no dependency either way (C12).
+
+### C197 --ref filter values are matched as typed
+
+Implementer decision under C32 (S20). --ref values on adj list and adj context match exact, case-sensitive values as typed, with no trimming, because refs are opaque strings stored as typed; a blank or whitespace-only value exits 2 before store access.
+
 ### C39 LICENSE is a stub until the owner supplies the full GPL-3.0 text and copyright holder
 
 No GPL-3.0 text exists in the adjudicate repo and the workspace has no network, so the stub carries the SPDX line, the or-later notice and TODO(owner) markers.

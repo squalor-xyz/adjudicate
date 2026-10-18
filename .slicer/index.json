@@ -444,6 +444,17 @@
           "verified_by": "",
           "verified_at": "",
           "stale_after": ""
+        },
+        {
+          "id": "0fb16bfe-90b9-4804-8d02-166c24144a5c",
+          "kind": "",
+          "text": "**2026-10-18** — 2026-10-18 from S20 review (cosmetic): AGENTS.md ~203 is a 100-column line (predates S20). Wrap it in the release docs pass.",
+          "created_at": "2026-10-18T19:27:00Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
         }
       ],
       "claim": null,
@@ -2186,7 +2197,7 @@
   "goals": "adjudicate is a small CLI (`adj`) with a plain-text store that records project decisions as a loop: an agent asks, the owner decides in batches, and every later agent reads the decision. The goal and non-goal records below come from PROJECT.md; the owner's decisions on its open questions are catalog records C23-C33, and they override PROJECT.md where it differs (name, runtime, record format, license).",
   "non_goals": "",
   "catalog": {
-    "next_id": 196,
+    "next_id": 198,
     "id_prefix": "C",
     "id_width": 2,
     "records": [
@@ -3941,6 +3952,24 @@
         "kind": "decision",
         "title": "adj context --max-bytes: selection and output",
         "body": "Implementer decisions under C32 (S35), confirmed by the owner 2026-10-18. Newest = decided_at descending, then ID descending; the kept records are the largest newest-first prefix that fits, printed in ID order. N counts every byte written (md omitted line included; the whole JSON document). md ends with a blank line then 'N decisions omitted' ('1 decision omitted'), only when something was omitted. JSON gets an integer 'omitted' key (0 included) only when --max-bytes is given; without the flag output is byte-identical to 0.1.0. Nothing fits: md prints only the omitted line, JSON {\"decisions\": [], \"omitted\": N}, exit 0; if even that exceeds N, empty stdout and exit 1 naming the budget and bytes needed. The value is a whole number >= 1, trimmed; 0, negative, blank, non-numeric, fractional or overflow exits 2 before store access; repeated, the last counts. The key is documented in its own docs/json.md section.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C196",
+        "kind": "decision",
+        "title": "Slicer integration: --ref filter on list and context",
+        "body": "Owner decision 2026-10-18 (S20). The adj side of the slicer integration is a --ref filter on adj list and adj context: exact match against a record's refs, repeatable, every --ref given must be among the record's refs, plus a documented recipe (adj list --ref S20 --json). No slicer-side change and no dependency either way (C12).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C197",
+        "kind": "decision",
+        "title": "--ref filter values are matched as typed",
+        "body": "Implementer decision under C32 (S20). --ref values on adj list and adj context match exact, case-sensitive values as typed, with no trimming, because refs are opaque strings stored as typed; a blank or whitespace-only value exits 2 before store access.",
         "status": "active",
         "reason": "",
         "successor": ""
