@@ -666,3 +666,10 @@
 {"when": "2026-10-18T19:29:54Z", "item": "S36", "action": "note", "from": "", "to": "", "note": "C32 (fix round 2): .gitattributes is '* text=auto eol=lf' wi", "by": "Jon R"}
 {"when": "2026-10-18T19:29:54Z", "item": "S36", "action": "note", "from": "", "to": "", "note": "C32 (fix round 2): Windows read-only fallback (C164): the op", "by": "Jon R"}
 {"when": "2026-10-18T19:33:26Z", "item": "S36", "action": "note", "from": "", "to": "", "note": "Fix round 2026-10-18: Windows read-only fallback for .adj.lo", "by": "Jon R"}
+{"when": "2026-10-18T19:27:54Z", "item": "S38", "action": "add", "from": "", "to": "open", "note": "adj repos: manage the user repo list"}
+{"when": "2026-10-18T19:27:54Z", "item": "S18", "action": "set", "from": "", "to": "", "note": "depends_on S09,S01→S38"}
+{"when": "2026-10-18T19:27:54Z", "item": "S37", "action": "set", "from": "", "to": "", "note": "title Release 1.0: freeze JSON shapes→Release 0.2.0; short_title Release 1.0→Release 0.2.0"}
+{"when": "2026-10-18T19:27:54Z", "item": "S39", "action": "add", "from": "", "to": "open", "note": "Release 1.0: freeze JSON shapes"}
+{"when": "2026-10-18T19:27:54Z", "item": "S37", "action": "set", "from": "", "to": "", "note": "depends_on S34,S20,S35,S36,S18,S19,S22→S18,S19,S22,S36,S38"}
+{"when": "2026-10-18T19:27:54Z", "item": "S38", "action": "move", "from": "38", "to": "5", "note": ""}
+{"when": "2026-10-18T19:27:54Z", "item": "S39", "action": "move", "from": "39", "to": "10", "note": ""}
