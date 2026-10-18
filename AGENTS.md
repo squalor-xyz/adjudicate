@@ -28,15 +28,18 @@ library only.
   and working directory as parameters for tests. Each command's handler is in
   its own file (`init.go`, `ask.go`, `decide.go`, which holds decide,
   reject and withdraw, `supersede.go`, `amend.go`, `show.go`, `list.go`,
-  `inbox.go`, `check.go`, `context.go`, `lint.go`, `renumber.go`, `version.go`,
-  `repos.go` and `ai.go`); `inbox_interactive.go` holds the interactive walk;
+  `inbox.go`, `check.go`, `context.go`, `lint.go`, `renumber.go`,
+  `importadr.go`, `version.go`, `repos.go` and `ai.go`); `inbox_interactive.go`
+  holds the interactive walk;
   `cli.go` holds the dispatch and shared helpers.
 - `internal/commands`: what each command does to the store, apart from
   parsing, output and exit codes (`init.go`, `ask.go`, `decide.go`,
   `supersede.go`, `amend.go`, `show.go`, `list.go`, `inbox.go`, `check.go`,
-  `context.go`, `lint.go`, `renumber.go`, `repos.go`, `ai.go`). `ai.md` is the agent
+  `context.go`, `lint.go`, `renumber.go`, `importadr.go`, `repos.go`, `ai.go`). `ai.md` is the agent
   snippet, embedded by `ai.go`.
   `errors.go` holds `UsageError`, the error that exits 2.
+- `internal/adr`: one ADR file (Nygard/adr-tools or MADR) parsed into a neutral
+  struct (`adr.go`); pure functions, no file I/O, fixtures in `testdata/`.
 - `internal/model`: the record type, validation, status transitions and the
   record file format; its only file I/O is `ReadFile` and `WriteFile` in
   `file.go`.
@@ -61,8 +64,8 @@ library only.
 - `scripts/env.sh`: Go cache and temp setup (see below).
 - `.gitattributes`: text files are checked out with LF on every system
   (`* text=auto eol=lf`), so the Windows CI job sees the bytes the tests
-  expect; the CRLF fixtures in `internal/model/testdata/malformed` and the PNG
-  are exempt.
+  expect; the CRLF fixtures in `internal/model/testdata/malformed` and
+  `internal/adr/testdata/nygard/*crlf*.md`, and the PNG, are exempt.
 - `.github/workflows/ci.yml`: CI on each push to `main` and each pull request
   (the checks below plus `adj lint` on `decisions/`, and `go test` on macOS,
   and `go vet` and `go test` on Windows).
@@ -330,6 +333,57 @@ below). `adj lint` exits 1 when it finds an error (see its entry).
   Owner-only: the agent snippet tells agents to report a duplicate ID and not
   to run it (C153). A name taken by a directory or another writer is skipped
   for the next ID (C154).
+- `adj import-adr DIR [--tag T]... [--by NAME] [--dry-run] [--root DIR]` (S22):
+  creates one record for each ADR file in DIR (`internal/adr` parses them;
+  `internal/commands/importadr.go` maps them to records). DIR must be inside the
+  repo root. Only files directly in DIR whose names start with a number (an
+  optional `adr-` before it) are read, in ADR number order, then file name. Two
+  layouts: Nygard (adr-tools: `# N. Title`, `Date:`, `## Status`, `## Context`,
+  `## Decision`, `## Consequences`) and MADR (optional front matter, read by hand
+  for flat `key: value` lines, or `Status:`/`Date:` lines; `## Context and
+  Problem Statement`, `## Considered Options`, `## Decision Outcome`). The first
+  word of the status, in any case, is `accepted` (decided), `proposed` (open,
+  its decision becomes the recommendation), `rejected`, `deprecated`
+  (withdrawn) or `superseded`; any other word, a missing title or status, an
+  accepted ADR with no decision, or an answered ADR with no rationale makes the
+  file bad. Every file is read and every record validated before the first
+  write, so a bad file means exit 1 and nothing written, with each problem
+  named. `decision` is the Decision section, or the MADR `Chosen option` label;
+  `rationale` is the first non-blank of the MADR justification (after
+  `because`), the Consequences, the Context (for rejected and withdrawn, the
+  decision text comes before the Consequences); `consequences` keeps the
+  Consequences section when the rationale came from elsewhere. `created` and
+  `decided_at` are the ADR's date, or the run date with a warning when it has
+  none or it is not `YYYY-MM-DD`. `decided_by` is `--by`, else
+  the ADR's deciders, else `$ADJ_DECIDED_BY`, else blank (lint warns, C27;
+  `ImportADRInput.DecidedByDefault` carries the environment);
+  `asked_by` is blank. `refs` are the file's slash path from the root and
+  `ADR-NNNN` (when the number is above 0); history is one `import` entry
+  (`from FILE`, dated the run date) instead of `ask`/`decide`. A file is
+  already imported when some record has an `import` history entry `from FILE`
+  (a record asked by hand with the file as a ref does not count); it is skipped
+  (`FILE: already imported as ID`), so a second run adds only new files. A
+  skipped file is read again only for its `Superseded by` line (a file that no
+  longer parses is ignored): if its record is still `decided` and the file now
+  says it is superseded by an ADR (same resolution) whose record is `decided`,
+  a warning gives `adj supersede OLD --by NEW`; nothing is written for it. A
+  file that is a symbolic link is not read and gets the warning `FILE: symbolic
+  link skipped`. A `superseded` ADR becomes `superseded` only when the
+  ADR it names (by file name, else by a number that exactly one ADR has) is in
+  the same run and is accepted or superseded and no loop of links results;
+  otherwise it is imported as `decided` with a warning. Records are created
+  decided first and the links are written afterwards, the old record first.
+  Unlike `adj supersede` (C136) a failure writing the new record does not put
+  the old one back: it stays superseded and the decision in force is still the
+  new record. Any failure after the first create prints the records made so far
+  and lists the links not yet written as `adj supersede OLD --by NEW` commands
+  in the error. `created` is also the run date, with a warning, when the ADR
+  date is after the run date or is well-shaped but not a real date. Prints `FILE -> ID (STATUS)` per file;
+  warnings go to stderr; `--dry-run` writes nothing. A folder with no ADR file
+  prints nothing, exit 0. Usage errors exit 2 (no DIR, more than one, blank DIR
+  or `--tag`); a folder outside the root, a bad file or a failed write exit 1.
+  Owner-only: the agent snippet does not name it. The decisions behind these
+  details are the S22 notes (C32).
 - `adj repos add [PATH]`, `adj repos remove PATH`, `adj repos list [--json]`
   (S38): manage `$XDG_CONFIG_HOME/adjudicate/config.json`, falling back to
   `$HOME/.config/adjudicate/config.json` when XDG_CONFIG_HOME is unset, empty or relative;

@@ -573,11 +573,15 @@ when it has a value. `id`, `title`, `status` and `created` are always present.
 | `body` | string | the Markdown after the record's frontmatter, kept verbatim; present only when the record has a body |
 
 A history entry's `event` is one of `ask`, `decide`, `reject`, `withdraw`,
-`supersede`, `renumber` or `amend`. `adj supersede` writes one `supersede`
+`supersede`, `renumber`, `amend` or `import`. `adj supersede` writes one `supersede`
 entry on each of the two records: the note is `by N` on the record that is
 replaced and `supersedes N` on the one that replaces it. `adj renumber` writes
 one `renumber` entry on each record it gives a new ID; the note is `from N`, the
-old ID. Notes that name an ID are history: nothing rewrites them. Dates are
+old ID. `adj import-adr` writes one `import` entry on each record it makes
+from an ADR file, in place of the `ask` and `decide` entries; the note is
+`from FILE`, the file's path from the repo root, and the date is the run date
+(the record's `created` and `decided_at` are the ADR's date). Notes that name
+an ID are history: nothing rewrites them. Dates are
 `YYYY-MM-DD` strings, not timestamps. A decide entry's date is the run date. If
 `adj decide --decided-at DATE` sets an earlier effective date, the decide
 entry's note is `backdated to DATE`, so the history still shows when the command
@@ -588,7 +592,7 @@ ran. A date after the run date is refused.
 | Key | Type | Meaning |
 |---|---|---|
 | `date` | string | the day the command ran, `YYYY-MM-DD` |
-| `event` | string | `ask`, `decide`, `reject`, `withdraw`, `supersede`, `renumber` or `amend` |
+| `event` | string | `ask`, `decide`, `reject`, `withdraw`, `supersede`, `renumber`, `amend` or `import` |
 | `note` | string | a short note, present only when set: for `amend`, the fields that changed (see below) |
 | `was` | object | `amend` entries only: the old text of every field the amend changed |
 

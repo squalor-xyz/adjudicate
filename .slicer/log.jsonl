@@ -673,6 +673,34 @@
 {"when": "2026-10-18T19:27:54Z", "item": "S37", "action": "set", "from": "", "to": "", "note": "depends_on S34,S20,S35,S36,S18,S19,S22→S18,S19,S22,S36,S38"}
 {"when": "2026-10-18T19:27:54Z", "item": "S38", "action": "move", "from": "38", "to": "5", "note": ""}
 {"when": "2026-10-18T19:27:54Z", "item": "S39", "action": "move", "from": "39", "to": "10", "note": ""}
+{"when": "2026-10-18T19:28:52Z", "item": "S22", "action": "edit", "from": "", "to": "", "note": "lead"}
+{"when": "2026-10-18T19:28:53Z", "item": "S22", "action": "edit", "from": "", "to": "", "note": "boundary"}
+{"when": "2026-10-18T19:28:53Z", "item": "S22", "action": "edit", "from": "", "to": "", "note": "Why"}
+{"when": "2026-10-18T19:28:53Z", "item": "S22", "action": "edit", "from": "", "to": "", "note": "Files"}
+{"when": "2026-10-18T19:28:53Z", "item": "S22", "action": "edit", "from": "", "to": "", "note": "Failing tests"}
+{"when": "2026-10-18T19:28:53Z", "item": "S22", "action": "edit", "from": "", "to": "", "note": "Implement"}
+{"when": "2026-10-18T19:28:53Z", "item": "S22", "action": "edit", "from": "", "to": "", "note": "Check"}
+{"when": "2026-10-18T19:28:53Z", "item": "S22", "action": "edit", "from": "", "to": "", "note": "Git"}
+{"when": "2026-10-18T19:28:53Z", "item": "S22", "action": "set", "from": "", "to": "", "note": "size M→L"}
+{"when": "2026-10-18T19:34:28Z", "item": "C198", "action": "catalog", "from": "", "to": "Windows support: LockFileEx lock, Windows CI, Windows zips", "note": "add"}
+{"when": "2026-10-18T19:34:28Z", "item": "C199", "action": "catalog", "from": "", "to": "Windows support: test layout, lock open seam, .gitattributes form", "note": "add"}
+{"when": "2026-10-18T19:34:28Z", "item": "S37", "action": "note", "from": "", "to": "", "note": "2026-10-18 from S36 review: before releasing 0.2.0, confirm ", "by": "Jon R"}
+{"when": "2026-10-18T19:35:19Z", "item": "S22", "action": "status", "from": "open", "to": "started", "note": "", "by": "Jon R"}
+{"when": "2026-10-18T19:55:20Z", "item": "S22", "action": "note", "from": "", "to": "", "note": "C32 decision (S22, command): the command is 'adj import-adr ", "by": "Jon R"}
+{"when": "2026-10-18T19:55:20Z", "item": "S22", "action": "note", "from": "", "to": "", "note": "C32 decision (S22, record format, OWNER NEEDED): a new histo", "by": "Jon R"}
+{"when": "2026-10-18T19:55:20Z", "item": "S22", "action": "note", "from": "", "to": "", "note": "C32 decision (S22, attribution): decided_by on answered reco", "by": "Jon R"}
+{"when": "2026-10-18T19:55:20Z", "item": "S22", "action": "note", "from": "", "to": "", "note": "C32 decision (S22, status mapping): the first word of the st", "by": "Jon R"}
+{"when": "2026-10-18T19:55:20Z", "item": "S22", "action": "note", "from": "", "to": "", "note": "C32 decision (S22, identity and order): ADR numbers are not ", "by": "Jon R"}
+{"when": "2026-10-18T19:55:21Z", "item": "S22", "action": "note", "from": "", "to": "", "note": "C32 decision (S22, supersede links): a superseded ADR is lin", "by": "Jon R"}
+{"when": "2026-10-18T19:55:21Z", "item": "S22", "action": "note", "from": "", "to": "", "note": "C32 decision (S22, field mapping): decided: decision = Decis", "by": "Jon R"}
+{"when": "2026-10-18T19:55:21Z", "item": "S22", "action": "note", "from": "", "to": "", "note": "C32 decision (S22, output and files): stdout one line per AD", "by": "Jon R"}
+{"when": "2026-10-18T20:03:19Z", "item": "S22", "action": "note", "from": "", "to": "", "note": "Review FAIL (round 1): A1/B1 an ask record whose --ref is an", "by": "Jon R"}
+{"when": "2026-10-18T20:09:31Z", "item": "S22", "action": "note", "from": "", "to": "", "note": "C32 decision (S22, fix round 1, overrules the 'identity and ", "by": "Jon R"}
+{"when": "2026-10-18T20:09:31Z", "item": "S22", "action": "note", "from": "", "to": "", "note": "C32 decision (S22, fix round 1, extends the 'supersede links", "by": "Jon R"}
+{"when": "2026-10-18T20:09:31Z", "item": "S22", "action": "note", "from": "", "to": "", "note": "C32 decision (S22, fix round 1, overrules the 'field mapping", "by": "Jon R"}
+{"when": "2026-10-18T20:14:20Z", "item": "S22", "action": "status", "from": "started", "to": "done", "note": "Shipped adj import-adr DIR [--tag T]... [--by NAME] [--dry-run]: imports Nygard (adr-tools) and MADR ADR folders as one record per ADR (new internal/adr parser, internal/commands/importadr.go, internal/cli/importadr.go), with a new history event 'import', idempotent re-runs (skip on import history entry), supersede links within the run, stale-link warnings on re-run, all files validated before any write, and docs (README, PROJECT.md, AGENTS.md, CHANGELOG, docs/json.md). Verified: go test ./... all ok (454 top-level tests pass, 0 fail), go vet clean, gofmt clean, build ok, every new test mutation-checked, Check import of the nygard and madr fixtures lints clean and re-runs skip. Two review rounds (round 1 reviewer and architect FAIL, 8 findings fixed in fix round 1; then gate PASS and architect PASS). Record-format change (history event import) is listed as owner needed.", "by": "Jon R"}
+{"when": "2026-10-18T21:53:07Z", "item": "S22", "action": "note", "from": "", "to": "", "note": "Owner overruled C32 decided_by order (2026-10-18): now --by,", "by": "Jon R"}
+{"when": "2026-10-18T21:56:04Z", "item": "S22", "action": "note", "from": "", "to": "", "note": "Fix round 2026-10-18: owner decisions applied. The import hi", "by": "Jon R"}
 {"when": "2026-10-18T19:28:27Z", "item": "S38", "action": "promote", "from": "", "to": "", "note": ""}
 {"when": "2026-10-18T19:28:27Z", "item": "S38", "action": "edit", "from": "", "to": "", "note": "lead"}
 {"when": "2026-10-18T19:28:27Z", "item": "S38", "action": "edit", "from": "", "to": "", "note": "boundary"}
@@ -725,3 +753,7 @@
 {"when": "2026-10-18T20:11:42Z", "item": "S19", "action": "note", "from": "", "to": "", "note": "C32: Use -i only (no long alias); --by requires -i. Actions ", "by": "Jon R"}
 {"when": "2026-10-18T20:22:11Z", "item": "S19", "action": "status", "from": "started", "to": "done", "note": "adj inbox -i: line-mode owner-only walk over open records (d/t/r/w/s/q/?), via commands.Decide/Reject/Withdraw; go test, vet, windows vet, gofmt, lint and slicer check clean; reviewer and gate VERDICT: PASS", "by": "Jon R"}
 {"when": "2026-10-18T21:55:59Z", "item": "S19", "action": "note", "from": "", "to": "", "note": "Fix round 2026-10-18: adj inbox -i refuses d on a record wit", "by": "Jon R"}
+{"when": "2026-10-18T21:52:02Z", "item": "S39", "action": "note", "from": "", "to": "", "note": "2026-10-18 owner decision (from S22): before freezing, make ", "by": "Jon R"}
+{"when": "2026-10-18T21:58:34Z", "item": "C203", "action": "catalog", "from": "", "to": "ADR import: formats, import event, decided_by order", "note": "add"}
+{"when": "2026-10-18T21:58:34Z", "item": "C204", "action": "catalog", "from": "", "to": "ADR import: command, mapping, links, re-runs", "note": "add"}
+{"when": "2026-10-18T21:58:35Z", "item": "S37", "action": "note", "from": "", "to": "", "note": "2026-10-18 from S22 review: (1) test nit internal/commands/i", "by": "Jon R"}

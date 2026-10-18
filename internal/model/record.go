@@ -49,6 +49,7 @@ const (
 	EventSupersede Event = "supersede"
 	EventRenumber  Event = "renumber" // a collision on the ID was resolved (C26)
 	EventAmend     Event = "amend"    // text fields were corrected; the entry's Was keeps the old text (C166)
+	EventImport    Event = "import"   // the record was made from an ADR file by adj import-adr; the note is "from FILE" (S22)
 )
 
 // Option is one answer a question offers.
@@ -68,10 +69,10 @@ type Recommendation struct {
 	Reasoning string `json:"reasoning,omitempty"`
 }
 
-// Valid reports whether e is one of the seven events.
+// Valid reports whether e is one of the eight events.
 func (e Event) Valid() bool {
 	switch e {
-	case EventAsk, EventDecide, EventReject, EventWithdraw, EventSupersede, EventRenumber, EventAmend:
+	case EventAsk, EventDecide, EventReject, EventWithdraw, EventSupersede, EventRenumber, EventAmend, EventImport:
 		return true
 	}
 	return false

@@ -238,7 +238,7 @@ func TestDocsNameEveryHistoryEvent(t *testing.T) {
 	// The sentence that lists them, before the paragraph goes on to say what
 	// each command writes.
 	para, _, _ := strings.Cut(rest, "`adj supersede`")
-	for _, ev := range []string{"ask", "decide", "reject", "withdraw", "supersede", "renumber"} {
+	for _, ev := range []string{"ask", "decide", "reject", "withdraw", "supersede", "renumber", "amend", "import"} {
 		if !strings.Contains(para, "`"+ev+"`") {
 			t.Errorf("docs/json.md does not name the event `%s` in:\n%s", ev, para)
 		}
