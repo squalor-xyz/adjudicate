@@ -1,3 +1,5 @@
+<img src="assets/adjudicate-512.png" alt="" width="96">
+
 # adjudicate
 
 adjudicate (CLI `adj`) is a plain-text decision log for owner and agent work.
@@ -356,3 +358,7 @@ is missing, so write it before you tag.
 
 GPL-3.0-or-later. See `LICENSE` for the full text and `NOTICE` for the
 copyright notice.
+
+The icon, `assets/adjudicate-512.png`, is a Squalor LLC brand asset and is not
+covered by the GPL. It is all rights reserved, with a grant to keep it
+unmodified in this repository's `assets/` and README.
