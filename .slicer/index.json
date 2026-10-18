@@ -738,6 +738,17 @@
           "verified_by": "",
           "verified_at": "",
           "stale_after": ""
+        },
+        {
+          "id": "f1142564-b176-4484-b8ec-4a6a173e0136",
+          "kind": "",
+          "text": "**2026-10-18** — 2026-10-18 owner decision (from S22): before freezing, make readers accept unknown history events (lint warns instead of List/Get failing), so later event additions such as S22's 'import' do not make older adj binaries refuse a store.",
+          "created_at": "2026-10-18T21:52:02Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
         }
       ],
       "claim": null,
