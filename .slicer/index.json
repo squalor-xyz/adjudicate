@@ -559,7 +559,19 @@
       "depends_on": [
         "S18"
       ],
-      "note_records": [],
+      "note_records": [
+        {
+          "id": "5a1a4ce8-d4fd-4eab-a4df-75c7934ee05b",
+          "kind": "",
+          "text": "**2026-10-18** — Overlap: squalor-xyz/ork plans a cross-project TUI with a Decisions screen (read-only in ork v1; decision editing after v1). When ork's decision editing is specified, consider narrowing S19 to the static HTML page or retiring it (ork docs/review-2026-10-18.md finding 3).",
+          "created_at": "2026-10-18T21:21:08Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        }
+      ],
       "claim": null,
       "fields": {
         "size": "M",
