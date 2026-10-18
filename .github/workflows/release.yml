@@ -1,9 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 # Publishes a GitHub release for a pushed vX.Y.Z tag (C193): checks, builds adj
-# for linux, darwin and freebsd on amd64 and arm64 with plain go build, and
-# uploads the archives and SHA256SUMS with gh. The release notes are the tag's
-# section of CHANGELOG.md.
+# for linux, darwin and freebsd (tar.gz) and windows (zip, holding adj.exe) on
+# amd64 and arm64 with plain go build, and uploads the eight archives and
+# SHA256SUMS with gh. The release notes are the tag's section of CHANGELOG.md.
 
 name: Release
 
@@ -57,14 +57,23 @@ jobs:
               tar -C build -czf "dist/$name.tar.gz" "$name"
             done
           done
-          (cd dist && sha256sum *.tar.gz > SHA256SUMS)
+          for goarch in amd64 arm64; do
+            name="adj_${version}_windows_${goarch}"
+            mkdir -p "build/$name"
+            CGO_ENABLED=0 GOOS=windows GOARCH="$goarch" go build -trimpath \
+              -ldflags "-s -w -X github.com/squalor-xyz/adjudicate/internal/cli.versionOverride=${GITHUB_REF_NAME}" \
+              -o "build/$name/adj.exe" ./cmd/adj
+            cp LICENSE NOTICE README.md CHANGELOG.md "build/$name/"
+            (cd build && zip -qr "../dist/$name.zip" "$name")
+          done
+          (cd dist && sha256sum *.tar.gz *.zip > SHA256SUMS)
           cat dist/SHA256SUMS
 
       - name: Publish
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$GITHUB_REF_NAME" dist/*.tar.gz dist/SHA256SUMS \
+          gh release create "$GITHUB_REF_NAME" dist/*.tar.gz dist/*.zip dist/SHA256SUMS \
             --verify-tag \
             --title "adjudicate ${GITHUB_REF_NAME#v}" \
             --notes-file "$RUNNER_TEMP/notes.md"

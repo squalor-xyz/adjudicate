@@ -262,7 +262,7 @@ func TestRunReportsAnUnreadableFile(t *testing.T) {
 		t.Fatal(err)
 	}
 	if _, err := os.ReadFile(path); err == nil {
-		t.Skip("the file is readable despite mode 000 (running as root?)")
+		t.Skip("the file is readable despite mode 000 (running as root, or on Windows, which has no such mode)")
 	}
 	st, err := store.Open(root)
 	if err != nil {

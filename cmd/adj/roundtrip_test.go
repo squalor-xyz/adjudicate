@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"strings"
 	"testing"
 )
@@ -17,11 +18,20 @@ import (
 // adjBinary is the path of the adj binary that TestMain built.
 var adjBinary string
 
+// adjFile is the name of the built binary: Windows runs only files with an
+// executable extension.
+var adjFile = func() string {
+	if runtime.GOOS == "windows" {
+		return "adj.exe"
+	}
+	return "adj"
+}()
+
 // buildAdj builds this package's command into dir and returns its path. It
 // runs "go build" with the environment of the test run, so under
 // scripts/env.sh (C33) the build's caches and temp files stay inside the repo.
 func buildAdj(dir string) (string, error) {
-	bin := filepath.Join(dir, "adj")
+	bin := filepath.Join(dir, adjFile)
 	// The test runs in cmd/adj, so the module root is two levels up.
 	cmd := exec.Command("go", "build", "-o", bin, "./cmd/adj")
 	cmd.Dir = filepath.Join("..", "..")
@@ -34,7 +44,7 @@ func buildAdj(dir string) (string, error) {
 // buildAdjWithVersion builds adj with the same ldflags override used for a
 // release build (.github/workflows/release.yml).
 func buildAdjWithVersion(dir, version string) (string, error) {
-	bin := filepath.Join(dir, "adj")
+	bin := filepath.Join(dir, adjFile)
 	cmd := exec.Command("go", "build", "-ldflags", "-X github.com/squalor-xyz/adjudicate/internal/cli.versionOverride="+version, "-o", bin, "./cmd/adj")
 	cmd.Dir = filepath.Join("..", "..")
 	if out, err := cmd.CombinedOutput(); err != nil {

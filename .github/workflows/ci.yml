@@ -48,3 +48,17 @@ jobs:
           go-version-file: go.mod
       - name: go test
         run: go test ./...
+
+  test-windows:
+    # The ID lock (LockFileEx) is built for Windows; plain go, as on macOS.
+    runs-on: windows-latest
+    steps:
+      # .gitattributes keeps LF line endings in the checkout.
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: go vet
+        run: go vet ./...
+      - name: go test
+        run: go test ./...
