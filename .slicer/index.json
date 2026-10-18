@@ -422,6 +422,17 @@
           "verified_by": "",
           "verified_at": "",
           "stale_after": ""
+        },
+        {
+          "id": "2b3fb550-e14f-4a32-86d3-c2acf72ca7c0",
+          "kind": "",
+          "text": "**2026-10-18** — 2026-10-18 from S35 review (comment-only): internal/commands/context.go says a context entry is 'at least ten' bytes; the smallest md entry is 9. The argument still holds; fix the comment in a docs pass.",
+          "created_at": "2026-10-18T19:04:22Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
         }
       ],
       "claim": null,
@@ -2164,7 +2175,7 @@
   "goals": "adjudicate is a small CLI (`adj`) with a plain-text store that records project decisions as a loop: an agent asks, the owner decides in batches, and every later agent reads the decision. The goal and non-goal records below come from PROJECT.md; the owner's decisions on its open questions are catalog records C23-C33, and they override PROJECT.md where it differs (name, runtime, record format, license).",
   "non_goals": "",
   "catalog": {
-    "next_id": 195,
+    "next_id": 196,
     "id_prefix": "C",
     "id_width": 2,
     "records": [
@@ -3910,6 +3921,15 @@
         "kind": "decision",
         "title": "Dogfood conventions: going forward only",
         "body": "Owner decision 2026-10-18 (S34). In adjudicate's own decisions/ store: slicer catalog and slice IDs go in --ref as written (C23, S34); tags are topics, not catalog IDs; keys are dotted area.topic (e.g. project.license). The 16 existing records (0001-0016) stay as they are: no retagging, no keys added, no amend extension.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C195",
+        "kind": "decision",
+        "title": "adj context --max-bytes: selection and output",
+        "body": "Implementer decisions under C32 (S35), confirmed by the owner 2026-10-18. Newest = decided_at descending, then ID descending; the kept records are the largest newest-first prefix that fits, printed in ID order. N counts every byte written (md omitted line included; the whole JSON document). md ends with a blank line then 'N decisions omitted' ('1 decision omitted'), only when something was omitted. JSON gets an integer 'omitted' key (0 included) only when --max-bytes is given; without the flag output is byte-identical to 0.1.0. Nothing fits: md prints only the omitted line, JSON {\"decisions\": [], \"omitted\": N}, exit 0; if even that exceeds N, empty stdout and exit 1 naming the budget and bytes needed. The value is a whole number >= 1, trimmed; 0, negative, blank, non-numeric, fractional or overflow exits 2 before store access; repeated, the last counts. The key is documented in its own docs/json.md section.",
         "status": "active",
         "reason": "",
         "successor": ""

@@ -746,6 +746,14 @@ Implementer decision (C32). One record per C165-C169, asked with adj ask by 'S33
 
 Owner decision 2026-10-17. Overrides the publishing part of C165. The repo is pushed to github.com/squalor-xyz/adjudicate (matching the module path, C23; not adjucate), and v0.1.0 is tagged after the commit that adds the workflows and pushed to trigger the release. GitHub Actions (a hosted service, owner's choice) runs CI on main and pull requests (go vet, gofmt, go test, adj lint on this repo's decisions/) and the release on a v* tag. Release binaries are built with plain go build and published with the runner's gh, no GoReleaser, for linux, darwin and freebsd on amd64 and arm64, as tar.gz files with SHA256SUMS; the release notes are the tag's CHANGELOG section. go install github.com/squalor-xyz/adjudicate/cmd/adj@VERSION also works.
 
+### C194 Dogfood conventions: going forward only
+
+Owner decision 2026-10-18 (S34). In adjudicate's own decisions/ store: slicer catalog and slice IDs go in --ref as written (C23, S34); tags are topics, not catalog IDs; keys are dotted area.topic (e.g. project.license). The 16 existing records (0001-0016) stay as they are: no retagging, no keys added, no amend extension.
+
+### C195 adj context --max-bytes: selection and output
+
+Implementer decisions under C32 (S35), confirmed by the owner 2026-10-18. Newest = decided_at descending, then ID descending; the kept records are the largest newest-first prefix that fits, printed in ID order. N counts every byte written (md omitted line included; the whole JSON document). md ends with a blank line then 'N decisions omitted' ('1 decision omitted'), only when something was omitted. JSON gets an integer 'omitted' key (0 included) only when --max-bytes is given; without the flag output is byte-identical to 0.1.0. Nothing fits: md prints only the omitted line, JSON {"decisions": [], "omitted": N}, exit 0; if even that exceeds N, empty stdout and exit 1 naming the budget and bytes needed. The value is a whole number >= 1, trimmed; 0, negative, blank, non-numeric, fractional or overflow exits 2 before store access; repeated, the last counts. The key is documented in its own docs/json.md section.
+
 ### C39 LICENSE is a stub until the owner supplies the full GPL-3.0 text and copyright holder
 
 No GPL-3.0 text exists in the adjudicate repo and the workspace has no network, so the stub carries the SPDX line, the or-later notice and TODO(owner) markers.
@@ -808,23 +816,23 @@ PENDING OWNER CONFIRMATION - not decided. Source: Dependency/licensing notes (ma
 
 *Retired: Owner decided 2026-10-15: see decision C31 (GPL-3.0-or-later)..*
 
-37 items · — 7 · done 29 · retired 1
+37 items · — 6 · done 30 · retired 1
 
 | # | Slice | Title | Size | Effort | Trees | Findings | Status |
 |---|---|---|---|---|---|---|---|
-| 1 | S34 | Dogfood conventions | S | 1 | decisions | S20 notes 2026-10-16/17, items 2 (tag case) and 3 (keys) | — |
-| 2 | [S20](slices/S20.md) | Slicer integration | M | 2 | cli | PROJECT.md Feature tiers (Later); Non-goals (not replacing slicer); Risks (overlap with slicer catalog) | — |
-| 3 | S36 | Windows support | M | 2 | store | AGENTS.md Store and config (lock_other.go: no lock, bounded retry only); release.yml builds no windows archive | — |
-| 4 | [S18](slices/S18.md) | Cross-repo inbox | M | 2 | cli | PROJECT.md Feature tiers (Later); Open decisions 6 | — |
-| 5 | [S19](slices/S19.md) | TUI or static HTML inbox | M | 2 | cli | PROJECT.md Feature tiers (Later) | — |
-| 6 | [S22](slices/S22.md) | Import from ADR folders | M | 2 | cli | PROJECT.md Feature tiers (Later) | — |
-| 7 | S37 | Release 1.0 | S | 1 | release | CHANGELOG.md and docs/json.md 1.0 rule | — |
-| 8 | [S21](slices/S21.md) | Later: optional owner-only decide enforcement | M | 2 | later | PROJECT.md Feature tiers (Later); Open decisions 5; Non-goals · Owner 2026-10-18: owner-only decide stays a convention (C11, C27); no enforcement planned | retired |
+| 1 | [S20](slices/S20.md) | Slicer integration | M | 2 | cli | PROJECT.md Feature tiers (Later); Non-goals (not replacing slicer); Risks (overlap with slicer catalog) | — |
+| 2 | S36 | Windows support | M | 2 | store | AGENTS.md Store and config (lock_other.go: no lock, bounded retry only); release.yml builds no windows archive | — |
+| 3 | [S18](slices/S18.md) | Cross-repo inbox | M | 2 | cli | PROJECT.md Feature tiers (Later); Open decisions 6 | — |
+| 4 | [S19](slices/S19.md) | TUI or static HTML inbox | M | 2 | cli | PROJECT.md Feature tiers (Later) | — |
+| 5 | [S22](slices/S22.md) | Import from ADR folders | M | 2 | cli | PROJECT.md Feature tiers (Later) | — |
+| 6 | S37 | Release 1.0 | S | 1 | release | CHANGELOG.md and docs/json.md 1.0 rule | — |
+| 7 | [S21](slices/S21.md) | Later: optional owner-only decide enforcement | M | 2 | later | PROJECT.md Feature tiers (Later); Open decisions 5; Non-goals · Owner 2026-10-18: owner-only decide stays a convention (C11, C27); no enforcement planned | retired |
 
 ---
 
 | # | Slice | Title | Size | Effort | Trees | Findings | Status |
 |---|---|---|---|---|---|---|---|
+| 8 | [S34](slices/S34.md) | Dogfood conventions | S | 1 | decisions | S20 notes 2026-10-16/17, items 2 (tag case) and 3 (keys) | done |
 | 9 | [S35](slices/S35.md) | adj context size budget | S | 1 | cli | PROJECT.md Non-goals (not in 0.1.0: size budget flag); Risks: context bloat | done |
 | 10 | [S01](slices/S01.md) | Confirm open decisions | S | 1 | decisions | PROJECT.md Open decisions 1-7; Core concepts (kind); Dependency/licensing notes | done |
 | 11 | [S02](slices/S02.md) | Project scaffolding | S | 1 | scaffold | PROJECT.md Stack recommendation; Dependency/licensing notes | done |
