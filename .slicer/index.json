@@ -2,7 +2,7 @@
   "version": 9,
   "id_prefix": "S",
   "id_width": 2,
-  "next_id": 38,
+  "next_id": 40,
   "preamble": "Roadmap for **adjudicate** (CLI command `adj`; formerly the working name \"dlog\"): a Go, standard-library-only CLI that records project decisions as plain files in the repo. Owner decisions from 2026-10-15 are catalog records C23-C33.",
   "passes": [],
   "items": [
@@ -297,14 +297,43 @@
       }
     },
     {
+      "id": "S38",
+      "title": "adj repos: manage the user repo list",
+      "short_title": "adj repos",
+      "status": "open",
+      "has_slice": false,
+      "depends_on": [],
+      "note_records": [],
+      "claim": null,
+      "fields": {
+        "size": "M",
+        "flags": [],
+        "trees": [
+          "cli"
+        ],
+        "trees_literal": false,
+        "findings": "Owner decision 2026-10-18 (S18 config): user config file managed by adj repos add/remove/list",
+        "discovered_from": "",
+        "parent": "",
+        "cites": [],
+        "key": "",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 2,
+        "urgency": 2,
+        "effort": 2,
+        "attempts": 0
+      }
+    },
+    {
       "id": "S18",
       "title": "Cross-repo inbox",
       "short_title": "Cross-repo inbox",
       "status": "open",
       "has_slice": true,
       "depends_on": [
-        "S09",
-        "S01"
+        "S38"
       ],
       "note_records": [],
       "claim": null,
@@ -409,18 +438,16 @@
     },
     {
       "id": "S37",
-      "title": "Release 1.0: freeze JSON shapes",
-      "short_title": "Release 1.0",
+      "title": "Release 0.2.0",
+      "short_title": "Release 0.2.0",
       "status": "open",
       "has_slice": false,
       "depends_on": [
-        "S34",
-        "S20",
-        "S35",
-        "S36",
         "S18",
         "S19",
-        "S22"
+        "S22",
+        "S36",
+        "S38"
       ],
       "note_records": [
         {
@@ -466,6 +493,38 @@
         ],
         "trees_literal": false,
         "findings": "CHANGELOG.md and docs/json.md 1.0 rule",
+        "discovered_from": "",
+        "parent": "",
+        "cites": [],
+        "key": "",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 2,
+        "urgency": 2,
+        "effort": 1,
+        "attempts": 0
+      }
+    },
+    {
+      "id": "S39",
+      "title": "Release 1.0: freeze JSON shapes",
+      "short_title": "Release 1.0",
+      "status": "open",
+      "has_slice": false,
+      "depends_on": [
+        "S37"
+      ],
+      "note_records": [],
+      "claim": null,
+      "fields": {
+        "size": "S",
+        "flags": [],
+        "trees": [
+          "release"
+        ],
+        "trees_literal": false,
+        "findings": "CHANGELOG.md and docs/json.md 1.0 rule; owner 2026-10-18: 0.2.0 first, 1.0 later",
         "discovered_from": "",
         "parent": "",
         "cites": [],
