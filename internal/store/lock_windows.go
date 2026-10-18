@@ -55,8 +55,10 @@ func unlockFileEx(h syscall.Handle) error {
 }
 
 // acquire takes an exclusive lock with LockFileEx on the file at path,
-// creating it if it is missing, and returns the function that releases it
-// (C114, S36). It behaves like the unix flock, except that the lock is
+// creating it if it is missing (or, if it exists and cannot be opened for
+// writing (ERROR_ACCESS_DENIED: the read-only attribute, another user's
+// checkout), through a read-only open, see openLockFile), and returns the
+// function that releases it (C114, S36). It behaves like the unix flock, except that the lock is
 // mandatory (it changes nothing for the empty lock file): the attempts do not
 // block (LOCKFILE_FAIL_IMMEDIATELY), acquire polls for up to timeout and then
 // returns an error that names path, so a writer stuck behind a hung process
@@ -65,7 +67,7 @@ func unlockFileEx(h syscall.Handle) error {
 // when the process exits; the lock file stays, because removing it would let
 // a waiting writer and a new one lock different files.
 func acquire(path string, timeout time.Duration, busy func()) (unlock func(), err error) {
-	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE, 0o644)
+	f, err := openLockFile(path, os.OpenFile, func(err error) bool { return errors.Is(err, syscall.ERROR_ACCESS_DENIED) })
 	if err != nil {
 		return nil, fmt.Errorf("lock %s: %w", path, err)
 	}

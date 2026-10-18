@@ -12,6 +12,8 @@ but never renames, removes or retypes an existing key.
   (`LockFileEx` on `<store>/.adj.lock`, with the semantics of the unix `flock`:
   held from the ID scan to the link, a 5 second wait, the same error). Until
   now Windows had no lock, only the bounded retry for a name that is taken.
+  A lock file that exists with the read-only attribute is locked through a
+  read-only open, as on unix.
 - Releases add `adj_VERSION_windows_amd64.zip` and
   `adj_VERSION_windows_arm64.zip`, each holding `adj.exe`, `LICENSE`, `NOTICE`,
   `README.md` and `CHANGELOG.md`, listed in `SHA256SUMS`.

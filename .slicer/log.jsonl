@@ -663,3 +663,6 @@
 {"when": "2026-10-18T19:27:00Z", "item": "C196", "action": "catalog", "from": "", "to": "Slicer integration: --ref filter on list and context", "note": "add"}
 {"when": "2026-10-18T19:27:00Z", "item": "C197", "action": "catalog", "from": "", "to": "--ref filter values are matched as typed", "note": "add"}
 {"when": "2026-10-18T19:27:00Z", "item": "S37", "action": "note", "from": "", "to": "", "note": "2026-10-18 from S20 review (cosmetic): AGENTS.md ~203 is a 1", "by": "Jon R"}
+{"when": "2026-10-18T19:29:54Z", "item": "S36", "action": "note", "from": "", "to": "", "note": "C32 (fix round 2): .gitattributes is '* text=auto eol=lf' wi", "by": "Jon R"}
+{"when": "2026-10-18T19:29:54Z", "item": "S36", "action": "note", "from": "", "to": "", "note": "C32 (fix round 2): Windows read-only fallback (C164): the op", "by": "Jon R"}
+{"when": "2026-10-18T19:33:26Z", "item": "S36", "action": "note", "from": "", "to": "", "note": "Fix round 2026-10-18: Windows read-only fallback for .adj.lo", "by": "Jon R"}

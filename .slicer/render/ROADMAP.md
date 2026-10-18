@@ -754,6 +754,14 @@ Owner decision 2026-10-18 (S34). In adjudicate's own decisions/ store: slicer ca
 
 Implementer decisions under C32 (S35), confirmed by the owner 2026-10-18. Newest = decided_at descending, then ID descending; the kept records are the largest newest-first prefix that fits, printed in ID order. N counts every byte written (md omitted line included; the whole JSON document). md ends with a blank line then 'N decisions omitted' ('1 decision omitted'), only when something was omitted. JSON gets an integer 'omitted' key (0 included) only when --max-bytes is given; without the flag output is byte-identical to 0.1.0. Nothing fits: md prints only the omitted line, JSON {"decisions": [], "omitted": N}, exit 0; if even that exceeds N, empty stdout and exit 1 naming the budget and bytes needed. The value is a whole number >= 1, trimmed; 0, negative, blank, non-numeric, fractional or overflow exits 2 before store access; repeated, the last counts. The key is documented in its own docs/json.md section.
 
+### C196 Slicer integration: --ref filter on list and context
+
+Owner decision 2026-10-18 (S20). The adj side of the slicer integration is a --ref filter on adj list and adj context: exact match against a record's refs, repeatable, every --ref given must be among the record's refs, plus a documented recipe (adj list --ref S20 --json). No slicer-side change and no dependency either way (C12).
+
+### C197 --ref filter values are matched as typed
+
+Implementer decision under C32 (S20). --ref values on adj list and adj context match exact, case-sensitive values as typed, with no trimming, because refs are opaque strings stored as typed; a blank or whitespace-only value exits 2 before store access.
+
 ### C39 LICENSE is a stub until the owner supplies the full GPL-3.0 text and copyright holder
 
 No GPL-3.0 text exists in the adjudicate repo and the workspace has no network, so the stub carries the SPDX line, the or-later notice and TODO(owner) markers.
@@ -816,22 +824,22 @@ PENDING OWNER CONFIRMATION - not decided. Source: Dependency/licensing notes (ma
 
 *Retired: Owner decided 2026-10-15: see decision C31 (GPL-3.0-or-later)..*
 
-37 items · — 5 · done 31 · retired 1
+37 items · — 4 · done 32 · retired 1
 
 | # | Slice | Title | Size | Effort | Trees | Findings | Status |
 |---|---|---|---|---|---|---|---|
-| 1 | [S20](slices/S20.md) | Slicer integration | M | 2 | cli | PROJECT.md Feature tiers (Later); Non-goals (not replacing slicer); Risks (overlap with slicer catalog) | — |
-| 2 | [S18](slices/S18.md) | Cross-repo inbox | M | 2 | cli | PROJECT.md Feature tiers (Later); Open decisions 6 | — |
-| 3 | [S19](slices/S19.md) | TUI or static HTML inbox | M | 2 | cli | PROJECT.md Feature tiers (Later) | — |
-| 4 | [S22](slices/S22.md) | Import from ADR folders | M | 2 | cli | PROJECT.md Feature tiers (Later) | — |
-| 5 | S37 | Release 1.0 | S | 1 | release | CHANGELOG.md and docs/json.md 1.0 rule | — |
-| 6 | [S21](slices/S21.md) | Later: optional owner-only decide enforcement | M | 2 | later | PROJECT.md Feature tiers (Later); Open decisions 5; Non-goals · Owner 2026-10-18: owner-only decide stays a convention (C11, C27); no enforcement planned | retired |
+| 1 | [S18](slices/S18.md) | Cross-repo inbox | M | 2 | cli | PROJECT.md Feature tiers (Later); Open decisions 6 | — |
+| 2 | [S19](slices/S19.md) | TUI or static HTML inbox | M | 2 | cli | PROJECT.md Feature tiers (Later) | — |
+| 3 | [S22](slices/S22.md) | Import from ADR folders | M | 2 | cli | PROJECT.md Feature tiers (Later) | — |
+| 4 | S37 | Release 1.0 | S | 1 | release | CHANGELOG.md and docs/json.md 1.0 rule | — |
+| 5 | [S21](slices/S21.md) | Later: optional owner-only decide enforcement | M | 2 | later | PROJECT.md Feature tiers (Later); Open decisions 5; Non-goals · Owner 2026-10-18: owner-only decide stays a convention (C11, C27); no enforcement planned | retired |
 
 ---
 
 | # | Slice | Title | Size | Effort | Trees | Findings | Status |
 |---|---|---|---|---|---|---|---|
-| 7 | [S34](slices/S34.md) | Dogfood conventions | S | 1 | decisions | S20 notes 2026-10-16/17, items 2 (tag case) and 3 (keys) | done |
+| 6 | [S34](slices/S34.md) | Dogfood conventions | S | 1 | decisions | S20 notes 2026-10-16/17, items 2 (tag case) and 3 (keys) | done |
+| 7 | [S20](slices/S20.md) | Slicer integration | M | 2 | cli | PROJECT.md Feature tiers (Later); Non-goals (not replacing slicer); Risks (overlap with slicer catalog) | done |
 | 8 | [S35](slices/S35.md) | adj context size budget | S | 1 | cli | PROJECT.md Non-goals (not in 0.1.0: size budget flag); Risks: context bloat | done |
 | 9 | [S36](slices/S36.md) | Windows support | M | 2 | store | AGENTS.md Store and config (lock_other.go: no lock, bounded retry only); release.yml builds no windows archive | done |
 | 10 | [S01](slices/S01.md) | Confirm open decisions | S | 1 | decisions | PROJECT.md Open decisions 1-7; Core concepts (kind); Dependency/licensing notes | done |

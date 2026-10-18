@@ -317,6 +317,39 @@
           "verified_by": "",
           "verified_at": "",
           "stale_after": ""
+        },
+        {
+          "id": "e39fd3ee-6dde-4744-a5e7-7396e6b28caa",
+          "kind": "",
+          "text": "**2026-10-18** — C32 (fix round 2): .gitattributes is '* text=auto eol=lf' with '-text' on internal/model/testdata/malformed/crlf*.md and 'binary' on *.png. text=auto lets git detect binaries (the one PNG) while the explicit exemptions keep the deliberate CRLF fixtures byte for byte; '* text eol=lf' would have rewritten them and the PNG. git ls-files --eol shows every other tracked file already LF in the index, so nothing is renormalised. This replaces the CI 'git config core.autocrlf false' step, which is removed.",
+          "created_at": "2026-10-18T19:29:54Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "0c504edb-23c7-4e18-a4e2-54f5757fad75",
+          "kind": "",
+          "text": "**2026-10-18** — C32 (fix round 2): Windows read-only fallback (C164): the open logic moved to openLockFile in internal/store/lock_open.go (built on unix and windows), taking the open function and the permission-error test as parameters; lock_unix.go passes EACCES, lock_windows.go passes ERROR_ACCESS_DENIED. That seam lets the fallback be tested on any system with a fake denied open (lock_open_test.go); a real read-only-attribute test is windows-only (lock_windows_test.go) and runs in CI only. The read-only open never creates the file, and a directory is never taken as the lock file (its read-only open would succeed). Behaviour on unix is unchanged. This supersedes the earlier C32 note that Windows has no fallback.",
+          "created_at": "2026-10-18T19:29:54Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "3da57cd2-e1ea-461c-8a9e-1e299dda89e3",
+          "kind": "",
+          "text": "**2026-10-18** — Fix round 2026-10-18: Windows read-only fallback for .adj.lock (openLockFile seam, lock_open.go), .gitattributes (* text=auto eol=lf) replacing the CI autocrlf step; darwin tests green, Windows vet/compile clean, Windows runtime unverified until CI",
+          "created_at": "2026-10-18T19:33:26Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
         }
       ],
       "claim": null,

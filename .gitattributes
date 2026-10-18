@@ -1,0 +1,8 @@
+# Text files are checked out with LF on every system, Windows included (S36):
+# the tests compare bytes of fixtures and of the embedded agent snippet.
+* text=auto eol=lf
+
+# The fixtures that test CRLF handling must keep their bytes.
+internal/model/testdata/malformed/crlf*.md -text
+
+*.png binary
