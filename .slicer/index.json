@@ -11,7 +11,7 @@
       "title": "Dogfood conventions: tag case and keys in decisions/",
       "short_title": "Dogfood conventions",
       "status": "open",
-      "has_slice": false,
+      "has_slice": true,
       "depends_on": [],
       "note_records": [
         {
@@ -2052,7 +2052,7 @@
   "goals": "adjudicate is a small CLI (`adj`) with a plain-text store that records project decisions as a loop: an agent asks, the owner decides in batches, and every later agent reads the decision. The goal and non-goal records below come from PROJECT.md; the owner's decisions on its open questions are catalog records C23-C33, and they override PROJECT.md where it differs (name, runtime, record format, license).",
   "non_goals": "",
   "catalog": {
-    "next_id": 194,
+    "next_id": 195,
     "id_prefix": "C",
     "id_width": 2,
     "records": [
@@ -3789,6 +3789,15 @@
         "kind": "decision",
         "title": "Publish 0.1.0 to github.com/squalor-xyz/adjudicate with GitHub Actions CI and release binaries",
         "body": "Owner decision 2026-10-17. Overrides the publishing part of C165. The repo is pushed to github.com/squalor-xyz/adjudicate (matching the module path, C23; not adjucate), and v0.1.0 is tagged after the commit that adds the workflows and pushed to trigger the release. GitHub Actions (a hosted service, owner's choice) runs CI on main and pull requests (go vet, gofmt, go test, adj lint on this repo's decisions/) and the release on a v* tag. Release binaries are built with plain go build and published with the runner's gh, no GoReleaser, for linux, darwin and freebsd on amd64 and arm64, as tar.gz files with SHA256SUMS; the release notes are the tag's CHANGELOG section. go install github.com/squalor-xyz/adjudicate/cmd/adj@VERSION also works.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C194",
+        "kind": "decision",
+        "title": "Dogfood conventions: going forward only",
+        "body": "Owner decision 2026-10-18 (S34). In adjudicate's own decisions/ store: slicer catalog and slice IDs go in --ref as written (C23, S34); tags are topics, not catalog IDs; keys are dotted area.topic (e.g. project.license). The 16 existing records (0001-0016) stay as they are: no retagging, no keys added, no amend extension.",
         "status": "active",
         "reason": "",
         "successor": ""

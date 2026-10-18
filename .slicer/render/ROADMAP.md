@@ -746,6 +746,10 @@ Implementer decision (C32). One record per C165-C169, asked with adj ask by 'S33
 
 Owner decision 2026-10-17. Overrides the publishing part of C165. The repo is pushed to github.com/squalor-xyz/adjudicate (matching the module path, C23; not adjucate), and v0.1.0 is tagged after the commit that adds the workflows and pushed to trigger the release. GitHub Actions (a hosted service, owner's choice) runs CI on main and pull requests (go vet, gofmt, go test, adj lint on this repo's decisions/) and the release on a v* tag. Release binaries are built with plain go build and published with the runner's gh, no GoReleaser, for linux, darwin and freebsd on amd64 and arm64, as tar.gz files with SHA256SUMS; the release notes are the tag's CHANGELOG section. go install github.com/squalor-xyz/adjudicate/cmd/adj@VERSION also works.
 
+### C194 Dogfood conventions: going forward only
+
+Owner decision 2026-10-18 (S34). In adjudicate's own decisions/ store: slicer catalog and slice IDs go in --ref as written (C23, S34); tags are topics, not catalog IDs; keys are dotted area.topic (e.g. project.license). The 16 existing records (0001-0016) stay as they are: no retagging, no keys added, no amend extension.
+
 ### C39 LICENSE is a stub until the owner supplies the full GPL-3.0 text and copyright holder
 
 No GPL-3.0 text exists in the adjudicate repo and the workspace has no network, so the stub carries the SPDX line, the or-later notice and TODO(owner) markers.
@@ -812,7 +816,7 @@ PENDING OWNER CONFIRMATION - not decided. Source: Dependency/licensing notes (ma
 
 | # | Slice | Title | Size | Effort | Trees | Findings | Status |
 |---|---|---|---|---|---|---|---|
-| 1 | S34 | Dogfood conventions | S | 1 | decisions | S20 notes 2026-10-16/17, items 2 (tag case) and 3 (keys) | — |
+| 1 | [S34](slices/S34.md) | Dogfood conventions | S | 1 | decisions | S20 notes 2026-10-16/17, items 2 (tag case) and 3 (keys) | — |
 | 2 | [S20](slices/S20.md) | Slicer integration | M | 2 | cli | PROJECT.md Feature tiers (Later); Non-goals (not replacing slicer); Risks (overlap with slicer catalog) | — |
 | 3 | S35 | adj context size budget | S | 1 | cli | PROJECT.md Non-goals (not in 0.1.0: size budget flag); Risks: context bloat | — |
 | 4 | S36 | Windows support | M | 2 | store | AGENTS.md Store and config (lock_other.go: no lock, bounded retry only); release.yml builds no windows archive | — |
