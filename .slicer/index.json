@@ -11,14 +11,17 @@
       "title": "Readers accept unknown history events: lint warns instead of List/Get failing, so newer event kinds do not make older adj binaries refuse a store",
       "short_title": "Tolerate unknown history events",
       "status": "open",
-      "has_slice": false,
+      "has_slice": true,
       "depends_on": [],
       "note_records": [],
       "claim": null,
       "fields": {
-        "size": "",
+        "size": "S",
         "flags": [],
-        "trees": [],
+        "trees": [
+          "model",
+          "lint"
+        ],
         "trees_literal": false,
         "findings": "Split from S39 owner note (from S22, 2026-10-18): must land before the 1.0 JSON freeze.",
         "discovered_from": "S39",

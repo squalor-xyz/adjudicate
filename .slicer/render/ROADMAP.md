@@ -860,7 +860,7 @@ PENDING OWNER CONFIRMATION - not decided. Source: Dependency/licensing notes (ma
 
 | # | Slice | Title | Size | Effort | Trees | Findings | Status |
 |---|---|---|---|---|---|---|---|
-| 1 | S44 | Tolerate unknown history events |  | 1 |  | Split from S39 owner note (from S22, 2026-10-18): must land before the 1.0 JSON freeze. · discovered from S39 | — |
+| 1 | [S44](slices/S44.md) | Tolerate unknown history events | S | 1 | model, lint | Split from S39 owner note (from S22, 2026-10-18): must land before the 1.0 JSON freeze. · discovered from S39 | — |
 | 2 | S42 | JSON error object on --json failures |  | 2 |  | ork integration review 2026-10-19 (squalor-xyz/ork docs/review-2026-10-19-integration.md), R6: adj prints only text on stderr when a --json command fails (measured: adj show 999 --json), so ork cannot keep the error code. | — |
 | 3 | S43 | Sibling-aware record IDs |  | 3 |  | ork integration review 2026-10-19 (squalor-xyz/ork docs/review-2026-10-19-integration.md), R6: two ork branches both allocated records 50 and 51 on 2026-10-19 and needed adj renumber; the store lock cannot see other branches (internal/store/store.go:282-286); slicer already allocates past sibling worktrees. | — |
 | 4 | S39 | Release 1.0 | S | 1 | release | CHANGELOG.md and docs/json.md 1.0 rule; owner 2026-10-18: 0.2.0 first, 1.0 later | — |

@@ -1,0 +1,42 @@
+{
+  "id": "S44",
+  "title": "Readers accept unknown history events: lint warns instead of List/Get failing, so newer event kinds do not make older adj binaries refuse a store",
+  "lead": [
+    "Readers accept a history entry whose event this binary does not know, and\nunknown keys inside a history entry, and keep both when the record is\nrewritten; `adj lint` warns about them instead of `List`/`Get` failing. Then\na later event kind (as `import` was in S22, or `amend` with its new `was` key)\ndoes not make an older `adj` refuse a store. Must land before the 1.0 JSON\nfreeze (S39).",
+    "Not in this slice: unknown top-level record keys (they stay refused by\n`DisallowUnknownFields`, owner 2026-10-19); unknown statuses; the JSON freeze\nitself (S39); the `--json` error object (S42); a change to `adj ai`."
+  ],
+  "depends_note": null,
+  "findings_note": "Split from S39 owner note (from S22, 2026-10-18): must land before the 1.0 JSON freeze.",
+  "size": "S",
+  "flags": [],
+  "trees_note": "model, lint",
+  "trees_plural": true,
+  "boundary": "**Not in this slice:**",
+  "sections": [
+    {
+      "heading": "Why",
+      "body": "Owner decision 2026-10-18 (S39 note, from S22): before freezing, make readers\naccept unknown history events, lint warning instead of List/Get failing.\nOwner decisions 2026-10-19: scope is unknown event names AND unknown keys\ninside a history entry (top-level record keys stay strict); a record with an\nunknown event is still writable by this binary (decide, reject, withdraw,\namend, supersede, renumber), and the unknown entry and its unknown keys\nround-trip unchanged.\n\nToday `model.Parse` decodes with `DisallowUnknownFields`\n(internal/model/file.go:79), which also applies inside `history`, and\n`Record.Validate` refuses an event that `Event.Valid` does not list\n(internal/model/record.go:208)."
+    },
+    {
+      "heading": "Files",
+      "body": "- internal/model/record.go: `HistoryEntry` keeps unknown keys (for example an\n  unexported or `json:\"-\"` map of `json.RawMessage`) with its own\n  `UnmarshalJSON`/`MarshalJSON`, so the top-level `DisallowUnknownFields`\n  stays strict but entry keys are kept; known keys keep their current names,\n  order and omitempty behaviour, unknown keys are written after them in\n  sorted key order (deterministic bytes). `Validate`: an unknown but\n  non-blank event is no longer an error; a blank event still is; the `was`\n  rules (amend needs `was`; only amend has `was`) apply to known events only,\n  so an unknown event may carry `was`. Keep the date rule for every entry.\n  Provide a way for lint to ask \"is this event known\" (keep or rename\n  `Event.Valid`; record the choice as a C32 decision).\n- internal/model/file.go: nothing beyond what the entry type needs; top-level\n  unknown keys still fail.\n- Anything that compares `HistoryEntry` values (renumber stale-copy matching,\n  internal/store/renumber.go and internal/lint/lint.go, C163/C181; tests) must\n  still compile and compare unknown keys too: two entries differing only in an\n  unknown key are not equal.\n- internal/lint/lint.go: new warning checks, added to `Checks`:\n  `unknown-event` (one finding per entry: `history entry N: unknown event\n  \"X\"`) and `unknown-history-key` (one per entry, naming its unknown keys in\n  sorted order). Warnings only, so lint still exits 0 on them alone.\n- internal/render: `adj show` text prints the stored event name as it does\n  today; `--json` output includes an entry's unknown keys (they are part of\n  the record). Whether text `show` prints unknown keys is an implementer\n  decision (C32); recommend not printing them.\n- docs/json.md: history entries may have events and keys this version does\n  not know; readers must ignore them; lint check list gains the two checks.\n- AGENTS.md (adj lint entry, model notes), PROJECT.md (data model: history\n  events; lint checks), README.md (lint checks, if listed), CHANGELOG.md\n  `## Unreleased`: the new tolerance and the two lint checks."
+    },
+    {
+      "heading": "Failing tests",
+      "body": "Write these first and watch each fail for the stated reason:\n\n- model: `Parse`/`Unmarshal` of a record with a history entry\n  `{\"date\": ..., \"event\": \"future-thing\", \"note\": \"x\"}` succeeds (today:\n  unknown event error).\n- model: an entry with an unknown key (`\"by\": \"someone\"` on a `decide` entry,\n  and on an unknown event) parses (today: unknown field error), and\n  `Marshal` writes it back; parse, marshal, parse gives an equal record and\n  the second marshal is byte-identical to the first.\n- model: an unknown top-level key still fails to parse (regression guard).\n- model: a blank event still fails `Validate`; an unknown event with `was`\n  validates; `amend` without `was` and `decide` with `was` still fail.\n- model/commands: decide (and amend) on an open record whose history holds an\n  unknown event with an unknown key succeeds and the file keeps that entry\n  and key unchanged, plus the new entry.\n- store: `List` and `Get` succeed on such a store (today: fail).\n- lint: such a store gives one `unknown-event` and one\n  `unknown-history-key` warning with the expected messages, exit 0;\n  `--json` lists them with severity `warning`.\n- render/cli: `adj show --json` includes the unknown key in the entry;\n  `internal/cli/jsonshape_test.go` still passes (update it if it pins entry\n  keys).\n- renumber stale-copy: two otherwise equal histories that differ only in an\n  unknown key are not treated as the same record.\n\nMutation-check each new test (break the code, see it fail, restore)."
+    },
+    {
+      "heading": "Implement",
+      "body": "1. `slicer start S44 --render --strict` in the slice worktree.\n2. Red tests above.\n3. `HistoryEntry` extra-key handling and `Validate` changes.\n4. Lint checks; docs and CHANGELOG.\n5. Record each interface choice the slice leaves open with\n   `slicer catalog add --kind decision` and a one-line reason (C32)."
+    },
+    {
+      "heading": "Check",
+      "body": "From the worktree root:\n\n```sh\n. scripts/env.sh\ngo test ./...\ngo vet ./...\ngofmt -l cmd internal          # prints nothing\ngo build -o .cache/bin/adj ./cmd/adj\n.cache/bin/adj lint            # this repo's store: clean\n```\n\nAlso by hand on a `t.TempDir`-style scratch store under `.cache/tmp`: a\nrecord file with an unknown event and key; `adj list`, `adj show --json`,\n`adj lint` (warnings, exit 0), `adj decide` keeps the entry."
+    },
+    {
+      "heading": "Git",
+      "body": "Branch `s44` in worktree `../adjudicate-s44`. Do not commit; the orchestrator\ncommits after the gate passes."
+    }
+  ],
+  "notes": []
+}
