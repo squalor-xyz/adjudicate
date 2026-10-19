@@ -14,6 +14,8 @@ but never renames, removes or retypes an existing key.
   now Windows had no lock, only the bounded retry for a name that is taken.
   A lock file that exists with the read-only attribute is locked through a
   read-only open, as on unix.
+- Windows: a `--root` that names a file is refused, as on unix; before, the
+  config below it read as missing and the defaults were used.
 - Releases add `adj_VERSION_windows_amd64.zip` and
   `adj_VERSION_windows_arm64.zip`, each holding `adj.exe`, `LICENSE`, `NOTICE`,
   `README.md` and `CHANGELOG.md`, listed in `SHA256SUMS`.

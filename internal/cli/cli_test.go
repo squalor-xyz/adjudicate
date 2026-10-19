@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"strconv"
 	"strings"
 	"testing"
 )
@@ -257,7 +258,9 @@ func TestRootTwice(t *testing.T) {
 
 	t.Run("names both values", func(t *testing.T) {
 		r := run(env, "", "--root", a, "list", "--root", b)
-		for _, want := range []string{a, b} {
+		// The message quotes each value (%q), which doubles a Windows
+		// backslash.
+		for _, want := range []string{strconv.Quote(a), strconv.Quote(b)} {
 			if !strings.Contains(r.stderr, want) {
 				t.Errorf("stderr does not name %q:\n%s", want, r.stderr)
 			}

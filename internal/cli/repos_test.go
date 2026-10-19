@@ -71,7 +71,7 @@ func TestReposPathResolution(t *testing.T) {
 				t.Fatalf("add: %+v", r)
 			}
 			b, err := os.ReadFile(path)
-			if err != nil || !strings.Contains(string(b), repo) {
+			if err != nil || !strings.Contains(string(b), quoteRepo(repo)) {
 				t.Fatalf("config %s: %s, %v", path, b, err)
 			}
 		})
@@ -130,7 +130,7 @@ func TestReposOperations(t *testing.T) {
 				before = "{\"repos\":[" + quoteRepo(repo+"/gone") + "]}"
 				writeReposConfig(t, path, before)
 				args = []string{"repos", "list"}
-				wantOut = repo + "/gone\n"
+				wantOut = filepath.Join(repo, "gone") + "\n"
 				wantFile = before
 			case "append":
 				before = "{\"repos\":[" + quoteRepo(filepath.Dir(repo)) + "]}"

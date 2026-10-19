@@ -856,7 +856,7 @@ PENDING OWNER CONFIRMATION - not decided. Source: Dependency/licensing notes (ma
 
 *Retired: Owner decided 2026-10-15: see decision C31 (GPL-3.0-or-later)..*
 
-40 items · — 1 · done 37 · later 1 · retired 1
+41 items · — 1 · done 38 · later 1 · retired 1
 
 | # | Slice | Title | Size | Effort | Trees | Findings | Status |
 |---|---|---|---|---|---|---|---|
@@ -905,3 +905,4 @@ PENDING OWNER CONFIRMATION - not decided. Source: Dependency/licensing notes (ma
 | 38 | [S31](slices/S31.md) | Report the version with adj version | S | 1 | cli | release prep; C169 | done |
 | 39 | [S32](slices/S32.md) | Release docs: PROJECT.md, CHANGELOG and JSON stability | S | 1 | docs | release prep; C165 | done |
 | 40 | [S33](slices/S33.md) | Release 0.1.0 | S | 1 | release | C165 | done |
+| 41 | S41 | Windows CI fixes | S | 1 |  | discovered from S36 | done |

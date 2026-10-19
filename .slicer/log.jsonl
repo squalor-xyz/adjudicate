@@ -776,3 +776,8 @@
 {"when": "2026-10-18T23:13:15Z", "item": "S37", "action": "note", "from": "", "to": "", "note": "Review FAIL (round 1): medium: production default lock path ", "by": "Jon R"}
 {"when": "2026-10-18T23:19:48Z", "item": "S37", "action": "status", "from": "started", "to": "done", "note": "Verified outcome: release documentation and comment nits cleared; the lock-timeout seam uses userconfig.Updater while retaining the production 5 s timeout, and a test pins the production lock path; inbox usage lines are split and test-pinned; v0.1.0 compatibility was verified with a real v0.1.0 build (exit 1: unknown event \"import\"); CHANGELOG includes the 0.2.0 section; go test, go vet, Windows vet and gofmt are green; review returned FAIL once before the gate returned VERDICT: PASS. S40 items remain deferred.", "by": "Jon R"}
 {"when": "2026-10-18T23:48:22Z", "item": "S40", "action": "note", "from": "", "to": "", "note": "2026-10-18 from S37 gate (cosmetic): internal/store/lock_win", "by": "Jon R"}
+{"when": "2026-10-19T03:18:14Z", "item": "S41", "action": "add", "from": "", "to": "open", "note": "Windows CI fixes for 0.2.0: first windows-latest go test run failed six tests"}
+{"when": "2026-10-19T03:18:18Z", "item": "S41", "action": "set", "from": "", "to": "", "note": "importance 2→3; urgency 2→3; effort -→1"}
+{"when": "2026-10-19T03:18:19Z", "item": "S41", "action": "status", "from": "open", "to": "started", "note": "", "by": "Jon R"}
+{"when": "2026-10-19T03:19:28Z", "item": "S41", "action": "note", "from": "", "to": "", "note": "First windows-latest CI run (39193784144) failed 6 tests. 5 ", "by": "Jon R"}
+{"when": "2026-10-19T03:19:28Z", "item": "S41", "action": "status", "from": "started", "to": "done", "note": "", "by": "Jon R"}

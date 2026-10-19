@@ -52,19 +52,22 @@ func TestSaveAtomic(t *testing.T) {
 				if err != nil || len(cfg.Repos) != 1 || cfg.Repos[0] != base {
 					t.Fatalf("saved config: %+v, %v", cfg, err)
 				}
-				fi, err := os.Stat(path)
-				if err != nil {
-					t.Fatal(err)
-				}
-				if fi.Mode().Perm() != 0644 {
-					t.Fatalf("file mode %o", fi.Mode().Perm())
-				}
-				fi, err = os.Stat(filepath.Dir(path))
-				if err != nil {
-					t.Fatal(err)
-				}
-				if fi.Mode().Perm() & ^os.FileMode(0755) != 0 {
-					t.Fatalf("dir mode %o", fi.Mode().Perm())
+				// Windows has no unix permission bits: files report 0666.
+				if runtime.GOOS != "windows" {
+					fi, err := os.Stat(path)
+					if err != nil {
+						t.Fatal(err)
+					}
+					if fi.Mode().Perm() != 0644 {
+						t.Fatalf("file mode %o", fi.Mode().Perm())
+					}
+					fi, err = os.Stat(filepath.Dir(path))
+					if err != nil {
+						t.Fatal(err)
+					}
+					if fi.Mode().Perm() & ^os.FileMode(0755) != 0 {
+						t.Fatalf("dir mode %o", fi.Mode().Perm())
+					}
 				}
 			}
 			if mode == "replace" {

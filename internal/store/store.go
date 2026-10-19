@@ -92,9 +92,14 @@ func (s *Store) lock() (unlock func(), err error) {
 // directory, and the config in it, if any, is loaded. The store directory
 // does not have to exist yet; Create makes it.
 func Open(root string) (*Store, error) {
-	// A missing root is an error; a root that is a file fails in LoadConfig.
-	if _, err := os.Stat(root); err != nil {
+	// A missing root is an error, and so is a root that is a file: Windows
+	// reports a config below a file as missing, so LoadConfig would not.
+	fi, err := os.Stat(root)
+	if err != nil {
 		return nil, err
+	}
+	if !fi.IsDir() {
+		return nil, fmt.Errorf("%s is not a directory", root)
 	}
 	cfg, err := LoadConfig(root)
 	if err != nil {
