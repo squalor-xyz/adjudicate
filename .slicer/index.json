@@ -2,10 +2,1429 @@
   "version": 9,
   "id_prefix": "S",
   "id_width": 2,
-  "next_id": 44,
+  "next_id": 45,
   "preamble": "Roadmap for **adjudicate** (CLI command `adj`; formerly the working name \"dlog\"): a Go, standard-library-only CLI that records project decisions as plain files in the repo. Owner decisions from 2026-10-15 are catalog records C23-C33.",
   "passes": [],
   "items": [
+    {
+      "id": "S44",
+      "title": "Readers accept unknown history events: lint warns instead of List/Get failing, so newer event kinds do not make older adj binaries refuse a store",
+      "short_title": "Tolerate unknown history events",
+      "status": "open",
+      "has_slice": false,
+      "depends_on": [],
+      "note_records": [],
+      "claim": null,
+      "fields": {
+        "size": "",
+        "flags": [],
+        "trees": [],
+        "trees_literal": false,
+        "findings": "Split from S39 owner note (from S22, 2026-10-18): must land before the 1.0 JSON freeze.",
+        "discovered_from": "S39",
+        "parent": "",
+        "cites": [],
+        "key": "release.unknown-history-events",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 3,
+        "urgency": 3,
+        "effort": 1,
+        "attempts": 0
+      }
+    },
+    {
+      "id": "S01",
+      "title": "Confirm open decisions",
+      "short_title": "Confirm open decisions",
+      "status": "done",
+      "has_slice": true,
+      "depends_on": [],
+      "note_records": [],
+      "claim": null,
+      "fields": {
+        "size": "S",
+        "flags": [],
+        "trees": [
+          "decisions"
+        ],
+        "trees_literal": false,
+        "findings": "PROJECT.md Open decisions 1-7; Core concepts (kind); Dependency/licensing notes",
+        "discovered_from": "",
+        "parent": "",
+        "cites": [
+          "C23",
+          "C24",
+          "C25",
+          "C26",
+          "C27",
+          "C28",
+          "C29",
+          "C30",
+          "C31",
+          "C32",
+          "C33"
+        ],
+        "key": "",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 3,
+        "urgency": 3,
+        "effort": 1,
+        "attempts": 0
+      }
+    },
+    {
+      "id": "S02",
+      "title": "Project scaffolding",
+      "short_title": "Project scaffolding",
+      "status": "done",
+      "has_slice": true,
+      "depends_on": [
+        "S01"
+      ],
+      "note_records": [
+        {
+          "id": "b0039967-652a-48bb-bd10-b928c80bfc78",
+          "kind": "",
+          "text": "**2026-10-15** — Built the Go module, cmd/adj and internal/cli (--help and -h exit 0; no args or unknown command exit 2 with usage on stderr), scripts/env.sh (bash and zsh only, guarded by go.mod, caches under .cache), .gitignore and AGENTS.md. Checks green: go test ./... (2 tests, 4 subtests), go vet ./..., gofmt -l cmd internal empty. env.sh probe matrix run (bash, zsh incl. no_function_argzero, sh, dash and ksh fail loudly, CDPATH, guard); no directories created outside the worktree. Decisions C34-C40 recorded. OWNER FLAG: LICENSE is a stub; the full GPL-3.0 text and the copyright holder are still needed (C39).",
+          "created_at": "2026-10-15T04:36:32Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        }
+      ],
+      "claim": null,
+      "fields": {
+        "size": "S",
+        "flags": [],
+        "trees": [
+          "scaffold"
+        ],
+        "trees_literal": false,
+        "findings": "PROJECT.md Stack recommendation; Dependency/licensing notes",
+        "discovered_from": "",
+        "parent": "",
+        "cites": [
+          "C23",
+          "C24",
+          "C31",
+          "C32",
+          "C33",
+          "C27"
+        ],
+        "key": "",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 3,
+        "urgency": 3,
+        "effort": 1,
+        "attempts": 1
+      }
+    },
+    {
+      "id": "S03",
+      "title": "Record model and lifecycle transitions",
+      "short_title": "Record model and lifecycle transitions",
+      "status": "done",
+      "has_slice": true,
+      "depends_on": [
+        "S02",
+        "S01"
+      ],
+      "note_records": [
+        {
+          "id": "d533d341-3090-42dc-82bb-d13580677ab3",
+          "kind": "",
+          "text": "**2026-10-15** — From S02 gate (non-blocking, fold in here): internal/cli/cli.go:12 comment cites C32 for exit codes; should cite C34. AGENTS.md:42-44 and scripts/env.sh:9 say plain sh fails; on macOS /bin/sh is bash (POSIX mode) and works — reword to 'dash and other non-bash/zsh shells'.",
+          "created_at": "2026-10-15T04:36:49Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "3394e7d1-64e8-408e-b8a3-0104850f068f",
+          "kind": "",
+          "text": "**2026-10-15** — Verified: internal/model record type, Validate and decide/reject/withdraw/supersede transitions with dated history; 114 tests green, go vet and gofmt clean; interface decisions C41-C47 recorded.",
+          "created_at": "2026-10-15T04:44:46Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        }
+      ],
+      "claim": null,
+      "fields": {
+        "size": "M",
+        "flags": [],
+        "trees": [
+          "model"
+        ],
+        "trees_literal": false,
+        "findings": "PROJECT.md Core concepts / data model; Milestone 1",
+        "discovered_from": "",
+        "parent": "",
+        "cites": [
+          "C30",
+          "C27",
+          "C32"
+        ],
+        "key": "",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 3,
+        "urgency": 3,
+        "effort": 2,
+        "attempts": 1
+      }
+    },
+    {
+      "id": "S04",
+      "title": "Record file read and write",
+      "short_title": "Record file read and write",
+      "status": "done",
+      "has_slice": true,
+      "depends_on": [
+        "S03",
+        "S01"
+      ],
+      "note_records": [
+        {
+          "id": "1a85ce22-f9f1-432f-b077-a9349096dd69",
+          "kind": "",
+          "text": "**2026-10-15** — From S03 review: internal/model gains file I/O neighbours here — update AGENTS.md:23 ('no I/O') and the package doc at internal/model/record.go:3-4 if the model package itself changes; keep model I/O-free if file code lives in internal/store. Validate now also checks history entries (C47), so S04's 'record that fails Validate' cases include bad history.",
+          "created_at": "2026-10-15T04:44:59Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "8ad57b3f-6a4d-4ced-8405-36c903556cad",
+          "kind": "",
+          "text": "**2026-10-15** — Verified: JSON-frontmatter record file read and write in internal/model/file.go (Marshal, Unmarshal, Parse, ReadFile, WriteFile); strict Unmarshal and lenient Parse; BOM and CRLF rejected with named reasons; 159 test PASS lines, 0 FAIL; go vet and gofmt clean; slicer render and check ok. Decisions C48 to C55 recorded.",
+          "created_at": "2026-10-15T04:59:15Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        }
+      ],
+      "claim": null,
+      "fields": {
+        "size": "S",
+        "flags": [],
+        "trees": [
+          "model"
+        ],
+        "trees_literal": false,
+        "findings": "PROJECT.md Open decisions 3; Core concepts (Record)",
+        "discovered_from": "",
+        "parent": "",
+        "cites": [
+          "C07",
+          "C25",
+          "C32"
+        ],
+        "key": "",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 3,
+        "urgency": 3,
+        "effort": 1,
+        "attempts": 1
+      }
+    },
+    {
+      "id": "S05",
+      "title": "Store, config and ID allocation",
+      "short_title": "Store, config and ID allocation",
+      "status": "done",
+      "has_slice": true,
+      "depends_on": [
+        "S04",
+        "S01"
+      ],
+      "note_records": [
+        {
+          "id": "8bd584d1-a122-44a5-b30d-b046b1e0bfb1",
+          "kind": "",
+          "text": "**2026-10-15** — From S04 review/gate: (1) model.WriteFile is a plain os.WriteFile (C54) — decide whether create/update need temp-file-plus-rename and record it (C32). (2) Empty non-nil slices do not round-trip DeepEqual (omitempty) — build records with nil slices or compare accordingly. (3) Nit: internal/model/file.go:26 comment says 'a file with CRLF line endings is rejected'; reword to 'a file whose frontmatter uses CRLF' (body is verbatim per C49).",
+          "created_at": "2026-10-15T04:59:31Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "ad6b34ea-6fb7-432f-9565-f268c82c0e38",
+          "kind": "",
+          "text": "**2026-10-15** — Verified: internal/store (Open, List, Get, Create, Update), .adjudicate.json config with defaults, root discovery, sequential ID allocation by scan. Create links a synced temp file into place with a bounded retry of 3; Update renames over the record. New files 0644, Update preserves permission bits. 231 tests green, go vet and gofmt clean, catalog decisions C56-C64 recorded. Locking against concurrent creates is deferred to the owner (duplicate IDs are left to lint S14 and renumber S15).",
+          "created_at": "2026-10-15T05:11:57Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        }
+      ],
+      "claim": null,
+      "fields": {
+        "size": "M",
+        "flags": [],
+        "trees": [
+          "store"
+        ],
+        "trees_literal": false,
+        "findings": "PROJECT.md Architecture sketch (ID allocation, Determinism); Open decisions 4, 6, 7",
+        "discovered_from": "",
+        "parent": "",
+        "cites": [
+          "C26",
+          "C28",
+          "C29",
+          "C32"
+        ],
+        "key": "",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 3,
+        "urgency": 3,
+        "effort": 2,
+        "attempts": 1
+      }
+    },
+    {
+      "id": "S25",
+      "title": "Fix stale-copy false positive that flags a live record",
+      "short_title": "Fix stale-copy false positive that flags a live record",
+      "status": "done",
+      "has_slice": true,
+      "depends_on": [],
+      "note_records": [
+        {
+          "id": "c67bac29-b5ea-4693-84a2-9ff79864a8c8",
+          "kind": "",
+          "text": "**2026-10-16** — IsStaleCopy now also requires the same record (C163): unedited moved record equals the stale one in every field and the body; if edited since, the history before the renumber entry is the stale record's whole history and the ask fields (title, key, tags, asked_by, created, context, options, recommendation) are equal; compared as stored so a non-canonical stale file (empty arrays, no final newline) still matches. A live record sharing ID and name text with a moved one is no longer flagged by lint or refused by renumber. Help text of adj lint and adj renumber says check both, then delete. Lock: an existing read-only .adj.lock is locked through an O_RDONLY open on EACCES (C164). Catalog edits: C155 (Create gap closed by C162), C162 (invalid-only-with-real-ID wording), C156 (renumber entry at any position, same content, check both then delete). Tests: new store, lint fixture, cli help and lock tests, each red before the change; all new assertions mutation-checked. Known limits (C163): a moved file hand-edited without a history entry is not recognised; identical records are a contrived case where the keeper is flagged; edited-since comparison skips the body. Gate PASS after one review round with one blocker (non-canonical stale file) fixed.",
+          "created_at": "2026-10-16T03:27:42Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        }
+      ],
+      "claim": null,
+      "fields": {
+        "size": "M",
+        "flags": [],
+        "trees": [
+          "store",
+          "lint",
+          "cli"
+        ],
+        "trees_literal": false,
+        "findings": "S15 gate note (2) on S16; reproduced in the S16 run; S23 review notes (3), (6) on S16",
+        "discovered_from": "",
+        "parent": "",
+        "cites": [],
+        "key": "",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 3,
+        "urgency": 3,
+        "effort": 2,
+        "attempts": 1
+      }
+    },
+    {
+      "id": "S26",
+      "title": "Accept --root before the subcommand",
+      "short_title": "Accept --root before the subcommand",
+      "status": "done",
+      "has_slice": true,
+      "depends_on": [],
+      "note_records": [
+        {
+          "id": "58aa1203-9aa3-4072-bd94-fbd77d3bdf89",
+          "kind": "",
+          "text": "**2026-10-17** — Leading --root DIR / --root=DIR is accepted before the subcommand and handed to the command as if it followed it; --root both before and after, or twice before, exits 2 naming both values (C170); twice after still takes the last. Tests, mutation checks and docs (README, AGENTS.md) done; full suite, vet, gofmt and slicer check pass.",
+          "created_at": "2026-10-17T13:02:37Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        }
+      ],
+      "claim": null,
+      "fields": {
+        "size": "S",
+        "flags": [],
+        "trees": [
+          "cli"
+        ],
+        "trees_literal": false,
+        "findings": "S17 dogfood friction (7), note on S20; C165",
+        "discovered_from": "",
+        "parent": "",
+        "cites": [
+          "C165"
+        ],
+        "key": "",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 2,
+        "urgency": 3,
+        "effort": 1,
+        "attempts": 1
+      }
+    },
+    {
+      "id": "S27",
+      "title": "Set refs with ask --ref",
+      "short_title": "Set refs with ask --ref",
+      "status": "done",
+      "has_slice": true,
+      "depends_on": [],
+      "note_records": [
+        {
+          "id": "2afbd353-70bc-418a-ad21-07d2c8f0d4c0",
+          "kind": "",
+          "text": "**2026-10-17** — C171 records ref search and inbox/check display; implementing ask parsing and round-trip coverage.",
+          "created_at": "2026-10-17T13:11:52Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "2bf5405e-b17d-4a3c-8616-7347052eb040",
+          "kind": "",
+          "text": "**2026-10-17** — C171 review P3: aligned ask, check and inbox guidance and renderer comments with ref behavior.",
+          "created_at": "2026-10-17T13:21:07Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        }
+      ],
+      "claim": null,
+      "fields": {
+        "size": "S",
+        "flags": [],
+        "trees": [
+          "cli",
+          "commands"
+        ],
+        "trees_literal": false,
+        "findings": "S17 dogfood friction (1), note on S20; C165",
+        "discovered_from": "",
+        "parent": "",
+        "cites": [
+          "C165",
+          "C12"
+        ],
+        "key": "",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 2,
+        "urgency": 3,
+        "effort": 1,
+        "attempts": 1
+      }
+    },
+    {
+      "id": "S28",
+      "title": "Free-text recommendation with ask --recommend-text",
+      "short_title": "Free-text recommendation with ask --recommend-text",
+      "status": "done",
+      "has_slice": true,
+      "depends_on": [],
+      "note_records": [],
+      "claim": null,
+      "fields": {
+        "size": "M",
+        "flags": [],
+        "trees": [
+          "model",
+          "cli",
+          "commands",
+          "render",
+          "lint"
+        ],
+        "trees_literal": false,
+        "findings": "S17 dogfood friction (4), note on S20; C167",
+        "discovered_from": "",
+        "parent": "",
+        "cites": [
+          "C165",
+          "C167",
+          "C163",
+          "C172",
+          "C173",
+          "C174"
+        ],
+        "key": "",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 2,
+        "urgency": 3,
+        "effort": 2,
+        "attempts": 1
+      }
+    },
+    {
+      "id": "S29",
+      "title": "Backdate a decision with decide --decided-at",
+      "short_title": "Backdate a decision with decide --decided-at",
+      "status": "done",
+      "has_slice": true,
+      "depends_on": [],
+      "note_records": [],
+      "claim": null,
+      "fields": {
+        "size": "S",
+        "flags": [],
+        "trees": [
+          "cli",
+          "commands",
+          "model"
+        ],
+        "trees_literal": false,
+        "findings": "S17 dogfood friction (5), note on S20; C168",
+        "discovered_from": "",
+        "parent": "",
+        "cites": [
+          "C165",
+          "C168",
+          "C175",
+          "C176"
+        ],
+        "key": "",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 2,
+        "urgency": 3,
+        "effort": 1,
+        "attempts": 1
+      }
+    },
+    {
+      "id": "S30",
+      "title": "Correct a record's text with adj amend",
+      "short_title": "Correct a record's text with adj amend",
+      "status": "done",
+      "has_slice": true,
+      "depends_on": [
+        "S28"
+      ],
+      "note_records": [
+        {
+          "id": "b13e7169-a813-4307-b18f-8af80e2886b3",
+          "kind": "",
+          "text": "**2026-10-17** — From S28: a recommendation has exactly one of label or text (C172). If amend can edit the recommendation, keep them exclusive and go through Validate.",
+          "created_at": "2026-10-17T13:53:33Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        }
+      ],
+      "claim": null,
+      "fields": {
+        "size": "M",
+        "flags": [],
+        "trees": [
+          "model",
+          "cli",
+          "commands",
+          "store",
+          "lint"
+        ],
+        "trees_literal": false,
+        "findings": "S17 dogfood friction (6), note on S20; C166",
+        "discovered_from": "",
+        "parent": "",
+        "cites": [
+          "C165",
+          "C166",
+          "C163",
+          "C178",
+          "C179",
+          "C180",
+          "C181",
+          "C182",
+          "C183"
+        ],
+        "key": "",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 2,
+        "urgency": 3,
+        "effort": 2,
+        "attempts": 1
+      }
+    },
+    {
+      "id": "S31",
+      "title": "Report the version with adj version",
+      "short_title": "Report the version with adj version",
+      "status": "done",
+      "has_slice": true,
+      "depends_on": [],
+      "note_records": [
+        {
+          "id": "356e286b-74bd-4339-9a08-d20060f3b2f7",
+          "kind": "",
+          "text": "**2026-10-17** — From S26: TestUnknownLeadingFlag in internal/cli/cli_test.go pins adj --version to exit 2. Replace that case when --version is added.",
+          "created_at": "2026-10-17T13:04:48Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "73dd6c53-bd7a-42eb-a702-e1325ae90f64",
+          "kind": "",
+          "text": "**2026-10-17** — VERDICT: FAIL - executed mutation evidence was missing for each new test; temporary mutations are now verified and restored.",
+          "created_at": "2026-10-17T14:04:15Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "d927807c-b33c-41b8-8539-27bd328814a6",
+          "kind": "",
+          "text": "**2026-10-17** — Reviewer gate FAIL: AGENTS.md lines 232-239 need the S31 version exceptions. Version accepts --root without a config, and --version is a valid leading standalone flag. Update project guidance to match behavior; no product-code defect found.",
+          "created_at": "2026-10-17T14:06:22Z",
+          "attempt": 2,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        }
+      ],
+      "claim": null,
+      "fields": {
+        "size": "S",
+        "flags": [],
+        "trees": [
+          "cli"
+        ],
+        "trees_literal": false,
+        "findings": "release prep; C169",
+        "discovered_from": "",
+        "parent": "",
+        "cites": [
+          "C165",
+          "C169"
+        ],
+        "key": "",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 2,
+        "urgency": 3,
+        "effort": 1,
+        "attempts": 3
+      }
+    },
+    {
+      "id": "S32",
+      "title": "Release docs: PROJECT.md, CHANGELOG and JSON stability",
+      "short_title": "Release docs: PROJECT.md, CHANGELOG and JSON stability",
+      "status": "done",
+      "has_slice": true,
+      "depends_on": [
+        "S26",
+        "S27",
+        "S28",
+        "S29",
+        "S30",
+        "S31"
+      ],
+      "note_records": [
+        {
+          "id": "6d4bc97e-7451-4654-b16a-092086b632ec",
+          "kind": "",
+          "text": "**2026-10-17** — From S26 review: the usage text and README name only --root as accepted before the command, while the unknown-flag error also names --help and -h (owner kept that message 2026-10-17). Make the wording agree.",
+          "created_at": "2026-10-17T13:04:48Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "afe5953c-105b-4b0a-a509-ee909817a19d",
+          "kind": "",
+          "text": "**2026-10-17** — From S28: recommendation.label is optional since S28; a recommendation has exactly one of label or text (C172), so say so in the json.md 0.x stability section. From the S28 merge: the AGENTS.md decide entry does not name S29's --decided-at (docs/json.md does); add it.",
+          "created_at": "2026-10-17T13:53:34Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "66a35ad2-1e59-4a46-a173-577eb31f8d99",
+          "kind": "",
+          "text": "**2026-10-17** — From S30: a title change does not rename the file (C180, owner-accepted C182), so the filename slug can drift from the title; say so in the README/json.md. Cosmetic reflows left by the S30 merge: AGENTS.md ~line 256 (~126 cols) and ~239 (short line), docs/json.md ~485 (~92 cols). ai.md is 1799/1800 bytes; the S30 trims (C183) dropped small hints worth restoring if the cap is raised.",
+          "created_at": "2026-10-17T15:34:12Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "f65afac8-a622-46c1-8af9-019af273963c",
+          "kind": "",
+          "text": "**2026-10-17** — For S33: CHANGELOG.md says '0.1.0 - unreleased' with a not-tagged sentence; replace unreleased with the final date and delete that sentence (C185). README documents that on Go 1.27.2 a plain go build in a git checkout prints a Go-stamped pseudo-version, not (devel) as C169 assumed; version.go is unchanged (C187).",
+          "created_at": "2026-10-17T16:27:36Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        }
+      ],
+      "claim": null,
+      "fields": {
+        "size": "S",
+        "flags": [],
+        "trees": [
+          "docs"
+        ],
+        "trees_literal": false,
+        "findings": "release prep; C165",
+        "discovered_from": "",
+        "parent": "",
+        "cites": [
+          "C165",
+          "C31",
+          "C184",
+          "C185",
+          "C186",
+          "C187",
+          "C188",
+          "C172",
+          "C180",
+          "C182",
+          "C169",
+          "C189",
+          "C190"
+        ],
+        "key": "",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 2,
+        "urgency": 3,
+        "effort": 1,
+        "attempts": 1
+      }
+    },
+    {
+      "id": "S33",
+      "title": "Release 0.1.0",
+      "short_title": "Release 0.1.0",
+      "status": "done",
+      "has_slice": true,
+      "depends_on": [
+        "S32"
+      ],
+      "note_records": [
+        {
+          "id": "91b1f3cb-195d-421e-a4be-2e437a9af648",
+          "kind": "",
+          "text": "**2026-10-17** — From S32 (owner 2026-10-17): fix adj check --help so its usage names refs, which check searches (C171); add a test. Also: replace '0.1.0 - unreleased' in CHANGELOG.md with the release date and delete its 'not tagged yet' sentence; update PROJECT.md ~line 356 (decisions/ holds 0001-0010 = C23-C32) once the C165-C169 records are added; after tagging, re-check README ~47-51 on what adj version prints (C187). Comment-only: cli.go ~174 leadingRoot doc comment still says --root is the only flag accepted before the command. Cosmetic: AGENTS.md:285 is 92 cols, docs/json.md:27 ends a line early, PROJECT.md ~307 'states what 0.x promises' reads oddly now that it also gives the 1.0 rule.",
+          "created_at": "2026-10-17T16:32:46Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "0dbbd9dd-4df6-44f4-ad93-3f7ef8856fc7",
+          "kind": "",
+          "text": "**2026-10-17** — Owner Jon R delegated the adj decide runs for the C165-C169 records (decisions/0011-0015) to the S33 implementer on 2026-10-17; decided_by is Jon R. Verified: adj lint on decisions/ clean; 15 decided records, inbox empty; -ldflags -X internal/cli.versionOverride=v0.1.0 build prints v0.1.0 for adj version and adj --version; full suite incl. roundtrip passes. Tag v0.1.0 is created by the outer session only on owner ask.",
+          "created_at": "2026-10-17T20:57:23Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        }
+      ],
+      "claim": null,
+      "fields": {
+        "size": "S",
+        "flags": [],
+        "trees": [
+          "release"
+        ],
+        "trees_literal": false,
+        "findings": "C165",
+        "discovered_from": "",
+        "parent": "",
+        "cites": [
+          "C165",
+          "C27",
+          "C191",
+          "C192"
+        ],
+        "key": "",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 3,
+        "urgency": 3,
+        "effort": 1,
+        "attempts": 1
+      }
+    },
+    {
+      "id": "S41",
+      "title": "Windows CI fixes for 0.2.0: first windows-latest go test run failed six tests",
+      "short_title": "Windows CI fixes",
+      "status": "done",
+      "has_slice": false,
+      "depends_on": [],
+      "note_records": [
+        {
+          "id": "bfd402bf-90be-457a-9b7e-051d00fc5313",
+          "kind": "",
+          "text": "**2026-10-19** — First windows-latest CI run (39193784144) failed 6 tests. 5 were test-side: %q-quoted and JSON-escaped backslashes, a / path separator, and no unix mode bits on Windows. 1 was a real fix: store.Open now refuses a root that is not a directory, because Windows reports file\\.adjudicate.json as missing.",
+          "created_at": "2026-10-19T03:19:28Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        }
+      ],
+      "claim": null,
+      "fields": {
+        "size": "S",
+        "flags": [],
+        "trees": [],
+        "trees_literal": false,
+        "findings": "",
+        "discovered_from": "S36",
+        "parent": "",
+        "cites": [],
+        "key": "",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 3,
+        "urgency": 3,
+        "effort": 1,
+        "attempts": 1
+      }
+    },
+    {
+      "id": "S42",
+      "title": "--json failures print a JSON error object {error:{code,message,command}}, as slicer does",
+      "short_title": "JSON error object on --json failures",
+      "status": "open",
+      "has_slice": false,
+      "depends_on": [],
+      "note_records": [],
+      "claim": null,
+      "fields": {
+        "size": "",
+        "flags": [],
+        "trees": [],
+        "trees_literal": false,
+        "findings": "ork integration review 2026-10-19 (squalor-xyz/ork docs/review-2026-10-19-integration.md), R6: adj prints only text on stderr when a --json command fails (measured: adj show 999 --json), so ork cannot keep the error code.",
+        "discovered_from": "",
+        "parent": "",
+        "cites": [],
+        "key": "ork.json-error",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 3,
+        "urgency": 2,
+        "effort": 2,
+        "attempts": 0
+      }
+    },
+    {
+      "id": "S06",
+      "title": "Commands: init and ask",
+      "short_title": "Commands: init and ask",
+      "status": "done",
+      "has_slice": true,
+      "depends_on": [
+        "S05"
+      ],
+      "note_records": [
+        {
+          "id": "86d07360-5623-485c-8687-a85aa41119a3",
+          "kind": "",
+          "text": "**2026-10-15** — From S05 gate (nits): internal/store/store.go:44-45 beforeLink doc says 'just before the file is linked'; it runs before writeNew (before the temp file is written) — reword. Five test trailing comments exceed 80 cols (config_test.go:84, store_test.go:127,249,335,539). FindRoot returns ErrNoRoot when no .adjudicate.json — map to the 'run adj init' message.",
+          "created_at": "2026-10-15T05:12:11Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "57c514bf-d519-4a32-a649-edac99ff0a8e",
+          "kind": "",
+          "text": "**2026-10-15** — Verified: adj init and adj ask end to end through cli.Run; --root flag and Env.Root explicit roots with bounded discovery (Env.Stop); 317 tests green, go vet and gofmt clean; decisions C65-C76.",
+          "created_at": "2026-10-15T05:30:33Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        }
+      ],
+      "claim": null,
+      "fields": {
+        "size": "M",
+        "flags": [],
+        "trees": [
+          "cli"
+        ],
+        "trees_literal": false,
+        "findings": "PROJECT.md v1 feature tier; Milestone 2",
+        "discovered_from": "",
+        "parent": "",
+        "cites": [
+          "C32"
+        ],
+        "key": "",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 3,
+        "urgency": 2,
+        "effort": 2,
+        "attempts": 1
+      }
+    },
+    {
+      "id": "S07",
+      "title": "Commands: decide, reject, withdraw",
+      "short_title": "Commands: decide, reject, withdraw",
+      "status": "done",
+      "has_slice": true,
+      "depends_on": [
+        "S06"
+      ],
+      "note_records": [
+        {
+          "id": "1e3e5fec-c330-473e-921c-22426c2fc7cb",
+          "kind": "",
+          "text": "**2026-10-15** — From S06 review/gate: (1) internal/cli/cli.go holds shared helpers + one handler per command; S07–S12 add 7+ handlers — consider internal/cli/<command>.go per handler with dispatch in cli.go (record as a Files deviation). (2) commands.UsageError lives in ask.go — move to a shared file (e.g. commands/errors.go) when decide/reject/withdraw reuse it. (3) Reuse the C70 --by / env pattern for decided_by. (4) Low: --recommend \"\" (explicit empty) is treated as absent (ask.go:93) while --tag \"\" exits 2 — make it a usage error via fsSet. (5) Nit: AGENTS.md:60 is a 117-col line; re-wrap.",
+          "created_at": "2026-10-15T05:30:47Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "c94e8a13-b884-4710-a202-871de47aec21",
+          "kind": "",
+          "text": "**2026-10-15** — Verified: decide, reject and withdraw (exit codes as specified); decided_by from --by, else ADJ_DECIDED_BY, else blank; a closed record exits 1 with a status message (only an open record can be decided/rejected/withdrawn); a duplicate ID is refused with both file names; handler-per-file refactor (init.go, ask.go, decide.go; UsageError in commands/errors.go); --recommend empty is a usage error. go test ./... 403 PASS, 0 FAIL, 0 SKIP; go vet and gofmt clean; slicer render and check ok. Decisions C77-C85.",
+          "created_at": "2026-10-15T05:50:10Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        }
+      ],
+      "claim": null,
+      "fields": {
+        "size": "S",
+        "flags": [],
+        "trees": [
+          "cli"
+        ],
+        "trees_literal": false,
+        "findings": "PROJECT.md v1 feature tier; Lifecycle; Milestone 2",
+        "discovered_from": "",
+        "parent": "",
+        "cites": [
+          "C27",
+          "C32"
+        ],
+        "key": "",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 3,
+        "urgency": 2,
+        "effort": 1,
+        "attempts": 1
+      }
+    },
+    {
+      "id": "S08",
+      "title": "Commands: show and list with --json",
+      "short_title": "Commands: show and list with --json",
+      "status": "done",
+      "has_slice": true,
+      "depends_on": [
+        "S06"
+      ],
+      "note_records": [
+        {
+          "id": "4e6f2ce3-b346-4b6f-ae1b-babc72b1537a",
+          "kind": "",
+          "text": "**2026-10-15** — Verified: adj show and adj list with --json (list prints {records:[...]}), query.Select filters (status, repeatable tag, key; AND), text and JSON renderers, docs/json.md examples generated from real adj output, review fixes applied (continuation indents, trailing newline trim, duplicate-ID show test, blank ask --key is exit 2), all tests green, vet and gofmt clean. Decisions C86-C96. Relay roles r1/r2/r4 switched to sonnet/high by owner.",
+          "created_at": "2026-10-15T10:11:23Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        }
+      ],
+      "claim": null,
+      "fields": {
+        "size": "S",
+        "flags": [],
+        "trees": [
+          "cli"
+        ],
+        "trees_literal": false,
+        "findings": "PROJECT.md v1 feature tier; Milestone 2; acceptance (--json)",
+        "discovered_from": "",
+        "parent": "",
+        "cites": [
+          "C32"
+        ],
+        "key": "",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 3,
+        "urgency": 2,
+        "effort": 1,
+        "attempts": 1
+      }
+    },
+    {
+      "id": "S09",
+      "title": "Command: inbox",
+      "short_title": "Command: inbox",
+      "status": "done",
+      "has_slice": true,
+      "depends_on": [
+        "S08"
+      ],
+      "note_records": [
+        {
+          "id": "1a6732ae-8438-485b-a732-9cfb315c5914",
+          "kind": "",
+          "text": "**2026-10-15** — From S08 gate (low, cosmetic): internal/render/text.go:48,51,77 call cont() on option summaries, tradeoffs and history notes without the trailing-newline trim field() applies; a value ending in \\n prints a spaces-only line. Fold in if inbox reuses these renderers.",
+          "created_at": "2026-10-15T10:11:46Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "3464c683-5d43-4b33-b1c0-40312df33dde",
+          "kind": "",
+          "text": "**2026-10-15** — Verified: adj inbox text and JSON list open records only, oldest first (created, then ID, stable), context shown by owner decision; shared render helpers and trailing-break trim; docs/json.md example is tested; all tests green, vet and gofmt clean; decisions C97-C104.",
+          "created_at": "2026-10-15T10:35:04Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        }
+      ],
+      "claim": null,
+      "fields": {
+        "size": "S",
+        "flags": [],
+        "trees": [
+          "cli"
+        ],
+        "trees_literal": false,
+        "findings": "PROJECT.md Goals 2; v1 feature tier; Milestone 3",
+        "discovered_from": "",
+        "parent": "",
+        "cites": [
+          "C32"
+        ],
+        "key": "",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 3,
+        "urgency": 2,
+        "effort": 1,
+        "attempts": 1
+      }
+    },
+    {
+      "id": "S10",
+      "title": "Command: check",
+      "short_title": "Command: check",
+      "status": "done",
+      "has_slice": true,
+      "depends_on": [
+        "S07",
+        "S08"
+      ],
+      "note_records": [
+        {
+          "id": "0d717b6b-575e-4583-b209-f19255d6b282",
+          "kind": "",
+          "text": "**2026-10-15** — Verified: adj check reports decided, open, closed and not found (precedence in that order); a superseded match is followed through superseded_by to a decided record (bounded, cycle-safe); exit 0 for every completed check, 1 for a failed check, 2 for usage errors; docs/json.md example is checked by a test; go test, go vet and gofmt are clean; mutation checks all red for the right reason; catalog C105-C113 recorded, including owner decisions C106 and C113.",
+          "created_at": "2026-10-15T11:16:02Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        }
+      ],
+      "claim": null,
+      "fields": {
+        "size": "S",
+        "flags": [],
+        "trees": [
+          "cli"
+        ],
+        "trees_literal": false,
+        "findings": "PROJECT.md Goals 6; v1 feature tier; Milestone 3",
+        "discovered_from": "",
+        "parent": "",
+        "cites": [
+          "C32"
+        ],
+        "key": "",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 3,
+        "urgency": 2,
+        "effort": 1,
+        "attempts": 1
+      }
+    },
+    {
+      "id": "S11",
+      "title": "Command: context",
+      "short_title": "Command: context",
+      "status": "done",
+      "has_slice": true,
+      "depends_on": [
+        "S07",
+        "S08"
+      ],
+      "note_records": [
+        {
+          "id": "70a5abb1-428b-4798-aaed-4520733c9b36",
+          "kind": "",
+          "text": "**2026-10-15** — From S10 gate (nit): docs/json.md:5 is a 117-char line left from the S10 re-wrap; re-wrap lines 3-6 to 80 columns.",
+          "created_at": "2026-10-15T11:16:17Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "dabe0b37-76d4-41e3-a0f1-5d81d10a08d9",
+          "kind": "",
+          "text": "**2026-10-15** — Verified: adj context prints decided records only, in ID order, as md (default) or json; --tag and --key-prefix filters combine with AND; docs/json.md example is tested against real output; all tests green, go vet and gofmt clean; decisions C115-C123; owner informed of the C116, C117 and C121 tradeoffs.",
+          "created_at": "2026-10-15T11:29:13Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        }
+      ],
+      "claim": null,
+      "fields": {
+        "size": "M",
+        "flags": [],
+        "trees": [
+          "cli"
+        ],
+        "trees_literal": false,
+        "findings": "PROJECT.md Goals 5; v1 feature tier; Risks (context bloat); Milestone 3",
+        "discovered_from": "",
+        "parent": "",
+        "cites": [
+          "C32"
+        ],
+        "key": "",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 3,
+        "urgency": 2,
+        "effort": 2,
+        "attempts": 1
+      }
+    },
+    {
+      "id": "S13",
+      "title": "Command: supersede",
+      "short_title": "Command: supersede",
+      "status": "done",
+      "has_slice": true,
+      "depends_on": [
+        "S07",
+        "S11"
+      ],
+      "note_records": [
+        {
+          "id": "23741470-8a0d-4318-a6ed-29280419e8ea",
+          "kind": "",
+          "text": "**2026-10-15** — From S12 review/gate: when adding adj supersede, update internal/commands/ai.md: add adj supersede to the 'never run' list (it changes a decision; C27). The ai_test drift test validates names but will not force this; add a test that the snippet's never-run list names supersede.",
+          "created_at": "2026-10-15T11:48:06Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "e474ee0a-588a-4164-b53b-9d18a3d469ca",
+          "kind": "",
+          "text": "**2026-10-15** — Verified: adj supersede OLD --by NEW links both records and validates both before writing; OLD is written first with rollback if NEW fails; the agent snippet's never-run list names supersede; all tests green, vet and gofmt clean. Decisions C133-C137.",
+          "created_at": "2026-10-15T12:46:46Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        }
+      ],
+      "claim": null,
+      "fields": {
+        "size": "S",
+        "flags": [],
+        "trees": [
+          "cli"
+        ],
+        "trees_literal": false,
+        "findings": "PROJECT.md Goals 4; Lifecycle; acceptance (supersede); Milestone 4",
+        "discovered_from": "",
+        "parent": "",
+        "cites": [],
+        "key": "",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 3,
+        "urgency": 2,
+        "effort": 1,
+        "attempts": 1
+      }
+    },
+    {
+      "id": "S14",
+      "title": "Command: lint",
+      "short_title": "Command: lint",
+      "status": "done",
+      "has_slice": true,
+      "depends_on": [
+        "S13",
+        "S01"
+      ],
+      "note_records": [
+        {
+          "id": "4d94ddc0-a68e-40a9-a5b4-6d3afc4bd304",
+          "kind": "",
+          "text": "**2026-10-15** — From S03 review: model.Validate accepts superseded_by set on a record whose status is not superseded (record.go ~159). Lint should flag it as a consistency problem. Validate returns errors.Join, so lint can split problems via Unwrap() []error.",
+          "created_at": "2026-10-15T04:44:59Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "de69f8e1-2797-479c-a90c-e4ab58d91fb4",
+          "kind": "",
+          "text": "**2026-10-15** — From S04 review: model.Parse returns Record{} on any JSON decode/type error (file.go ~76) so lint can name only the file for those cases (the json error is now reachable via errors.As). encoding/json matches keys case-insensitively and keeps the last duplicate key; lint may want a raw-key check.",
+          "created_at": "2026-10-15T04:59:31Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "f4182219-5dac-4fec-99ec-8154906bbc28",
+          "kind": "",
+          "text": "**2026-10-15** — From S05 review: store.scan/fileID (internal/store/store.go) are unexported and List is strict (C61). Lint needs the record-file name rule (C59), incl. broken files keeping their ID — add an exported store method returning (id, path) entries (e.g. Files()) rather than copying the rule, then model.Parse each.",
+          "created_at": "2026-10-15T05:12:11Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "34421918-97e9-4343-ad66-b6f6ad1d6fdd",
+          "kind": "",
+          "text": "**2026-10-15** — adj lint implemented with 8 checks (parse, fields, id-mismatch, dangling-link, supersede-state, supersede-cycle, key-conflict, decided-by); works on stores where List fails; exit 1 on errors, 0 on warnings only; --json documented in docs/json.md and tested; go test, vet and gofmt clean; decisions C139-C145.",
+          "created_at": "2026-10-15T13:09:47Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        }
+      ],
+      "claim": null,
+      "fields": {
+        "size": "M",
+        "flags": [],
+        "trees": [
+          "cli"
+        ],
+        "trees_literal": false,
+        "findings": "PROJECT.md Goals 8; acceptance (lint fixtures); Open decisions 5; Milestone 4",
+        "discovered_from": "",
+        "parent": "",
+        "cites": [
+          "C08",
+          "C27",
+          "C32"
+        ],
+        "key": "",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 3,
+        "urgency": 2,
+        "effort": 2,
+        "attempts": 1
+      }
+    },
+    {
+      "id": "S43",
+      "title": "New record IDs clear the highest ID in every sibling worktree, so parallel branches do not collide",
+      "short_title": "Sibling-aware record IDs",
+      "status": "open",
+      "has_slice": false,
+      "depends_on": [],
+      "note_records": [],
+      "claim": null,
+      "fields": {
+        "size": "",
+        "flags": [],
+        "trees": [],
+        "trees_literal": false,
+        "findings": "ork integration review 2026-10-19 (squalor-xyz/ork docs/review-2026-10-19-integration.md), R6: two ork branches both allocated records 50 and 51 on 2026-10-19 and needed adj renumber; the store lock cannot see other branches (internal/store/store.go:282-286); slicer already allocates past sibling worktrees.",
+        "discovered_from": "",
+        "parent": "",
+        "cites": [],
+        "key": "ork.sibling-ids",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 2,
+        "urgency": 3,
+        "effort": 3,
+        "attempts": 0
+      }
+    },
+    {
+      "id": "S39",
+      "title": "Release 1.0: freeze JSON shapes",
+      "short_title": "Release 1.0",
+      "status": "open",
+      "has_slice": false,
+      "depends_on": [
+        "S44",
+        "S42"
+      ],
+      "note_records": [
+        {
+          "id": "ff1ea5f0-e9e9-4b7b-9944-7f2aca146f55",
+          "kind": "",
+          "text": "**2026-10-18** — 2026-10-18 from S18 review: docs/json.md says inbox --all errors[].error text varies by OS; when freezing JSON, freeze the keys, not that text.",
+          "created_at": "2026-10-18T20:10:16Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        },
+        {
+          "id": "f1142564-b176-4484-b8ec-4a6a173e0136",
+          "kind": "",
+          "text": "**2026-10-18** — 2026-10-18 owner decision (from S22): before freezing, make readers accept unknown history events (lint warns instead of List/Get failing), so later event additions such as S22's 'import' do not make older adj binaries refuse a store.",
+          "created_at": "2026-10-18T21:52:02Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        }
+      ],
+      "claim": null,
+      "fields": {
+        "size": "S",
+        "flags": [],
+        "trees": [
+          "release"
+        ],
+        "trees_literal": false,
+        "findings": "CHANGELOG.md and docs/json.md 1.0 rule; owner 2026-10-18: 0.2.0 first, 1.0 later",
+        "discovered_from": "",
+        "parent": "",
+        "cites": [],
+        "key": "",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 2,
+        "urgency": 2,
+        "effort": 1,
+        "attempts": 0
+      }
+    },
     {
       "id": "S34",
       "title": "Dogfood conventions: tag case and keys in decisions/",
@@ -951,658 +2370,6 @@
       }
     },
     {
-      "id": "S39",
-      "title": "Release 1.0: freeze JSON shapes",
-      "short_title": "Release 1.0",
-      "status": "open",
-      "has_slice": false,
-      "depends_on": [
-        "S37"
-      ],
-      "note_records": [
-        {
-          "id": "ff1ea5f0-e9e9-4b7b-9944-7f2aca146f55",
-          "kind": "",
-          "text": "**2026-10-18** — 2026-10-18 from S18 review: docs/json.md says inbox --all errors[].error text varies by OS; when freezing JSON, freeze the keys, not that text.",
-          "created_at": "2026-10-18T20:10:16Z",
-          "attempt": 0,
-          "by": "Jon R",
-          "verified_by": "",
-          "verified_at": "",
-          "stale_after": ""
-        },
-        {
-          "id": "f1142564-b176-4484-b8ec-4a6a173e0136",
-          "kind": "",
-          "text": "**2026-10-18** — 2026-10-18 owner decision (from S22): before freezing, make readers accept unknown history events (lint warns instead of List/Get failing), so later event additions such as S22's 'import' do not make older adj binaries refuse a store.",
-          "created_at": "2026-10-18T21:52:02Z",
-          "attempt": 0,
-          "by": "Jon R",
-          "verified_by": "",
-          "verified_at": "",
-          "stale_after": ""
-        }
-      ],
-      "claim": null,
-      "fields": {
-        "size": "S",
-        "flags": [],
-        "trees": [
-          "release"
-        ],
-        "trees_literal": false,
-        "findings": "CHANGELOG.md and docs/json.md 1.0 rule; owner 2026-10-18: 0.2.0 first, 1.0 later",
-        "discovered_from": "",
-        "parent": "",
-        "cites": [],
-        "key": "",
-        "pass": "",
-        "group": "",
-        "reason": "",
-        "importance": 2,
-        "urgency": 2,
-        "effort": 1,
-        "attempts": 0
-      }
-    },
-    {
-      "id": "S01",
-      "title": "Confirm open decisions",
-      "short_title": "Confirm open decisions",
-      "status": "done",
-      "has_slice": true,
-      "depends_on": [],
-      "note_records": [],
-      "claim": null,
-      "fields": {
-        "size": "S",
-        "flags": [],
-        "trees": [
-          "decisions"
-        ],
-        "trees_literal": false,
-        "findings": "PROJECT.md Open decisions 1-7; Core concepts (kind); Dependency/licensing notes",
-        "discovered_from": "",
-        "parent": "",
-        "cites": [
-          "C23",
-          "C24",
-          "C25",
-          "C26",
-          "C27",
-          "C28",
-          "C29",
-          "C30",
-          "C31",
-          "C32",
-          "C33"
-        ],
-        "key": "",
-        "pass": "",
-        "group": "",
-        "reason": "",
-        "importance": 3,
-        "urgency": 3,
-        "effort": 1,
-        "attempts": 0
-      }
-    },
-    {
-      "id": "S02",
-      "title": "Project scaffolding",
-      "short_title": "Project scaffolding",
-      "status": "done",
-      "has_slice": true,
-      "depends_on": [
-        "S01"
-      ],
-      "note_records": [
-        {
-          "id": "b0039967-652a-48bb-bd10-b928c80bfc78",
-          "kind": "",
-          "text": "**2026-10-15** — Built the Go module, cmd/adj and internal/cli (--help and -h exit 0; no args or unknown command exit 2 with usage on stderr), scripts/env.sh (bash and zsh only, guarded by go.mod, caches under .cache), .gitignore and AGENTS.md. Checks green: go test ./... (2 tests, 4 subtests), go vet ./..., gofmt -l cmd internal empty. env.sh probe matrix run (bash, zsh incl. no_function_argzero, sh, dash and ksh fail loudly, CDPATH, guard); no directories created outside the worktree. Decisions C34-C40 recorded. OWNER FLAG: LICENSE is a stub; the full GPL-3.0 text and the copyright holder are still needed (C39).",
-          "created_at": "2026-10-15T04:36:32Z",
-          "attempt": 1,
-          "by": "Jon R",
-          "verified_by": "",
-          "verified_at": "",
-          "stale_after": ""
-        }
-      ],
-      "claim": null,
-      "fields": {
-        "size": "S",
-        "flags": [],
-        "trees": [
-          "scaffold"
-        ],
-        "trees_literal": false,
-        "findings": "PROJECT.md Stack recommendation; Dependency/licensing notes",
-        "discovered_from": "",
-        "parent": "",
-        "cites": [
-          "C23",
-          "C24",
-          "C31",
-          "C32",
-          "C33",
-          "C27"
-        ],
-        "key": "",
-        "pass": "",
-        "group": "",
-        "reason": "",
-        "importance": 3,
-        "urgency": 3,
-        "effort": 1,
-        "attempts": 1
-      }
-    },
-    {
-      "id": "S03",
-      "title": "Record model and lifecycle transitions",
-      "short_title": "Record model and lifecycle transitions",
-      "status": "done",
-      "has_slice": true,
-      "depends_on": [
-        "S02",
-        "S01"
-      ],
-      "note_records": [
-        {
-          "id": "d533d341-3090-42dc-82bb-d13580677ab3",
-          "kind": "",
-          "text": "**2026-10-15** — From S02 gate (non-blocking, fold in here): internal/cli/cli.go:12 comment cites C32 for exit codes; should cite C34. AGENTS.md:42-44 and scripts/env.sh:9 say plain sh fails; on macOS /bin/sh is bash (POSIX mode) and works — reword to 'dash and other non-bash/zsh shells'.",
-          "created_at": "2026-10-15T04:36:49Z",
-          "attempt": 0,
-          "by": "Jon R",
-          "verified_by": "",
-          "verified_at": "",
-          "stale_after": ""
-        },
-        {
-          "id": "3394e7d1-64e8-408e-b8a3-0104850f068f",
-          "kind": "",
-          "text": "**2026-10-15** — Verified: internal/model record type, Validate and decide/reject/withdraw/supersede transitions with dated history; 114 tests green, go vet and gofmt clean; interface decisions C41-C47 recorded.",
-          "created_at": "2026-10-15T04:44:46Z",
-          "attempt": 1,
-          "by": "Jon R",
-          "verified_by": "",
-          "verified_at": "",
-          "stale_after": ""
-        }
-      ],
-      "claim": null,
-      "fields": {
-        "size": "M",
-        "flags": [],
-        "trees": [
-          "model"
-        ],
-        "trees_literal": false,
-        "findings": "PROJECT.md Core concepts / data model; Milestone 1",
-        "discovered_from": "",
-        "parent": "",
-        "cites": [
-          "C30",
-          "C27",
-          "C32"
-        ],
-        "key": "",
-        "pass": "",
-        "group": "",
-        "reason": "",
-        "importance": 3,
-        "urgency": 3,
-        "effort": 2,
-        "attempts": 1
-      }
-    },
-    {
-      "id": "S04",
-      "title": "Record file read and write",
-      "short_title": "Record file read and write",
-      "status": "done",
-      "has_slice": true,
-      "depends_on": [
-        "S03",
-        "S01"
-      ],
-      "note_records": [
-        {
-          "id": "1a85ce22-f9f1-432f-b077-a9349096dd69",
-          "kind": "",
-          "text": "**2026-10-15** — From S03 review: internal/model gains file I/O neighbours here — update AGENTS.md:23 ('no I/O') and the package doc at internal/model/record.go:3-4 if the model package itself changes; keep model I/O-free if file code lives in internal/store. Validate now also checks history entries (C47), so S04's 'record that fails Validate' cases include bad history.",
-          "created_at": "2026-10-15T04:44:59Z",
-          "attempt": 0,
-          "by": "Jon R",
-          "verified_by": "",
-          "verified_at": "",
-          "stale_after": ""
-        },
-        {
-          "id": "8ad57b3f-6a4d-4ced-8405-36c903556cad",
-          "kind": "",
-          "text": "**2026-10-15** — Verified: JSON-frontmatter record file read and write in internal/model/file.go (Marshal, Unmarshal, Parse, ReadFile, WriteFile); strict Unmarshal and lenient Parse; BOM and CRLF rejected with named reasons; 159 test PASS lines, 0 FAIL; go vet and gofmt clean; slicer render and check ok. Decisions C48 to C55 recorded.",
-          "created_at": "2026-10-15T04:59:15Z",
-          "attempt": 1,
-          "by": "Jon R",
-          "verified_by": "",
-          "verified_at": "",
-          "stale_after": ""
-        }
-      ],
-      "claim": null,
-      "fields": {
-        "size": "S",
-        "flags": [],
-        "trees": [
-          "model"
-        ],
-        "trees_literal": false,
-        "findings": "PROJECT.md Open decisions 3; Core concepts (Record)",
-        "discovered_from": "",
-        "parent": "",
-        "cites": [
-          "C07",
-          "C25",
-          "C32"
-        ],
-        "key": "",
-        "pass": "",
-        "group": "",
-        "reason": "",
-        "importance": 3,
-        "urgency": 3,
-        "effort": 1,
-        "attempts": 1
-      }
-    },
-    {
-      "id": "S05",
-      "title": "Store, config and ID allocation",
-      "short_title": "Store, config and ID allocation",
-      "status": "done",
-      "has_slice": true,
-      "depends_on": [
-        "S04",
-        "S01"
-      ],
-      "note_records": [
-        {
-          "id": "8bd584d1-a122-44a5-b30d-b046b1e0bfb1",
-          "kind": "",
-          "text": "**2026-10-15** — From S04 review/gate: (1) model.WriteFile is a plain os.WriteFile (C54) — decide whether create/update need temp-file-plus-rename and record it (C32). (2) Empty non-nil slices do not round-trip DeepEqual (omitempty) — build records with nil slices or compare accordingly. (3) Nit: internal/model/file.go:26 comment says 'a file with CRLF line endings is rejected'; reword to 'a file whose frontmatter uses CRLF' (body is verbatim per C49).",
-          "created_at": "2026-10-15T04:59:31Z",
-          "attempt": 0,
-          "by": "Jon R",
-          "verified_by": "",
-          "verified_at": "",
-          "stale_after": ""
-        },
-        {
-          "id": "ad6b34ea-6fb7-432f-9565-f268c82c0e38",
-          "kind": "",
-          "text": "**2026-10-15** — Verified: internal/store (Open, List, Get, Create, Update), .adjudicate.json config with defaults, root discovery, sequential ID allocation by scan. Create links a synced temp file into place with a bounded retry of 3; Update renames over the record. New files 0644, Update preserves permission bits. 231 tests green, go vet and gofmt clean, catalog decisions C56-C64 recorded. Locking against concurrent creates is deferred to the owner (duplicate IDs are left to lint S14 and renumber S15).",
-          "created_at": "2026-10-15T05:11:57Z",
-          "attempt": 1,
-          "by": "Jon R",
-          "verified_by": "",
-          "verified_at": "",
-          "stale_after": ""
-        }
-      ],
-      "claim": null,
-      "fields": {
-        "size": "M",
-        "flags": [],
-        "trees": [
-          "store"
-        ],
-        "trees_literal": false,
-        "findings": "PROJECT.md Architecture sketch (ID allocation, Determinism); Open decisions 4, 6, 7",
-        "discovered_from": "",
-        "parent": "",
-        "cites": [
-          "C26",
-          "C28",
-          "C29",
-          "C32"
-        ],
-        "key": "",
-        "pass": "",
-        "group": "",
-        "reason": "",
-        "importance": 3,
-        "urgency": 3,
-        "effort": 2,
-        "attempts": 1
-      }
-    },
-    {
-      "id": "S06",
-      "title": "Commands: init and ask",
-      "short_title": "Commands: init and ask",
-      "status": "done",
-      "has_slice": true,
-      "depends_on": [
-        "S05"
-      ],
-      "note_records": [
-        {
-          "id": "86d07360-5623-485c-8687-a85aa41119a3",
-          "kind": "",
-          "text": "**2026-10-15** — From S05 gate (nits): internal/store/store.go:44-45 beforeLink doc says 'just before the file is linked'; it runs before writeNew (before the temp file is written) — reword. Five test trailing comments exceed 80 cols (config_test.go:84, store_test.go:127,249,335,539). FindRoot returns ErrNoRoot when no .adjudicate.json — map to the 'run adj init' message.",
-          "created_at": "2026-10-15T05:12:11Z",
-          "attempt": 0,
-          "by": "Jon R",
-          "verified_by": "",
-          "verified_at": "",
-          "stale_after": ""
-        },
-        {
-          "id": "57c514bf-d519-4a32-a649-edac99ff0a8e",
-          "kind": "",
-          "text": "**2026-10-15** — Verified: adj init and adj ask end to end through cli.Run; --root flag and Env.Root explicit roots with bounded discovery (Env.Stop); 317 tests green, go vet and gofmt clean; decisions C65-C76.",
-          "created_at": "2026-10-15T05:30:33Z",
-          "attempt": 1,
-          "by": "Jon R",
-          "verified_by": "",
-          "verified_at": "",
-          "stale_after": ""
-        }
-      ],
-      "claim": null,
-      "fields": {
-        "size": "M",
-        "flags": [],
-        "trees": [
-          "cli"
-        ],
-        "trees_literal": false,
-        "findings": "PROJECT.md v1 feature tier; Milestone 2",
-        "discovered_from": "",
-        "parent": "",
-        "cites": [
-          "C32"
-        ],
-        "key": "",
-        "pass": "",
-        "group": "",
-        "reason": "",
-        "importance": 3,
-        "urgency": 2,
-        "effort": 2,
-        "attempts": 1
-      }
-    },
-    {
-      "id": "S07",
-      "title": "Commands: decide, reject, withdraw",
-      "short_title": "Commands: decide, reject, withdraw",
-      "status": "done",
-      "has_slice": true,
-      "depends_on": [
-        "S06"
-      ],
-      "note_records": [
-        {
-          "id": "1e3e5fec-c330-473e-921c-22426c2fc7cb",
-          "kind": "",
-          "text": "**2026-10-15** — From S06 review/gate: (1) internal/cli/cli.go holds shared helpers + one handler per command; S07–S12 add 7+ handlers — consider internal/cli/<command>.go per handler with dispatch in cli.go (record as a Files deviation). (2) commands.UsageError lives in ask.go — move to a shared file (e.g. commands/errors.go) when decide/reject/withdraw reuse it. (3) Reuse the C70 --by / env pattern for decided_by. (4) Low: --recommend \"\" (explicit empty) is treated as absent (ask.go:93) while --tag \"\" exits 2 — make it a usage error via fsSet. (5) Nit: AGENTS.md:60 is a 117-col line; re-wrap.",
-          "created_at": "2026-10-15T05:30:47Z",
-          "attempt": 0,
-          "by": "Jon R",
-          "verified_by": "",
-          "verified_at": "",
-          "stale_after": ""
-        },
-        {
-          "id": "c94e8a13-b884-4710-a202-871de47aec21",
-          "kind": "",
-          "text": "**2026-10-15** — Verified: decide, reject and withdraw (exit codes as specified); decided_by from --by, else ADJ_DECIDED_BY, else blank; a closed record exits 1 with a status message (only an open record can be decided/rejected/withdrawn); a duplicate ID is refused with both file names; handler-per-file refactor (init.go, ask.go, decide.go; UsageError in commands/errors.go); --recommend empty is a usage error. go test ./... 403 PASS, 0 FAIL, 0 SKIP; go vet and gofmt clean; slicer render and check ok. Decisions C77-C85.",
-          "created_at": "2026-10-15T05:50:10Z",
-          "attempt": 1,
-          "by": "Jon R",
-          "verified_by": "",
-          "verified_at": "",
-          "stale_after": ""
-        }
-      ],
-      "claim": null,
-      "fields": {
-        "size": "S",
-        "flags": [],
-        "trees": [
-          "cli"
-        ],
-        "trees_literal": false,
-        "findings": "PROJECT.md v1 feature tier; Lifecycle; Milestone 2",
-        "discovered_from": "",
-        "parent": "",
-        "cites": [
-          "C27",
-          "C32"
-        ],
-        "key": "",
-        "pass": "",
-        "group": "",
-        "reason": "",
-        "importance": 3,
-        "urgency": 2,
-        "effort": 1,
-        "attempts": 1
-      }
-    },
-    {
-      "id": "S08",
-      "title": "Commands: show and list with --json",
-      "short_title": "Commands: show and list with --json",
-      "status": "done",
-      "has_slice": true,
-      "depends_on": [
-        "S06"
-      ],
-      "note_records": [
-        {
-          "id": "4e6f2ce3-b346-4b6f-ae1b-babc72b1537a",
-          "kind": "",
-          "text": "**2026-10-15** — Verified: adj show and adj list with --json (list prints {records:[...]}), query.Select filters (status, repeatable tag, key; AND), text and JSON renderers, docs/json.md examples generated from real adj output, review fixes applied (continuation indents, trailing newline trim, duplicate-ID show test, blank ask --key is exit 2), all tests green, vet and gofmt clean. Decisions C86-C96. Relay roles r1/r2/r4 switched to sonnet/high by owner.",
-          "created_at": "2026-10-15T10:11:23Z",
-          "attempt": 1,
-          "by": "Jon R",
-          "verified_by": "",
-          "verified_at": "",
-          "stale_after": ""
-        }
-      ],
-      "claim": null,
-      "fields": {
-        "size": "S",
-        "flags": [],
-        "trees": [
-          "cli"
-        ],
-        "trees_literal": false,
-        "findings": "PROJECT.md v1 feature tier; Milestone 2; acceptance (--json)",
-        "discovered_from": "",
-        "parent": "",
-        "cites": [
-          "C32"
-        ],
-        "key": "",
-        "pass": "",
-        "group": "",
-        "reason": "",
-        "importance": 3,
-        "urgency": 2,
-        "effort": 1,
-        "attempts": 1
-      }
-    },
-    {
-      "id": "S09",
-      "title": "Command: inbox",
-      "short_title": "Command: inbox",
-      "status": "done",
-      "has_slice": true,
-      "depends_on": [
-        "S08"
-      ],
-      "note_records": [
-        {
-          "id": "1a6732ae-8438-485b-a732-9cfb315c5914",
-          "kind": "",
-          "text": "**2026-10-15** — From S08 gate (low, cosmetic): internal/render/text.go:48,51,77 call cont() on option summaries, tradeoffs and history notes without the trailing-newline trim field() applies; a value ending in \\n prints a spaces-only line. Fold in if inbox reuses these renderers.",
-          "created_at": "2026-10-15T10:11:46Z",
-          "attempt": 0,
-          "by": "Jon R",
-          "verified_by": "",
-          "verified_at": "",
-          "stale_after": ""
-        },
-        {
-          "id": "3464c683-5d43-4b33-b1c0-40312df33dde",
-          "kind": "",
-          "text": "**2026-10-15** — Verified: adj inbox text and JSON list open records only, oldest first (created, then ID, stable), context shown by owner decision; shared render helpers and trailing-break trim; docs/json.md example is tested; all tests green, vet and gofmt clean; decisions C97-C104.",
-          "created_at": "2026-10-15T10:35:04Z",
-          "attempt": 1,
-          "by": "Jon R",
-          "verified_by": "",
-          "verified_at": "",
-          "stale_after": ""
-        }
-      ],
-      "claim": null,
-      "fields": {
-        "size": "S",
-        "flags": [],
-        "trees": [
-          "cli"
-        ],
-        "trees_literal": false,
-        "findings": "PROJECT.md Goals 2; v1 feature tier; Milestone 3",
-        "discovered_from": "",
-        "parent": "",
-        "cites": [
-          "C32"
-        ],
-        "key": "",
-        "pass": "",
-        "group": "",
-        "reason": "",
-        "importance": 3,
-        "urgency": 2,
-        "effort": 1,
-        "attempts": 1
-      }
-    },
-    {
-      "id": "S10",
-      "title": "Command: check",
-      "short_title": "Command: check",
-      "status": "done",
-      "has_slice": true,
-      "depends_on": [
-        "S07",
-        "S08"
-      ],
-      "note_records": [
-        {
-          "id": "0d717b6b-575e-4583-b209-f19255d6b282",
-          "kind": "",
-          "text": "**2026-10-15** — Verified: adj check reports decided, open, closed and not found (precedence in that order); a superseded match is followed through superseded_by to a decided record (bounded, cycle-safe); exit 0 for every completed check, 1 for a failed check, 2 for usage errors; docs/json.md example is checked by a test; go test, go vet and gofmt are clean; mutation checks all red for the right reason; catalog C105-C113 recorded, including owner decisions C106 and C113.",
-          "created_at": "2026-10-15T11:16:02Z",
-          "attempt": 1,
-          "by": "Jon R",
-          "verified_by": "",
-          "verified_at": "",
-          "stale_after": ""
-        }
-      ],
-      "claim": null,
-      "fields": {
-        "size": "S",
-        "flags": [],
-        "trees": [
-          "cli"
-        ],
-        "trees_literal": false,
-        "findings": "PROJECT.md Goals 6; v1 feature tier; Milestone 3",
-        "discovered_from": "",
-        "parent": "",
-        "cites": [
-          "C32"
-        ],
-        "key": "",
-        "pass": "",
-        "group": "",
-        "reason": "",
-        "importance": 3,
-        "urgency": 2,
-        "effort": 1,
-        "attempts": 1
-      }
-    },
-    {
-      "id": "S11",
-      "title": "Command: context",
-      "short_title": "Command: context",
-      "status": "done",
-      "has_slice": true,
-      "depends_on": [
-        "S07",
-        "S08"
-      ],
-      "note_records": [
-        {
-          "id": "70a5abb1-428b-4798-aaed-4520733c9b36",
-          "kind": "",
-          "text": "**2026-10-15** — From S10 gate (nit): docs/json.md:5 is a 117-char line left from the S10 re-wrap; re-wrap lines 3-6 to 80 columns.",
-          "created_at": "2026-10-15T11:16:17Z",
-          "attempt": 0,
-          "by": "Jon R",
-          "verified_by": "",
-          "verified_at": "",
-          "stale_after": ""
-        },
-        {
-          "id": "dabe0b37-76d4-41e3-a0f1-5d81d10a08d9",
-          "kind": "",
-          "text": "**2026-10-15** — Verified: adj context prints decided records only, in ID order, as md (default) or json; --tag and --key-prefix filters combine with AND; docs/json.md example is tested against real output; all tests green, go vet and gofmt clean; decisions C115-C123; owner informed of the C116, C117 and C121 tradeoffs.",
-          "created_at": "2026-10-15T11:29:13Z",
-          "attempt": 1,
-          "by": "Jon R",
-          "verified_by": "",
-          "verified_at": "",
-          "stale_after": ""
-        }
-      ],
-      "claim": null,
-      "fields": {
-        "size": "M",
-        "flags": [],
-        "trees": [
-          "cli"
-        ],
-        "trees_literal": false,
-        "findings": "PROJECT.md Goals 5; v1 feature tier; Risks (context bloat); Milestone 3",
-        "discovered_from": "",
-        "parent": "",
-        "cites": [
-          "C32"
-        ],
-        "key": "",
-        "pass": "",
-        "group": "",
-        "reason": "",
-        "importance": 3,
-        "urgency": 2,
-        "effort": 2,
-        "attempts": 1
-      }
-    },
-    {
       "id": "S12",
       "title": "Agent snippet: adj ai and JSON shape docs",
       "short_title": "Agent snippet: adj ai and JSON shape docs",
@@ -1696,144 +2463,6 @@
       }
     },
     {
-      "id": "S13",
-      "title": "Command: supersede",
-      "short_title": "Command: supersede",
-      "status": "done",
-      "has_slice": true,
-      "depends_on": [
-        "S07",
-        "S11"
-      ],
-      "note_records": [
-        {
-          "id": "23741470-8a0d-4318-a6ed-29280419e8ea",
-          "kind": "",
-          "text": "**2026-10-15** — From S12 review/gate: when adding adj supersede, update internal/commands/ai.md: add adj supersede to the 'never run' list (it changes a decision; C27). The ai_test drift test validates names but will not force this; add a test that the snippet's never-run list names supersede.",
-          "created_at": "2026-10-15T11:48:06Z",
-          "attempt": 0,
-          "by": "Jon R",
-          "verified_by": "",
-          "verified_at": "",
-          "stale_after": ""
-        },
-        {
-          "id": "e474ee0a-588a-4164-b53b-9d18a3d469ca",
-          "kind": "",
-          "text": "**2026-10-15** — Verified: adj supersede OLD --by NEW links both records and validates both before writing; OLD is written first with rollback if NEW fails; the agent snippet's never-run list names supersede; all tests green, vet and gofmt clean. Decisions C133-C137.",
-          "created_at": "2026-10-15T12:46:46Z",
-          "attempt": 1,
-          "by": "Jon R",
-          "verified_by": "",
-          "verified_at": "",
-          "stale_after": ""
-        }
-      ],
-      "claim": null,
-      "fields": {
-        "size": "S",
-        "flags": [],
-        "trees": [
-          "cli"
-        ],
-        "trees_literal": false,
-        "findings": "PROJECT.md Goals 4; Lifecycle; acceptance (supersede); Milestone 4",
-        "discovered_from": "",
-        "parent": "",
-        "cites": [],
-        "key": "",
-        "pass": "",
-        "group": "",
-        "reason": "",
-        "importance": 3,
-        "urgency": 2,
-        "effort": 1,
-        "attempts": 1
-      }
-    },
-    {
-      "id": "S14",
-      "title": "Command: lint",
-      "short_title": "Command: lint",
-      "status": "done",
-      "has_slice": true,
-      "depends_on": [
-        "S13",
-        "S01"
-      ],
-      "note_records": [
-        {
-          "id": "4d94ddc0-a68e-40a9-a5b4-6d3afc4bd304",
-          "kind": "",
-          "text": "**2026-10-15** — From S03 review: model.Validate accepts superseded_by set on a record whose status is not superseded (record.go ~159). Lint should flag it as a consistency problem. Validate returns errors.Join, so lint can split problems via Unwrap() []error.",
-          "created_at": "2026-10-15T04:44:59Z",
-          "attempt": 0,
-          "by": "Jon R",
-          "verified_by": "",
-          "verified_at": "",
-          "stale_after": ""
-        },
-        {
-          "id": "de69f8e1-2797-479c-a90c-e4ab58d91fb4",
-          "kind": "",
-          "text": "**2026-10-15** — From S04 review: model.Parse returns Record{} on any JSON decode/type error (file.go ~76) so lint can name only the file for those cases (the json error is now reachable via errors.As). encoding/json matches keys case-insensitively and keeps the last duplicate key; lint may want a raw-key check.",
-          "created_at": "2026-10-15T04:59:31Z",
-          "attempt": 0,
-          "by": "Jon R",
-          "verified_by": "",
-          "verified_at": "",
-          "stale_after": ""
-        },
-        {
-          "id": "f4182219-5dac-4fec-99ec-8154906bbc28",
-          "kind": "",
-          "text": "**2026-10-15** — From S05 review: store.scan/fileID (internal/store/store.go) are unexported and List is strict (C61). Lint needs the record-file name rule (C59), incl. broken files keeping their ID — add an exported store method returning (id, path) entries (e.g. Files()) rather than copying the rule, then model.Parse each.",
-          "created_at": "2026-10-15T05:12:11Z",
-          "attempt": 0,
-          "by": "Jon R",
-          "verified_by": "",
-          "verified_at": "",
-          "stale_after": ""
-        },
-        {
-          "id": "34421918-97e9-4343-ad66-b6f6ad1d6fdd",
-          "kind": "",
-          "text": "**2026-10-15** — adj lint implemented with 8 checks (parse, fields, id-mismatch, dangling-link, supersede-state, supersede-cycle, key-conflict, decided-by); works on stores where List fails; exit 1 on errors, 0 on warnings only; --json documented in docs/json.md and tested; go test, vet and gofmt clean; decisions C139-C145.",
-          "created_at": "2026-10-15T13:09:47Z",
-          "attempt": 1,
-          "by": "Jon R",
-          "verified_by": "",
-          "verified_at": "",
-          "stale_after": ""
-        }
-      ],
-      "claim": null,
-      "fields": {
-        "size": "M",
-        "flags": [],
-        "trees": [
-          "cli"
-        ],
-        "trees_literal": false,
-        "findings": "PROJECT.md Goals 8; acceptance (lint fixtures); Open decisions 5; Milestone 4",
-        "discovered_from": "",
-        "parent": "",
-        "cites": [
-          "C08",
-          "C27",
-          "C32"
-        ],
-        "key": "",
-        "pass": "",
-        "group": "",
-        "reason": "",
-        "importance": 3,
-        "urgency": 2,
-        "effort": 2,
-        "attempts": 1
-      }
-    },
-    {
       "id": "S15",
       "title": "ID collision detection and renumber",
       "short_title": "ID collision detection and renumber",
@@ -1911,6 +2540,54 @@
         "importance": 2,
         "urgency": 2,
         "effort": 2,
+        "attempts": 1
+      }
+    },
+    {
+      "id": "S24",
+      "title": "Check text shows the rationale under closed records",
+      "short_title": "Check text shows the rationale under closed records",
+      "status": "done",
+      "has_slice": true,
+      "depends_on": [],
+      "note_records": [
+        {
+          "id": "f382624b-7dcc-4e0e-968c-e8a90026f734",
+          "kind": "",
+          "text": "**2026-10-15** — Check text shows the full Rationale under rejected, withdrawn and superseded matches (Superseded by first, then Rationale); decided/open output and JSON unchanged. All tests green, vet and gofmt clean. C138 added, C110 updated.",
+          "created_at": "2026-10-15T12:51:22Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        }
+      ],
+      "claim": null,
+      "fields": {
+        "size": "S",
+        "flags": [],
+        "trees": [
+          "render"
+        ],
+        "trees_literal": false,
+        "findings": "Owner decision 2026-10-15 (S10 gate: closed records show only ID, status, title in text)",
+        "discovered_from": "",
+        "parent": "",
+        "cites": [
+          "C132",
+          "C110",
+          "C102",
+          "C130",
+          "C32"
+        ],
+        "key": "",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 2,
+        "urgency": 2,
+        "effort": 1,
         "attempts": 1
       }
     },
@@ -2054,54 +2731,6 @@
       }
     },
     {
-      "id": "S21",
-      "title": "Later: optional owner-only decide enforcement",
-      "short_title": "Later: optional owner-only decide enforcement",
-      "status": "retired",
-      "has_slice": true,
-      "depends_on": [
-        "S07",
-        "S01"
-      ],
-      "note_records": [
-        {
-          "id": "fb7e0bf7-5644-4b5c-99ff-4ab901aa173c",
-          "kind": "",
-          "text": "**2026-10-16** — **2026-10-16** — From S17: the ten decisions C23-C32 were decided by the agent in session on the owner's delegated instruction (decided_by = Jon R, attribution only, C27). The store cannot tell a delegated decide from an owner-run one; relevant to optional enforcement.",
-          "created_at": "2026-10-16T03:36:32Z",
-          "attempt": 0,
-          "by": "Jon R",
-          "verified_by": "",
-          "verified_at": "",
-          "stale_after": ""
-        }
-      ],
-      "claim": null,
-      "fields": {
-        "size": "M",
-        "flags": [],
-        "trees": [
-          "later"
-        ],
-        "trees_literal": false,
-        "findings": "PROJECT.md Feature tiers (Later); Open decisions 5; Non-goals",
-        "discovered_from": "",
-        "parent": "",
-        "cites": [
-          "C11",
-          "C27"
-        ],
-        "key": "",
-        "pass": "",
-        "group": "",
-        "reason": "Owner 2026-10-18: owner-only decide stays a convention (C11, C27); no enforcement planned",
-        "importance": 1,
-        "urgency": 1,
-        "effort": 2,
-        "attempts": 0
-      }
-    },
-    {
       "id": "S23",
       "title": "Lock ID allocation with flock",
       "short_title": "Lock ID allocation with flock",
@@ -2167,558 +2796,6 @@
       }
     },
     {
-      "id": "S24",
-      "title": "Check text shows the rationale under closed records",
-      "short_title": "Check text shows the rationale under closed records",
-      "status": "done",
-      "has_slice": true,
-      "depends_on": [],
-      "note_records": [
-        {
-          "id": "f382624b-7dcc-4e0e-968c-e8a90026f734",
-          "kind": "",
-          "text": "**2026-10-15** — Check text shows the full Rationale under rejected, withdrawn and superseded matches (Superseded by first, then Rationale); decided/open output and JSON unchanged. All tests green, vet and gofmt clean. C138 added, C110 updated.",
-          "created_at": "2026-10-15T12:51:22Z",
-          "attempt": 1,
-          "by": "Jon R",
-          "verified_by": "",
-          "verified_at": "",
-          "stale_after": ""
-        }
-      ],
-      "claim": null,
-      "fields": {
-        "size": "S",
-        "flags": [],
-        "trees": [
-          "render"
-        ],
-        "trees_literal": false,
-        "findings": "Owner decision 2026-10-15 (S10 gate: closed records show only ID, status, title in text)",
-        "discovered_from": "",
-        "parent": "",
-        "cites": [
-          "C132",
-          "C110",
-          "C102",
-          "C130",
-          "C32"
-        ],
-        "key": "",
-        "pass": "",
-        "group": "",
-        "reason": "",
-        "importance": 2,
-        "urgency": 2,
-        "effort": 1,
-        "attempts": 1
-      }
-    },
-    {
-      "id": "S25",
-      "title": "Fix stale-copy false positive that flags a live record",
-      "short_title": "Fix stale-copy false positive that flags a live record",
-      "status": "done",
-      "has_slice": true,
-      "depends_on": [],
-      "note_records": [
-        {
-          "id": "c67bac29-b5ea-4693-84a2-9ff79864a8c8",
-          "kind": "",
-          "text": "**2026-10-16** — IsStaleCopy now also requires the same record (C163): unedited moved record equals the stale one in every field and the body; if edited since, the history before the renumber entry is the stale record's whole history and the ask fields (title, key, tags, asked_by, created, context, options, recommendation) are equal; compared as stored so a non-canonical stale file (empty arrays, no final newline) still matches. A live record sharing ID and name text with a moved one is no longer flagged by lint or refused by renumber. Help text of adj lint and adj renumber says check both, then delete. Lock: an existing read-only .adj.lock is locked through an O_RDONLY open on EACCES (C164). Catalog edits: C155 (Create gap closed by C162), C162 (invalid-only-with-real-ID wording), C156 (renumber entry at any position, same content, check both then delete). Tests: new store, lint fixture, cli help and lock tests, each red before the change; all new assertions mutation-checked. Known limits (C163): a moved file hand-edited without a history entry is not recognised; identical records are a contrived case where the keeper is flagged; edited-since comparison skips the body. Gate PASS after one review round with one blocker (non-canonical stale file) fixed.",
-          "created_at": "2026-10-16T03:27:42Z",
-          "attempt": 1,
-          "by": "Jon R",
-          "verified_by": "",
-          "verified_at": "",
-          "stale_after": ""
-        }
-      ],
-      "claim": null,
-      "fields": {
-        "size": "M",
-        "flags": [],
-        "trees": [
-          "store",
-          "lint",
-          "cli"
-        ],
-        "trees_literal": false,
-        "findings": "S15 gate note (2) on S16; reproduced in the S16 run; S23 review notes (3), (6) on S16",
-        "discovered_from": "",
-        "parent": "",
-        "cites": [],
-        "key": "",
-        "pass": "",
-        "group": "",
-        "reason": "",
-        "importance": 3,
-        "urgency": 3,
-        "effort": 2,
-        "attempts": 1
-      }
-    },
-    {
-      "id": "S26",
-      "title": "Accept --root before the subcommand",
-      "short_title": "Accept --root before the subcommand",
-      "status": "done",
-      "has_slice": true,
-      "depends_on": [],
-      "note_records": [
-        {
-          "id": "58aa1203-9aa3-4072-bd94-fbd77d3bdf89",
-          "kind": "",
-          "text": "**2026-10-17** — Leading --root DIR / --root=DIR is accepted before the subcommand and handed to the command as if it followed it; --root both before and after, or twice before, exits 2 naming both values (C170); twice after still takes the last. Tests, mutation checks and docs (README, AGENTS.md) done; full suite, vet, gofmt and slicer check pass.",
-          "created_at": "2026-10-17T13:02:37Z",
-          "attempt": 1,
-          "by": "Jon R",
-          "verified_by": "",
-          "verified_at": "",
-          "stale_after": ""
-        }
-      ],
-      "claim": null,
-      "fields": {
-        "size": "S",
-        "flags": [],
-        "trees": [
-          "cli"
-        ],
-        "trees_literal": false,
-        "findings": "S17 dogfood friction (7), note on S20; C165",
-        "discovered_from": "",
-        "parent": "",
-        "cites": [
-          "C165"
-        ],
-        "key": "",
-        "pass": "",
-        "group": "",
-        "reason": "",
-        "importance": 2,
-        "urgency": 3,
-        "effort": 1,
-        "attempts": 1
-      }
-    },
-    {
-      "id": "S27",
-      "title": "Set refs with ask --ref",
-      "short_title": "Set refs with ask --ref",
-      "status": "done",
-      "has_slice": true,
-      "depends_on": [],
-      "note_records": [
-        {
-          "id": "2afbd353-70bc-418a-ad21-07d2c8f0d4c0",
-          "kind": "",
-          "text": "**2026-10-17** — C171 records ref search and inbox/check display; implementing ask parsing and round-trip coverage.",
-          "created_at": "2026-10-17T13:11:52Z",
-          "attempt": 1,
-          "by": "Jon R",
-          "verified_by": "",
-          "verified_at": "",
-          "stale_after": ""
-        },
-        {
-          "id": "2bf5405e-b17d-4a3c-8616-7347052eb040",
-          "kind": "",
-          "text": "**2026-10-17** — C171 review P3: aligned ask, check and inbox guidance and renderer comments with ref behavior.",
-          "created_at": "2026-10-17T13:21:07Z",
-          "attempt": 1,
-          "by": "Jon R",
-          "verified_by": "",
-          "verified_at": "",
-          "stale_after": ""
-        }
-      ],
-      "claim": null,
-      "fields": {
-        "size": "S",
-        "flags": [],
-        "trees": [
-          "cli",
-          "commands"
-        ],
-        "trees_literal": false,
-        "findings": "S17 dogfood friction (1), note on S20; C165",
-        "discovered_from": "",
-        "parent": "",
-        "cites": [
-          "C165",
-          "C12"
-        ],
-        "key": "",
-        "pass": "",
-        "group": "",
-        "reason": "",
-        "importance": 2,
-        "urgency": 3,
-        "effort": 1,
-        "attempts": 1
-      }
-    },
-    {
-      "id": "S28",
-      "title": "Free-text recommendation with ask --recommend-text",
-      "short_title": "Free-text recommendation with ask --recommend-text",
-      "status": "done",
-      "has_slice": true,
-      "depends_on": [],
-      "note_records": [],
-      "claim": null,
-      "fields": {
-        "size": "M",
-        "flags": [],
-        "trees": [
-          "model",
-          "cli",
-          "commands",
-          "render",
-          "lint"
-        ],
-        "trees_literal": false,
-        "findings": "S17 dogfood friction (4), note on S20; C167",
-        "discovered_from": "",
-        "parent": "",
-        "cites": [
-          "C165",
-          "C167",
-          "C163",
-          "C172",
-          "C173",
-          "C174"
-        ],
-        "key": "",
-        "pass": "",
-        "group": "",
-        "reason": "",
-        "importance": 2,
-        "urgency": 3,
-        "effort": 2,
-        "attempts": 1
-      }
-    },
-    {
-      "id": "S29",
-      "title": "Backdate a decision with decide --decided-at",
-      "short_title": "Backdate a decision with decide --decided-at",
-      "status": "done",
-      "has_slice": true,
-      "depends_on": [],
-      "note_records": [],
-      "claim": null,
-      "fields": {
-        "size": "S",
-        "flags": [],
-        "trees": [
-          "cli",
-          "commands",
-          "model"
-        ],
-        "trees_literal": false,
-        "findings": "S17 dogfood friction (5), note on S20; C168",
-        "discovered_from": "",
-        "parent": "",
-        "cites": [
-          "C165",
-          "C168",
-          "C175",
-          "C176"
-        ],
-        "key": "",
-        "pass": "",
-        "group": "",
-        "reason": "",
-        "importance": 2,
-        "urgency": 3,
-        "effort": 1,
-        "attempts": 1
-      }
-    },
-    {
-      "id": "S30",
-      "title": "Correct a record's text with adj amend",
-      "short_title": "Correct a record's text with adj amend",
-      "status": "done",
-      "has_slice": true,
-      "depends_on": [
-        "S28"
-      ],
-      "note_records": [
-        {
-          "id": "b13e7169-a813-4307-b18f-8af80e2886b3",
-          "kind": "",
-          "text": "**2026-10-17** — From S28: a recommendation has exactly one of label or text (C172). If amend can edit the recommendation, keep them exclusive and go through Validate.",
-          "created_at": "2026-10-17T13:53:33Z",
-          "attempt": 0,
-          "by": "Jon R",
-          "verified_by": "",
-          "verified_at": "",
-          "stale_after": ""
-        }
-      ],
-      "claim": null,
-      "fields": {
-        "size": "M",
-        "flags": [],
-        "trees": [
-          "model",
-          "cli",
-          "commands",
-          "store",
-          "lint"
-        ],
-        "trees_literal": false,
-        "findings": "S17 dogfood friction (6), note on S20; C166",
-        "discovered_from": "",
-        "parent": "",
-        "cites": [
-          "C165",
-          "C166",
-          "C163",
-          "C178",
-          "C179",
-          "C180",
-          "C181",
-          "C182",
-          "C183"
-        ],
-        "key": "",
-        "pass": "",
-        "group": "",
-        "reason": "",
-        "importance": 2,
-        "urgency": 3,
-        "effort": 2,
-        "attempts": 1
-      }
-    },
-    {
-      "id": "S31",
-      "title": "Report the version with adj version",
-      "short_title": "Report the version with adj version",
-      "status": "done",
-      "has_slice": true,
-      "depends_on": [],
-      "note_records": [
-        {
-          "id": "356e286b-74bd-4339-9a08-d20060f3b2f7",
-          "kind": "",
-          "text": "**2026-10-17** — From S26: TestUnknownLeadingFlag in internal/cli/cli_test.go pins adj --version to exit 2. Replace that case when --version is added.",
-          "created_at": "2026-10-17T13:04:48Z",
-          "attempt": 0,
-          "by": "Jon R",
-          "verified_by": "",
-          "verified_at": "",
-          "stale_after": ""
-        },
-        {
-          "id": "73dd6c53-bd7a-42eb-a702-e1325ae90f64",
-          "kind": "",
-          "text": "**2026-10-17** — VERDICT: FAIL - executed mutation evidence was missing for each new test; temporary mutations are now verified and restored.",
-          "created_at": "2026-10-17T14:04:15Z",
-          "attempt": 1,
-          "by": "Jon R",
-          "verified_by": "",
-          "verified_at": "",
-          "stale_after": ""
-        },
-        {
-          "id": "d927807c-b33c-41b8-8539-27bd328814a6",
-          "kind": "",
-          "text": "**2026-10-17** — Reviewer gate FAIL: AGENTS.md lines 232-239 need the S31 version exceptions. Version accepts --root without a config, and --version is a valid leading standalone flag. Update project guidance to match behavior; no product-code defect found.",
-          "created_at": "2026-10-17T14:06:22Z",
-          "attempt": 2,
-          "by": "Jon R",
-          "verified_by": "",
-          "verified_at": "",
-          "stale_after": ""
-        }
-      ],
-      "claim": null,
-      "fields": {
-        "size": "S",
-        "flags": [],
-        "trees": [
-          "cli"
-        ],
-        "trees_literal": false,
-        "findings": "release prep; C169",
-        "discovered_from": "",
-        "parent": "",
-        "cites": [
-          "C165",
-          "C169"
-        ],
-        "key": "",
-        "pass": "",
-        "group": "",
-        "reason": "",
-        "importance": 2,
-        "urgency": 3,
-        "effort": 1,
-        "attempts": 3
-      }
-    },
-    {
-      "id": "S32",
-      "title": "Release docs: PROJECT.md, CHANGELOG and JSON stability",
-      "short_title": "Release docs: PROJECT.md, CHANGELOG and JSON stability",
-      "status": "done",
-      "has_slice": true,
-      "depends_on": [
-        "S26",
-        "S27",
-        "S28",
-        "S29",
-        "S30",
-        "S31"
-      ],
-      "note_records": [
-        {
-          "id": "6d4bc97e-7451-4654-b16a-092086b632ec",
-          "kind": "",
-          "text": "**2026-10-17** — From S26 review: the usage text and README name only --root as accepted before the command, while the unknown-flag error also names --help and -h (owner kept that message 2026-10-17). Make the wording agree.",
-          "created_at": "2026-10-17T13:04:48Z",
-          "attempt": 0,
-          "by": "Jon R",
-          "verified_by": "",
-          "verified_at": "",
-          "stale_after": ""
-        },
-        {
-          "id": "afe5953c-105b-4b0a-a509-ee909817a19d",
-          "kind": "",
-          "text": "**2026-10-17** — From S28: recommendation.label is optional since S28; a recommendation has exactly one of label or text (C172), so say so in the json.md 0.x stability section. From the S28 merge: the AGENTS.md decide entry does not name S29's --decided-at (docs/json.md does); add it.",
-          "created_at": "2026-10-17T13:53:34Z",
-          "attempt": 0,
-          "by": "Jon R",
-          "verified_by": "",
-          "verified_at": "",
-          "stale_after": ""
-        },
-        {
-          "id": "66a35ad2-1e59-4a46-a173-577eb31f8d99",
-          "kind": "",
-          "text": "**2026-10-17** — From S30: a title change does not rename the file (C180, owner-accepted C182), so the filename slug can drift from the title; say so in the README/json.md. Cosmetic reflows left by the S30 merge: AGENTS.md ~line 256 (~126 cols) and ~239 (short line), docs/json.md ~485 (~92 cols). ai.md is 1799/1800 bytes; the S30 trims (C183) dropped small hints worth restoring if the cap is raised.",
-          "created_at": "2026-10-17T15:34:12Z",
-          "attempt": 0,
-          "by": "Jon R",
-          "verified_by": "",
-          "verified_at": "",
-          "stale_after": ""
-        },
-        {
-          "id": "f65afac8-a622-46c1-8af9-019af273963c",
-          "kind": "",
-          "text": "**2026-10-17** — For S33: CHANGELOG.md says '0.1.0 - unreleased' with a not-tagged sentence; replace unreleased with the final date and delete that sentence (C185). README documents that on Go 1.27.2 a plain go build in a git checkout prints a Go-stamped pseudo-version, not (devel) as C169 assumed; version.go is unchanged (C187).",
-          "created_at": "2026-10-17T16:27:36Z",
-          "attempt": 1,
-          "by": "Jon R",
-          "verified_by": "",
-          "verified_at": "",
-          "stale_after": ""
-        }
-      ],
-      "claim": null,
-      "fields": {
-        "size": "S",
-        "flags": [],
-        "trees": [
-          "docs"
-        ],
-        "trees_literal": false,
-        "findings": "release prep; C165",
-        "discovered_from": "",
-        "parent": "",
-        "cites": [
-          "C165",
-          "C31",
-          "C184",
-          "C185",
-          "C186",
-          "C187",
-          "C188",
-          "C172",
-          "C180",
-          "C182",
-          "C169",
-          "C189",
-          "C190"
-        ],
-        "key": "",
-        "pass": "",
-        "group": "",
-        "reason": "",
-        "importance": 2,
-        "urgency": 3,
-        "effort": 1,
-        "attempts": 1
-      }
-    },
-    {
-      "id": "S33",
-      "title": "Release 0.1.0",
-      "short_title": "Release 0.1.0",
-      "status": "done",
-      "has_slice": true,
-      "depends_on": [
-        "S32"
-      ],
-      "note_records": [
-        {
-          "id": "91b1f3cb-195d-421e-a4be-2e437a9af648",
-          "kind": "",
-          "text": "**2026-10-17** — From S32 (owner 2026-10-17): fix adj check --help so its usage names refs, which check searches (C171); add a test. Also: replace '0.1.0 - unreleased' in CHANGELOG.md with the release date and delete its 'not tagged yet' sentence; update PROJECT.md ~line 356 (decisions/ holds 0001-0010 = C23-C32) once the C165-C169 records are added; after tagging, re-check README ~47-51 on what adj version prints (C187). Comment-only: cli.go ~174 leadingRoot doc comment still says --root is the only flag accepted before the command. Cosmetic: AGENTS.md:285 is 92 cols, docs/json.md:27 ends a line early, PROJECT.md ~307 'states what 0.x promises' reads oddly now that it also gives the 1.0 rule.",
-          "created_at": "2026-10-17T16:32:46Z",
-          "attempt": 0,
-          "by": "Jon R",
-          "verified_by": "",
-          "verified_at": "",
-          "stale_after": ""
-        },
-        {
-          "id": "0dbbd9dd-4df6-44f4-ad93-3f7ef8856fc7",
-          "kind": "",
-          "text": "**2026-10-17** — Owner Jon R delegated the adj decide runs for the C165-C169 records (decisions/0011-0015) to the S33 implementer on 2026-10-17; decided_by is Jon R. Verified: adj lint on decisions/ clean; 15 decided records, inbox empty; -ldflags -X internal/cli.versionOverride=v0.1.0 build prints v0.1.0 for adj version and adj --version; full suite incl. roundtrip passes. Tag v0.1.0 is created by the outer session only on owner ask.",
-          "created_at": "2026-10-17T20:57:23Z",
-          "attempt": 1,
-          "by": "Jon R",
-          "verified_by": "",
-          "verified_at": "",
-          "stale_after": ""
-        }
-      ],
-      "claim": null,
-      "fields": {
-        "size": "S",
-        "flags": [],
-        "trees": [
-          "release"
-        ],
-        "trees_literal": false,
-        "findings": "C165",
-        "discovered_from": "",
-        "parent": "",
-        "cites": [
-          "C165",
-          "C27",
-          "C191",
-          "C192"
-        ],
-        "key": "",
-        "pass": "",
-        "group": "",
-        "reason": "",
-        "importance": 3,
-        "urgency": 3,
-        "effort": 1,
-        "attempts": 1
-      }
-    },
-    {
       "id": "S40",
       "title": "Hardening: import, user config and lock edge cases",
       "short_title": "Hardening edge cases",
@@ -2766,25 +2843,28 @@
         "group": "",
         "reason": "",
         "importance": 2,
-        "urgency": 2,
+        "urgency": 1,
         "effort": 2,
         "attempts": 0
       }
     },
     {
-      "id": "S41",
-      "title": "Windows CI fixes for 0.2.0: first windows-latest go test run failed six tests",
-      "short_title": "Windows CI fixes",
-      "status": "done",
-      "has_slice": false,
-      "depends_on": [],
+      "id": "S21",
+      "title": "Later: optional owner-only decide enforcement",
+      "short_title": "Later: optional owner-only decide enforcement",
+      "status": "retired",
+      "has_slice": true,
+      "depends_on": [
+        "S07",
+        "S01"
+      ],
       "note_records": [
         {
-          "id": "bfd402bf-90be-457a-9b7e-051d00fc5313",
+          "id": "fb7e0bf7-5644-4b5c-99ff-4ab901aa173c",
           "kind": "",
-          "text": "**2026-10-19** — First windows-latest CI run (39193784144) failed 6 tests. 5 were test-side: %q-quoted and JSON-escaped backslashes, a / path separator, and no unix mode bits on Windows. 1 was a real fix: store.Open now refuses a root that is not a directory, because Windows reports file\\.adjudicate.json as missing.",
-          "created_at": "2026-10-19T03:19:28Z",
-          "attempt": 1,
+          "text": "**2026-10-16** — **2026-10-16** — From S17: the ten decisions C23-C32 were decided by the agent in session on the owner's delegated instruction (decided_by = Jon R, attribution only, C27). The store cannot tell a delegated decide from an owner-run one; relevant to optional enforcement.",
+          "created_at": "2026-10-16T03:36:32Z",
+          "attempt": 0,
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
@@ -2793,77 +2873,26 @@
       ],
       "claim": null,
       "fields": {
-        "size": "S",
+        "size": "M",
         "flags": [],
-        "trees": [],
+        "trees": [
+          "later"
+        ],
         "trees_literal": false,
-        "findings": "",
-        "discovered_from": "S36",
+        "findings": "PROJECT.md Feature tiers (Later); Open decisions 5; Non-goals",
+        "discovered_from": "",
         "parent": "",
-        "cites": [],
+        "cites": [
+          "C11",
+          "C27"
+        ],
         "key": "",
         "pass": "",
         "group": "",
-        "reason": "",
-        "importance": 3,
-        "urgency": 3,
-        "effort": 1,
-        "attempts": 1
-      }
-    },
-    {
-      "id": "S42",
-      "title": "--json failures print a JSON error object {error:{code,message,command}}, as slicer does",
-      "short_title": "JSON error object on --json failures",
-      "status": "open",
-      "has_slice": false,
-      "depends_on": [],
-      "note_records": [],
-      "claim": null,
-      "fields": {
-        "size": "",
-        "flags": [],
-        "trees": [],
-        "trees_literal": false,
-        "findings": "ork integration review 2026-10-19 (squalor-xyz/ork docs/review-2026-10-19-integration.md), R6: adj prints only text on stderr when a --json command fails (measured: adj show 999 --json), so ork cannot keep the error code.",
-        "discovered_from": "",
-        "parent": "",
-        "cites": [],
-        "key": "ork.json-error",
-        "pass": "",
-        "group": "",
-        "reason": "",
-        "importance": 2,
-        "urgency": 2,
-        "effort": null,
-        "attempts": 0
-      }
-    },
-    {
-      "id": "S43",
-      "title": "New record IDs clear the highest ID in every sibling worktree, so parallel branches do not collide",
-      "short_title": "Sibling-aware record IDs",
-      "status": "open",
-      "has_slice": false,
-      "depends_on": [],
-      "note_records": [],
-      "claim": null,
-      "fields": {
-        "size": "",
-        "flags": [],
-        "trees": [],
-        "trees_literal": false,
-        "findings": "ork integration review 2026-10-19 (squalor-xyz/ork docs/review-2026-10-19-integration.md), R6: two ork branches both allocated records 50 and 51 on 2026-10-19 and needed adj renumber; the store lock cannot see other branches (internal/store/store.go:282-286); slicer already allocates past sibling worktrees.",
-        "discovered_from": "",
-        "parent": "",
-        "cites": [],
-        "key": "ork.sibling-ids",
-        "pass": "",
-        "group": "",
-        "reason": "",
-        "importance": 2,
-        "urgency": 2,
-        "effort": null,
+        "reason": "Owner 2026-10-18: owner-only decide stays a convention (C11, C27); no enforcement planned",
+        "importance": 1,
+        "urgency": 1,
+        "effort": 2,
         "attempts": 0
       }
     }

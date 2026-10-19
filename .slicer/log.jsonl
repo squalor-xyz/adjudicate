@@ -783,3 +783,17 @@
 {"when": "2026-10-19T03:19:28Z", "item": "S41", "action": "status", "from": "started", "to": "done", "note": "", "by": "Jon R"}
 {"when": "2026-10-19T04:05:09Z", "item": "S42", "action": "add", "from": "", "to": "open", "note": "--json failures print a JSON error object {error:{code,message,command}}, as slicer does"}
 {"when": "2026-10-19T04:05:10Z", "item": "S43", "action": "add", "from": "", "to": "open", "note": "New record IDs clear the highest ID in every sibling worktree, so parallel branches do not collide"}
+{"when": "2026-10-19T15:16:29Z", "item": "S44", "action": "add", "from": "", "to": "open", "note": "Readers accept unknown history events: lint warns instead of List/Get failing, so newer event kinds do not make older adj binaries refuse a store"}
+{"when": "2026-10-19T15:16:29Z", "item": "S44", "action": "move", "from": "44", "to": "1", "note": ""}
+{"when": "2026-10-19T15:16:29Z", "item": "S42", "action": "move", "from": "43", "to": "2", "note": ""}
+{"when": "2026-10-19T15:16:29Z", "item": "S43", "action": "move", "from": "44", "to": "3", "note": ""}
+{"when": "2026-10-19T15:16:29Z", "item": "S39", "action": "move", "from": "13", "to": "4", "note": ""}
+{"when": "2026-10-19T15:16:29Z", "item": "S40", "action": "move", "from": "43", "to": "5", "note": ""}
+{"when": "2026-10-19T15:16:30Z", "item": "S39", "action": "set", "from": "", "to": "", "note": "depends_on S37→S44,S42"}
+{"when": "2026-10-19T15:17:02Z", "item": "S44", "action": "set", "from": "", "to": "", "note": "importance 2→3; urgency 2→3; effort -→1"}
+{"when": "2026-10-19T15:17:03Z", "item": "S42", "action": "set", "from": "", "to": "", "note": "importance 2→3; effort -→2"}
+{"when": "2026-10-19T15:17:03Z", "item": "S43", "action": "set", "from": "", "to": "", "note": "urgency 2→3; effort -→3"}
+{"when": "2026-10-19T15:17:03Z", "item": "S39", "action": "set", "from": "", "to": "", "note": "effort,importance,urgency"}
+{"when": "2026-10-19T15:17:03Z", "item": "S40", "action": "set", "from": "", "to": "", "note": "importance 2→1; urgency 2→1"}
+{"when": "2026-10-19T15:17:03Z", "item": "*", "action": "sort", "from": "", "to": "", "note": "by score (43 moved)"}
+{"when": "2026-10-19T15:17:07Z", "item": "S40", "action": "set", "from": "", "to": "", "note": "importance 1→2"}
