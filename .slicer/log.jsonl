@@ -822,3 +822,21 @@
 {"when": "2026-10-20T11:26:59Z", "item": "S45", "action": "edit", "from": "", "to": "", "note": "Implement"}
 {"when": "2026-10-20T11:26:59Z", "item": "S45", "action": "edit", "from": "", "to": "", "note": "Check"}
 {"when": "2026-10-20T11:26:59Z", "item": "S45", "action": "edit", "from": "", "to": "", "note": "Git"}
+{"when": "2026-10-20T17:08:30Z", "item": "S42", "action": "set", "from": "", "to": "", "note": "size -→M"}
+{"when": "2026-10-20T17:08:30Z", "item": "S43", "action": "set", "from": "", "to": "", "note": "size -→M"}
+{"when": "2026-10-20T17:12:34Z", "item": "S39", "action": "set", "from": "", "to": "", "note": "depends_on S44,S42→S44,S42,S45"}
+{"when": "2026-10-20T18:10:18Z", "item": "S42", "action": "promote", "from": "", "to": "", "note": ""}
+{"when": "2026-10-20T18:15:30Z", "item": "S42", "action": "set", "from": "", "to": "", "note": "trees -→cli"}
+{"when": "2026-10-20T18:29:27Z", "item": "S43", "action": "promote", "from": "", "to": "", "note": ""}
+{"when": "2026-10-20T18:29:27Z", "item": "S43", "action": "set", "from": "", "to": "", "note": "trees -→store"}
+{"when": "2026-10-20T18:30:27Z", "item": "S46", "action": "add", "from": "", "to": "open", "note": "Forward-compatible record reads before 1.0"}
+{"when": "2026-10-20T18:30:27Z", "item": "S47", "action": "add", "from": "", "to": "later", "note": "import-adr hardening"}
+{"when": "2026-10-20T18:30:27Z", "item": "S48", "action": "add", "from": "", "to": "later", "note": "userconfig Save keeps a symlinked config and syncs"}
+{"when": "2026-10-20T18:30:27Z", "item": "S49", "action": "add", "from": "", "to": "later", "note": "Test that a dead process releases the ID lock"}
+{"when": "2026-10-20T18:30:27Z", "item": "S45", "action": "set", "from": "", "to": "", "note": "depends_on -→S42"}
+{"when": "2026-10-20T18:30:27Z", "item": "S39", "action": "set", "from": "", "to": "", "note": "depends_on S44,S42,S45→S44,S42,S45,S46,S43"}
+{"when": "2026-10-20T18:30:54Z", "item": "S45", "action": "edit", "from": "", "to": "", "note": "Why"}
+{"when": "2026-10-20T18:30:54Z", "item": "S45", "action": "edit", "from": "", "to": "", "note": "Failing tests"}
+{"when": "2026-10-20T18:31:20Z", "item": "S39", "action": "promote", "from": "", "to": "", "note": ""}
+{"when": "2026-10-20T18:31:20Z", "item": "S39", "action": "set", "from": "", "to": "", "note": "trees"}
+{"when": "2026-10-20T18:31:23Z", "item": "S40", "action": "retire", "from": "later", "to": "retired", "note": "Split 2026-10-20: import-adr edge cases -> S47; userconfig Save symlink/fsync -> S48; lock release at process death test -> S49; cosmetic nits (decodeError Go type names, case-folded duplicate key lint fixture, lock_windows.go:64 comment, over-width lines) -> S39."}

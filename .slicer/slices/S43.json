@@ -1,0 +1,41 @@
+{
+  "id": "S43",
+  "title": "New record IDs clear the highest ID in every sibling worktree, so parallel branches do not collide",
+  "lead": [
+    "`adj ask` (and `adj renumber`, when it moves a record) takes an ID above the highest record ID in every other worktree of the same git repository, as slicer does, so parallel branches in one checkout do not take the same ID."
+  ],
+  "depends_note": null,
+  "findings_note": "ork integration review 2026-10-19 (squalor-xyz/ork docs/review-2026-10-19-integration.md), R6: two ork branches both allocated records 50 and 51 on 2026-10-19 and needed adj renumber; the store lock cannot see other branches (internal/store/store.go:282-286); slicer already allocates past sibling worktrees.",
+  "size": "M",
+  "flags": [],
+  "trees_note": "store",
+  "trees_plural": false,
+  "boundary": "**Not in this slice:** clones and other machines (they still collide; `adj lint` and `adj renumber` stay the remedy, C26); locking sibling stores (two asks at the same moment in two worktrees can still collide, as in slicer); reading `.git` files directly (owner decision 2026-10-20: run git); renumbering anything that already collides; a flag or config key to turn this off; the JSON shapes (unchanged).",
+  "sections": [
+    {
+      "heading": "Why",
+      "body": "ork's integration review (`ork/docs/review-2026-10-19-integration.md`, R6, :56 and :663-677) asks for this before adj 1.0: two ork branches each took records 50 and 51 on 2026-10-19 and needed `adj renumber`. ork works around it today by running `adj ask` only from the main checkout (review :564). The store lock serialises one checkout only (`internal/store/store.go:282-286`).\n\nThis extends decision record 4 (\"ID scheme under concurrent branches\": sequential IDs, lint detection, a renumber command; C26). Lint and renumber stay the backstop for what this cannot see.\n\nOwner decisions, 2026-10-20 (this session): S43 is before 1.0 (S39 depends on it); siblings are found by running the `git` binary, as slicer does, not by parsing `.git`. Record the second as a catalog decision citing C24: `os/exec` is standard library, git is an optional runtime tool, and adj behaves as today without it.\n\nHow slicer does it (`slicer/src/slicer/vcs.py:384-472`, `store.py:726-775`, `ids.py:42-66`, docs `slicer/docs/commands.md:227-250`): `git rev-parse --show-toplevel`; only when the project root is that top level (`at_worktree_root`), `git worktree list --porcelain`, keep the `worktree <path>` lines, drop the current one; read each sibling's store lock-free; a sibling that fails to read is skipped; git missing or failing means no siblings. The floor is the largest sibling next ID.\n\nBehaviour:\n- The sibling floor is computed under the local store lock, once per `Create` and once per `Renumber`, and only when the repo root (cleaned, symlinks resolved) equals `git -C ROOT rev-parse --show-toplevel` (same treatment). Otherwise, or if git is not on PATH or exits non-zero, the floor is 0 and behaviour is exactly today's. The top-level guard also keeps tests in `.cache/tmp` (inside this repo) from reading this repo's worktrees.\n- Siblings: the `worktree` paths from `git -C ROOT worktree list --porcelain`, minus ROOT; entries marked `bare` are skipped; `prunable` entries are tried and skipped if missing.\n- Each sibling's store directory comes from its own `.adjudicate.json` (`store.LoadConfig`); a sibling with no config uses the default `decisions` (an older branch); one with an invalid config is skipped. Only file names are read (`scan`, `fileID`), not records, and the sibling's lock is not taken.\n- The floor is one past the highest sibling ID. `Create` passes it to `freeID` (`internal/store/renumber.go:401-407`, `floor` already exists) instead of 0 at `store.go:320`; dangling-link avoidance (C155) is unchanged.\n- `Renumber` uses the same floor in its in-memory pre-check (`renumber.go:321-330`) and in `moveFile` (`renumber.go:423-466`, `floor := 0` at the start), so the IDs it validates are the IDs it writes.\n- No output changes. A sibling that is skipped is not reported (as slicer); decide under C32 whether a debug note is wanted (recommend: no)."
+    },
+    {
+      "heading": "Files",
+      "body": "- `internal/store/siblings.go` (new): `siblingFloor(root string, run gitRunner) int`, the porcelain parser, and the top-level guard. The git runner is a field on `Store` (production: `exec.Command(\"git\", \"-C\", root, ...)`, with a short timeout) so unit tests inject output and need no git.\n- `internal/store/store.go`: `Store` keeps its root (today only `dir`, :42-109); `Create` takes the floor (:292-337); update the comment at :282-286.\n- `internal/store/renumber.go`: the floor in the pre-check and `moveFile`.\n- Docs that say branches still collide: `AGENTS.md` (:315-316, :487-507, and the \"Store and config\" ID paragraph), `PROJECT.md` (:93-94 IDs, :431-436 ID allocation, :499-500 Risks), `README.md` (:405-406 and the ID paragraph), `CHANGELOG.md` (Unreleased). Say what it covers (worktrees of one repository on one machine) and what it does not (clones, simultaneous asks in two worktrees)."
+    },
+    {
+      "heading": "Failing tests",
+      "body": "Red first; `t.TempDir()` under `.cache/tmp`; no `os.Chdir`.\n- Porcelain parser, table-driven: main plus two linked worktrees; a `bare` entry; a `prunable` entry; `detached`; Windows paths with forward slashes and a drive letter; trailing blank line; empty output.\n- `siblingFloor` with an injected runner: root not the top level gives 0; runner error (git missing) gives 0; a sibling with records up to 7 gives 8; a sibling with a custom store path in its config; a sibling with no config uses `decisions`; a sibling with an invalid config or an unreadable store directory (unix only, skip on Windows with a reason) is skipped and the others still count; the current worktree is excluded.\n- `Create` with a sibling at 7 and a local store at 3 takes 8; with no siblings takes 4 (today's behaviour).\n- `Renumber` with a sibling at 9 moves a duplicate to 10, and its pre-check validates 10.\n- One integration test with real git: `git init` in a temp dir, a commit, `git worktree add`, a record in the sibling, then `Create` in the main worktree takes the next ID past it. Skip when `exec.LookPath(\"git\")` fails. Set `GIT_CONFIG_NOSYSTEM=1`, `HOME` and the author name and email through the command environment, never the real git config. It must pass on the Linux, macOS and Windows CI jobs."
+    },
+    {
+      "heading": "Implement",
+      "body": "1. Record the C32 choices with `slicer catalog add --kind decision`: the git decision (citing the owner's 2026-10-20 answer and C24), the top-level guard, skipping silently, the git timeout, and symlink resolution for the root comparison.\n2. Red tests, then `siblings.go`, then wire it into `Create` and `Renumber`.\n3. Update the docs in Files."
+    },
+    {
+      "heading": "Check",
+      "body": "- `. scripts/env.sh; go test ./...; go vet ./...; GOOS=windows go vet ./...; gofmt -l cmd internal` prints nothing.\n- `go build -o .cache/bin/adj ./cmd/adj`. In a scratch git repo under `.cache/tmp` (its own `git init`): `adj init`, one ask, `git worktree add` a sibling, ask twice in the sibling, then ask in the main worktree: it takes 4, not 2. Outside a git repo, asks behave as before.\n- `.cache/bin/adj lint --root .` is clean. Mutation-check each new test (floor dropped from Renumber's pre-check; guard removed). `slicer check --json` is clean."
+    },
+    {
+      "heading": "Git",
+      "body": "Worktree `.worktrees/s43` on its own branch. Commit on that branch after `VERDICT: PASS`; no push, no merge, no AI attribution."
+    }
+  ],
+  "notes": []
+}

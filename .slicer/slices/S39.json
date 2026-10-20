@@ -1,0 +1,41 @@
+{
+  "id": "S39",
+  "title": "Release 1.0: freeze JSON shapes",
+  "lead": [
+    "Prepare release 1.0.0: from now on the JSON shapes, the error codes and the contract number in `docs/json.md` are frozen. Clear the notes filed on this item and the cosmetic items moved here from S40, and turn CHANGELOG `## Unreleased` into `## 1.0.0 - DATE`. Tagging and pushing stay with the owner."
+  ],
+  "depends_note": null,
+  "findings_note": "CHANGELOG.md and docs/json.md 1.0 rule; owner 2026-10-18: 0.2.0 first, 1.0 later",
+  "size": "S",
+  "flags": [],
+  "trees_note": "release",
+  "trees_plural": false,
+  "boundary": "**Not in this slice:** new behaviour (everything that must be in 1.0 lands first: S42, S43, S44, S45, S46); the later hardening items S47-S49; creating or pushing the `v1.0.0` tag; ork's pin of `adj-json v1` (ork S24).",
+  "sections": [
+    {
+      "heading": "Why",
+      "body": "Owner plan: 1.0 freezes the JSON (PROJECT.md Later, `docs/json.md` \"Stability\": until 1.0 a shape may change in a minor release; from 1.0 a release may add keys but never renames, removes or retypes one). ork reads adj's JSON and asked for the error object (S42) and sibling IDs (S43) before 1.0 (ork review R6). Owner decisions 2026-10-20: S43 and S45 come before 1.0, and the strictness questions (adj records 17-19) are settled first (S46).\n\nNotes on this item, and what answers each:\n- From S18: `inbox --all` `errors[].error` text varies by OS. Freeze keys and codes, not message text: say so in Stability (and for S42's `message`).\n- From S22: readers accept unknown history events: done in S44.\n- From S44 review: unknown keys inside an amend `was`: adj record 17, built in S46 if decided `keep`.\n\nMoved here from S40 (cosmetic, from the S37 and S44 gates):\n- Decode errors name Go types (for example `Go struct field HistoryEntry.event of type model.Event`): `decodeError` in `internal/model/record.go:186` should say which key has the wrong type in plain words.\n- No `adj lint` fixture covers case-folded duplicate keys (model tests and a hand check do): add one in `internal/lint/testdata`.\n- `internal/store/lock_windows.go:64` has a ragged short comment line; rewrap it.\n- Over-width lines (more than 80 columns) in Markdown and Go comments; CHANGELOG.md in particular. Fix those the release touches and any `awk 'length > 80'` finds in CHANGELOG, README, AGENTS.md and PROJECT.md prose (tables and code blocks may stay wide)."
+    },
+    {
+      "heading": "Files",
+      "body": "- `docs/json.md`: rewrite \"Stability\" for 1.x: what is frozen (key names and types, error codes, the `adj-json` contract number and its bump rule from S45), what may be added (keys, codes), what is not frozen (message text, the order of `errors`); drop \"Two things a reader of 0.1 must not assume\" wording that says 0.1 (keep the content).\n- `CHANGELOG.md`: `## Unreleased` -> `## 1.0.0 - DATE` (the owner may change the date when tagging); the header loses the \"until 1.0\" sentence and states the 1.x rule; check every user-visible change since 0.2.0 is listed (S42-S46 and anything else in `git log v0.2.0..`), with JSON shape changes named.\n- `PROJECT.md`: Later list (drop S39 and the items now done; name S47-S49 as later), every \"0.1.0\"/\"0.x\" sentence that is about the current version rather than history, the acceptance criteria section if it says \"met in 0.1.0\" only.\n- `README.md`, `AGENTS.md`: 0.x mentions and install examples (`go install ...@v1.0.0`).\n- `internal/model/record.go` (`decodeError`), `internal/lint/testdata` (fixture), `internal/store/lock_windows.go` (comment).\n- `internal/commands/ai.md`: confirm it still names what agents need after S42/S45 and is within 1800 bytes (`internal/cli/ai_test.go`)."
+    },
+    {
+      "heading": "Failing tests",
+      "body": "- `decodeError`: a wrong-typed `event` gives a message that names the key and the expected type without Go type names (`model.Event`, `Go struct field`).\n- Lint fixture: a record with `Event` and `event` in one entry gives the expected finding.\n- `jsonshape_test.go`: confirm (and add if missing) a pin for every shape in `docs/json.md`, including S42's error object, S45's `contract --json` and `version --json`, and S46's record keys. Docs-only changes need no test."
+    },
+    {
+      "heading": "Implement",
+      "body": "1. Go through each note on S39 and each S40 item above; say per item in the report: done, or why not.\n2. Tests first for `decodeError` and the lint fixture.\n3. Compatibility: build adj from the `v0.2.0` tag in `.cache/tmp` (`git worktree add .cache/tmp/s39-v020 v0.2.0`, never touching main's tree; remove it afterwards with `git worktree remove`), run it against a store written by this build (with a `contract` pin, an unknown record key if S46 added them), and make the CHANGELOG say exactly what an older adj does with it.\n4. Docs and CHANGELOG."
+    },
+    {
+      "heading": "Check",
+      "body": "- `. scripts/env.sh; go test ./...; go vet ./...; GOOS=windows go vet ./...; gofmt -l cmd internal` prints nothing.\n- `go build -o .cache/bin/adj ./cmd/adj`; `adj lint --root .` clean; `adj --help`, `adj ai`, `adj contract --json`, `adj version --json` read correctly.\n- `release.yml`: run its CHANGELOG section extraction locally against CHANGELOG.md and confirm it finds `## 1.0.0`.\n- Mutation-check each new test; `slicer check --json` is clean.\n- Report to the owner: push, check CI (Linux, macOS, Windows), then tag `v1.0.0` (C193)."
+    },
+    {
+      "heading": "Git",
+      "body": "Worktree `.worktrees/s39` on its own branch. Commit on that branch after `VERDICT: PASS`; no push, no merge, no tag, no AI attribution."
+    }
+  ],
+  "notes": []
+}

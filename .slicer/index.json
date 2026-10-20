@@ -2,7 +2,7 @@
   "version": 9,
   "id_prefix": "S",
   "id_width": 2,
-  "next_id": 46,
+  "next_id": 50,
   "preamble": "Roadmap for **adjudicate** (CLI command `adj`; formerly the working name \"dlog\"): a Go, standard-library-only CLI that records project decisions as plain files in the repo. Owner decisions from 2026-10-15 are catalog records C23-C33.",
   "passes": [],
   "items": [
@@ -883,14 +883,16 @@
       "title": "--json failures print a JSON error object {error:{code,message,command}}, as slicer does",
       "short_title": "JSON error object on --json failures",
       "status": "open",
-      "has_slice": false,
+      "has_slice": true,
       "depends_on": [],
       "note_records": [],
       "claim": null,
       "fields": {
-        "size": "",
+        "size": "M",
         "flags": [],
-        "trees": [],
+        "trees": [
+          "cli"
+        ],
         "trees_literal": false,
         "findings": "ork integration review 2026-10-19 (squalor-xyz/ork docs/review-2026-10-19-integration.md), R6: adj prints only text on stderr when a --json command fails (measured: adj show 999 --json), so ork cannot keep the error code.",
         "discovered_from": "",
@@ -1372,14 +1374,16 @@
       "title": "New record IDs clear the highest ID in every sibling worktree, so parallel branches do not collide",
       "short_title": "Sibling-aware record IDs",
       "status": "open",
-      "has_slice": false,
+      "has_slice": true,
       "depends_on": [],
       "note_records": [],
       "claim": null,
       "fields": {
-        "size": "",
+        "size": "M",
         "flags": [],
-        "trees": [],
+        "trees": [
+          "store"
+        ],
         "trees_literal": false,
         "findings": "ork integration review 2026-10-19 (squalor-xyz/ork docs/review-2026-10-19-integration.md), R6: two ork branches both allocated records 50 and 51 on 2026-10-19 and needed adj renumber; the store lock cannot see other branches (internal/store/store.go:282-286); slicer already allocates past sibling worktrees.",
         "discovered_from": "",
@@ -1400,10 +1404,13 @@
       "title": "Release 1.0: freeze JSON shapes",
       "short_title": "Release 1.0",
       "status": "open",
-      "has_slice": false,
+      "has_slice": true,
       "depends_on": [
         "S44",
-        "S42"
+        "S42",
+        "S45",
+        "S46",
+        "S43"
       ],
       "note_records": [
         {
@@ -2836,7 +2843,7 @@
       "id": "S40",
       "title": "Hardening: import, user config and lock edge cases",
       "short_title": "Hardening edge cases",
-      "status": "later",
+      "status": "retired",
       "has_slice": false,
       "depends_on": [],
       "note_records": [
@@ -2889,7 +2896,7 @@
         "key": "",
         "pass": "",
         "group": "",
-        "reason": "",
+        "reason": "Split 2026-10-20: import-adr edge cases -> S47; userconfig Save symlink/fsync -> S48; lock release at process death test -> S49; cosmetic nits (decodeError Go type names, case-folded duplicate key lint fixture, lock_windows.go:64 comment, over-width lines) -> S39.",
         "importance": 2,
         "urgency": 1,
         "effort": 2,
@@ -2950,7 +2957,9 @@
       "short_title": "JSON contract version and pin",
       "status": "open",
       "has_slice": true,
-      "depends_on": [],
+      "depends_on": [
+        "S42"
+      ],
       "note_records": [],
       "claim": null,
       "fields": {
@@ -2971,6 +2980,126 @@
         "importance": 2,
         "urgency": 1,
         "effort": 2,
+        "attempts": 0
+      }
+    },
+    {
+      "id": "S46",
+      "title": "Forward-compatible record reads before 1.0",
+      "short_title": "Forward-compatible record reads",
+      "status": "open",
+      "has_slice": true,
+      "depends_on": [],
+      "note_records": [],
+      "claim": null,
+      "fields": {
+        "size": "S",
+        "flags": [],
+        "trees": [
+          "model"
+        ],
+        "trees_literal": false,
+        "findings": "adj records 17 (store.amend-was) and 18 (store.record-unknown-keys), filed 2026-10-20 from the S39 notes and the S44 review",
+        "discovered_from": "",
+        "parent": "",
+        "cites": [],
+        "key": "compat.record-unknown-keys",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 3,
+        "urgency": 2,
+        "effort": 1,
+        "attempts": 0
+      }
+    },
+    {
+      "id": "S47",
+      "title": "import-adr hardening",
+      "short_title": "import-adr hardening",
+      "status": "later",
+      "has_slice": true,
+      "depends_on": [],
+      "note_records": [],
+      "claim": null,
+      "fields": {
+        "size": "M",
+        "flags": [],
+        "trees": [
+          "commands"
+        ],
+        "trees_literal": false,
+        "findings": "S22 review and S37 deferral (2026-10-18), formerly in S40",
+        "discovered_from": "",
+        "parent": "",
+        "cites": [],
+        "key": "hardening.import-adr",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 1,
+        "urgency": 1,
+        "effort": 2,
+        "attempts": 0
+      }
+    },
+    {
+      "id": "S48",
+      "title": "userconfig Save keeps a symlinked config and syncs",
+      "short_title": "userconfig Save safety",
+      "status": "later",
+      "has_slice": true,
+      "depends_on": [],
+      "note_records": [],
+      "claim": null,
+      "fields": {
+        "size": "S",
+        "flags": [],
+        "trees": [
+          "userconfig"
+        ],
+        "trees_literal": false,
+        "findings": "S38 review lows (2026-10-18), formerly in S40",
+        "discovered_from": "",
+        "parent": "",
+        "cites": [],
+        "key": "hardening.userconfig-save",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 1,
+        "urgency": 1,
+        "effort": 1,
+        "attempts": 0
+      }
+    },
+    {
+      "id": "S49",
+      "title": "Test that a dead process releases the ID lock",
+      "short_title": "Lock release at process death test",
+      "status": "later",
+      "has_slice": true,
+      "depends_on": [],
+      "note_records": [],
+      "claim": null,
+      "fields": {
+        "size": "S",
+        "flags": [],
+        "trees": [
+          "store"
+        ],
+        "trees_literal": false,
+        "findings": "S36 and S37 reviews (2026-10-18), formerly in S40",
+        "discovered_from": "",
+        "parent": "",
+        "cites": [],
+        "key": "hardening.lock-release-test",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 1,
+        "urgency": 1,
+        "effort": 1,
         "attempts": 0
       }
     }

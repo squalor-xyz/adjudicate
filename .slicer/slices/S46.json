@@ -1,0 +1,41 @@
+{
+  "id": "S46",
+  "title": "Forward-compatible record reads before 1.0",
+  "lead": [
+    "Readers keep keys this version does not know inside an `amend` entry's `was` and at the top level of a record, and write them back unchanged, so a field added in 1.x does not make a 1.0 binary refuse a store."
+  ],
+  "depends_note": null,
+  "findings_note": "adj records 17 (store.amend-was) and 18 (store.record-unknown-keys), filed 2026-10-20 from the S39 notes and the S44 review",
+  "size": "S",
+  "flags": [],
+  "trees_note": "model",
+  "trees_plural": false,
+  "boundary": "**Not in this slice:** the repo config `.adjudicate.json` (adj record 19; recommended strict, which needs no code, and S45 adds the `contract` key); unknown events and unknown history-entry keys (done in S44); setting or editing an unknown key from any command; the JSON contract number (S45).",
+  "sections": [
+    {
+      "heading": "Why",
+      "body": "Gate: do not start until adj records 17 and 18 are decided (`adj show 17`, `adj show 18`). Build only the parts decided `keep` / `tolerant`; if both are decided `strict`, retire this item with a note instead. If record 19 is decided `tolerant`, add the config to this slice before starting (an owner note says so).\n\nS44 made readers keep unknown history events and unknown history-entry keys (`HistoryEntry.UnknownKeys`, `internal/model/record.go:124-130`), written back after the known keys in sorted order so the bytes are stable. Two places stay strict:\n- the `was` of a known event: `dec.DisallowUnknownFields()` at `record.go:260` into `model.Was` (`record.go:324-330`). If a 1.x `adj amend` may correct a new field (key, tags), its entries would make every 1.0 binary refuse the store (the S44 review note on S39).\n- the top level of a record: `dec.DisallowUnknownFields()` in `model.Parse` (`internal/model/file.go:79`). Any record field added in 1.x would make every 1.0 binary refuse a store that uses it (AGENTS.md: \"The top-level record stays strict (S44)\").\n\nAfter 1.0 neither can change without a major version; S39 depends on this item.\n\nBehaviour (for the parts decided keep / tolerant):\n- (17) A known `amend` entry's `was` keeps keys it does not know, at its top and inside each `options` entry, and writes them back after the known keys in sorted order. Type errors on known keys stay errors. `adj show` text prints only the known fields; `--json` includes the unknown keys where they were.\n- (18) A record's frontmatter keeps top-level keys it does not know, written back after the known keys in sorted order; known keys stay strict about type; `body` and keys that differ from a known key only in letter case follow the S44 rule (kept as unknown unless spelled exactly). `show --json`, `list --json`, `inbox --json` include them beside the known keys; `adj context` does not.\n- Every command that rewrites a record (decide, reject, withdraw, amend, supersede, renumber) writes the unknown parts back unchanged; the unknown parts are unexported strings so records and entries stay comparable (`reflect.DeepEqual` in renumber).\n- `adj lint` warns (exit 0): `unknown-record-key` naming the record's unknown keys in sorted order, and the amend `was` keys under the existing `unknown-history-key` check or a new `unknown-was-key` (C32).\n- Renumber's stale-copy test (C163, C181) compares the listed fields; decide under C32 whether unknown top-level keys must also match (recommend: yes, as part of \"the same record\")."
+    },
+    {
+      "heading": "Files",
+      "body": "- `internal/model/file.go` (`Parse`, the write path) and `internal/model/record.go` (`Record`, `Was`, `OptionWas`, their decode and encode).\n- `internal/lint/lint.go` and fixtures in `internal/lint/testdata`.\n- `internal/render` if the JSON record object is built there rather than from the struct.\n- `docs/json.md` (\"Keys of a record\", \"Keys of a history entry\": readers ignore unknown keys there too), `PROJECT.md` (record format), `AGENTS.md` (`internal/model` paragraph, the `adj lint` check list), `CHANGELOG.md` (Store format)."
+    },
+    {
+      "heading": "Failing tests",
+      "body": "Red first, table-driven; `t.TempDir()` under `.cache/tmp`.\n- A record with an unknown top-level key parses; rewriting it (decide, amend, supersede, renumber) leaves the key and its bytes; known-key type errors still fail; a case-folded duplicate follows the S44 rule.\n- An amend entry whose `was` has an unknown top-level key and an unknown key inside an `options` entry parses and round-trips byte for byte.\n- `show --json` and `list --json` include the keys; `adj show` text and `adj context` do not change.\n- `adj lint` reports the new warnings and exits 0; JSON lists them under `warnings`.\n- Renumber still detects a stale copy (C163) and still moves records with unknown keys.\n- Mutation-check: removing the write-back of one unknown part fails a test."
+    },
+    {
+      "heading": "Implement",
+      "body": "1. Read adj records 17-18; build only what they decided. Record C32 choices with `slicer catalog add --kind decision` (lint check names, stale-copy comparison).\n2. Red tests, then the model, then lint, then the docs."
+    },
+    {
+      "heading": "Check",
+      "body": "- `. scripts/env.sh; go test ./...; go vet ./...; GOOS=windows go vet ./...; gofmt -l cmd internal` prints nothing.\n- `go build -o .cache/bin/adj ./cmd/adj`; in a scratch repo add an unknown key to a record by hand, run `show`, `show --json`, `amend`, `lint`; the key survives and lint warns.\n- `.cache/bin/adj lint --root .` is clean. `slicer check --json` is clean."
+    },
+    {
+      "heading": "Git",
+      "body": "Worktree `.worktrees/<id>` on its own branch. Commit on that branch after `VERDICT: PASS`; no push, no merge, no AI attribution."
+    }
+  ],
+  "notes": []
+}

@@ -1,0 +1,41 @@
+{
+  "id": "S48",
+  "title": "userconfig Save keeps a symlinked config and syncs",
+  "lead": [
+    "`adj repos add/remove` writes through a symlinked `config.json` to its target instead of replacing the link, and syncs the file and directory so a crash cannot leave an empty config."
+  ],
+  "depends_note": null,
+  "findings_note": "S38 review lows (2026-10-18), formerly in S40",
+  "size": "S",
+  "flags": [],
+  "trees_note": "userconfig",
+  "trees_plural": false,
+  "boundary": "**Not in this slice:** the repo config `.adjudicate.json`; the user config's shape or location; the lock (`config.json.lock`).",
+  "sections": [
+    {
+      "heading": "Why",
+      "body": "`userconfig.Save` (`internal/userconfig/config.go:76-104`) writes a same-directory temp file and renames it over the path. If `config.json` is a symbolic link (dotfiles managers do this), the rename replaces the link with a regular file, so the user's dotfiles copy silently stops updating. It also never calls `Sync`, so after a power loss the renamed file can be empty.\n\nBehaviour: resolve the path with `filepath.EvalSymlinks` when it exists and write the temp file beside the target, then rename over the target; the link stays. Sync the temp file before the rename and the directory after it (best effort for the directory, as `adj renumber` does, C157; on Windows a directory sync is not possible: skip it). A dangling link is an error naming both paths (C32; recommend: error rather than creating the target)."
+    },
+    {
+      "heading": "Files",
+      "body": "- `internal/userconfig/config.go` (`Save`), `internal/userconfig/config_test.go`.\n- `README.md` / `AGENTS.md` (`adj repos` entry: \"atomically replace the file\"), `CHANGELOG.md`."
+    },
+    {
+      "heading": "Failing tests",
+      "body": "- `config.json` as a symlink to a file elsewhere: after `Save` the path is still a symlink and the target holds the new content (skip on Windows with a reason if symlinks need privileges).\n- A dangling symlink: `Save` fails and writes nothing.\n- The temp file is synced before rename: inject the file operations (or a sync hook) and assert the order; production uses the real calls."
+    },
+    {
+      "heading": "Implement",
+      "body": "1. Record the dangling-link choice with `slicer catalog add --kind decision`.\n2. Red tests, then `Save`."
+    },
+    {
+      "heading": "Check",
+      "body": "- `. scripts/env.sh; go test ./...; go vet ./...; GOOS=windows go vet ./...; gofmt -l cmd internal` prints nothing; `slicer check --json` clean."
+    },
+    {
+      "heading": "Git",
+      "body": "Worktree `.worktrees/<id>` on its own branch. Commit on that branch after `VERDICT: PASS`; no push, no merge, no AI attribution."
+    }
+  ],
+  "notes": []
+}
