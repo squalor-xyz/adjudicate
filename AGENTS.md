@@ -551,6 +551,10 @@ Never run `go env -w`; it writes outside the repo. Do not add a Makefile.
   `slicer catalog add --kind decision` and a one-line reason. The reviewer
   checks it, and the owner may overrule it.
 - No commits unless the owner asks. No AI attribution in commits or PR text.
+- Git worktrees (slice relays, parallel branches) go under `.worktrees/` in
+  the repo root, one directory per branch (`.worktrees/s44`), never beside
+  the repo. Scratch files (scripts, intermediate output, agent temp dirs)
+  go under `.scratch/`, never `/tmp`. Both are in `.gitignore`.
 - Dogfood store conventions (C194): when recording a decision in this repo's
   own `decisions/` store, put slicer catalog and slice IDs in `--ref` as
   written (`--ref C23`, `--ref S34`), not in tags. Tags are topics, not catalog

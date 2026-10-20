@@ -13,5 +13,9 @@ Thumbs.db
 *.test
 *.out
 
+# Git worktrees and scratch files (see AGENTS.md)
+/.worktrees/
+/.scratch/
+
 # adj runtime lock in the store directory (see AGENTS.md)
 /decisions/.adj.lock
