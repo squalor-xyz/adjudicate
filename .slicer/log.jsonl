@@ -797,3 +797,11 @@
 {"when": "2026-10-19T15:17:03Z", "item": "S40", "action": "set", "from": "", "to": "", "note": "importance 2→1; urgency 2→1"}
 {"when": "2026-10-19T15:17:03Z", "item": "*", "action": "sort", "from": "", "to": "", "note": "by score (43 moved)"}
 {"when": "2026-10-19T15:17:07Z", "item": "S40", "action": "set", "from": "", "to": "", "note": "importance 1→2"}
+{"when": "2026-10-20T11:26:46Z", "item": "S45", "action": "add", "from": "", "to": "open", "note": "adj publishes a JSON contract version and a repo can pin it"}
+{"when": "2026-10-20T11:26:52Z", "item": "S45", "action": "promote", "from": "", "to": "", "note": ""}
+{"when": "2026-10-20T11:26:59Z", "item": "S45", "action": "edit", "from": "", "to": "", "note": "Why"}
+{"when": "2026-10-20T11:26:59Z", "item": "S45", "action": "edit", "from": "", "to": "", "note": "Files"}
+{"when": "2026-10-20T11:26:59Z", "item": "S45", "action": "edit", "from": "", "to": "", "note": "Failing tests"}
+{"when": "2026-10-20T11:26:59Z", "item": "S45", "action": "edit", "from": "", "to": "", "note": "Implement"}
+{"when": "2026-10-20T11:26:59Z", "item": "S45", "action": "edit", "from": "", "to": "", "note": "Check"}
+{"when": "2026-10-20T11:26:59Z", "item": "S45", "action": "edit", "from": "", "to": "", "note": "Git"}

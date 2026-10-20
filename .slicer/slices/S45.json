@@ -1,0 +1,39 @@
+{
+  "id": "S45",
+  "title": "adj publishes a JSON contract version and a repo can pin it",
+  "lead": [],
+  "depends_note": null,
+  "findings_note": "owner session 2026-10-20 (in slicer): slicer, ork and adjudicate lock to agreed contract versions; per-contract pins, each tool keeps its own pin, ork sets and checks them. Companion items: slicer s387 (relay contract pin), ork S24 (ork sets and checks the pins).",
+  "size": "M",
+  "flags": [],
+  "trees_note": "cli",
+  "trees_plural": false,
+  "boundary": "**Not in this slice:** the slicer relay contract (adj does not read it), ork's code, serving an older JSON shape (adj only ever prints its current shapes), the 1.0 freeze itself (S39), and the JSON error object (S42).",
+  "sections": [
+    {
+      "heading": "Why",
+      "body": "ork reads adj's JSON (`ork/internal/adjcli/adjcli.go:62-88`: records, inbox, list). `docs/json.md` calls those shapes the contract, but nothing in the output says which revision of it a binary speaks. Until 1.0 a shape may change in a minor release (`docs/json.md:14-19`). `adj version` prints only build info, with no `--json` (`internal/cli/version.go:11-36`). ork's doctor can only run `adj --version` and compare it against nothing (`ork/internal/cli/doctor.go:57-78`). An adj upgrade that changes a shape reaches ork as a decode error, not as a refusal that names a version.\n\nOwner decisions, 2026-10-20 (taken in the slicer session that filed s387):\n\n- **Per-contract pins.** adj has its own contract number, `adj-json vM`, starting at 1. It is independent of slicer's `relay vN`.\n- **Pin and refuse.** A repo may pin M in its committed `.adjudicate.json`. adj never serves an older shape. On a mismatch it refuses the JSON commands and `adj lint` warns.\n- **Each tool keeps its own pin; ork sets and checks them.** ork runs `adj --root P contract pin M` and reads `adj contract --json`. adj knows nothing about ork.\n\nProposed interface (an implementer decides details PROJECT.md leaves open under C32 and records them with `slicer catalog add --kind decision`):\n\n- `adj contract [--json]` prints `adj-json v1`. With `--json` it prints `{\"contract\": \"adj-json v1\", \"version\": 1, \"pinned\": null}`, or the pinned int.\n- `adj contract pin M` writes `\"contract\": M` into `.adjudicate.json`, keeping `store`. `adj contract unpin` removes the key. A missing file is created as `adj init` would. Writes are atomic.\n- `adj version --json` prints `{\"version\": \"...\", \"contract\": \"adj-json v1\"}`. The text form is unchanged.\n- **Mismatch.** With a pin that differs from the built-in version, each JSON command named in `docs/json.md` (`show`, `list`, `inbox`, `check`, `context --format json`) exits 1 with stdout empty. The message names the pinned version, the running version, `adj contract pin M` and installing a matching adj. If S42 has landed, the failure is its JSON error object with a stable code such as `contract_mismatch`. Text-mode commands are not refused.\n- `adj lint` adds a `contract-pin` check: a warning (exit 0) naming both versions. Lint still works on a mismatched repo, so it stays the way to diagnose one.\n- **Bump rule.** The number moves on any change to a shape pinned by `internal/cli/jsonshape_test.go` that is not purely additive. A test ties the number to a fixture of those shapes, so a non-additive change without a bump fails. `docs/json.md` gains a \"Contract version\" section with one line per version saying what it changed.\n\nKnown effect: `.adjudicate.json` is strict (`internal/store/config.go:40-67`, `DisallowUnknownFields`). Any adj released before this slice refuses a pinned file as an invalid config. That is the refusal the pin is for, but the message is the old one. Say so in CHANGELOG."
+    },
+    {
+      "heading": "Files",
+      "body": "- `internal/store/config.go`: `Contract *int` with `json:\"contract,omitempty\"` (positive only), plus a save path that keeps `store` and key order.\n- `internal/cli/contract.go` (new, with `contractUsage`) and `internal/commands/contract.go` (new): show, pin, unpin. Dispatch and top-level usage go in `internal/cli/cli.go`.\n- `internal/cli/version.go`: `--json`.\n- The JSON commands' entry points (`show.go`, `list.go`, `inbox.go`, `check.go`, `context.go`), through one shared guard rather than five copies.\n- `internal/lint`: the `contract-pin` check, and `lintUsage` in `internal/cli/lint.go`.\n- `internal/cli/jsonshape_test.go`: the new shapes, plus the bump-rule test.\n- `docs/json.md`, PROJECT.md (command table near lines 255-270 and the config data model), AGENTS.md (Commands; the `.adjudicate.json` rule near lines 459-464), README, CHANGELOG. Add a mention to `internal/commands/ai.md` only if it fits the 1800-byte limit `ai_test.go` enforces."
+    },
+    {
+      "heading": "Failing tests",
+      "body": "Table-driven, red first. Use `t.TempDir()` under `.cache/tmp` with an explicit `cli.Env.Root`.\n- `adj contract` prints `adj-json v1`. `--json` prints the shape above with `pinned: null`.\n- `adj contract pin 1` writes `{\"store\": \"decisions\", \"contract\": 1}` (store kept). A second run leaves the file byte for byte the same. `unpin` returns the file to `{\"store\": \"decisions\"}`. `pin 0`, `pin -1`, `pin v1` and `pin 1.5` exit 2 and write nothing.\n- `adj version --json` carries `version` and `contract`. Plain `adj version` output is unchanged.\n- With `contract: 2` pinned on a v1 binary, each JSON command exits 1 with empty stdout and a message naming 2 and 1. The same commands without `--json` still work.\n- `adj lint` on that repo has one `contract-pin` warning and exits 0. `lint --json` lists it under `warnings`.\n- With no pin, or `contract: 1`, every existing test and golden output is unchanged.\n- The bump-rule test fails when a pinned shape loses or retypes a key while the version stays at 1."
+    },
+    {
+      "heading": "Implement",
+      "body": "1. Record the C32 choices as slicer catalog decisions: names, where the guard sits, the JSON key order, and whether `unpin` on an unpinned file is a no-op (recommend: exit 0, file unchanged).\n2. Write the red tests, then the code, following the existing split (cli parses, commands acts, render prints).\n3. Update the docs listed in Files."
+    },
+    {
+      "heading": "Check",
+      "body": "- `. scripts/env.sh; go test ./...; go vet ./...; gofmt -l cmd internal` prints nothing.\n- `go build -o .cache/bin/adj ./cmd/adj`. In a scratch repo under `.cache/tmp`: `contract`, `contract --json`, `pin 2`, `list --json` (refused), `lint` (warns), `unpin`, `list --json` (works).\n- `.cache/bin/adj lint --root .` is clean. Mutation-check each new test. `slicer check --json` is clean."
+    },
+    {
+      "heading": "Git",
+      "body": "Worktree `.worktrees/<id>` on its own branch. Commit on that branch after `VERDICT: PASS`; no push, no merge, no AI attribution."
+    }
+  ],
+  "notes": []
+}
