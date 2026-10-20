@@ -394,7 +394,10 @@ Checks the store for integrity problems and prints one line per finding
 (`FILE: record ID: SEVERITY: CHECK: MESSAGE`), then a count. A clean store
 prints nothing. The checks are `parse`, `fields`, `id-mismatch`,
 `duplicate-id`, `renumber-leftover`, `dangling-link`, `supersede-state`,
-`supersede-cycle`, `key-conflict` and `decided-by` (a warning). Exit 1 if there
+`supersede-cycle`, `key-conflict`, `decided-by`, `unknown-event` and
+`unknown-history-key` (the last three are warnings). A history entry with an
+event or a key that this version does not know, as a newer version may write,
+is read and kept when the record is rewritten; lint only warns. Exit 1 if there
 is an error, else 0.
 
 ### `adj renumber [--keep-links]`

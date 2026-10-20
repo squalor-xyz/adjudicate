@@ -500,6 +500,9 @@ func TestAmendHistoryEntryIsDocumentedJSON(t *testing.T) {
 		typ := reflect.TypeOf(v)
 		for i := 0; i < typ.NumField(); i++ {
 			name, _, _ := strings.Cut(typ.Field(i).Tag.Get("json"), ",")
+			if name == "" { // unexported: the unknown keys of a history entry (S44)
+				continue
+			}
 			out = append(out, name)
 		}
 		sort.Strings(out)

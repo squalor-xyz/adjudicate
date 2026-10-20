@@ -5,7 +5,9 @@
 JSON for agents.
 The shapes on this page are the contract: a key keeps its name and its type,
 within the limits under "Stability" below. Readers should ignore keys they do
-not know, because a later release may add keys.
+not know, because a later release may add keys. That includes the history: an
+entry may have an event or keys a reader does not know (see "Keys of a history
+entry").
 
 All six commands print the JSON with two-space indentation and HTML characters
 unescaped, end it with one newline, and print the same bytes for the same
@@ -503,10 +505,11 @@ The checks:
 - `fields` (error): the record breaks a rule of the model, one finding per
   rule: a missing required field (`id`, `title`, `status`, `created`; `rationale`
   and `decided_at` once answered; `decision` once decided or superseded;
-  `superseded_by` once superseded), a bad date, an unknown status or history
-  event, a bad option, a bad recommendation (a `label` that is not an option,
-  both `label` and `text`, or neither; free `text` alone is fine), a history
-  entry with `was` that is not an `amend` entry, or an `amend` entry with no
+  `superseded_by` once superseded), a bad date, an unknown status, a blank
+  history event (an event that is only unknown is `unknown-event`), a bad
+  option, a bad recommendation (a `label` that is not an option, both `label`
+  and `text`, or neither; free `text` alone is fine), a history entry with
+  `was` whose event is known and is not `amend`, or an `amend` entry with no
   old text, a link to the record itself.
 - `id-mismatch` (error): the record's `id` is not the ID in its file name,
   which the other commands refuse to load. The `id` of a finding is the file
@@ -543,6 +546,15 @@ The checks:
   without surrounding space, case-sensitive; records without a key never
   conflict). Superseded, open, rejected and withdrawn records do not count.
 - `decided-by` (warning): a `decided` record has no `decided_by`.
+- `unknown-event` (warning): a history entry has an `event` that this version
+  does not know, as a newer version may write. One finding per entry; the
+  message is `history entry N: unknown event "X"`, N counting from 0. The
+  record is read, listed and changed as usual and the entry is kept, with its
+  `was` if it has one (that is no finding of its own).
+- `unknown-history-key` (warning): a history entry has keys that this version
+  does not know. One finding per entry, naming its unknown keys in sorted
+  order: `history entry N: unknown key "k"`, or `unknown keys "a", "b"`. The
+  keys are kept when the record is rewritten and appear in `--json` output.
 
 ## Keys of a record
 
@@ -573,7 +585,8 @@ when it has a value. `id`, `title`, `status` and `created` are always present.
 | `body` | string | the Markdown after the record's frontmatter, kept verbatim; present only when the record has a body |
 
 A history entry's `event` is one of `ask`, `decide`, `reject`, `withdraw`,
-`supersede`, `renumber`, `amend` or `import`. `adj supersede` writes one `supersede`
+`supersede`, `renumber`, `amend` or `import`, or an event of a later version
+(see below). `adj supersede` writes one `supersede`
 entry on each of the two records: the note is `by N` on the record that is
 replaced and `supersedes N` on the one that replaces it. `adj renumber` writes
 one `renumber` entry on each record it gives a new ID; the note is `from N`, the
@@ -595,6 +608,18 @@ ran. A date after the run date is refused.
 | `event` | string | `ask`, `decide`, `reject`, `withdraw`, `supersede`, `renumber`, `amend` or `import` |
 | `note` | string | a short note, present only when set: for `amend`, the fields that changed (see below) |
 | `was` | object | `amend` entries only: the old text of every field the amend changed |
+
+An entry may also have an `event` or keys that this version does not know,
+written by a later version. Readers must ignore them: an unknown `event` is
+read as it is, and unknown keys sit in the entry beside the keys above and are
+neither renamed nor dropped when `adj` rewrites the record (they are written
+after the known keys, in sorted order). A key that differs from a known key
+only in letter case (`Note` beside `note`) is an unknown key. For an unknown
+`event` the `was` key, if present, is kept exactly as written and may have any
+shape (an object with other keys, or a string): this version does not read it.
+For an `amend` entry `was` is strict: a key it does not know inside it is
+refused, as are unknown keys elsewhere in a record. `adj lint` warns about
+unknown events and keys (`unknown-event`, `unknown-history-key`).
 
 `adj amend` appends one `amend` entry per call, whatever the number of fields
 changed. Its `note` lists the fields in a fixed order, separated by commas:

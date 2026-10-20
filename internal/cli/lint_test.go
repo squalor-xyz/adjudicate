@@ -218,6 +218,33 @@ func TestLintDocsAndUsageNameEveryCheck(t *testing.T) {
 	}
 }
 
+// The checks in adj lint --help line up: every description starts in one
+// column, so no check name overflows into it.
+func TestLintHelpAlignsTheCheckDescriptions(t *testing.T) {
+	help := run(testEnv(t.TempDir()), "", "lint", "--help").stdout
+	col := -1
+	for _, check := range lint.Checks {
+		prefix := "\n  " + check
+		_, rest, ok := strings.Cut(help, prefix)
+		if !ok {
+			t.Errorf("adj lint --help has no line for the check %s", check)
+			continue
+		}
+		line, _, _ := strings.Cut(rest, "\n")
+		trimmed := strings.TrimLeft(line, " ")
+		if len(line)-len(trimmed) < 2 || trimmed == "" {
+			t.Errorf("the line for %s has no gap before its description:\n  %s%s", check, check, line)
+			continue
+		}
+		at := 2 + len(check) + len(line) - len(trimmed)
+		if col < 0 {
+			col = at
+		} else if at != col {
+			t.Errorf("the description of %s starts in column %d, want %d like the others", check, at, col)
+		}
+	}
+}
+
 // The renumber-leftover line of adj lint --help tells the owner to check both
 // files before deleting one: the finding can be wrong about which is the copy.
 func TestLintHelpSaysCheckBothBeforeDelete(t *testing.T) {

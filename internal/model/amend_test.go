@@ -260,7 +260,7 @@ func TestValidateChecksAmendEntries(t *testing.T) {
 }
 
 func TestEventAmendIsValid(t *testing.T) {
-	if !EventAmend.Valid() || EventAmend != "amend" {
-		t.Errorf("EventAmend = %q, valid %v; want a valid %q", EventAmend, EventAmend.Valid(), "amend")
+	if !EventAmend.Known() || EventAmend != "amend" {
+		t.Errorf("EventAmend = %q, Known() = %v; want a known %q", EventAmend, EventAmend.Known(), "amend")
 	}
 }

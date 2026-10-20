@@ -210,7 +210,7 @@ func TestMalformedFilesReturnErrorNamingFile(t *testing.T) {
 		{"unknown_key.md", `unknown field "kind"`},
 		{"invalid_record.md", "rationale"},
 		{"bad_history_date.md", "history"},
-		{"bad_history_event.md", "history"},
+		{"bad_history_event.md", "entry 0: event is required"},
 		{"opening_fence_text.md", "no opening --- line"},
 		{"trailing_json.md", "data after the JSON object"},
 		{"empty_frontmatter.md", "frontmatter is empty"},

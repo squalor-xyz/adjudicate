@@ -208,9 +208,6 @@ func TestValidateRejects(t *testing.T) {
 		{"history entry empty date", StatusOpen, func(r *Record) {
 			r.History = []HistoryEntry{{Event: EventAsk}}
 		}, "history"},
-		{"history entry unknown event", StatusOpen, func(r *Record) {
-			r.History = []HistoryEntry{{Date: "2026-10-01", Event: "approve"}}
-		}, "history"},
 		{"history entry empty event", StatusOpen, func(r *Record) {
 			r.History = []HistoryEntry{{Date: "2026-10-01"}}
 		}, "history"},
@@ -281,8 +278,8 @@ func TestValidateAcceptsAnImportEntry(t *testing.T) {
 	if err := r.Validate(); err != nil {
 		t.Fatalf("Validate() = %v, want nil", err)
 	}
-	if EventImport != "import" || !EventImport.Valid() {
-		t.Errorf("EventImport = %q, Valid() = %v; want %q and true", EventImport, EventImport.Valid(), "import")
+	if EventImport != "import" || !EventImport.Known() {
+		t.Errorf("EventImport = %q, Known() = %v; want %q and true", EventImport, EventImport.Known(), "import")
 	}
 	// Only an amend entry has was.
 	r.History[0].Was = &Was{Title: ptr("old")}
