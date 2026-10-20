@@ -212,7 +212,12 @@ transition, an `adj amend` and an `adj renumber` appends a dated entry to the
 history, so a record shows what happened and when. A record made by
 `adj import-adr` from an ADR file has one `import` entry instead of `ask` and
 `decide`. The history's `event` is `ask`, `decide`, `reject`, `withdraw`,
-`supersede`, `renumber`, `amend` or `import`.
+`supersede`, `renumber`, `amend` or `import`. A reader accepts an event it does
+not know, and keys it does not know inside a history entry, so a later event
+kind does not make an older `adj` refuse a store; they are kept unchanged when
+the record is rewritten, and `adj lint` warns (`unknown-event`,
+`unknown-history-key`, S44). The `was` of an unknown event is kept as written.
+An unknown key elsewhere in a record is still an error.
 
 **Store and config:** `adj init` writes `.adjudicate.json`
 (`{"store": "decisions"}`) at the repo root and creates the store directory.
@@ -259,7 +264,7 @@ when it finds an error and 0 for a clean store or warnings only.
 | `adj inbox [--json]`, `adj inbox --all [--json]`, `adj inbox -i [--by NAME]` | List open questions oldest first, with options and recommendation; `--all` groups the user repo list by root; owner-only `-i` walks one repo to decide, reject, withdraw or skip. |
 | `adj check QUERY [--json]` | Is QUERY decided? One substring, matched ignoring case against titles, keys, tags, refs and decision text. Line 1 of the output is `decided`, `open`, `closed` or `not found`. |
 | `adj context [--tag T]... [--ref REF]... [--key-prefix P] [--format md\|json] [--max-bytes N]` | Print the decided records as compact context for an agent. With `--max-bytes N`, keep the newest decisions whose output fits in N bytes (ID order, an `N decisions omitted` line, JSON `omitted`). |
-| `adj lint [--json]` | Check the store for broken records, links, cycles and conflicts. |
+| `adj lint [--json]` | Check the store for broken records, links, cycles and conflicts; warn about history events and keys it does not know. |
 | `adj renumber [--keep-links]` | Owner-only. Give record files that share an ID new IDs. |
 | `adj import-adr DIR [--tag T]... [--by NAME] [--dry-run]` | Owner-only. Create one record for each ADR in DIR, in the format adr-tools writes (Nygard) or MADR; see below. |
 | `adj repos add [PATH]`, `adj repos remove PATH`, `adj repos list [--json]` | Manage the user repo list; add defaults to the current repo root (`--root`), explicit relative paths use the working directory. Store cleaned absolute strings without resolving symlinks. Add requires `.adjudicate.json`; duplicates are a no-op. Remove requires a listed path, else exit 1. Both print nothing. List prints paths in insertion order without probing them; JSON is `{"repos": [...]}` (empty: `[]`). `--root` is otherwise unused; no current repo is required. |

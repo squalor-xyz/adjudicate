@@ -5,6 +5,32 @@ Until 1.0 a JSON shape in [docs/json.md](docs/json.md) may change in a minor
 release, and this file names every such change. From 1.0 a release may add keys
 but never renames, removes or retypes an existing key.
 
+## Unreleased
+
+### Store format
+- A history entry whose `event` this version does not know, and unknown keys
+  inside a history entry, are now read and kept instead of making `show`,
+  `list`, `check`, `context`, `inbox` and the commands that change a record
+  fail. Rewriting a record (decide, reject, withdraw, amend, supersede,
+  renumber) writes those entries back unchanged: the unknown keys follow the
+  known ones, in sorted order, so the bytes are stable. A later event kind, as
+  `import` was in 0.2.0, no longer makes an older `adj` refuse a store. An
+  unknown key at the top level of a record, or inside the `was` of an `amend`
+  entry, is still an error. The `was` of an unknown event is kept as written,
+  whatever it holds. A key that differs from a known one only in letter case
+  (`Note` beside `note`) is kept as an unknown key. A blank `event` is still
+  invalid.
+- `adj lint` adds two warning checks, `unknown-event` (`history entry N:
+  unknown event "X"`) and `unknown-history-key` (one finding per entry, naming
+  its unknown keys). Warnings alone exit 0. Before, an unknown event was a
+  `fields` error and an unknown key a `parse` error.
+
+### JSON shapes
+- `show --json`, `list --json` and the other commands that print records
+  include an entry's unknown keys beside `date`, `event`, `note` and `was`.
+  Readers must ignore history events and keys they do not know. No existing
+  key is changed. See [docs/json.md](docs/json.md).
+
 ## 0.2.0 - 2026-10-18
 
 ### Platforms

@@ -799,3 +799,18 @@
 {"when": "2026-10-19T15:17:07Z", "item": "S40", "action": "set", "from": "", "to": "", "note": "importance 1→2"}
 {"when": "2026-10-19T15:34:49Z", "item": "S44", "action": "set", "from": "", "to": "", "note": "size -→S; trees -→model,lint"}
 {"when": "2026-10-19T15:36:02Z", "item": "S44", "action": "promote", "from": "", "to": "", "note": ""}
+{"when": "2026-10-19T15:43:20Z", "item": "S44", "action": "status", "from": "open", "to": "started", "note": "", "by": "Jon Robbins"}
+{"when": "2026-10-19T16:27:52Z", "item": "C206", "action": "catalog", "from": "", "to": "S44: Event.Valid renamed to Event.Known", "note": "add"}
+{"when": "2026-10-19T16:27:52Z", "item": "C207", "action": "catalog", "from": "", "to": "S44: unknown history keys are kept as a sorted JSON string, not a map", "note": "add"}
+{"when": "2026-10-19T16:27:52Z", "item": "C208", "action": "catalog", "from": "", "to": "S44: history entry key match stays case-insensitive and was stays strict", "note": "add"}
+{"when": "2026-10-19T16:27:52Z", "item": "C209", "action": "catalog", "from": "", "to": "S44: a blank event is a fields error with the message 'event is required'", "note": "add"}
+{"when": "2026-10-19T16:27:52Z", "item": "C210", "action": "catalog", "from": "", "to": "S44: lint warning message formats and index base", "note": "add"}
+{"when": "2026-10-19T16:27:52Z", "item": "C211", "action": "catalog", "from": "", "to": "S44: adj show text does not print unknown history keys", "note": "add"}
+{"when": "2026-10-19T16:27:52Z", "item": "C212", "action": "catalog", "from": "", "to": "S44: warn-only lint, no change to adj ai", "note": "add"}
+{"when": "2026-10-20T13:29:50Z", "item": "S44", "action": "note", "from": "", "to": "", "note": "Review FAIL (round 1): high: was stays strict on unknown eve", "by": "Jon Robbins"}
+{"when": "2026-10-20T13:29:50Z", "item": "S39", "action": "note", "from": "", "to": "", "note": "From S44 review (2026-10-19): unknown keys inside an amend e", "by": "Jon Robbins"}
+{"when": "2026-10-20T14:45:46Z", "item": "C213", "action": "catalog", "from": "", "to": "S44: an unknown event's was is kept raw, and lint adds no finding for it", "note": "add"}
+{"when": "2026-10-20T14:45:46Z", "item": "C214", "action": "catalog", "from": "", "to": "S44: keys that fold to one known history key keep the exact one", "note": "add"}
+{"when": "2026-10-20T15:42:59Z", "item": "S44", "action": "note", "from": "", "to": "", "note": "Gate PASS (2026-10-20, round 2): readers accept unknown hist", "by": "Jon Robbins"}
+{"when": "2026-10-20T15:42:59Z", "item": "S40", "action": "note", "from": "", "to": "", "note": "From S44 gate (nits): decode errors still name stdlib Go typ", "by": "Jon Robbins"}
+{"when": "2026-10-20T15:42:59Z", "item": "S44", "action": "status", "from": "started", "to": "done", "note": "", "by": "Jon Robbins"}

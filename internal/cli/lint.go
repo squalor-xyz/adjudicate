@@ -16,18 +16,24 @@ const lintUsage = `usage: adj lint [flags]
 Check the store for integrity problems. Each finding names the record, its file
 and the check that found it; the checks are:
 
-  parse            the file cannot be read or decoded
-  fields           a record breaks the model's rules (a required field is
-                   missing, a date is bad, the status is unknown)
-  id-mismatch      the record's id is not the ID in its file name
-  duplicate-id     more than one file has this ID (adj renumber fixes it)
-  renumber-leftover  the stale old file of an interrupted adj renumber:
-                   check both, then delete it
-  dangling-link    supersedes or superseded_by names an ID with no record file
-  supersede-state  superseded_by is set on a record that is not superseded
-  supersede-cycle  the record is in a loop of supersede links
-  key-conflict     another decided record has the same key
-  decided-by       a decided record has no decided_by (a warning)
+  parse                the file cannot be read or decoded
+  fields               a record breaks the model's rules (a required field is
+                       missing, a date is bad, the status is unknown)
+  id-mismatch          the record's id is not the ID in its file name
+  duplicate-id         more than one file has this ID (adj renumber fixes it)
+  renumber-leftover    the stale old file of an interrupted adj renumber:
+                       check both, then delete it
+  dangling-link        supersedes or superseded_by names an ID with no record
+                       file
+  supersede-state      superseded_by is set on a record that is not superseded
+  supersede-cycle      the record is in a loop of supersede links
+  key-conflict         another decided record has the same key
+  decided-by           a decided record has no decided_by (a warning)
+  unknown-event        a history entry has an event this version does not know
+                       (a warning; the entry is kept when the record is
+                       rewritten)
+  unknown-history-key  a history entry has keys this version does not know
+                       (a warning; they are kept too)
 
 Lint reads the record files itself, so it works on a store that other commands
 refuse to load. Text output is one line per finding, "FILE: record ID:

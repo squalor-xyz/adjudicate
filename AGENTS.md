@@ -42,7 +42,16 @@ library only.
   struct (`adr.go`); pure functions, no file I/O, fixtures in `testdata/`.
 - `internal/model`: the record type, validation, status transitions and the
   record file format; its only file I/O is `ReadFile` and `WriteFile` in
-  `file.go`.
+  `file.go`. A `HistoryEntry` accepts an event this version does not know
+  (`Event.Known` tells) and keys it does not know, and keeps both unchanged
+  (`HistoryEntry.UnknownKeys`; written after the known keys in sorted order,
+  so the bytes are stable). Keys that differ from a known key only in letter
+  case are unknown keys unless spelled exactly (one wins, the rest are kept).
+  For an unknown event `was` is not decoded: it is kept as written, whatever
+  its shape (C213); for a known event `was` stays strict. The unknown parts
+  are unexported strings, so entries are comparable (renumber compares them
+  with `reflect.DeepEqual`, unknown keys included; `Was` is a pointer). The
+  top-level record stays strict (S44).
 - `internal/store`: one repo's record directory (`store.go`), its config
   (`config.go`), `Renumber` (`renumber.go`) and the ID lock (`lock_unix.go`,
   `lock_windows.go`, `lock_open.go`, `lock_other.go`); see "Store and config"
@@ -291,8 +300,12 @@ below). `adj lint` exits 1 when it finds an error (see its entry).
   (`superseded_by` on a record that is not superseded), `supersede-cycle` (a
   loop of supersede links; one finding per record in it, naming only records
   that have a file), `key-conflict` (another `decided` record has the same key,
-  trimmed and case-sensitive) and `decided-by` (a `decided` record without
-  `decided_by`, a warning, C27); the rest are errors (C143). Text: per finding
+  trimmed and case-sensitive), `decided-by` (a `decided` record without
+  `decided_by`, a warning, C27), `unknown-event` (a history entry whose event
+  this version does not know, one finding per entry: `history entry N: unknown
+  event "X"`, S44) and `unknown-history-key` (one per entry, naming its unknown
+  keys in sorted order, S44); the last three are warnings, the rest errors
+  (C143). A blank event is a `fields` error. Text: per finding
   `FILE: record ID: SEVERITY: CHECK: MESSAGE`, sorted by ID, check and file,
   then `N errors, M warnings`; a clean store prints nothing (C141). `--json`
   prints `{"errors", "warnings", "findings"}` (`docs/json.md`, C142). Exit 1 if

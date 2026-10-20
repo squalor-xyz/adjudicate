@@ -794,6 +794,42 @@ Implementer decisions under C32 (S22, confirmed at landing 2026-10-18; full text
 
 Owner decisions 2026-10-18 (S19): a line-mode walk invoked as adj inbox -i (stdlib only, no raw terminal mode), owner-only and not in the agent snippet; writes go through commands.Decide/Reject/Withdraw. Implementer decisions under C32, confirmed: -i only (no long alias), --by requires -i; -i with --json, --all or an argument exits 2. Actions d=decide by option label, t=decide with text, r=reject, w=withdraw, s=skip, q=quit, ?=help; decide/reject/withdraw then ask a required Rationale. Unknown labels and blank fields re-prompt; d on a record with no options is refused pointing to t, and a blank label returns to the action prompt (owner fix round). EOF is quit and discards a partial line. A failed write is reported on stderr, the walk continues, and the exit is 1. Summary: 'N decided, N rejected, N withdrawn, N skipped, N failed'.
 
+### C206 S44: Event.Valid renamed to Event.Known
+
+Valid() would now mean 'accepted' while an unknown event is accepted; Known() says what lint needs to ask and cannot be misread as a validation gate.
+
+### C207 S44: unknown history keys are kept as a sorted JSON string, not a map
+
+A string field keeps HistoryEntry comparable with == and reflect.DeepEqual (existing tests and renumber's stale-copy match rely on it) and makes unknown keys part of equality, where a map would not compile with ==.
+
+### C208 S44: history entry key match stays case-insensitive and was stays strict
+
+encoding/json matched known keys in any letter case before, so Date or Note still decode as known keys, and an unknown key inside was is still a parse error since the owner scoped tolerance to the entry's own keys.
+
+### C209 S44: a blank event is a fields error with the message 'event is required'
+
+Blank (empty or whitespace) is not an unknown event but a missing field; Validate says 'history: entry N: event is required' and lint reports it as fields only, never also as unknown-event.
+
+### C210 S44: lint warning message formats and index base
+
+Entry index N counts from 0 like Validate's 'entry N'; messages are 'history entry N: unknown event "X"' and 'history entry N: unknown key "k"' or 'unknown keys "a", "b"' (sorted, Go-quoted), one finding per entry per check.
+
+### C211 S44: adj show text does not print unknown history keys
+
+Text show prints the stored event name as before; unknown keys are machine data that a newer adj understands, so they appear only in --json output and in the file, keeping text output stable.
+
+### C212 S44: warn-only lint, no change to adj ai
+
+Unknown events and keys are warnings so lint exits 0 on them alone, and the agent snippet stays as it is because agents neither run lint nor write history entries.
+
+### C213 S44: an unknown event's was is kept raw, and lint adds no finding for it
+
+Review finding: a newer event may give was other keys or another type, so for an event that is not Known() was is not decoded or validated and round-trips as written (rawWas); it is no unknown-history-key finding since was is a known key name and the event is already reported by unknown-event. An amend entry keeps a strict was (owner has not decided otherwise; filed on S39). Supersedes the 'was strict' half of C208.
+
+### C214 S44: keys that fold to one known history key keep the exact one
+
+When keys differ only in letter case from a known key (note and Note), the exact spelling is the known key, else the last in document order (as encoding/json did); the others become unknown keys so they are kept and linted, and a key repeated with identical spelling keeps the last. Decode errors name the history entry and not the decoding types.
+
 ### C39 LICENSE is a stub until the owner supplies the full GPL-3.0 text and copyright holder
 
 No GPL-3.0 text exists in the adjudicate repo and the workspace has no network, so the stub carries the SPDX line, the or-later notice and TODO(owner) markers.
@@ -856,21 +892,21 @@ PENDING OWNER CONFIRMATION - not decided. Source: Dependency/licensing notes (ma
 
 *Retired: Owner decided 2026-10-15: see decision C31 (GPL-3.0-or-later)..*
 
-44 items · — 4 · done 38 · later 1 · retired 1
+44 items · — 3 · done 39 · later 1 · retired 1
 
 | # | Slice | Title | Size | Effort | Trees | Findings | Status |
 |---|---|---|---|---|---|---|---|
-| 1 | [S44](slices/S44.md) | Tolerate unknown history events | S | 1 | model, lint | Split from S39 owner note (from S22, 2026-10-18): must land before the 1.0 JSON freeze. · discovered from S39 | — |
-| 2 | S42 | JSON error object on --json failures |  | 2 |  | ork integration review 2026-10-19 (squalor-xyz/ork docs/review-2026-10-19-integration.md), R6: adj prints only text on stderr when a --json command fails (measured: adj show 999 --json), so ork cannot keep the error code. | — |
-| 3 | S43 | Sibling-aware record IDs |  | 3 |  | ork integration review 2026-10-19 (squalor-xyz/ork docs/review-2026-10-19-integration.md), R6: two ork branches both allocated records 50 and 51 on 2026-10-19 and needed adj renumber; the store lock cannot see other branches (internal/store/store.go:282-286); slicer already allocates past sibling worktrees. | — |
-| 4 | S39 | Release 1.0 | S | 1 | release | CHANGELOG.md and docs/json.md 1.0 rule; owner 2026-10-18: 0.2.0 first, 1.0 later | — |
-| 5 | S40 | Hardening edge cases | M | 2 | cli | S18, S22, S36 and S38 review later notes (2026-10-18), deferred from S37 | later |
-| 6 | [S21](slices/S21.md) | Later: optional owner-only decide enforcement | M | 2 | later | PROJECT.md Feature tiers (Later); Open decisions 5; Non-goals · Owner 2026-10-18: owner-only decide stays a convention (C11, C27); no enforcement planned | retired |
+| 1 | S42 | JSON error object on --json failures |  | 2 |  | ork integration review 2026-10-19 (squalor-xyz/ork docs/review-2026-10-19-integration.md), R6: adj prints only text on stderr when a --json command fails (measured: adj show 999 --json), so ork cannot keep the error code. | — |
+| 2 | S43 | Sibling-aware record IDs |  | 3 |  | ork integration review 2026-10-19 (squalor-xyz/ork docs/review-2026-10-19-integration.md), R6: two ork branches both allocated records 50 and 51 on 2026-10-19 and needed adj renumber; the store lock cannot see other branches (internal/store/store.go:282-286); slicer already allocates past sibling worktrees. | — |
+| 3 | S39 | Release 1.0 | S | 1 | release | CHANGELOG.md and docs/json.md 1.0 rule; owner 2026-10-18: 0.2.0 first, 1.0 later | — |
+| 4 | S40 | Hardening edge cases | M | 2 | cli | S18, S22, S36 and S38 review later notes (2026-10-18), deferred from S37 | later |
+| 5 | [S21](slices/S21.md) | Later: optional owner-only decide enforcement | M | 2 | later | PROJECT.md Feature tiers (Later); Open decisions 5; Non-goals · Owner 2026-10-18: owner-only decide stays a convention (C11, C27); no enforcement planned | retired |
 
 ---
 
 | # | Slice | Title | Size | Effort | Trees | Findings | Status |
 |---|---|---|---|---|---|---|---|
+| 6 | [S44](slices/S44.md) | Tolerate unknown history events | S | 1 | model, lint | Split from S39 owner note (from S22, 2026-10-18): must land before the 1.0 JSON freeze. · discovered from S39 | done |
 | 7 | [S01](slices/S01.md) | Confirm open decisions | S | 1 | decisions | PROJECT.md Open decisions 1-7; Core concepts (kind); Dependency/licensing notes | done |
 | 8 | [S02](slices/S02.md) | Project scaffolding | S | 1 | scaffold | PROJECT.md Stack recommendation; Dependency/licensing notes | done |
 | 9 | [S03](slices/S03.md) | Record model and lifecycle transitions | M | 2 | model | PROJECT.md Core concepts / data model; Milestone 1 | done |

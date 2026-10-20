@@ -6,8 +6,12 @@
 package model
 
 import (
+	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"maps"
+	"slices"
 	"strings"
 	"time"
 )
@@ -69,8 +73,11 @@ type Recommendation struct {
 	Reasoning string `json:"reasoning,omitempty"`
 }
 
-// Valid reports whether e is one of the eight events.
-func (e Event) Valid() bool {
+// Known reports whether e is one of the eight events this version knows. An
+// event that is not known is still accepted in a history entry, so a store
+// that a newer version wrote can be read and changed; adj lint warns about it
+// (S44).
+func (e Event) Known() bool {
 	switch e {
 	case EventAsk, EventDecide, EventReject, EventWithdraw, EventSupersede, EventRenumber, EventAmend, EventImport:
 		return true
@@ -80,11 +87,235 @@ func (e Event) Valid() bool {
 
 // HistoryEntry is one dated line of a record's history. Date is
 // time.DateOnly (YYYY-MM-DD).
+//
+// An entry may have an event or keys that this version does not know (S44).
+// The event is kept in Event whatever it is. The keys are kept apart, in
+// extra, and written back unchanged after the known keys in sorted order, so
+// rewriting a record never drops what a newer version added. For an event this
+// version does not know, was is not decoded either: it is kept as it was
+// written, in rawWas, and Was stays nil (C213). extra and rawWas are strings
+// (extra is the JSON object of the unknown keys, compact, keys sorted; both are
+// "" when there is nothing), so that two entries that differ only in what a
+// newer version wrote are not equal: renumber's stale-copy match compares
+// entries with reflect.DeepEqual, and the type stays comparable with ==, where
+// Was, a pointer, compares by address.
 type HistoryEntry struct {
 	Date  string `json:"date"`
 	Event Event  `json:"event"`
 	Note  string `json:"note,omitempty"`
 	Was   *Was   `json:"was,omitempty"` // amend only: the text the amend replaced
+
+	extra  string // the keys this version does not know, as a JSON object
+	rawWas string // the was of an event this version does not know, as written
+}
+
+// entryKeys are the keys of a HistoryEntry that this version knows.
+var entryKeys = []string{"date", "event", "note", "was"}
+
+// knownEntry is HistoryEntry's known keys other than was, for encoding and
+// decoding without the methods below.
+type knownEntry struct {
+	Date  string `json:"date"`
+	Event Event  `json:"event"`
+	Note  string `json:"note,omitempty"`
+	Was   *Was   `json:"was,omitempty"`
+}
+
+// UnknownKeys returns the keys of the entry that this version does not know,
+// sorted; none for an entry without any. A was kept raw is not one: was is a
+// key this version knows, and the event is what it does not.
+func (h HistoryEntry) UnknownKeys() []string {
+	if h.extra == "" {
+		return nil
+	}
+	var m map[string]json.RawMessage
+	if err := json.Unmarshal([]byte(h.extra), &m); err != nil { // cannot fail: extra is made here
+		return nil
+	}
+	return slices.Sorted(maps.Keys(m))
+}
+
+// entryField is one key of a history entry as written, with its raw value.
+type entryField struct {
+	key string
+	raw json.RawMessage
+}
+
+// entryFields reads the keys of a JSON object in the order written. null is
+// reported, so the entry can be the zero entry; any other value that is not an
+// object is an error.
+func entryFields(data []byte) (fields []entryField, null bool, err error) {
+	dec := json.NewDecoder(bytes.NewReader(data))
+	tok, err := dec.Token()
+	if err != nil {
+		return nil, false, fmt.Errorf("history entry: %w", err)
+	}
+	if tok == nil {
+		return nil, true, nil
+	}
+	if d, ok := tok.(json.Delim); !ok || d != '{' {
+		kind := "value"
+		switch tok.(type) {
+		case json.Delim:
+			kind = "array"
+		case string:
+			kind = "string"
+		case float64:
+			kind = "number"
+		case bool:
+			kind = "boolean"
+		}
+		return nil, false, fmt.Errorf("history entry: want a JSON object, got a %s", kind)
+	}
+	for dec.More() {
+		kt, err := dec.Token()
+		if err != nil {
+			return nil, false, fmt.Errorf("history entry: %w", err)
+		}
+		f := entryField{key: kt.(string)} // an object's key is a string
+		if err := dec.Decode(&f.raw); err != nil {
+			return nil, false, fmt.Errorf("history entry: %w", err)
+		}
+		fields = append(fields, f)
+	}
+	return fields, false, nil
+}
+
+// decodeError names the history entry in err and keeps the types that decode
+// it out of the message.
+func decodeError(err error) error {
+	var te *json.UnmarshalTypeError
+	if errors.As(err, &te) && (te.Struct == "knownEntry" || te.Struct == "" && te.Field != "") {
+		fixed := *te
+		fixed.Struct = "HistoryEntry" // the date, event or note
+		if te.Struct == "" {
+			fixed.Struct = "Was" // a field of was
+		}
+		err = &fixed
+	}
+	return fmt.Errorf("history entry: %w", err)
+}
+
+// UnmarshalJSON decodes the known keys as encoding/json does (a key matches
+// one of them in any letter case) and keeps every other key. When keys differ
+// only in letter case from one known key, the one spelled exactly is the known
+// key (else the last, as encoding/json does) and the others are unknown keys
+// (C214).
+// For a known event an unknown key inside was is still an error; for an event
+// this version does not know, was is kept as written (C213).
+func (h *HistoryEntry) UnmarshalJSON(data []byte) error {
+	fields, null, err := entryFields(data)
+	if err != nil {
+		return err
+	}
+	if null { // as for any struct, null leaves the zero entry
+		*h = HistoryEntry{}
+		return nil
+	}
+	known, extra := map[string]json.RawMessage{}, map[string]json.RawMessage{}
+	isKnown := make([]bool, len(fields))
+	for _, name := range entryKeys {
+		winner := -1
+		for i, f := range fields {
+			if strings.EqualFold(f.key, name) && (f.key == name || winner < 0 || fields[winner].key != name) {
+				winner = i
+			}
+		}
+		if winner < 0 {
+			continue
+		}
+		known[name] = fields[winner].raw
+		isKnown[winner] = true
+		for i, f := range fields {
+			if !strings.EqualFold(f.key, name) {
+				continue
+			}
+			isKnown[i] = true
+			// A key spelled otherwise is kept and reported by lint; a key
+			// repeated as spelled is a duplicate, and the last one wins.
+			if f.key != fields[winner].key {
+				extra[f.key] = f.raw
+			}
+		}
+	}
+	for i, f := range fields {
+		if !isKnown[i] {
+			extra[f.key] = f.raw
+		}
+	}
+	wasRaw, hasWas := known["was"]
+	delete(known, "was")
+	text, err := encodeJSON(known)
+	if err != nil {
+		return err
+	}
+	var k knownEntry
+	if err := json.Unmarshal(text, &k); err != nil {
+		return decodeError(err)
+	}
+	*h = HistoryEntry{Date: k.Date, Event: k.Event, Note: k.Note}
+	if hasWas {
+		if k.Event.Known() {
+			dec := json.NewDecoder(bytes.NewReader(wasRaw))
+			dec.DisallowUnknownFields()
+			if err := dec.Decode(&h.Was); err != nil {
+				var te *json.UnmarshalTypeError
+				if errors.As(err, &te) && te.Field == "" { // was itself is not an object
+					err = fmt.Errorf("want an object, got a %s", te.Value)
+				}
+				return decodeError(fmt.Errorf("was: %w", err))
+			}
+		} else {
+			raw, err := encodeJSON(wasRaw)
+			if err != nil {
+				return err
+			}
+			h.rawWas = string(raw)
+		}
+	}
+	if len(extra) > 0 {
+		text, err := encodeJSON(extra)
+		if err != nil {
+			return err
+		}
+		h.extra = string(text)
+	}
+	return nil
+}
+
+// MarshalJSON writes the known keys in their usual order (a was kept raw in
+// its place), then the unknown keys in sorted key order, so the bytes are the
+// same on every write.
+func (h HistoryEntry) MarshalJSON() ([]byte, error) {
+	out, err := encodeJSON(knownEntry{Date: h.Date, Event: h.Event, Note: h.Note, Was: h.Was})
+	if err != nil {
+		return nil, err
+	}
+	with := func(members string) { // members: key-value pairs, no braces
+		out = append(bytes.TrimSuffix(out, []byte("}")), ',')
+		out = append(out, members...)
+		out = append(out, '}')
+	}
+	if h.Was == nil && h.rawWas != "" {
+		with(`"was":` + h.rawWas)
+	}
+	if len(h.extra) > 2 { // more than "{}"
+		with(h.extra[1 : len(h.extra)-1])
+	}
+	return out, nil
+}
+
+// encodeJSON encodes v compactly, without escaping HTML characters (a file
+// keeps "<" and "&" as typed) and without the encoder's final newline. A map
+// is written with its keys sorted.
+func encodeJSON(v any) ([]byte, error) {
+	var buf bytes.Buffer
+	enc := json.NewEncoder(&buf)
+	enc.SetEscapeHTML(false)
+	if err := enc.Encode(v); err != nil {
+		return nil, err
+	}
+	return bytes.TrimSuffix(buf.Bytes(), []byte("\n")), nil
 }
 
 // Was is the text an amend replaced: one pointer per field that changed, nil
@@ -149,7 +380,8 @@ func validDate(s string) bool {
 // error matching ErrInvalid that names every problem found.
 //
 // Always required: id > 0, title (one non-blank line), a known status and a
-// created date. Every history entry needs a valid date and a known event.
+// created date. Every history entry needs a valid date and a non-blank event;
+// an event this version does not know is accepted (S44).
 // Once answered (decided, rejected, withdrawn, superseded):
 // rationale and decided_at; decided and superseded also need decision, and
 // superseded needs superseded_by. decided_by is never required (C27).
@@ -205,13 +437,15 @@ func (r Record) Validate() error {
 		if !validDate(h.Date) {
 			bad("history", "entry %d: %q is not a YYYY-MM-DD date", i, h.Date)
 		}
-		if !h.Event.Valid() {
-			bad("history", "entry %d: unknown event %q", i, string(h.Event))
+		if strings.TrimSpace(string(h.Event)) == "" {
+			bad("history", "entry %d: event is required", i)
 		}
+		// The was rules are for the events this version knows: an unknown
+		// event may carry any was a newer version gave it (S44).
 		switch {
 		case h.Event == EventAmend && (h.Was == nil || h.Was.empty()):
 			bad("history", "entry %d: an amend entry needs the old text in was", i)
-		case h.Event != EventAmend && h.Was != nil:
+		case h.Event != EventAmend && h.Event.Known() && h.Was != nil:
 			bad("history", "entry %d: only an amend entry has was", i)
 		}
 		if h.Was != nil {

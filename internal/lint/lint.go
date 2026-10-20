@@ -2,8 +2,9 @@
 
 // Package lint checks a store for integrity problems: records that break the
 // model's rules, two files with one ID, links to records that do not exist,
-// supersede cycles, two decided records on one key, and a decision with no
-// decided_by (C08, C26, C27).
+// supersede cycles, two decided records on one key, a decision with no
+// decided_by, and history entries with an event or key this version does not
+// know, which are warnings (C08, C26, C27, S44).
 // It reads the record files itself with model.Parse, so a broken or invalid
 // file becomes a finding where store.List would fail (C61).
 package lint
@@ -62,12 +63,18 @@ const (
 	CheckRenumberLeftover = "renumber-leftover"
 	// CheckDecidedBy: a decided record has no decided_by (a warning, C27).
 	CheckDecidedBy = "decided-by"
+	// CheckUnknownEvent: a history entry has an event this version does not
+	// know, as a newer version may write (a warning, S44).
+	CheckUnknownEvent = "unknown-event"
+	// CheckUnknownHistoryKey: a history entry has keys this version does not
+	// know (a warning, S44).
+	CheckUnknownHistoryKey = "unknown-history-key"
 )
 
 // Checks lists every check name.
 var Checks = []string{
 	CheckParse, CheckFields, CheckIDMismatch, CheckDuplicateID, CheckRenumberLeftover, CheckDanglingLink,
-	CheckSupersedeState, CheckSupersedeCycle, CheckKeyConflict, CheckDecidedBy,
+	CheckSupersedeState, CheckSupersedeCycle, CheckKeyConflict, CheckDecidedBy, CheckUnknownEvent, CheckUnknownHistoryKey,
 }
 
 // Finding is one problem in one record file. ID is the ID in the file name
@@ -186,6 +193,24 @@ func Run(st *store.Store, root string) ([]Finding, error) {
 		dangling("superseded_by", r.SupersededBy)
 		if r.Status == model.StatusDecided && strings.TrimSpace(r.DecidedBy) == "" {
 			add(p.id, p.file, SeverityWarning, CheckDecidedBy, "decided_by is missing")
+		}
+		// A blank event is a fields finding (Validate); one that is only
+		// unknown is read and kept, and warned about (S44).
+		for i, h := range r.History {
+			if strings.TrimSpace(string(h.Event)) != "" && !h.Event.Known() {
+				add(p.id, p.file, SeverityWarning, CheckUnknownEvent, "history entry %d: unknown event %q", i, string(h.Event))
+			}
+			if keys := h.UnknownKeys(); len(keys) > 0 {
+				noun := "key"
+				if len(keys) > 1 {
+					noun = "keys"
+				}
+				quoted := make([]string, len(keys))
+				for j, k := range keys {
+					quoted[j] = strconv.Quote(k)
+				}
+				add(p.id, p.file, SeverityWarning, CheckUnknownHistoryKey, "history entry %d: unknown %s %s", i, noun, strings.Join(quoted, ", "))
+			}
 		}
 	}
 

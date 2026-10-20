@@ -7,9 +7,9 @@
   "history": [
     {
       "date": "2026-10-01",
-      "event": "approve"
+      "event": ""
     }
   ]
 }
 ---
-History event is not one of the five known events.
+History event is blank. (An event this version does not know is accepted: S44.)

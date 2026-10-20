@@ -181,6 +181,27 @@ var fixtureCases = []struct {
 		finding(5, "0005-blank-text.md", errSev, lint.CheckFields, "recommendation: text must not be blank"),
 		finding(6, "0006-empty-recommendation.md", errSev, lint.CheckFields, "recommendation: needs a label or text"),
 	}},
+	// A history entry with an event or a key this version does not know is read
+	// and kept (S44): lint warns, one finding per entry and check, and the
+	// warnings alone do not fail the lint.
+	{"unknown-history", []lint.Finding{
+		finding(1, "0001-future-event.md", warnSev, lint.CheckUnknownEvent, `history entry 1: unknown event "future-thing"`),
+		finding(2, "0002-extra-key.md", warnSev, lint.CheckUnknownHistoryKey, `history entry 1: unknown key "by"`),
+		finding(3, "0003-both.md", warnSev, lint.CheckUnknownEvent, `history entry 1: unknown event "future-thing"`),
+		finding(3, "0003-both.md", warnSev, lint.CheckUnknownEvent, `history entry 2: unknown event "other-thing"`),
+		finding(3, "0003-both.md", warnSev, lint.CheckUnknownHistoryKey, `history entry 1: unknown keys "alpha", "zeta"`),
+	}},
+	// A blank event is still an error, and only that: it is not also an unknown
+	// event (S44).
+	{"blank-history-event", []lint.Finding{
+		finding(1, "0001-blank-event.md", errSev, lint.CheckFields, "history: entry 1: event is required"),
+	}},
+	// An unknown event's was is kept raw: it is an unknown event and nothing
+	// more, whatever the was holds (S44, C213).
+	{"unknown-event-was", []lint.Finding{
+		finding(1, "0001-was-raw.md", warnSev, lint.CheckUnknownEvent, `history entry 1: unknown event "future-thing"`),
+		finding(1, "0001-was-raw.md", warnSev, lint.CheckUnknownEvent, `history entry 2: unknown event "other-thing"`),
+	}},
 	{"mixed", []lint.Finding{
 		finding(1, "0001-pick-a-store.md", warnSev, lint.CheckDecidedBy, "decided_by is missing"),
 		finding(2, "0002-cache-layer.md", errSev, lint.CheckFields, "rationale: is required once decided"),
