@@ -840,3 +840,4 @@
 {"when": "2026-10-20T18:31:20Z", "item": "S39", "action": "promote", "from": "", "to": "", "note": ""}
 {"when": "2026-10-20T18:31:20Z", "item": "S39", "action": "set", "from": "", "to": "", "note": "trees"}
 {"when": "2026-10-20T18:31:23Z", "item": "S40", "action": "retire", "from": "later", "to": "retired", "note": "Split 2026-10-20: import-adr edge cases -> S47; userconfig Save symlink/fsync -> S48; lock release at process death test -> S49; cosmetic nits (decodeError Go type names, case-folded duplicate key lint fixture, lock_windows.go:64 comment, over-width lines) -> S39."}
+{"when": "2026-10-20T18:53:56Z", "item": "relay-roles.r8", "action": "relay-roles", "from": "", "to": "orchestrator", "note": "add"}
