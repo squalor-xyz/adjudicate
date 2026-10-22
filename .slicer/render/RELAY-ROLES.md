@@ -13,6 +13,7 @@
 | r5 | Reviewer | every slice | Claude Code | Claude | opus | medium | - |
 | r6 | Gate | every slice | Claude Code | Claude | opus | medium | - |
 | r7 | Architect | size L | Claude Code | Claude | opus | high | - |
+| r8 | Orchestrator | every slice | Claude Code | Claude | sonnet | high | owner 2026-10-20 |
 
 ## Rules
 
