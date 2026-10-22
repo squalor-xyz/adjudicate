@@ -219,3 +219,46 @@ func TestUpdateProductionTimeout(t *testing.T) {
 		t.Fatalf("lock error = %v, want probe", err)
 	}
 }
+
+// Every user config error matches ErrConfig, so the CLI can give it one code
+// (S42); the text stays what it was.
+func TestConfigErrorsMatchErrConfig(t *testing.T) {
+	dir := t.TempDir()
+	write := func(name, data string) string {
+		path := filepath.Join(dir, name)
+		if err := os.WriteFile(path, []byte(data), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		return path
+	}
+	for name, data := range map[string]string{
+		"syntax.json":   `{"repos": [`,
+		"null.json":     `null`,
+		"trailing.json": `{"repos": []} {}`,
+		"relative.json": `{"repos": ["rel"]}`,
+		"unknown.json":  `{"other": 1}`,
+	} {
+		_, err := Load(write(name, data))
+		if !errors.Is(err, ErrConfig) {
+			t.Errorf("Load(%s) = %v, want an error matching ErrConfig", name, err)
+		}
+		if err != nil && !strings.Contains(err.Error(), ": invalid user config: ") {
+			t.Errorf("Load(%s) text = %q, lost its %q", name, err, "invalid user config")
+		}
+	}
+	for name, getenv := range map[string]func(string) string{
+		"no home":       func(string) string { return "" },
+		"relative home": func(k string) string { return map[string]string{"HOME": "rel"}[k] },
+	} {
+		_, err := Path(getenv)
+		if !errors.Is(err, ErrConfig) {
+			t.Errorf("Path(%s) = %v, want an error matching ErrConfig", name, err)
+		}
+	}
+	if _, err := Load(filepath.Join(dir, "missing.json")); err != nil {
+		t.Errorf("a missing file is an empty list: %v", err)
+	}
+	if _, err := Load(dir); errors.Is(err, ErrConfig) {
+		t.Errorf("Load(a directory) = %v: a read error is not a config error", err)
+	}
+}

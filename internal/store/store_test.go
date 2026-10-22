@@ -754,3 +754,19 @@ func TestFiles(t *testing.T) {
 		t.Errorf("Files of a missing store dir = %v, %v; want none and no error", got, err)
 	}
 }
+
+// A root that is not a directory is an invalid-config failure for the CLI
+// (S42), with the message it always had.
+func TestOpenOnAFileMatchesErrInvalidConfig(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "file")
+	if err := os.WriteFile(path, []byte("x"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	_, err := Open(path)
+	if !errors.Is(err, ErrInvalidConfig) {
+		t.Fatalf("Open(file) = %v, want ErrInvalidConfig", err)
+	}
+	if want := path + " is not a directory"; err.Error() != want {
+		t.Errorf("message = %q, want %q", err, want)
+	}
+}

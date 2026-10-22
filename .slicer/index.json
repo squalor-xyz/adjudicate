@@ -882,7 +882,7 @@
       "id": "S42",
       "title": "--json failures print a JSON error object {error:{code,message,command}}, as slicer does",
       "short_title": "JSON error object on --json failures",
-      "status": "open",
+      "status": "done",
       "has_slice": true,
       "depends_on": [],
       "note_records": [],
@@ -905,7 +905,7 @@
         "importance": 3,
         "urgency": 2,
         "effort": 2,
-        "attempts": 0
+        "attempts": 1
       }
     },
     {
@@ -3108,7 +3108,7 @@
   "goals": "adjudicate is a small CLI (`adj`) with a plain-text store that records project decisions as a loop: an agent asks, the owner decides in batches, and every later agent reads the decision. The goal and non-goal records below come from PROJECT.md; the owner's decisions on its open questions are catalog records C23-C33, and they override PROJECT.md where it differs (name, runtime, record format, license).",
   "non_goals": "",
   "catalog": {
-    "next_id": 215,
+    "next_id": 218,
     "id_prefix": "C",
     "id_width": 2,
     "records": [
@@ -5034,6 +5034,33 @@
         "kind": "decision",
         "title": "S44: keys that fold to one known history key keep the exact one",
         "body": "When keys differ only in letter case from a known key (note and Note), the exact spelling is the known key, else the last in document order (as encoding/json did); the others become unknown keys so they are kept and linted, and a key repeated with identical spelling keeps the last. Decode errors name the history entry and not the decoding types.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C215",
+        "kind": "decision",
+        "title": "JSON error object codes: usage, no_repo, invalid_config, not_found, duplicate_id, invalid_record, user_config, budget, io; command null before dispatch",
+        "body": "S42 implementer decision (C32): codes are derived from error sentinels via errors.Is, never from message text; usage is for flag parse errors, dispatch errors and commands.UsageError; io is the catch-all. Reason: ork branches on error.code and S39 freezes the JSON at 1.0, so the set is small and stable. command is null for a failure found before a command is known (adj --bogus --json).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C216",
+        "kind": "decision",
+        "title": "JSON mode is read from the raw arguments: --json, -json, --json=true; --format json for context; value positions and -- excluded",
+        "body": "S42 implementer decision (C32): detection is wantsJSON(fs, args), derived from the command's flag.FlagSet (a flag that takes a value owns the next argument, so adj list --key --json is a key); --json=false (or an unparsable bool) is off and the last occurrence wins; anything after -- is ignored. Only commands that define a json flag (or context's format flag) enter JSON mode, so ask, decide, amend and the rest never print the object; failures before dispatch (unknown command or flag) accept --json with --root as the only value flag. Reason: flag parsing stops at the first bad flag, so --json would otherwise be missed (adj show --bogus --json).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C217",
+        "kind": "decision",
+        "title": "Failures versus results for the JSON error object: budget is a failure; lint findings, check not found and inbox --all per-repo errors are not",
+        "body": "S42 implementer decision (C32): context --max-bytes too small is exit 1 and prints the object with code budget; lint exiting 1 on error findings, check with result not found (exit 0) and inbox --all per-repo errors (exit 1, errors array) are reports or results and print no error object; a failure to read the user config itself prints the object with code user_config. Exit codes stay 0/1/2 (no slicer-style exit 3), and stderr text is unchanged.",
         "status": "active",
         "reason": "",
         "successor": ""

@@ -26,6 +26,18 @@ but never renames, removes or retypes an existing key.
   `fields` error and an unknown key a `parse` error.
 
 ### JSON shapes
+- New: a command run with `--json` (or `adj context --format json`) that fails
+  prints `{"error": {"code", "message", "command"}}` on stdout, as slicer does.
+  The codes are `usage`, `no_repo`, `invalid_config`, `not_found`,
+  `duplicate_id`, `invalid_record`, `user_config`, `budget` and `io`;
+  `command` is the command name, or `null` for a usage error before a command
+  was known. Exit codes (0, 1, 2) and the text on stderr are unchanged. JSON
+  mode is read from the raw arguments, so `adj show --bogus --json` prints the
+  object. A `lint` report with errors, a `check` result of `not found` and the
+  per-repo errors of `inbox --all` are results and print no object. Behaviour
+  change for scripts: stdout was empty when a `--json` command failed and now
+  holds the object, so test the exit code, not whether stdout is empty. See
+  "Errors" in [docs/json.md](docs/json.md).
 - `show --json`, `list --json` and the other commands that print records
   include an entry's unknown keys beside `date`, `event`, `note` and `was`.
   Readers must ignore history events and keys they do not know. No existing

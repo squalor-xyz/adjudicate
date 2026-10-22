@@ -830,6 +830,18 @@ Review finding: a newer event may give was other keys or another type, so for an
 
 When keys differ only in letter case from a known key (note and Note), the exact spelling is the known key, else the last in document order (as encoding/json did); the others become unknown keys so they are kept and linted, and a key repeated with identical spelling keeps the last. Decode errors name the history entry and not the decoding types.
 
+### C215 JSON error object codes: usage, no_repo, invalid_config, not_found, duplicate_id, invalid_record, user_config, budget, io; command null before dispatch
+
+S42 implementer decision (C32): codes are derived from error sentinels via errors.Is, never from message text; usage is for flag parse errors, dispatch errors and commands.UsageError; io is the catch-all. Reason: ork branches on error.code and S39 freezes the JSON at 1.0, so the set is small and stable. command is null for a failure found before a command is known (adj --bogus --json).
+
+### C216 JSON mode is read from the raw arguments: --json, -json, --json=true; --format json for context; value positions and -- excluded
+
+S42 implementer decision (C32): detection is wantsJSON(fs, args), derived from the command's flag.FlagSet (a flag that takes a value owns the next argument, so adj list --key --json is a key); --json=false (or an unparsable bool) is off and the last occurrence wins; anything after -- is ignored. Only commands that define a json flag (or context's format flag) enter JSON mode, so ask, decide, amend and the rest never print the object; failures before dispatch (unknown command or flag) accept --json with --root as the only value flag. Reason: flag parsing stops at the first bad flag, so --json would otherwise be missed (adj show --bogus --json).
+
+### C217 Failures versus results for the JSON error object: budget is a failure; lint findings, check not found and inbox --all per-repo errors are not
+
+S42 implementer decision (C32): context --max-bytes too small is exit 1 and prints the object with code budget; lint exiting 1 on error findings, check with result not found (exit 0) and inbox --all per-repo errors (exit 1, errors array) are reports or results and print no error object; a failure to read the user config itself prints the object with code user_config. Exit codes stay 0/1/2 (no slicer-style exit 3), and stderr text is unchanged.
+
 ### C39 LICENSE is a stub until the owner supplies the full GPL-3.0 text and copyright holder
 
 No GPL-3.0 text exists in the adjudicate repo and the workspace has no network, so the stub carries the SPDX line, the or-later notice and TODO(owner) markers.
@@ -892,41 +904,41 @@ PENDING OWNER CONFIRMATION - not decided. Source: Dependency/licensing notes (ma
 
 *Retired: Owner decided 2026-10-15: see decision C31 (GPL-3.0-or-later)..*
 
-49 items · — 5 · done 39 · later 3 · retired 2
+49 items · — 4 · done 40 · later 3 · retired 2
 
 | # | Slice | Title | Size | Effort | Trees | Findings | Status |
 |---|---|---|---|---|---|---|---|
-| 1 | [S42](slices/S42.md) | JSON error object on --json failures | M | 2 | cli | ork integration review 2026-10-19 (squalor-xyz/ork docs/review-2026-10-19-integration.md), R6: adj prints only text on stderr when a --json command fails (measured: adj show 999 --json), so ork cannot keep the error code. | — |
-| 2 | [S43](slices/S43.md) | Sibling-aware record IDs | M | 3 | store | ork integration review 2026-10-19 (squalor-xyz/ork docs/review-2026-10-19-integration.md), R6: two ork branches both allocated records 50 and 51 on 2026-10-19 and needed adj renumber; the store lock cannot see other branches (internal/store/store.go:282-286); slicer already allocates past sibling worktrees. | — |
-| 3 | [S39](slices/S39.md) | Release 1.0 | S | 1 | release | CHANGELOG.md and docs/json.md 1.0 rule; owner 2026-10-18: 0.2.0 first, 1.0 later | — |
-| 4 | S40 | Hardening edge cases | M | 2 | cli | S18, S22, S36 and S38 review later notes (2026-10-18), deferred from S37 · Split 2026-10-20: import-adr edge cases -> S47; userconfig Save symlink/fsync -> S48; lock release at process death test -> S49; cosmetic nits (decodeError Go type names, case-folded duplicate key lint fixture, lock_windows.go:64 comment, over-width lines) -> S39. | retired |
-| 5 | [S21](slices/S21.md) | Later: optional owner-only decide enforcement | M | 2 | later | PROJECT.md Feature tiers (Later); Open decisions 5; Non-goals · Owner 2026-10-18: owner-only decide stays a convention (C11, C27); no enforcement planned | retired |
-| 6 | [S45](slices/S45.md) | JSON contract version and pin | M | 2 | cli | owner session 2026-10-20 (in slicer): slicer, ork and adjudicate lock to agreed contract versions; per-contract pins, each tool keeps its own pin, ork sets and checks them. Companion items: slicer s387 (relay contract pin), ork S24 (ork sets and checks the pins). | — |
-| 7 | [S46](slices/S46.md) | Forward-compatible record reads | S | 1 | model | adj records 17 (store.amend-was) and 18 (store.record-unknown-keys), filed 2026-10-20 from the S39 notes and the S44 review | — |
-| 8 | [S47](slices/S47.md) | import-adr hardening | M | 2 | commands | S22 review and S37 deferral (2026-10-18), formerly in S40 | later |
-| 9 | [S48](slices/S48.md) | userconfig Save safety | S | 1 | userconfig | S38 review lows (2026-10-18), formerly in S40 | later |
-| 10 | [S49](slices/S49.md) | Lock release at process death test | S | 1 | store | S36 and S37 reviews (2026-10-18), formerly in S40 | later |
+| 1 | [S43](slices/S43.md) | Sibling-aware record IDs | M | 3 | store | ork integration review 2026-10-19 (squalor-xyz/ork docs/review-2026-10-19-integration.md), R6: two ork branches both allocated records 50 and 51 on 2026-10-19 and needed adj renumber; the store lock cannot see other branches (internal/store/store.go:282-286); slicer already allocates past sibling worktrees. | — |
+| 2 | [S39](slices/S39.md) | Release 1.0 | S | 1 | release | CHANGELOG.md and docs/json.md 1.0 rule; owner 2026-10-18: 0.2.0 first, 1.0 later | — |
+| 3 | S40 | Hardening edge cases | M | 2 | cli | S18, S22, S36 and S38 review later notes (2026-10-18), deferred from S37 · Split 2026-10-20: import-adr edge cases -> S47; userconfig Save symlink/fsync -> S48; lock release at process death test -> S49; cosmetic nits (decodeError Go type names, case-folded duplicate key lint fixture, lock_windows.go:64 comment, over-width lines) -> S39. | retired |
+| 4 | [S21](slices/S21.md) | Later: optional owner-only decide enforcement | M | 2 | later | PROJECT.md Feature tiers (Later); Open decisions 5; Non-goals · Owner 2026-10-18: owner-only decide stays a convention (C11, C27); no enforcement planned | retired |
+| 5 | [S45](slices/S45.md) | JSON contract version and pin | M | 2 | cli | owner session 2026-10-20 (in slicer): slicer, ork and adjudicate lock to agreed contract versions; per-contract pins, each tool keeps its own pin, ork sets and checks them. Companion items: slicer s387 (relay contract pin), ork S24 (ork sets and checks the pins). | — |
+| 6 | [S46](slices/S46.md) | Forward-compatible record reads | S | 1 | model | adj records 17 (store.amend-was) and 18 (store.record-unknown-keys), filed 2026-10-20 from the S39 notes and the S44 review | — |
+| 7 | [S47](slices/S47.md) | import-adr hardening | M | 2 | commands | S22 review and S37 deferral (2026-10-18), formerly in S40 | later |
+| 8 | [S48](slices/S48.md) | userconfig Save safety | S | 1 | userconfig | S38 review lows (2026-10-18), formerly in S40 | later |
+| 9 | [S49](slices/S49.md) | Lock release at process death test | S | 1 | store | S36 and S37 reviews (2026-10-18), formerly in S40 | later |
 
 ---
 
 | # | Slice | Title | Size | Effort | Trees | Findings | Status |
 |---|---|---|---|---|---|---|---|
-| 11 | [S44](slices/S44.md) | Tolerate unknown history events | S | 1 | model, lint | Split from S39 owner note (from S22, 2026-10-18): must land before the 1.0 JSON freeze. · discovered from S39 | done |
-| 12 | [S01](slices/S01.md) | Confirm open decisions | S | 1 | decisions | PROJECT.md Open decisions 1-7; Core concepts (kind); Dependency/licensing notes | done |
-| 13 | [S02](slices/S02.md) | Project scaffolding | S | 1 | scaffold | PROJECT.md Stack recommendation; Dependency/licensing notes | done |
-| 14 | [S03](slices/S03.md) | Record model and lifecycle transitions | M | 2 | model | PROJECT.md Core concepts / data model; Milestone 1 | done |
-| 15 | [S04](slices/S04.md) | Record file read and write | S | 1 | model | PROJECT.md Open decisions 3; Core concepts (Record) | done |
-| 16 | [S05](slices/S05.md) | Store, config and ID allocation | M | 2 | store | PROJECT.md Architecture sketch (ID allocation, Determinism); Open decisions 4, 6, 7 | done |
-| 17 | [S25](slices/S25.md) | Fix stale-copy false positive that flags a live record | M | 2 | store, lint, cli | S15 gate note (2) on S16; reproduced in the S16 run; S23 review notes (3), (6) on S16 | done |
-| 18 | [S26](slices/S26.md) | Accept --root before the subcommand | S | 1 | cli | S17 dogfood friction (7), note on S20; C165 | done |
-| 19 | [S27](slices/S27.md) | Set refs with ask --ref | S | 1 | cli, commands | S17 dogfood friction (1), note on S20; C165 | done |
-| 20 | [S28](slices/S28.md) | Free-text recommendation with ask --recommend-text | M | 2 | model, cli, commands, render, lint | S17 dogfood friction (4), note on S20; C167 | done |
-| 21 | [S29](slices/S29.md) | Backdate a decision with decide --decided-at | S | 1 | cli, commands, model | S17 dogfood friction (5), note on S20; C168 | done |
-| 22 | [S30](slices/S30.md) | Correct a record's text with adj amend | M | 2 | model, cli, commands, store, lint | S17 dogfood friction (6), note on S20; C166 | done |
-| 23 | [S31](slices/S31.md) | Report the version with adj version | S | 1 | cli | release prep; C169 | done |
-| 24 | [S32](slices/S32.md) | Release docs: PROJECT.md, CHANGELOG and JSON stability | S | 1 | docs | release prep; C165 | done |
-| 25 | [S33](slices/S33.md) | Release 0.1.0 | S | 1 | release | C165 | done |
-| 26 | S41 | Windows CI fixes | S | 1 |  | discovered from S36 | done |
+| 10 | [S44](slices/S44.md) | Tolerate unknown history events | S | 1 | model, lint | Split from S39 owner note (from S22, 2026-10-18): must land before the 1.0 JSON freeze. · discovered from S39 | done |
+| 11 | [S01](slices/S01.md) | Confirm open decisions | S | 1 | decisions | PROJECT.md Open decisions 1-7; Core concepts (kind); Dependency/licensing notes | done |
+| 12 | [S02](slices/S02.md) | Project scaffolding | S | 1 | scaffold | PROJECT.md Stack recommendation; Dependency/licensing notes | done |
+| 13 | [S03](slices/S03.md) | Record model and lifecycle transitions | M | 2 | model | PROJECT.md Core concepts / data model; Milestone 1 | done |
+| 14 | [S04](slices/S04.md) | Record file read and write | S | 1 | model | PROJECT.md Open decisions 3; Core concepts (Record) | done |
+| 15 | [S05](slices/S05.md) | Store, config and ID allocation | M | 2 | store | PROJECT.md Architecture sketch (ID allocation, Determinism); Open decisions 4, 6, 7 | done |
+| 16 | [S25](slices/S25.md) | Fix stale-copy false positive that flags a live record | M | 2 | store, lint, cli | S15 gate note (2) on S16; reproduced in the S16 run; S23 review notes (3), (6) on S16 | done |
+| 17 | [S26](slices/S26.md) | Accept --root before the subcommand | S | 1 | cli | S17 dogfood friction (7), note on S20; C165 | done |
+| 18 | [S27](slices/S27.md) | Set refs with ask --ref | S | 1 | cli, commands | S17 dogfood friction (1), note on S20; C165 | done |
+| 19 | [S28](slices/S28.md) | Free-text recommendation with ask --recommend-text | M | 2 | model, cli, commands, render, lint | S17 dogfood friction (4), note on S20; C167 | done |
+| 20 | [S29](slices/S29.md) | Backdate a decision with decide --decided-at | S | 1 | cli, commands, model | S17 dogfood friction (5), note on S20; C168 | done |
+| 21 | [S30](slices/S30.md) | Correct a record's text with adj amend | M | 2 | model, cli, commands, store, lint | S17 dogfood friction (6), note on S20; C166 | done |
+| 22 | [S31](slices/S31.md) | Report the version with adj version | S | 1 | cli | release prep; C169 | done |
+| 23 | [S32](slices/S32.md) | Release docs: PROJECT.md, CHANGELOG and JSON stability | S | 1 | docs | release prep; C165 | done |
+| 24 | [S33](slices/S33.md) | Release 0.1.0 | S | 1 | release | C165 | done |
+| 25 | S41 | Windows CI fixes | S | 1 |  | discovered from S36 | done |
+| 26 | [S42](slices/S42.md) | JSON error object on --json failures | M | 2 | cli | ork integration review 2026-10-19 (squalor-xyz/ork docs/review-2026-10-19-integration.md), R6: adj prints only text on stderr when a --json command fails (measured: adj show 999 --json), so ork cannot keep the error code. | done |
 | 27 | [S06](slices/S06.md) | Commands: init and ask | M | 2 | cli | PROJECT.md v1 feature tier; Milestone 2 | done |
 | 28 | [S07](slices/S07.md) | Commands: decide, reject, withdraw | S | 1 | cli | PROJECT.md v1 feature tier; Lifecycle; Milestone 2 | done |
 | 29 | [S08](slices/S08.md) | Commands: show and list with --json | S | 1 | cli | PROJECT.md v1 feature tier; Milestone 2; acceptance (--json) | done |

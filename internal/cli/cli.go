@@ -103,13 +103,12 @@ func RunWith(env Env, args []string, stdin io.Reader, stdout, stderr io.Writer) 
 	if args[0] == "--version" {
 		return c.runVersion(args[1:])
 	}
+	given := args
 	if root, rest, ok, err := leadingRoot(args); err != nil {
-		fmt.Fprintf(stderr, "adj: %v\n%s", err, usage)
-		return exitUsage
+		return c.dispatchFailure(given, err)
 	} else if ok {
 		if len(rest) == 0 {
-			fmt.Fprintf(stderr, "adj: --root %q needs a command\n%s", root, usage)
-			return exitUsage
+			return c.dispatchFailure(given, fmt.Errorf("--root %q needs a command", root))
 		}
 		c.leadRoot, c.hasLeadRoot, args = root, true, rest
 	}
@@ -155,12 +154,9 @@ func RunWith(env Env, args []string, stdin io.Reader, stdout, stderr io.Writer) 
 		return c.runAI(args[1:])
 	default:
 		if strings.HasPrefix(args[0], "-") && args[0] != "-" {
-			fmt.Fprintf(stderr, "adj: unknown flag %q before the command; only --root, --help and -h are accepted there\n", args[0])
-		} else {
-			fmt.Fprintf(stderr, "adj: unknown command %q\n", args[0])
+			return c.dispatchFailure(given, fmt.Errorf("unknown flag %q before the command; only --root, --help and -h are accepted there", args[0]))
 		}
-		fmt.Fprint(stderr, usage)
-		return exitUsage
+		return c.dispatchFailure(given, fmt.Errorf("unknown command %q", args[0]))
 	}
 }
 
@@ -175,6 +171,20 @@ type invocation struct {
 	// to the command as if it had followed the command name.
 	leadRoot    string
 	hasLeadRoot bool
+
+	// json is set when the invocation asked for JSON (wantsJSON): a failure
+	// then also prints the error object on stdout (S42).
+	json bool
+}
+
+// dispatchFailure reports a usage error found before a command is known: the
+// message and the main usage on stderr, and in JSON mode the error object
+// with a null command. args are the arguments as given.
+func (c *invocation) dispatchFailure(args []string, err error) int {
+	fmt.Fprintf(c.stderr, "adj: %v\n%s", err, usage)
+	c.json = wantsJSON(nil, args)
+	c.jsonFailure("", codeUsage, err)
+	return exitUsage
 }
 
 // leadingRoot takes a --root DIR, -root DIR, --root=DIR or -root=DIR from the
@@ -218,6 +228,7 @@ func newFlagSet(name string) (fs *flag.FlagSet, root *string) {
 // over: help was asked (exit 0, usage on stdout) or the flags are wrong
 // (exit 2, message and usage on stderr).
 func (c *invocation) parse(name, usageText string, fs *flag.FlagSet, args []string) (pos []string, code int, done bool) {
+	c.json = wantsJSON(fs, args)
 	pos, err := parseInterspersed(fs, args)
 	if errors.Is(err, flag.ErrHelp) {
 		fmt.Fprint(c.stdout, usageText)
@@ -243,15 +254,18 @@ func (c *invocation) parse(name, usageText string, fs *flag.FlagSet, args []stri
 }
 
 // usageError prints "adj name: err" and the usage to stderr and returns the
-// usage exit code.
+// usage exit code. In JSON mode it also prints the error object, code usage.
 func (c *invocation) usageError(name, usageText string, err error) int {
 	fmt.Fprintf(c.stderr, "adj %s: %v\n%s", name, err, usageText)
+	c.jsonFailure(name, codeUsage, err)
 	return exitUsage
 }
 
-// fail prints "adj name: err" to stderr and returns the failure exit code.
+// fail prints "adj name: err" to stderr and returns the failure exit code. In
+// JSON mode it also prints the error object, with the code errorCode gives err.
 func (c *invocation) fail(name string, err error) int {
 	fmt.Fprintf(c.stderr, "adj %s: %v\n", name, err)
+	c.jsonFailure(name, errorCode(err), err)
 	return exitFail
 }
 
@@ -299,7 +313,7 @@ func (c *invocation) rootFor(flagRoot string, forInit bool) (string, error) {
 // the user to run adj init.
 func (c *invocation) rootError(name string, err error) int {
 	if errors.Is(err, store.ErrNoRoot) {
-		return c.fail(name, fmt.Errorf("%v; run `adj init` first", err))
+		return c.fail(name, fmt.Errorf("%w; run `adj init` first", err))
 	}
 	return c.fail(name, err)
 }

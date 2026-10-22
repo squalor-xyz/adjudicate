@@ -117,6 +117,9 @@ func TestFitContextNothingFitsIsAnError(t *testing.T) {
 	if errors.As(err, &ue) {
 		t.Errorf("error %q is a usage error; want a failed operation (exit 1)", err)
 	}
+	if !errors.Is(err, ErrBudget) {
+		t.Errorf("error %q does not match ErrBudget", err)
+	}
 	if !strings.Contains(err.Error(), "--max-bytes 6") || !strings.Contains(err.Error(), "7") {
 		t.Errorf("error %q does not name the budget and the smallest size", err)
 	}

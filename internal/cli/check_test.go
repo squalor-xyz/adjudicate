@@ -168,8 +168,8 @@ func TestCheckExitCodesSeparateAnAnswerFromAFailure(t *testing.T) {
 	}
 	for _, args := range [][]string{{"check", "kubernetes"}, {"check", "--json", "kubernetes"}} {
 		r := run(testEnv(root), "", args...)
-		if r.code != 1 || !strings.Contains(r.stderr, "0008-broken.md") || r.stdout != "" {
-			t.Errorf("%v: exit %d, stdout %q, stderr %q; want exit 1 naming 0008-broken.md and no output", args, r.code, r.stdout, r.stderr)
+		if r.code != 1 || !strings.Contains(r.stderr, "0008-broken.md") || !failureStdout(r.stdout, args) {
+			t.Errorf("%v: exit %d, stdout %q, stderr %q; want exit 1 naming 0008-broken.md and no answer", args, r.code, r.stdout, r.stderr)
 		}
 	}
 }

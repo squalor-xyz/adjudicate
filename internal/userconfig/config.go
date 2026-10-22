@@ -21,16 +21,29 @@ type Config struct {
 	Repos []string `json:"repos"`
 }
 
+// ErrConfig matches every error that says the user config, or the environment
+// that locates it, is wrong: bad JSON, a relative repo path, no usable HOME
+// (S42: the CLI gives them the code user_config). A file that cannot be read
+// is not one.
+var ErrConfig = errors.New("invalid user config")
+
+// configError is an ErrConfig whose text is its own.
+type configError string
+
+func (e configError) Error() string { return string(e) }
+
+func (e configError) Is(target error) bool { return target == ErrConfig }
+
 // Path resolves the config using the injected environment, including on macOS.
 func Path(getenv func(string) string) (string, error) {
 	base := getenv("XDG_CONFIG_HOME")
 	if !filepath.IsAbs(base) {
 		home := getenv("HOME")
 		if home == "" {
-			return "", errors.New("HOME is unset or empty and XDG_CONFIG_HOME is unset, empty or relative")
+			return "", configError("HOME is unset or empty and XDG_CONFIG_HOME is unset, empty or relative")
 		}
 		if !filepath.IsAbs(home) {
-			return "", errors.New("HOME must be an absolute path")
+			return "", configError("HOME must be an absolute path")
 		}
 		base = filepath.Join(home, ".config")
 	}
@@ -51,17 +64,17 @@ func Load(path string) (Config, error) {
 	dec := json.NewDecoder(bytes.NewReader(data))
 	dec.DisallowUnknownFields()
 	if err := dec.Decode(&cfg); err != nil {
-		return Config{}, fmt.Errorf("%s: invalid user config: %w", path, err)
+		return Config{}, fmt.Errorf("%s: %w: %w", path, ErrConfig, err)
 	}
 	if cfg == nil {
-		return Config{}, fmt.Errorf("%s: invalid user config: must be a JSON object", path)
+		return Config{}, fmt.Errorf("%s: %w: must be a JSON object", path, ErrConfig)
 	}
 	if _, err := dec.Token(); !errors.Is(err, io.EOF) {
-		return Config{}, fmt.Errorf("%s: invalid user config: data after the JSON object", path)
+		return Config{}, fmt.Errorf("%s: %w: data after the JSON object", path, ErrConfig)
 	}
 	for i, repo := range cfg.Repos {
 		if !filepath.IsAbs(repo) {
-			return Config{}, fmt.Errorf("%s: invalid user config: repo %q must be absolute", path, repo)
+			return Config{}, fmt.Errorf("%s: %w: repo %q must be absolute", path, ErrConfig, repo)
 		}
 		cfg.Repos[i] = filepath.Clean(repo)
 	}

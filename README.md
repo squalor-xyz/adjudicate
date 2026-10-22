@@ -186,6 +186,10 @@ special: `adj check` exits 0 for every completed search, including `closed` and
 `not found`, so a script reads the result from the output; `adj lint` exits 1
 when it finds an error and 0 when it finds none or only warnings.
 
+With `--json` (or `context --format json`) a failure also prints a JSON error
+object on stdout; the exit code and the text on stderr do not change. See
+"Output for scripts".
+
 ## Commands
 
 ### `adj init [--root DIR]`
@@ -386,7 +390,8 @@ blank line and `N decisions omitted` (`1 decision omitted` for one). With
 `--format json` the object gains `omitted`, the number left out, `0` included;
 without `--max-bytes` that key is never there. If no decision fits, only the
 omitted line is printed (JSON: `"decisions": []`); if not even that fits in N
-bytes, nothing is printed and the exit code is 1. A bad N exits 2.
+bytes, the exit code is 1 and nothing else is printed (with `--format json`, the
+error object under "Output for scripts"). A bad N exits 2.
 
 ### `adj lint [--json]`
 
@@ -515,6 +520,17 @@ and takes no argument.
 [docs/json.md](docs/json.md). Until 1.0 a shape may change in a minor release;
 the CHANGELOG names every change. From 1.0 a release may add keys but never
 renames, removes or retypes an existing key.
+
+A command run in JSON mode that fails (exit 1 or 2) prints
+`{"error": {"code", "message", "command"}}` on stdout, as well as the usual text
+on stderr, so a script can branch on `error.code` (`usage`, `no_repo`,
+`invalid_config`, `not_found`, `duplicate_id`, `invalid_record`, `user_config`,
+`budget` or `io`) instead of the message. The exit codes stay 0, 1 and 2. A
+`lint` report with errors, a `check` result of `not found` and the per-repo
+errors of `inbox --all` are results, not failures, and print no error object;
+see "Errors" in [docs/json.md](docs/json.md). A script that read an empty stdout
+as the sign of a failed `--json` command now finds the object there; read the
+exit code.
 
 ## Environment
 

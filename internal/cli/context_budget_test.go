@@ -242,9 +242,10 @@ func TestContextMaxBytesBelowTheOmittedLine(t *testing.T) {
 				t.Errorf("exactly the omitted output: exit %d, stdout %q, stderr %q; want exit 0 and %q", r.code, r.stdout, r.stderr, tt.line)
 			}
 			n := len(tt.line) - 1
-			r = run(testEnv(root), "", append(append([]string{}, tt.args...), "--max-bytes", strconv.Itoa(n))...)
-			if r.code != 1 || r.stdout != "" {
-				t.Errorf("one byte less: exit %d, stdout %q; want exit 1 and no stdout", r.code, r.stdout)
+			short := append(append([]string{}, tt.args...), "--max-bytes", strconv.Itoa(n))
+			r = run(testEnv(root), "", short...)
+			if r.code != 1 || !failureStdout(r.stdout, short) {
+				t.Errorf("one byte less: exit %d, stdout %q; want exit 1 and no output (the error object for json)", r.code, r.stdout)
 			}
 			if !strings.Contains(r.stderr, "--max-bytes "+strconv.Itoa(n)) || !strings.Contains(r.stderr, strconv.Itoa(len(tt.line))) {
 				t.Errorf("stderr = %q; want it to name the budget %d and the %d bytes needed", r.stderr, n, len(tt.line))
@@ -270,8 +271,8 @@ func TestContextMaxBytesWithNoDecisions(t *testing.T) {
 		t.Errorf("json: exit %d, stdout %q; want exit 0 and %q", r.code, r.stdout, want)
 	}
 	r = run(testEnv(root), "", "context", "--tag", "legal", "--format", "json", "--max-bytes", strconv.Itoa(len(want)-1))
-	if r.code != 1 || r.stdout != "" {
-		t.Errorf("json, one byte short: exit %d, stdout %q; want exit 1 and no stdout", r.code, r.stdout)
+	if r.code != 1 || !failureStdout(r.stdout, []string{"--format", "json"}) {
+		t.Errorf("json, one byte short: exit %d, stdout %q; want exit 1 and only the error object", r.code, r.stdout)
 	}
 }
 
@@ -283,7 +284,7 @@ func TestContextMaxBytesEveryBudget(t *testing.T) {
 	lastKept := -1
 	for n := 1; n <= full+2; n++ {
 		r := run(testEnv(root), "", "context", "--format", "json", "--max-bytes", strconv.Itoa(n))
-		if r.code == 1 && r.stdout == "" {
+		if r.code == 1 && failureStdout(r.stdout, []string{"--format", "json"}) {
 			if lastKept != -1 {
 				t.Errorf("N=%d fails after a smaller budget worked", n)
 			}
@@ -341,9 +342,10 @@ func TestContextMaxBytesBadValuesAreUsageErrors(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// No repo: the value is refused before the store is looked for.
-			r := run(testEnv(t.TempDir()), "", append([]string{"context"}, tt.args...)...)
-			if r.code != 2 || r.stdout != "" {
-				t.Errorf("exit %d, stdout %q; want exit 2 and no stdout", r.code, r.stdout)
+			args := append([]string{"context"}, tt.args...)
+			r := run(testEnv(t.TempDir()), "", args...)
+			if r.code != 2 || !failureStdout(r.stdout, args) {
+				t.Errorf("exit %d, stdout %q; want exit 2 and no stdout (the error object with --format json)", r.code, r.stdout)
 			}
 			if !strings.Contains(r.stderr, "--max-bytes") || !strings.Contains(r.stderr, "usage: adj context") {
 				t.Errorf("stderr = %q; want it to name --max-bytes and show the context usage", r.stderr)
