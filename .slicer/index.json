@@ -885,7 +885,19 @@
       "status": "done",
       "has_slice": true,
       "depends_on": [],
-      "note_records": [],
+      "note_records": [
+        {
+          "id": "0b58a721-522b-42c0-9b1c-c89ba5c422eb",
+          "kind": "",
+          "text": "**2026-10-22** — Relay later notes: (1) --json=maybe (unparsable bool) prints no error object (C216). (2) adj repos add --json and adj inbox -i --json usage errors print the object although those commands refuse --json; owner to confirm. (3) Owner to review C215-C217. (4) Implementer used cd in early shell commands before the no-cd rule reached it; brief rule must be explicit from the start.",
+          "created_at": "2026-10-22T17:26:52Z",
+          "attempt": 1,
+          "by": "Jon Robbins",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": ""
+        }
+      ],
       "claim": null,
       "fields": {
         "size": "M",
