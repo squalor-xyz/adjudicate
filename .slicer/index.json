@@ -2,7 +2,7 @@
   "version": 9,
   "id_prefix": "S",
   "id_width": 2,
-  "next_id": 50,
+  "next_id": 51,
   "preamble": "Roadmap for **adjudicate** (CLI command `adj`; formerly the working name \"dlog\"): a Go, standard-library-only CLI that records project decisions as plain files in the repo. Owner decisions from 2026-10-15 are catalog records C23-C33.",
   "passes": [],
   "items": [
@@ -1422,7 +1422,8 @@
         "S42",
         "S45",
         "S46",
-        "S43"
+        "S43",
+        "S50"
       ],
       "note_records": [
         {
@@ -3111,6 +3112,36 @@
         "reason": "",
         "importance": 1,
         "urgency": 1,
+        "effort": 1,
+        "attempts": 0
+      }
+    },
+    {
+      "id": "S50",
+      "title": "--json with an unparsable value is JSON mode",
+      "short_title": "--json=VALUE is JSON mode unless false",
+      "status": "open",
+      "has_slice": true,
+      "depends_on": [],
+      "note_records": [],
+      "claim": null,
+      "fields": {
+        "size": "S",
+        "flags": [],
+        "trees": [
+          "cli"
+        ],
+        "trees_literal": false,
+        "findings": "S42 relay report; owner 2026-10-22 accepted the recommendation to overrule C216 for this case",
+        "discovered_from": "",
+        "parent": "",
+        "cites": [],
+        "key": "cli.json-unparsable-bool",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 2,
+        "urgency": 3,
         "effort": 1,
         "attempts": 0
       }
