@@ -203,8 +203,8 @@ func TestShowUnknownIDExitsOne(t *testing.T) {
 		if !strings.Contains(r.stderr, "id 99") {
 			t.Errorf("%v: stderr does not name id 99:\n%s", args, r.stderr)
 		}
-		if r.stdout != "" {
-			t.Errorf("%v: stdout = %q, want empty", args, r.stdout)
+		if !failureStdout(r.stdout, args) {
+			t.Errorf("%v: stdout = %q, want empty (or the error object with --json)", args, r.stdout)
 		}
 	}
 }
@@ -229,8 +229,8 @@ func TestShowDuplicateIDExitsOneNamingBothFiles(t *testing.T) {
 				t.Errorf("%v: stderr does not name %s:\n%s", args, name, r.stderr)
 			}
 		}
-		if r.stdout != "" {
-			t.Errorf("%v: stdout = %q, want empty", args, r.stdout)
+		if !failureStdout(r.stdout, args) {
+			t.Errorf("%v: stdout = %q, want empty (or the error object with --json)", args, r.stdout)
 		}
 	}
 }

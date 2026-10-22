@@ -3,6 +3,7 @@
 package commands
 
 import (
+	"errors"
 	"fmt"
 	"sort"
 	"strings"
@@ -137,7 +138,20 @@ func FitContext(recs []model.Record, max int, measure ContextMeasure) (kept []mo
 		}
 	}
 	if best < 0 {
-		return nil, 0, fmt.Errorf("--max-bytes %d is too small: the shortest output is %d bytes", max, smallest)
+		return nil, 0, &budgetError{max: max, smallest: smallest}
 	}
 	return bestKept, n - best, nil
 }
+
+// ErrBudget matches the error FitContext returns when not even the shortest
+// output fits the budget (S42: the CLI gives it the code budget).
+var ErrBudget = errors.New("--max-bytes is too small")
+
+// budgetError is that error with its numbers; its text names both.
+type budgetError struct{ max, smallest int }
+
+func (e *budgetError) Error() string {
+	return fmt.Sprintf("--max-bytes %d is too small: the shortest output is %d bytes", e.max, e.smallest)
+}
+
+func (e *budgetError) Is(target error) bool { return target == ErrBudget }

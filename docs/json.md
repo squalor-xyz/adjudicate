@@ -1,17 +1,18 @@
 # JSON output
 
 `adj show ID --json`, `adj list --json`, `adj inbox --json`,
-`adj check QUERY --json`, `adj context --format json` and `adj lint --json` print
-JSON for agents.
+`adj check QUERY --json`, `adj context --format json`, `adj lint --json` and
+`adj repos list --json` print JSON for agents, and any of them that fails prints
+an error object (see "Errors").
 The shapes on this page are the contract: a key keeps its name and its type,
 within the limits under "Stability" below. Readers should ignore keys they do
 not know, because a later release may add keys. That includes the history: an
 entry may have an event or keys a reader does not know (see "Keys of a history
 entry").
 
-All six commands print the JSON with two-space indentation and HTML characters
-unescaped, end it with one newline, and print the same bytes for the same
-store.
+Every one of these commands prints the JSON with two-space indentation and
+HTML characters unescaped, ends it with one newline, and prints the same bytes
+for the same store.
 
 ## Stability
 
@@ -30,6 +31,63 @@ Two things a reader of 0.1 must not assume:
   the ID part). `adj amend --title` changes `title` but does not rename the file
   (C180, C182), so the slug in the file name can drift from the title. Read
   `title` from the record, not from the file name.
+
+## Errors
+
+When a command run in JSON mode fails, it prints one error object on stdout
+instead of a result. The text it prints on stderr and its exit code are the
+same as without `--json`: 1 for a failed operation, 2 for a usage error.
+
+```json
+{
+  "error": {
+    "code": "no_repo",
+    "message": "no repo root found: no .adjudicate.json in /work/app; run `adj init` first",
+    "command": "list"
+  }
+}
+```
+
+The object has one key, `error`, with three keys in this order:
+
+- `code` (string): the kind of failure, one of the codes below.
+- `message` (string): the error text from stderr, without the `adj NAME: `
+  prefix and without the usage text. It is for people; do not match on it.
+- `command` (string or null): the command that failed (`show`, `repos`), or
+  `null` for a usage error found before a command was known
+  (`adj --bogus --json`).
+
+A run is in JSON mode when its arguments, read before any are parsed, hold
+`--json` (also `-json` and `--json=true`; the last one given wins, so
+`--json=false` turns it off) outside a `--` and not as the value of another flag
+(`adj list --key --json` filters on the key `--json`), or, for `adj context`,
+`--format json` or `--format=json`. A bad flag does not hide it:
+`adj show --bogus --json` prints the object with code `usage`. A command that
+has no `--json` flag (`ask`, `decide`, `amend` and the others) never prints the
+object. The object is written with two-space indentation, HTML characters
+unescaped and one final newline, and it is all that is on stdout.
+
+| Code | Exit | When |
+|---|---|---|
+| `usage` | 2 | a bad flag, a missing or extra argument, a bad value, an unknown command |
+| `no_repo` | 1 | no `.adjudicate.json` was found: run `adj init` |
+| `invalid_config` | 1 | `.adjudicate.json` is not valid, or the root is not a directory |
+| `not_found` | 1 | no record has the ID |
+| `duplicate_id` | 1 | more than one record file has the ID (`adj lint` finds them) |
+| `invalid_record` | 1 | a record file cannot be read as a record |
+| `user_config` | 1 | the user repo list (`adj repos`, `adj inbox --all`) is not valid, or HOME cannot be found |
+| `budget` | 1 | `adj context --max-bytes N` is smaller than the shortest output |
+| `io` | 1 | any other failure: an unreadable file or directory, a write error |
+
+These are not failures and do not print the object: `adj lint --json` when it
+finds an error (exit 1, its report is the JSON), `adj check --json` with the
+result `not found` (exit 0), and `adj inbox --all --json` when some repos
+cannot be read (exit 1, they are in its `errors` array). Only a failure to read
+the user config itself, which has no result to report, prints the object.
+
+A 1.x release may add codes. A reader treats a code it does not know as a
+generic failure with the exit code the process returned, and branches on the
+exit code and `error.code`, never on `message`.
 
 ## `adj show ID --json`
 
@@ -265,8 +323,8 @@ too), so a replaced decision leads to the decision in force. A chain that ends
 at a missing ID, at a record that is not decided, or in a loop adds nothing.
 
 Exit code 0 for every completed check, whatever `result` is. Exit 1 means the
-check failed (no repo, an unreadable store) and exit 2 a usage error, with
-nothing on stdout in both cases.
+check failed (no repo, an unreadable store) and exit 2 a usage error; each
+prints the error object (see "Errors") instead of a result.
 
 ```json
 {
@@ -414,7 +472,8 @@ budgeted run, `0` included, and never without `--max-bytes`:
 
 If no record fits, `decisions` is `[]` and `omitted` is the number of matches
 (`{"decisions": [], "omitted": 2}`, formatted as above). If not even that fits
-in N bytes, nothing is printed and the exit code is 1.
+in N bytes, the exit code is 1 and stdout has the error object with code
+`budget` (see "Errors") instead of the context.
 
 `adj context --format json --max-bytes 200` for the records of the example
 above, where record 3 was decided after record 2, so record 2 is the one that does not fit:
@@ -447,10 +506,11 @@ The integrity problems of the store. One JSON object with three keys:
 | `warnings` | integer | how many findings have severity `warning` |
 | `findings` | array of objects | the findings, sorted by record `id`, then `check`, then `file`; empty when the store is clean |
 
-Each finding is an object in the shape under "Keys of a lint finding". Exit code
-1 if `errors` is above 0, else 0: warnings alone exit 0. Exit 1 also means lint
-could not run (no repo, an unreadable store directory), with nothing on stdout;
-exit 2 is a usage error.
+Each finding is an object in the shape under "Keys of a lint finding". Exit
+code 1 if `errors` is above 0, else 0: warnings alone exit 0. Exit 1 also means
+lint could not run (no repo, an unreadable store directory), when stdout has the
+error object (see "Errors") instead of the report; exit 2 is a usage error and
+prints the object too.
 
 ```json
 {

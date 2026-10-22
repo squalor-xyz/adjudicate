@@ -185,7 +185,7 @@ func TestInteractiveUsage(t *testing.T) {
 	} {
 		t.Run(strings.Join(tc.args, " "), func(t *testing.T) {
 			r := run(testEnv(initRoot(t)), "", append([]string{"inbox"}, tc.args...)...)
-			if r.code != 2 || r.stdout != "" || !strings.Contains(r.stderr, tc.message) {
+			if r.code != 2 || !failureStdout(r.stdout, tc.args) || !strings.Contains(r.stderr, tc.message) {
 				t.Errorf("usage: %+v", r)
 			}
 		})

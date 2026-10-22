@@ -297,8 +297,8 @@ func TestUnknownLeadingFlag(t *testing.T) {
 			if r.code != 2 {
 				t.Errorf("exit code = %d, want 2; stderr:\n%s", r.code, r.stderr)
 			}
-			if r.stdout != "" {
-				t.Errorf("stdout = %q, want empty", r.stdout)
+			if !failureStdout(r.stdout, tt.args) {
+				t.Errorf("stdout = %q, want empty (or the error object with --json)", r.stdout)
 			}
 			if !hasUsageLine(r.stderr) {
 				t.Errorf("stderr has no usage line:\n%s", r.stderr)

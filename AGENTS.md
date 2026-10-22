@@ -93,6 +93,26 @@ Exit codes for every command: 0 success; 1 a failed operation or failed check;
 it exits 0 for every completed search, "not found" included (see its entry
 below). `adj lint` exits 1 when it finds an error (see its entry).
 
+JSON error object (S42): a command in JSON mode (`--json` among its arguments,
+read before parsing and so seen even when another flag is bad, or `adj context`
+with `--format json`) that fails with exit 1 or 2 prints
+`{"error": {"code", "message", "command"}}` on stdout (`render.ErrorJSON`) as
+well as the same text as before on stderr; the exit codes do not change.
+`message` is the error without the `adj NAME: ` prefix and the usage; `command`
+is null for a usage error before dispatch. `internal/cli/jsonmode.go` holds the
+detection (`wantsJSON`, derived from the command's `flag.FlagSet`, so a flag
+value such as `--key --json` is not JSON mode) and `errorCode`, which maps
+sentinels through `errors.Is`, never message text: `usage`, `no_repo`
+(`store.ErrNoRoot`), `invalid_config` (`store.ErrInvalidConfig`),
+`not_found`, `duplicate_id`, `invalid_record` (`model.ErrInvalid`),
+`user_config` (`userconfig.ErrConfig`), `budget` (`commands.ErrBudget`) and `io`
+(anything else). Every failure goes through `usageError`, `fail` or
+`commandError` (or `dispatchFailure` before a command is known). A `lint`
+report, a `check` of "not found" and the per-repo errors of `inbox --all` are
+results, not failures, and print no object; commands with no `--json` never do.
+A new failure with its own error value needs a sentinel and a code in
+`docs/json.md`, which `jsonshape_test.go` pins.
+
 ## Commands
 
 - `adj init [--root DIR]`: writes `.adjudicate.json` (`{"store": "decisions"}`)
@@ -283,9 +303,11 @@ below). `adj lint` exits 1 when it finds an error (see its entry).
   output without the flag is byte for byte what it was. If no record fits,
   only the omitted line is printed (JSON: `"decisions": []`) and the exit
   code is 0; if even that is more than N bytes (or the JSON with no record
-  is), nothing is printed and the exit code is 1, the error naming the bytes
-  needed. No matching record prints nothing in md, which fits any N. The
-  snippet of `adj ai` does not name the flag (it is at its size limit).
+  is), the exit code is 1, the error names the bytes needed and stdout is
+  empty (with `--format json`, the error object described in the
+  paragraph after the exit codes). No matching record prints nothing in md,
+  which fits any N. The snippet of `adj ai` does not name the flag (it is at
+  its size limit).
 - `adj lint [--json] [--root DIR]`: checks the store for integrity problems
   (C08). It reads the record files itself (`store.Files`, `model.Parse`), so a
   broken or invalid file is a finding where `list` and `check` would fail (C61).

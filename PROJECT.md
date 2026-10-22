@@ -246,7 +246,10 @@ without either locking primitive retain the store lock's no-lock fallback.
 Every command takes `--root DIR` except `adj ai` and `adj inbox --all`.
 Exit codes for all of them:
 0 success; 1 a failed operation or check (no repo, an unknown ID, a record in
-the wrong status); 2 a usage error (C34). Two commands read their result
+the wrong status); 2 a usage error (C34). In JSON mode (`--json`, or
+`context --format json`) a failure also prints `{"error": {"code", "message",
+"command"}}` on stdout and the same text on stderr, with the same exit code
+(S42; the codes are in docs/json.md). Two commands read their result
 differently: `adj check` exits 0 for every completed search, `not found`
 included, so a script reads the first line of its output; `adj lint` exits 1
 when it finds an error and 0 for a clean store or warnings only.
@@ -401,7 +404,13 @@ decided
 [docs/json.md](docs/json.md), which also states how stable they are: until 1.0
 a shape may change in a minor release and the CHANGELOG names every change;
 from 1.0 a release may add keys but never renames, removes or retypes an
-existing key. The same store always gives the same bytes.
+existing key. The same store always gives the same bytes. A failed command
+in JSON mode prints an error object, `{"error": {"code", "message",
+"command"}}`, on stdout, with the code one of `usage`, `no_repo`,
+`invalid_config`, `not_found`, `duplicate_id`, `invalid_record`, `user_config`,
+`budget` and `io`; the exit codes stay 0, 1 and 2, and a lint report, a `check`
+of `not found` and `inbox --all` per-repo errors are results, not failures
+(S42, C32).
 
 `adj ai` prints a snippet of at most 1800 bytes (C125) for a repo's AGENTS.md.
 It tells agents to check before asking, what each `check` result means, how to

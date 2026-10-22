@@ -246,7 +246,7 @@ func TestReposUsage(t *testing.T) {
 		t.Run(strings.Join(args, "/"), func(t *testing.T) {
 			env, path, _ := reposEnv(t)
 			r := run(env, "", args...)
-			if r.code != 2 || !strings.Contains(r.stderr, "usage: adj repos") || r.stdout != "" {
+			if r.code != 2 || !strings.Contains(r.stderr, "usage: adj repos") || !failureStdout(r.stdout, args) {
 				t.Fatalf("usage: %+v", r)
 			}
 			if _, err := os.Stat(path); !os.IsNotExist(err) {

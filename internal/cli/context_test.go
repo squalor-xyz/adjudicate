@@ -283,7 +283,7 @@ func TestContextFailuresExitOne(t *testing.T) {
 	}
 	for _, args := range [][]string{{"context"}, {"context", "--format", "json"}} {
 		r := run(testEnv(root), "", args...)
-		if r.code != 1 || !strings.Contains(r.stderr, "0009-broken.md") || r.stdout != "" {
+		if r.code != 1 || !strings.Contains(r.stderr, "0009-broken.md") || !failureStdout(r.stdout, args) {
 			t.Errorf("%v: exit %d, stdout %q, stderr %q; want exit 1 naming 0009-broken.md and no output", args, r.code, r.stdout, r.stderr)
 		}
 	}

@@ -88,6 +88,14 @@ func (s *Store) lock() (unlock func(), err error) {
 	return acquire(filepath.Join(s.dir, lockName), timeout, s.lockBusy)
 }
 
+// notDirError says the repo root is not a directory. It matches
+// ErrInvalidConfig, so the CLI can name the failure without reading the text.
+type notDirError struct{ root string }
+
+func (e *notDirError) Error() string { return e.root + " is not a directory" }
+
+func (e *notDirError) Is(target error) bool { return target == ErrInvalidConfig }
+
 // Open opens the store of the repo at root: root must be an existing
 // directory, and the config in it, if any, is loaded. The store directory
 // does not have to exist yet; Create makes it.
@@ -99,7 +107,7 @@ func Open(root string) (*Store, error) {
 		return nil, err
 	}
 	if !fi.IsDir() {
-		return nil, fmt.Errorf("%s is not a directory", root)
+		return nil, &notDirError{root: root}
 	}
 	cfg, err := LoadConfig(root)
 	if err != nil {
