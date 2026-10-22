@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 3,
   "rows": [
     {
       "id": "r1",
@@ -15,7 +15,8 @@
         "importance": [],
         "urgency": [],
         "well_specified": true,
-        "split": false
+        "split": false,
+        "sliver": null
       },
       "agent": "Claude Code",
       "vendor": "Claude",
@@ -36,7 +37,8 @@
         "importance": [],
         "urgency": [],
         "well_specified": true,
-        "split": false
+        "split": false,
+        "sliver": null
       },
       "agent": "Claude Code",
       "vendor": "Claude",
@@ -53,7 +55,8 @@
         "importance": [],
         "urgency": [],
         "well_specified": null,
-        "split": false
+        "split": false,
+        "sliver": null
       },
       "agent": "Claude Code",
       "vendor": "Claude",
@@ -70,7 +73,8 @@
         "importance": [],
         "urgency": [],
         "well_specified": null,
-        "split": true
+        "split": true,
+        "sliver": null
       },
       "agent": "Claude Code",
       "vendor": "Claude",
@@ -87,7 +91,8 @@
         "importance": [],
         "urgency": [],
         "well_specified": null,
-        "split": null
+        "split": null,
+        "sliver": null
       },
       "agent": "Claude Code",
       "vendor": "Claude",
@@ -104,7 +109,8 @@
         "importance": [],
         "urgency": [],
         "well_specified": null,
-        "split": null
+        "split": null,
+        "sliver": null
       },
       "agent": "Claude Code",
       "vendor": "Claude",
@@ -123,13 +129,32 @@
         "importance": [],
         "urgency": [],
         "well_specified": null,
-        "split": null
+        "split": null,
+        "sliver": null
       },
       "agent": "Claude Code",
       "vendor": "Claude",
       "model": "opus",
       "reasoning": "high",
       "note": ""
+    },
+    {
+      "id": "r8",
+      "role": "orchestrator",
+      "when": {
+        "size": [],
+        "effort": [],
+        "importance": [],
+        "urgency": [],
+        "well_specified": null,
+        "split": null,
+        "sliver": null
+      },
+      "agent": "Claude Code",
+      "vendor": "Claude",
+      "model": "sonnet",
+      "reasoning": "high",
+      "note": "owner 2026-10-20"
     }
   ],
   "rules": [
@@ -154,6 +179,6 @@
       "text": "Split a slice only into parts with disjoint files and their own tests; a slice too big for one implementer is two slices."
     }
   ],
-  "next_row": 8,
+  "next_row": 9,
   "next_rule": 6
 }
