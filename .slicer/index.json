@@ -3120,7 +3120,7 @@
       "id": "S50",
       "title": "--json with an unparsable value is JSON mode",
       "short_title": "--json=VALUE is JSON mode unless false",
-      "status": "open",
+      "status": "done",
       "has_slice": true,
       "depends_on": [],
       "note_records": [],
@@ -3143,7 +3143,7 @@
         "importance": 2,
         "urgency": 3,
         "effort": 1,
-        "attempts": 0
+        "attempts": 1
       }
     }
   ],
@@ -5094,7 +5094,7 @@
         "id": "C216",
         "kind": "decision",
         "title": "JSON mode is read from the raw arguments: --json, -json, --json=true; --format json for context; value positions and -- excluded",
-        "body": "S42 implementer decision (C32): detection is wantsJSON(fs, args), derived from the command's flag.FlagSet (a flag that takes a value owns the next argument, so adj list --key --json is a key); --json=false (or an unparsable bool) is off and the last occurrence wins; anything after -- is ignored. Only commands that define a json flag (or context's format flag) enter JSON mode, so ask, decide, amend and the rest never print the object; failures before dispatch (unknown command or flag) accept --json with --root as the only value flag. Reason: flag parsing stops at the first bad flag, so --json would otherwise be missed (adj show --bogus --json).",
+        "body": "S42 implementer decision (C32): detection is wantsJSON(fs, args), derived from the command's flag.FlagSet (a flag that takes a value owns the next argument, so adj list --key --json is a key); a value that strconv.ParseBool reads as false is off; an unparsable value is on (owner, 2026-10-22); the last occurrence wins; anything after -- is ignored. Only commands that define a json flag (or context's format flag) enter JSON mode, so ask, decide, amend and the rest never print the object; failures before dispatch (unknown command or flag) accept --json with --root as the only value flag. Reason: flag parsing stops at the first bad flag, so --json would otherwise be missed (adj show --bogus --json).",
         "status": "active",
         "reason": "",
         "successor": ""

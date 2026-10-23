@@ -58,10 +58,12 @@ The object has one key, `error`, with three keys in this order:
   (`adj --bogus --json`).
 
 A run is in JSON mode when its arguments, read before any are parsed, hold
-`--json` (also `-json` and `--json=true`; the last one given wins, so
-`--json=false` turns it off) outside a `--` and not as the value of another flag
+`--json` (also `-json` and `--json=VALUE`; the last one given wins, so
+`--json=false` or `--json=0` turns it off) outside a `--` and not as the value of another flag
 (`adj list --key --json` filters on the key `--json`), or, for `adj context`,
-`--format json` or `--format=json`. A bad flag does not hide it:
+`--format json` or `--format=json`. A `--json=VALUE` that Go cannot read as a
+bool (`--json=maybe`, `--json=`) turns JSON mode on, and the run fails with code
+`usage`. A bad flag does not hide it:
 `adj show --bogus --json` prints the object with code `usage`. A command that
 has no `--json` flag (`ask`, `decide`, `amend` and the others) never prints the
 object. The object is written with two-space indentation, HTML characters

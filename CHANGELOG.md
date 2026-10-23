@@ -36,8 +36,11 @@ but never renames, removes or retypes an existing key.
   object. A `lint` report with errors, a `check` result of `not found` and the
   per-repo errors of `inbox --all` are results and print no object. Behaviour
   change for scripts: stdout was empty when a `--json` command failed and now
-  holds the object, so test the exit code, not whether stdout is empty. See
-  "Errors" in [docs/json.md](docs/json.md).
+  holds the object, so test the exit code, not whether stdout is empty. A
+  `--json=VALUE` that is not a bool (`--json=maybe`, `--json=`) is JSON mode
+  too, and prints the object with code `usage`; only a value Go reads as false
+  (`--json=false`, `--json=0`) turns it off. See "Errors" in
+  [docs/json.md](docs/json.md).
 - `show --json`, `list --json` and the other commands that print records
   include an entry's unknown keys beside `date`, `event`, `note` and `was`.
   Readers must ignore history events and keys they do not know. No existing

@@ -70,6 +70,16 @@ func TestWantsJSON(t *testing.T) {
 		{"before the command: --root takes a value", nil, []string{"--root", "--json"}, false},
 		{"before the command: --root=", nil, []string{"--root=x", "--json"}, true},
 		{"before the command: --json=false", nil, []string{"--json=false"}, false},
+		{"--json=maybe is on", jsonFlagSet(), []string{"--json=maybe"}, true},
+		{"--json= is on", jsonFlagSet(), []string{"--json="}, true},
+		{"--json=0 is off", jsonFlagSet(), []string{"--json=0"}, false},
+		{"--json=F is off", jsonFlagSet(), []string{"--json=F"}, false},
+		{"--json=maybe then --json=false: the last wins", jsonFlagSet(), []string{"--json=maybe", "--json=false"}, false},
+		{"--json=false then --json=maybe: the last wins", jsonFlagSet(), []string{"--json=false", "--json=maybe"}, true},
+		{"before the command: --json=maybe", nil, []string{"--json=maybe"}, true},
+		{"before the command: --json=", nil, []string{"--json="}, true},
+		{"before the command: --json=0", nil, []string{"--json=0"}, false},
+		{"before the command: --json=F", nil, []string{"--json=F"}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -196,6 +206,18 @@ func errorCases() []errorCase {
 			name:    "bad flag",
 			setup:   seededEnv,
 			args:    []string{"show", "--bogus", "--json"},
+			exit:    2,
+			code:    "usage",
+			command: "show",
+		},
+		{
+			// S50: a --json=VALUE that is not a bool is a usage error and
+			// still JSON mode. The same run with the last --json=false is
+			// off and fails with the same stderr.
+			name:    "unparsable --json value",
+			setup:   seededEnv,
+			args:    []string{"show", "1", "--json=maybe"},
+			plain:   []string{"show", "1", "--json=maybe", "--json=false"},
 			exit:    2,
 			code:    "usage",
 			command: "show",
