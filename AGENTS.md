@@ -96,8 +96,8 @@ below). `adj lint` exits 1 when it finds an error (see its entry).
 JSON error object (S42): a command in JSON mode (`--json` among its arguments,
 read before parsing and so seen even when another flag is bad, or `adj context`
 with `--format json`; `--json=VALUE` is on unless `strconv.ParseBool` reads it
-as false, so `--json=maybe` is JSON mode and a usage error, S50) that fails with exit 1 or 2 prints
-`{"error": {"code", "message", "command"}}` on stdout (`render.ErrorJSON`) as
+as false, so `--json=maybe` is JSON mode and a usage error, S50) that fails
+with exit 1 or 2 prints `{"error": {"code", "message", "command"}}` on stdout (`render.ErrorJSON`) as
 well as the same text as before on stderr; the exit codes do not change.
 `message` is the error without the `adj NAME: ` prefix and the usage; `command`
 is null for a usage error before dispatch. `internal/cli/jsonmode.go` holds the

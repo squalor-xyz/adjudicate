@@ -834,7 +834,7 @@ When keys differ only in letter case from a known key (note and Note), the exact
 
 S42 implementer decision (C32): codes are derived from error sentinels via errors.Is, never from message text; usage is for flag parse errors, dispatch errors and commands.UsageError; io is the catch-all. Reason: ork branches on error.code and S39 freezes the JSON at 1.0, so the set is small and stable. command is null for a failure found before a command is known (adj --bogus --json).
 
-### C216 JSON mode is read from the raw arguments: --json, -json, --json=true; --format json for context; value positions and -- excluded
+### C216 JSON mode is read from the raw arguments: --json, -json, --json=VALUE unless false; --format json for context; value positions and -- excluded
 
 S42 implementer decision (C32): detection is wantsJSON(fs, args), derived from the command's flag.FlagSet (a flag that takes a value owns the next argument, so adj list --key --json is a key); a value that strconv.ParseBool reads as false is off; an unparsable value is on (owner, 2026-10-22); the last occurrence wins; anything after -- is ignored. Only commands that define a json flag (or context's format flag) enter JSON mode, so ask, decide, amend and the rest never print the object; failures before dispatch (unknown command or flag) accept --json with --root as the only value flag. Reason: flag parsing stops at the first bad flag, so --json would otherwise be missed (adj show --bogus --json).
 
