@@ -32,11 +32,14 @@ const (
 // arguments, because a bad flag stops flag parsing before --json is seen. It
 // follows parseInterspersed: "--" ends the flags, and a flag that takes a value
 // owns the next argument, so `--key --json` is a key. JSON is asked for by
-// --json, -json or --json=true (the last one given wins, so --json=false
-// turns it off) when fs has a json flag, and by --format json or
-// --format=json when fs has a format flag (context). A nil fs is a failure
-// before a command is known: it takes --json, and --root as its only flag
-// with a value.
+// --json, -json or --json=VALUE (the last one given wins) when fs has a json
+// flag, and by --format json or --format=json when fs has a format flag
+// (context). A VALUE that strconv.ParseBool reads as false (--json=false,
+// --json=0) turns it off; any other VALUE, one Go cannot read as a bool
+// included (--json=maybe, --json=), turns it on, since the caller asked for
+// machine output and the run fails as a usage error (S50). A nil fs is a
+// failure before a command is known: it takes --json, and --root as its only
+// flag with a value.
 func wantsJSON(fs *flag.FlagSet, args []string) bool {
 	hasJSON := fs == nil || fs.Lookup("json") != nil
 	hasFormat := fs != nil && fs.Lookup("format") != nil
@@ -63,7 +66,7 @@ func wantsJSON(fs *flag.FlagSet, args []string) bool {
 				jsonFlag = true
 			} else {
 				b, err := strconv.ParseBool(value)
-				jsonFlag = err == nil && b
+				jsonFlag = err != nil || b
 			}
 		case name == "format" && hasFormat:
 			if takes && i+1 < len(args) {
