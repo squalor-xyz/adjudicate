@@ -1,0 +1,39 @@
+{
+  "id": "S51",
+  "title": "Supersede part of a record (narrow its scope) instead of all of it",
+  "lead": [],
+  "depends_note": null,
+  "findings_note": "ork adj 168 ui.structured-questions, 2026-10-25",
+  "size": "M",
+  "flags": [],
+  "trees_note": "",
+  "trees_plural": false,
+  "boundary": "**Not in this slice:**",
+  "sections": [
+    {
+      "heading": "Why",
+      "body": "ork's adj 168 (ui.structured-questions) changes two decided records, #104 (no structured answer options) and #109 (Enter submits, no confirm), only for structured questions; free-text answers keep #104 and #109. `adj supersede OLD --by NEW` replaces the whole record: OLD becomes superseded (internal/model/transition.go:75) and leaves `adj context`, which would drop the free-text rule. Today the only way is a full supersede plus restating the kept parts in NEW. ork's adj 169 (ui.sidebar-running against #82) has the same shape."
+    },
+    {
+      "heading": "Files",
+      "body": "- `internal/cli/supersede.go:27` (runSupersede): a narrowing form.\n- `internal/model/transition.go:75` and `internal/model/record.go:364` (SupersededBy): a link that keeps OLD decided.\n- `internal/cli/` context and show output: OLD shows \"narrowed by NEW for SCOPE\"; NEW lists OLD as narrowed.\n- lint: both records stay decided; a narrowing link to a non-decided record is a problem."
+    },
+    {
+      "heading": "Failing tests",
+      "body": "- Narrowing OLD by NEW keeps OLD decided and in `adj context`, with the scope note and NEW's ID.\n- `adj show OLD` and `adj show NEW` print the link both ways; `adj lint` flags a narrowing link to an open or rejected record.\n- A full supersede behaves as today."
+    },
+    {
+      "heading": "Implement",
+      "body": "Flag form to be decided in the slice (for example an in-part option with a scope text on supersede, or a separate narrows command). Keep the record format forward compatible (S46)."
+    },
+    {
+      "heading": "Check",
+      "body": "go test ./...; go vet ./...; gofmt -l .; slicer check; adj lint."
+    },
+    {
+      "heading": "Git",
+      "body": ""
+    }
+  ],
+  "notes": []
+}

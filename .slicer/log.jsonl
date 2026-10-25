@@ -854,3 +854,4 @@
 {"when": "2026-10-23T13:09:31Z", "item": "S50", "action": "status", "from": "started", "to": "done", "note": "A json flag value is JSON mode unless strconv.ParseBool reads it as false; wantsJSON changed, tests, docs/json.md, AGENTS.md, CHANGELOG and C216 updated; full suite, vet (linux and windows), gofmt, adj lint clean; mutation check confirmed", "by": "Jon Robbins"}
 {"when": "2026-10-23T13:17:41Z", "item": "C216", "action": "catalog", "from": "", "to": "title", "note": "edit"}
 {"when": "2026-10-23T13:17:42Z", "item": "S50", "action": "note", "from": "", "to": "", "note": "Relay later notes: reviewer nits fixed by the outer session ", "by": "Jon Robbins"}
+{"when": "2026-10-25T17:36:40Z", "item": "S51", "action": "add", "from": "", "to": "open", "note": "Supersede part of a record (narrow its scope) instead of all of it"}
