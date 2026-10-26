@@ -1,0 +1,39 @@
+{
+  "id": "S52",
+  "title": "Record who entered a decision and how the owner gave it, beside who decided",
+  "lead": [],
+  "depends_note": null,
+  "findings_note": "",
+  "size": "S",
+  "flags": [],
+  "trees_note": "",
+  "trees_plural": false,
+  "boundary": "**Not in this slice:**",
+  "sections": [
+    {
+      "heading": "Why",
+      "body": "ork decided adj 170 (`process.owner-answers`, 2026-10-25): an agent may record, as decided, an option the owner explicitly picked in an interactive question, with `--by` set to the owner and a `--why` that cites the session and date. ork's relays used this for adj 150-170 and later answers. The record then cannot tell an owner's own `adj decide` from an agent's transcription of an owner's pick, except by parsing `--why`. The slicer relay contract work (slicer s399, owner answers path) relies on this being traceable."
+    },
+    {
+      "heading": "Files",
+      "body": "- `internal/cli/decide.go` and `internal/cli/decide_test.go`.\n- `internal/model/record.go` (the decided fields beside `DecidedBy`, line 354).\n- `docs/json.md`."
+    },
+    {
+      "heading": "Failing tests",
+      "body": ""
+    },
+    {
+      "heading": "Implement",
+      "body": "Proposed, for the owner: `adj decide ... --recorded-by NAME --via TEXT` (for example `--via \"interactive question, session ID\"`), stored with the decision and shown by `show` and `list --json`. Both optional; leaving them out keeps today's records unchanged (C27: decided_by never required)."
+    },
+    {
+      "heading": "Check",
+      "body": "`go test ./...`; `go vet ./...`; `adj lint`."
+    },
+    {
+      "heading": "Git",
+      "body": ""
+    }
+  ],
+  "notes": []
+}

@@ -1,0 +1,39 @@
+{
+  "id": "S53",
+  "title": "adj list and adj inbox filter by an exact ref",
+  "lead": [],
+  "depends_note": null,
+  "findings_note": "",
+  "size": "S",
+  "flags": [],
+  "trees_note": "",
+  "trees_plural": false,
+  "boundary": "**Not in this slice:**",
+  "sections": [
+    {
+      "heading": "Why",
+      "body": "A slice is ready to run only with no open design question (slicer rule u4; slicer s399 and s400, ork S116). Questions are linked to slices with `adj ask --ref S116`. `adj list` filters by status, tag and key only, and `adj check` matches a substring, so `S11` also matches `S110` and `S116`. A spec check cannot ask \"which open records reference S116\" exactly."
+    },
+    {
+      "heading": "Files",
+      "body": "- `internal/cli/list.go`, `internal/cli/inbox.go` and their tests.\n- `internal/query/` (the filter).\n- `docs/json.md`."
+    },
+    {
+      "heading": "Failing tests",
+      "body": ""
+    },
+    {
+      "heading": "Implement",
+      "body": "`--ref REF` on `list` and `inbox`: an exact, case-sensitive match against a record's refs, repeatable, with every given filter matching as today."
+    },
+    {
+      "heading": "Check",
+      "body": "`go test ./...`; `go vet ./...`; `adj lint`."
+    },
+    {
+      "heading": "Git",
+      "body": ""
+    }
+  ],
+  "notes": []
+}

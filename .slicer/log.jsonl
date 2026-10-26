@@ -855,3 +855,5 @@
 {"when": "2026-10-23T13:17:41Z", "item": "C216", "action": "catalog", "from": "", "to": "title", "note": "edit"}
 {"when": "2026-10-23T13:17:42Z", "item": "S50", "action": "note", "from": "", "to": "", "note": "Relay later notes: reviewer nits fixed by the outer session ", "by": "Jon Robbins"}
 {"when": "2026-10-25T17:36:40Z", "item": "S51", "action": "add", "from": "", "to": "open", "note": "Supersede part of a record (narrow its scope) instead of all of it"}
+{"when": "2026-10-26T13:06:24Z", "item": "S52", "action": "add", "from": "", "to": "open", "note": "Record who entered a decision and how the owner gave it, beside who decided"}
+{"when": "2026-10-26T13:06:24Z", "item": "S53", "action": "add", "from": "", "to": "open", "note": "adj list and adj inbox filter by an exact ref"}
