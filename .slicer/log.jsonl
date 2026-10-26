@@ -857,3 +857,8 @@
 {"when": "2026-10-25T17:36:40Z", "item": "S51", "action": "add", "from": "", "to": "open", "note": "Supersede part of a record (narrow its scope) instead of all of it"}
 {"when": "2026-10-26T13:06:24Z", "item": "S52", "action": "add", "from": "", "to": "open", "note": "Record who entered a decision and how the owner gave it, beside who decided"}
 {"when": "2026-10-26T13:06:24Z", "item": "S53", "action": "add", "from": "", "to": "open", "note": "adj list and adj inbox filter by an exact ref"}
+{"when": "2026-10-26T15:09:20Z", "item": "S45", "action": "set", "from": "", "to": "", "note": "importance 2→3; urgency 1→3"}
+{"when": "2026-10-26T15:09:20Z", "item": "S46", "action": "set", "from": "", "to": "", "note": "urgency 2→3"}
+{"when": "2026-10-26T15:09:20Z", "item": "S52", "action": "set", "from": "", "to": "", "note": "urgency 2→3"}
+{"when": "2026-10-26T15:09:20Z", "item": "S53", "action": "set", "from": "", "to": "", "note": "urgency 2→3"}
+{"when": "2026-10-26T15:09:20Z", "item": "S39", "action": "set", "from": "", "to": "", "note": "depends_on S44,S42,S45,S46,S43,S50→S44,S42,S45,S46,S43,S50,S52,S53"}

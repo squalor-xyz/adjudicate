@@ -1423,7 +1423,9 @@
         "S45",
         "S46",
         "S43",
-        "S50"
+        "S50",
+        "S52",
+        "S53"
       ],
       "note_records": [
         {
@@ -2990,8 +2992,8 @@
         "pass": "",
         "group": "",
         "reason": "",
-        "importance": 2,
-        "urgency": 1,
+        "importance": 3,
+        "urgency": 3,
         "effort": 2,
         "attempts": 0
       }
@@ -3021,7 +3023,7 @@
         "group": "",
         "reason": "",
         "importance": 3,
-        "urgency": 2,
+        "urgency": 3,
         "effort": 1,
         "attempts": 0
       }
@@ -3209,7 +3211,7 @@
         "group": "",
         "reason": "",
         "importance": 3,
-        "urgency": 2,
+        "urgency": 3,
         "effort": 1,
         "attempts": 0
       }
@@ -3237,7 +3239,7 @@
         "group": "",
         "reason": "",
         "importance": 3,
-        "urgency": 2,
+        "urgency": 3,
         "effort": 1,
         "attempts": 0
       }
