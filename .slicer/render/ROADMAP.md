@@ -994,6 +994,22 @@ siblingGitTimeout is 3 seconds for the rev-parse and the worktree list together,
 
 git prints the top level with forward slashes on Windows and as a physical path (macOS /var is /private/var, Windows short names and case differ), so the repo root is compared to it with os.Stat and os.SameFile, which follows symbolic links. The spec said 'cleaned, symlinks resolved'; SameFile covers that and the Windows spellings. The same comparison drops the current worktree from the list (S43, C32).
 
+### C256 S39: a wrong-typed value in a history entry is reported as KEY must be TYPE, got TYPE
+
+decodeError (internal/model/record.go) turns the decoder's UnmarshalTypeError into plain words ("event" must be a string, got a number; was: "title" ...), and a non-object reads got an array, not got a array. Scope is the history entry and its was, as the slice named; type errors of the record itself (Record.id of type int) keep Go's text because lint's parse finding pins them. Chosen so the message names no Go type. C32.
+
+### C257 S39: what the 1.x freeze covers, and what it leaves open
+
+docs/json.md Stability: frozen are key names and types, the error codes, documented values' meaning, the five statuses and the adj-json number with its bump rule; allowed without moving it are new keys, codes, lint checks, history events, commands; not frozen are message text (error object, lint finding, inbox --all errors[].error), the order of the inbox --all errors array, text output and stderr. The five statuses are closed in 1.x: an older 1.x refuses a record with another status, so a new status needs a breaking release (owner, 2026-11-02). A change that is not additive does not ship in 1.x; it needs adj 2.0.0 and adj-json v2 (owner, 2026-11-02). New record fields are top-level keys, never inside options, recommendation or narrowed_by entries (owner, 2026-11-02). C32.
+
+### C258 S39: CHANGELOG states what 0.2.0 does with a 1.0 store, as observed
+
+0.2.0 built from the v0.2.0 tag was run against a store written by this build. It exits 1 and prints nothing on stdout, even with --json, for a contract pin in .adjudicate.json (unknown field contract; every store command), for a top-level key it does not know, narrowed_by, narrows, recorded_by or via (unknown field KEY; lint reports parse), and for an unknown history event or key; adj ask still works because it reads no records. 1.0 prints identical bytes to 0.2.0 for list, show, inbox, check, context and lint on a store 0.2.0 wrote. The CHANGELOG says exactly this and tells owners to upgrade every reader before using narrow, --recorded-by, --via or a pin. C32.
+
+### C259 S39: docs/json.md says a user config error of inbox --all prints the error object
+
+The page said exit 1 with no JSON output, which S42 made false: the object with code user_config is printed (checked by running it). Corrected before the freeze; no code change. C32.
+
 ### C39 LICENSE is a stub until the owner supplies the full GPL-3.0 text and copyright holder
 
 No GPL-3.0 text exists in the adjudicate repo and the workspace has no network, so the stub carries the SPDX line, the or-later notice and TODO(owner) markers.
@@ -1056,14 +1072,14 @@ PENDING OWNER CONFIRMATION - not decided. Source: Dependency/licensing notes (ma
 
 *Retired: Owner decided 2026-10-15: see decision C31 (GPL-3.0-or-later)..*
 
-54 items · — 1 · done 48 · later 3 · retired 2
+54 items · done 49 · later 3 · retired 2
 
 Release 1.0
 
 | # | Slice | Title | Size | Effort | Trees | Findings | Status |
 |---|---|---|---|---|---|---|---|
 | 1 | [S43](slices/S43.md) | Sibling-aware record IDs | M | 3 | store | ork integration review 2026-10-19 (squalor-xyz/ork docs/review-2026-10-19-integration.md), R6: two ork branches both allocated records 50 and 51 on 2026-10-19 and needed adj renumber; the store lock cannot see other branches (internal/store/store.go:282-286); slicer already allocates past sibling worktrees. | done |
-| 2 | [S39](slices/S39.md) | Release 1.0 | S | 1 | release | CHANGELOG.md and docs/json.md 1.0 rule; owner 2026-10-18: 0.2.0 first, 1.0 later | — |
+| 2 | [S39](slices/S39.md) | Release 1.0 | S | 1 | release | CHANGELOG.md and docs/json.md 1.0 rule; owner 2026-10-18: 0.2.0 first, 1.0 later | done |
 | 3 | [S45](slices/S45.md) | JSON contract version and pin | M | 2 | cli | owner session 2026-10-20 (in slicer): slicer, ork and adjudicate lock to agreed contract versions; per-contract pins, each tool keeps its own pin, ork sets and checks them. Companion items: slicer s387 (relay contract pin), ork S24 (ork sets and checks the pins). | done |
 | 4 | [S46](slices/S46.md) | Forward-compatible record reads | S | 1 | model | adj records 17 (store.amend-was) and 18 (store.record-unknown-keys), filed 2026-10-20 from the S39 notes and the S44 review | done |
 | 5 | [S51](slices/S51.md) | Partial supersede | M | 2 |  | ork adj 168 ui.structured-questions, 2026-10-25 | done |

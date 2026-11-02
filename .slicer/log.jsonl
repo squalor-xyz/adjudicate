@@ -977,3 +977,14 @@
 {"when": "2026-11-02T19:13:33Z", "item": "S43", "action": "note", "from": "", "to": "", "note": "A store whose adj root is below the git top level (monorepo ", "by": "Jon R"}
 {"when": "2026-11-02T19:13:33Z", "item": "S43", "action": "note", "from": "", "to": "", "note": "cli and commands tests now spawn real git through runGit on ", "by": "Jon R"}
 {"when": "2026-11-02T19:13:37Z", "item": "S43", "action": "status", "from": "started", "to": "done", "note": "S43: new IDs clear the highest ID in sibling git worktrees; gate PASS", "by": "Jon R"}
+{"when": "2026-11-02T21:01:40Z", "item": "S39", "action": "note", "from": "", "to": "", "note": "Owner answer 2026-11-02: nested objects in record files (nar", "by": "Jon R"}
+{"when": "2026-11-02T21:02:12Z", "item": "S39", "action": "status", "from": "open", "to": "started", "note": "", "by": "Jon R"}
+{"when": "2026-11-02T21:15:27Z", "item": "C256", "action": "catalog", "from": "", "to": "S39: a wrong-typed value in a history entry is reported as KEY must be TYPE, got TYPE", "note": "add"}
+{"when": "2026-11-02T21:15:27Z", "item": "C257", "action": "catalog", "from": "", "to": "S39: what the 1.x freeze covers, and what it leaves open", "note": "add"}
+{"when": "2026-11-02T21:15:27Z", "item": "C258", "action": "catalog", "from": "", "to": "S39: CHANGELOG states what 0.2.0 does with a 1.0 store, as observed", "note": "add"}
+{"when": "2026-11-02T21:15:27Z", "item": "C259", "action": "catalog", "from": "", "to": "S39: docs/json.md says a user config error of inbox --all prints the error object", "note": "add"}
+{"when": "2026-11-02T21:27:00Z", "item": "S39", "action": "note", "from": "", "to": "", "note": "Owner answers 2026-11-02 (review): (1) the five statuses are", "by": "Jon R"}
+{"when": "2026-11-02T21:27:40Z", "item": "C257", "action": "catalog", "from": "", "to": "body", "note": "edit"}
+{"when": "2026-11-02T21:30:50Z", "item": "S39", "action": "note", "from": "", "to": "", "note": "Record-level type errors still print Go text (unknown field ", "by": "Jon R"}
+{"when": "2026-11-02T21:30:50Z", "item": "S39", "action": "note", "from": "", "to": "", "note": "CHANGELOG 'Compatibility with 0.2.0' (about lines 36-39 vs 4", "by": "Jon R"}
+{"when": "2026-11-02T21:30:50Z", "item": "S39", "action": "status", "from": "started", "to": "done", "note": "Release 1.0 prepared: docs/json.md Stability rewritten for 1.x (frozen shapes, codes, contract number, closed statuses, adj 2.0.0 and adj-json v2 rule, nested-object rule), CHANGELOG 1.0.0 with observed 0.2.0 compatibility, PROJECT/README/AGENTS updated, history-entry plain-words type errors, case-folded lint fixture, lock_windows comment rewrap; C256-C259.", "by": "Jon R"}

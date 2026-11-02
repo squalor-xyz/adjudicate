@@ -12,7 +12,7 @@ in batches, and every later agent reads the decisions instead of asking again.
   `superseded`, and keeps its history.
 - No server, no database, no network, no LLM calls. Go standard library only.
 
-This is version 0.2.0. [CHANGELOG.md](CHANGELOG.md) lists what each release
+This is version 1.0.0. [CHANGELOG.md](CHANGELOG.md) lists what each release
 changed; [PROJECT.md](PROJECT.md) says what adjudicate is for and what it does.
 
 ## Install
@@ -23,16 +23,16 @@ tar.gz and two zip): linux, darwin (macOS) and freebsd, each on amd64 and
 arm64, named `adj_VERSION_OS_ARCH.tar.gz`, and windows on amd64 and arm64,
 named `adj_VERSION_windows_ARCH.zip`, and a `SHA256SUMS` file that lists all
 of them. Each archive holds `adj` (`adj.exe` on Windows), `LICENSE`, `NOTICE`,
-`README.md` and `CHANGELOG.md`. For 0.2.0 on an Apple silicon Mac:
+`README.md` and `CHANGELOG.md`. For 1.0.0 on an Apple silicon Mac:
 
 ```sh
-curl -LO https://github.com/squalor-xyz/adjudicate/releases/download/v0.2.0/adj_0.2.0_darwin_arm64.tar.gz
-curl -LO https://github.com/squalor-xyz/adjudicate/releases/download/v0.2.0/SHA256SUMS
+curl -LO https://github.com/squalor-xyz/adjudicate/releases/download/v1.0.0/adj_1.0.0_darwin_arm64.tar.gz
+curl -LO https://github.com/squalor-xyz/adjudicate/releases/download/v1.0.0/SHA256SUMS
 shasum -a 256 --check --ignore-missing SHA256SUMS   # Linux: sha256sum --check --ignore-missing SHA256SUMS
-tar -xzf adj_0.2.0_darwin_arm64.tar.gz
+tar -xzf adj_1.0.0_darwin_arm64.tar.gz
 mkdir -p ~/.local/bin
-install -m 0755 adj_0.2.0_darwin_arm64/adj ~/.local/bin/adj   # or any directory on your PATH
-adj version                                                   # v0.2.0
+install -m 0755 adj_1.0.0_darwin_arm64/adj ~/.local/bin/adj   # or any directory on your PATH
+adj version                                                   # v1.0.0
 ```
 
 On Windows (the zips come with the releases after 0.1.0), in PowerShell, for
@@ -50,10 +50,10 @@ Expand-Archive adj_VERSION_windows_amd64.zip -DestinationPath .
 ```
 
 With Go (the version in `go.mod`, 1.27.2, or later) you can install from the
-module instead; `adj version` then prints the module version, `v0.2.0`:
+module instead; `adj version` then prints the module version, `v1.0.0`:
 
 ```sh
-go install github.com/squalor-xyz/adjudicate/cmd/adj@v0.2.0
+go install github.com/squalor-xyz/adjudicate/cmd/adj@v1.0.0
 ```
 
 `go install` puts `adj` in `$(go env GOPATH)/bin`. To build from a checkout,
@@ -87,7 +87,7 @@ the whole life of a decision (`cmd/adj/roundtrip_test.go`).
 version with the linker, as the release workflow does:
 
 ```sh
-go build -ldflags "-X github.com/squalor-xyz/adjudicate/internal/cli.versionOverride=v0.2.0" -o .cache/bin/adj ./cmd/adj
+go build -ldflags "-X github.com/squalor-xyz/adjudicate/internal/cli.versionOverride=v1.0.0" -o .cache/bin/adj ./cmd/adj
 ```
 
 Without that, `adj` prints the main module version that Go records in the
@@ -168,7 +168,7 @@ In GitHub Actions:
 - uses: actions/setup-go@v5
   with:
     go-version: stable
-- run: go install github.com/squalor-xyz/adjudicate/cmd/adj@v0.2.0
+- run: go install github.com/squalor-xyz/adjudicate/cmd/adj@v1.0.0
 - run: adj lint
 ```
 
@@ -293,21 +293,22 @@ Owner-only. For a decision that another decision changes only in part: `adj
 supersede` would take the whole of OLD out of `adj context`, and with it the
 parts NEW leaves alone. OLD and NEW must both be `decided`. OLD stays `decided`
 and in force; it gets a `narrowed_by` link to NEW with the scope, NEW gets a
-`narrows` link to OLD, and each gets one `narrow` history entry (`by NEW:
-SCOPE` and `narrows OLD`). `--scope` is one line that is not blank, kept as
-typed. `adj show` prints `Narrowed by: NEW (SCOPE)` and `Narrows: OLD`, and
-`adj context` prints the same lines under OLD's and NEW's decisions, so a
-reader sees what still holds and where NEW applies instead. One record may be
-narrowed by several records, and one may narrow several. The same pair can be
-linked once: a second `adj narrow` of a pair that links on both sides exits 1.
-If a failed write left only OLD linked (`adj lint` reports `narrow-asymmetric`),
-running the same command again writes only NEW, keeps OLD's scope and exits 0. A usage error (no `--by` or
-`--scope`, a blank scope or one on several lines, OLD equal to NEW) exits 2; an
-unknown ID, or a record that is not `decided` (OLD's status is checked first),
-exits 1, and nothing is written. Like `adj supersede`, the files are written
-OLD first and put back if NEW cannot be written. Prints OLD's ID. `adj lint`
-checks the links (`narrow-state`, `narrow-asymmetric`, `narrow-superseded`),
-and a full `adj supersede` of a narrowed record still works.
+`narrows` link to OLD, and each gets one `narrow` history entry (`by NEW: SCOPE`
+and `narrows OLD`). `--scope` is one line that is not blank, kept as typed. `adj
+show` prints `Narrowed by: NEW (SCOPE)` and `Narrows: OLD`, and `adj context`
+prints the same lines under OLD's and NEW's decisions, so a reader sees what
+still holds and where NEW applies instead. One record may be narrowed by several
+records, and one may narrow several. The same pair can be linked once: a second
+`adj narrow` of a pair that links on both sides exits 1. If a failed write left
+only OLD linked (`adj lint` reports `narrow-asymmetric`), running the same
+command again writes only NEW, keeps OLD's scope and exits 0. A usage error (no
+`--by` or `--scope`, a blank scope or one on several lines, OLD equal to NEW)
+exits 2; an unknown ID, or a record that is not `decided` (OLD's status is
+checked first), exits 1, and nothing is written. Like `adj supersede`, the files
+are written OLD first and put back if NEW cannot be written. Prints OLD's ID.
+`adj lint` checks the links (`narrow-state`, `narrow-asymmetric`,
+`narrow-superseded`), and a full `adj supersede` of a narrowed record still
+works.
 
 ### `adj amend ID [flags]`
 
@@ -370,25 +371,25 @@ Lists the open questions, oldest first, each with its references, options and
 recommendation. An empty inbox prints nothing.
 
 `--ref REF` keeps only the questions that carry that ref; repeat it to require
-every ref. Refs are matched as `adj list` matches them: exactly, case-sensitively
-and as typed, including surrounding whitespace, so `--ref S11` does not find a
-question with `S110`. A blank `--ref` exits 2 before the store is looked for.
-So `adj inbox --ref S116` shows the open questions that a slice linked with
-`adj ask --ref S116`, with their options and recommendation. With `--all` the
-filter applies in each repo and a repo with no match keeps its header; with `-i`
-the walk and its summary cover only the matching questions. Without `--ref`,
-output is unchanged.
+every ref. Refs are matched as `adj list` matches them: exactly,
+case-sensitively and as typed, including surrounding whitespace, so `--ref S11`
+does not find a question with `S110`. A blank `--ref` exits 2 before the store
+is looked for. So `adj inbox --ref S116` shows the open questions that a slice
+linked with `adj ask --ref S116`, with their options and recommendation. With
+`--all` the filter applies in each repo and a repo with no match keeps its
+header; with `-i` the walk and its summary cover only the matching questions.
+Without `--ref`, output is unchanged.
 
 With `--all`, read the user repo list managed by `adj repos` and show each
 repo's open questions under its absolute path, in config insertion order.
-Records remain oldest first within each repo. Successful empty repos keep
-their header; an empty or missing user config prints nothing. A missing repo,
-missing `.adjudicate.json`, or unreadable store produces a warning on stderr
-naming that repo; the others are still printed, and the command exits 1.
-`--all --json` prints `{"repos": [{"root": "...", "records": [...]}], "errors": []}`
-(see `docs/json.md`); per-repo errors appear in JSON as well as stderr. The
-arrays are always arrays, including when empty. `--all` with `--root` exits 2;
-no current repo is needed. Without `--all`, output is unchanged.
+Records remain oldest first within each repo. Successful empty repos keep their
+header; an empty or missing user config prints nothing. A missing repo, missing
+`.adjudicate.json`, or unreadable store produces a warning on stderr naming that
+repo; the others are still printed, and the command exits 1. `--all --json`
+prints `{"repos": [{"root": "...", "records": [...]}], "errors": []}` (see
+`docs/json.md`); per-repo errors appear in JSON as well as stderr. The arrays
+are always arrays, including when empty. `--all` with `--root` exits 2; no
+current repo is needed. Without `--all`, output is unchanged.
 
 With `-i`, the owner walks through this repo's open questions in the same
 oldest-first order. Each question shows the usual inbox block, then prompts:
@@ -409,20 +410,22 @@ falling back to `$ADJ_DECIDED_BY` when empty or absent. Writes use the same
 validation, dates and history as `decide`, `reject` and `withdraw`.
 
 Quit or EOF stops without writing an incomplete answer, including a last line
-without a newline. A nonempty walk ends with `N decided, N rejected, N withdrawn,
-N skipped, N failed`, counting only completed actions; unvisited questions stay
-open. A failed write reports its error on stderr and advances to the next
-question; any failed write makes the final exit code 1. An input read error also
-exits 1. An empty inbox prints nothing and exits 0. `-i` with `--json`, `--all`
-or an argument exits 2, as does `--by` without `-i`. This mode is owner-only;
-agents must not run it. It uses ordinary stdin lines, without terminal raw mode.
+without a newline. A nonempty walk ends with `N decided, N rejected, N
+withdrawn, N skipped, N failed`, counting only completed actions; unvisited
+questions stay open. A failed write reports its error on stderr and advances to
+the next question; any failed write makes the final exit code 1. An input read
+error also exits 1. An empty inbox prints nothing and exits 0. `-i` with
+`--json`, `--all` or an argument exits 2, as does `--by` without `-i`. This mode
+is owner-only; agents must not run it. It uses ordinary stdin lines, without
+terminal raw mode.
 
 ### `adj check QUERY [--json]`
 
-Asks whether QUERY has been decided, so an agent checks before it asks. QUERY
-is one substring, matched ignoring case against a record's title, key, tags,
+Asks whether QUERY has been decided, so an agent checks before it asks. QUERY is
+one substring, matched ignoring case against a record's title, key, tags,
 references and decision text; quote a query that has spaces. Matching records
-show their references in text output. The first line of the output is the result:
+show their references in text output. The first line of the output is the
+result:
 
 ```
 decided     a decided record matches
@@ -611,13 +614,13 @@ the file through a temporary file and a rename.
 
 adj never serves an older shape. When the pin is not the version this adj
 speaks, `show`, `list`, `inbox`, `check` and `context --format json` run with
-JSON output exit 1 with the error code `contract_mismatch`, naming both
-versions and telling the reader to ask the owner; `inbox --all --json` leaves that repo out and reports it under
-`errors`. The same commands without JSON, and every command that has no JSON,
-are not refused, and `adj lint` warns (`contract-pin`) while it goes on
-checking the store. `.adjudicate.json` stays strict, so an `adj` released
-before this one refuses a pinned file as an invalid config, with that older
-message.
+JSON output exit 1 with the error code `contract_mismatch`, naming both versions
+and telling the reader to ask the owner; `inbox --all --json` leaves that repo
+out and reports it under `errors`. The same commands without JSON, and every
+command that has no JSON, are not refused, and `adj lint` warns (`contract-pin`)
+while it goes on checking the store. `.adjudicate.json` stays strict, so an
+`adj` released before this one refuses a pinned file as an invalid config
+(0.2.0 says `unknown field "contract"`).
 
 ### `adj ai`
 
@@ -657,24 +660,36 @@ Commit the installed folders, or add them to `.gitignore`, as you prefer.
 `show`, `list`, `inbox`, `check`, `lint`, `repos list`, `contract` and `version`
 print JSON with `--json`; `context` does it with `--format json`. The shapes are
 in [docs/json.md](docs/json.md), and `adj contract` says which version of them
-this adj speaks (a repo can pin it). Until 1.0 a shape may change in a minor
-release; the CHANGELOG names every change. From 1.0 a release may add keys but never
-renames, removes or retypes an existing key.
+this adj speaks (a repo can pin it). From 1.0 the shapes, the error codes and
+the contract number are frozen for every 1.x release: a release may add keys,
+codes, lint checks and history events (the CHANGELOG names each) but never
+renames, removes or retypes an existing key. The five statuses are closed in
+1.x, and a non-additive change needs adj 2.0.0 and `adj-json v2`. Message text
+is not frozen; read the exit code and `error.code`. See "Stability" in
+[docs/json.md](docs/json.md).
 
-A command run in JSON mode that fails (exit 1 or 2) prints
-`{"error": {"code", "message", "command"}}` on stdout, as well as the usual text
-on stderr, so a script can branch on `error.code` (`usage`, `no_repo`,
-`invalid_config`, `not_found`, `duplicate_id`, `invalid_record`, `user_config`,
-`budget`, `contract_mismatch` or `io`) instead of the message. The exit codes stay 0, 1 and 2. A
-`lint` report with errors, a `check` result of `not found` and the per-repo
-errors of `inbox --all` are results, not failures, and print no error object;
-see "Errors" in [docs/json.md](docs/json.md). A script that read an empty stdout
-as the sign of a failed `--json` command now finds the object there; read the
-exit code.
+A command run in JSON mode that fails (exit 1 or 2) prints `{"error": {"code",
+"message", "command"}}` on stdout, as well as the usual text on stderr, so a
+script can branch on `error.code` (`usage`, `no_repo`, `invalid_config`,
+`not_found`, `duplicate_id`, `invalid_record`, `user_config`, `budget`,
+`contract_mismatch` or `io`) instead of the message. The exit codes stay 0, 1
+and 2. A `lint` report with errors, a `check` result of `not found` and the
+per-repo errors of `inbox --all` are results, not failures, and print no error
+object; see "Errors" in [docs/json.md](docs/json.md). A script that read an
+empty stdout as the sign of a failed `--json` command now finds the object
+there; read the exit code.
+
+Mixed versions: 0.2.0 refuses a store that holds anything 1.0 adds (a
+`contract` pin, `adj narrow` links, `--recorded-by` and `--via`, a top-level
+key or a history event it does not know), while 1.0 reads every store 0.2.0
+wrote and keeps what a later 1.x release adds. Upgrade every `adj` that reads a
+shared store first; the CHANGELOG ("Compatibility with 0.2.0") lists what each
+older command does.
 
 ## Environment
 
-- `XDG_CONFIG_HOME`, else `$HOME/.config`: base directory for the user repo list.
+- `XDG_CONFIG_HOME`, else `$HOME/.config`: base directory for the user repo
+  list.
 - `ADJ_ASKED_BY`: the default `--by` for `adj ask`.
 - `ADJ_DECIDED_BY`: the default `--by` for `decide`, `reject` and `withdraw`.
 

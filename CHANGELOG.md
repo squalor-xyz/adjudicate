@@ -1,11 +1,61 @@
 # Changelog
 
 All notable changes to adjudicate (CLI `adj`) are listed here, newest first.
-Until 1.0 a JSON shape in [docs/json.md](docs/json.md) may change in a minor
-release, and this file names every such change. From 1.0 a release may add keys
-but never renames, removes or retypes an existing key.
+From 1.0.0 the JSON shapes in [docs/json.md](docs/json.md), its error codes and
+its contract number (`adj-json v1`) are frozen for every 1.x release. A 1.x
+release may add keys, error codes, lint checks and history events, and this
+file names each addition; it never renames, removes or retypes an existing key,
+and never changes what a documented value means. A change that is not
+additive would need adj 2.0.0 and `adj-json v2`. The five statuses are closed
+in 1.x: an older 1.x refuses a record with another status, so a new status
+would need a breaking release too. Message text and the order of `inbox
+--all`'s `errors` are not frozen. A 1.x release adds a new field of a record as
+a top-level key, never inside an option, the recommendation or a `narrowed_by`
+entry (see "Stability" in docs/json.md).
 
-## Unreleased
+## 1.0.0 - 2026-11-02
+
+The first stable release. It freezes the JSON shapes, the error codes and the
+contract number (see "Stability" in docs/json.md) and collects everything since
+0.2.0: a JSON error object, a published and pinnable contract
+version, a store that tolerates what later releases add, `adj narrow`, an
+agent skill, and provenance flags on `decide`. The date is the day the notes
+were written; the tag date is the owner's.
+
+### Compatibility with 0.2.0
+- Nothing that 0.2.0 wrote needs a change. Checked with the binary built from
+  the `v0.2.0` tag: on a store it wrote (ask, decide, amend and supersede),
+  `list`, `show`, `inbox`, `check`, `context` and `lint` print the same bytes
+  and exit codes in 1.0.0, as text and as JSON (including `--max-bytes`), and
+  an `adj amend` that changes nothing leaves the files as they were. The
+  changes to existing output are listed under "JSON shapes" (the error object
+  on stdout when a `--json` command fails, and optional keys) and "Commands".
+- The other way round, 0.2.0 refuses what 1.0.0 can write. Observed with the
+  binary built from the `v0.2.0` tag on a store written by this release; each
+  refusal exits 1, names the file or `.adjudicate.json`, and prints nothing on
+  stdout even with `--json`:
+  - a `contract` pin in `.adjudicate.json` (`adj contract pin`): every command
+    that opens the store, `show`, `list`, `inbox`, `check`, `context`, `lint`,
+    `ask` and `amend` among them, fails with `invalid config: json: unknown
+    field "contract"`;
+  - a top-level key it does not know, which a later 1.x release may write (the
+    test used `"colour"`), and the keys 1.0.0 adds (`narrowed_by`, `narrows`,
+    `recorded_by`, `via`): `show`, `list`, `inbox`, `check`, `context`, `decide`
+    and `amend` fail with `invalid record: frontmatter: json: unknown field
+    "KEY"`, and `adj lint` reports it as an error (`parse`). `adj ask` does not
+    read the other records, so it still writes a new one, with the next ID;
+  - a history event it does not know, on a record with no other addition:
+    `invalid record: history: entry N: unknown event "X"` (`lint` reports a
+    `fields` error). A record with a `narrow` entry also has `narrowed_by` or
+    `narrows`, which 0.2.0 reports first, as an unknown field. A key in a
+    history entry that it does not know: `unknown field "KEY"`.
+- Upgrade every `adj` that reads a shared store to 1.0.0 before anyone uses
+  `adj narrow`, `--recorded-by`, `--via` or a `contract` pin there. From 1.0.0
+  on, a reader keeps a top-level key, a history event or a history key it does
+  not know and `adj lint` warns instead (see "Store format").
+- Scripts: with `--json`, a failing command now prints the error object on
+  stdout, where 0.2.0 printed nothing; test the exit code, not whether stdout
+  is empty.
 
 ### Commands
 - `adj ask` now takes an ID above the highest ID in the store of every other
@@ -22,74 +72,75 @@ but never renames, removes or retypes an existing key.
   flag, config key or JSON shape changes (`adj-json v1` stays). Not covered:
   separate clones and other machines, and two asks at the same moment in two
   worktrees; `adj lint` and `adj renumber` remain the remedy for those.
-- New: `adj narrow OLD --by NEW --scope TEXT` (S51), owner-only, for a decision
-  that another decision changes only in part. `adj supersede` would take the
-  whole of OLD out of `adj context`, and with it the parts NEW leaves alone;
-  `narrow` keeps both records `decided` and in force and links them. OLD gets a
-  `narrowed_by` entry (`{"id": NEW, "scope": TEXT}`) and NEW a `narrows` entry
-  (OLD's ID); both records get one `narrow` history entry (notes `by NEW: SCOPE`
-  and `narrows OLD`). The scope is one line that is not blank. A record may be
-  narrowed by several records and may narrow several; the same pair is linked
-  once (a second `adj narrow` of a pair linked on both sides exits 1; if a
-  failed write left only OLD linked, running it again writes only NEW). `adj show` prints `Narrowed by: NEW
-  (SCOPE)` and `Narrows: OLD`; `adj context` prints the same under each
-  decision, between the decision and its rationale. Exit 2 for a missing or
-  non-positive ID, no `--by` or `--scope`, a blank or multi-line scope, OLD
-  equal to NEW or an extra argument; exit 1, nothing written, for an unknown ID
-  or a record that is not `decided`. The files are written OLD first and OLD is
-  put back if NEW cannot be written, as for `supersede`. `adj supersede` is
-  unchanged, and a narrowed record can still be superseded. `adj lint` gains
-  `narrow-state` (a narrow link on a record that is not decided or superseded,
-  or to one that is open, rejected or withdrawn), `narrow-asymmetric` (a link
-  listed on one record only) and `narrow-superseded` (a warning: the narrowing
-  record was superseded, so check that the scope still holds), and
-  `dangling-link` covers the new links. `adj renumber` lists and holds back
-  `narrowed_by` and `narrows` links to a colliding ID like the supersede links,
-  and a new ID is never one that they name without a file. The agent snippet and
-  the skill name `adj narrow` among the commands an agent never runs (the
-  snippet's wording is tightened elsewhere to stay within 1800 bytes).
+- New: `adj narrow OLD --by NEW --scope TEXT` (S51), owner-only, for a
+  decision that another decision changes only in part. `adj supersede` would
+  take the whole of OLD out of `adj context`, and with it the parts NEW leaves
+  alone; `narrow` keeps both records `decided` and in force and links them. OLD
+  gets a `narrowed_by` entry (`{"id": NEW, "scope": TEXT}`) and NEW a `narrows`
+  entry (OLD's ID); both records get one `narrow` history entry (notes `by NEW:
+  SCOPE` and `narrows OLD`). The scope is one line that is not blank. A record
+  may be narrowed by several records and may narrow several; the same pair is
+  linked once (a second `adj narrow` of a pair linked on both sides exits 1; if
+  a failed write left only OLD linked, running it again writes only NEW). `adj
+  show` prints `Narrowed by: NEW (SCOPE)` and `Narrows: OLD`; `adj context`
+  prints the same under each decision, between the decision and its rationale.
+  Exit 2 for a missing or non-positive ID, no `--by` or `--scope`, a blank or
+  multi-line scope, OLD equal to NEW or an extra argument; exit 1, nothing
+  written, for an unknown ID or a record that is not `decided`. The files are
+  written OLD first and OLD is put back if NEW cannot be written, as for
+  `supersede`. `adj supersede` is unchanged, and a narrowed record can still be
+  superseded. `adj lint` gains `narrow-state` (a narrow link on a record that is
+  not decided or superseded, or to one that is open, rejected or withdrawn),
+  `narrow-asymmetric` (a link listed on one record only) and `narrow-superseded`
+  (a warning: the narrowing record was superseded, so check that the scope still
+  holds), and `dangling-link` covers the new links. `adj renumber` lists and
+  holds back `narrowed_by` and `narrows` links to a colliding ID like the
+  supersede links, and a new ID is never one that they name without a file. The
+  agent snippet and the skill name `adj narrow` among the commands an agent
+  never runs (the snippet's wording is tightened elsewhere to stay within 1800
+  bytes).
 - New: `adj contract` (S45) prints the version of the JSON contract this adj
   speaks, `adj-json v1`: the revision of the shapes in
-  [docs/json.md](docs/json.md), adj's own number, starting at 1. `--json`
-  prints `{"contract", "version", "pinned"}`; it needs no repo (`pinned` is
-  `null` without one). `adj contract pin M` writes `"contract": M` into
+  [docs/json.md](docs/json.md), adj's own number, starting at 1. `--json` prints
+  `{"contract", "version", "pinned"}`; it needs no repo (`pinned` is `null`
+  without one). `adj contract pin M` writes `"contract": M` into
   `.adjudicate.json` (whole numbers of at least 1; the `store` key stays; a root
   named with `--root` that has no config gets one, and the store directory, as
-  `adj init` would) and `adj contract unpin` removes it; an unchanged file is not
-  rewritten, and a write goes through a temporary file and a rename. adj never
-  serves an older shape: when a repo pins a version other than the one this adj
-  speaks, `show`, `list`, `inbox`, `check` and `context --format json` run with
-  JSON output exit 1 and print the error object with the new code
+  `adj init` would) and `adj contract unpin` removes it; an unchanged file is
+  not rewritten, and a write goes through a temporary file and a rename. adj
+  never serves an older shape: when a repo pins a version other than the one
+  this adj speaks, `show`, `list`, `inbox`, `check` and `context --format json`
+  run with JSON output exit 1 and print the error object with the new code
   `contract_mismatch` (its message names both versions and tells the reader to
   ask the owner to run `adj contract pin` or to install a matching adj), and
-  `inbox --all --json` reports that repo under
-  `errors`; the same commands without JSON and the commands with no JSON are
-  not refused. `adj lint` warns about such a pin (`contract-pin`, a warning, with
-  `id` 0 and file `.adjudicate.json`; its text line has no `record ID:` part)
-  and goes on checking the store. `adj version --json` prints `{"version",
-  "contract"}`; plain `adj version` is unchanged. Known effect:
-  `.adjudicate.json` is strict, so an `adj` released before this change refuses
-  a pinned file as an invalid config, with that release's old message, which
-  does not mention the pin. Repos that pin nothing are unaffected.
+  `inbox --all --json` reports that repo under `errors`; the same commands
+  without JSON and the commands with no JSON are not refused. `adj lint` warns
+  about such a pin (`contract-pin`, a warning, with `id` 0 and file
+  `.adjudicate.json`; its text line has no `record ID:` part) and goes on
+  checking the store. `adj version --json` prints `{"version", "contract"}`;
+  plain `adj version` is unchanged. Known effect: `.adjudicate.json` is strict,
+  so 0.2.0 refuses a pinned file as an invalid config (`unknown field
+  "contract"`), whatever it is asked, with a message that does not mention the
+  pin. Repos that pin nothing are unaffected.
 - New: `adj ai skill` (S54) prints the agent skill, `SKILL.md`: when to check
   before asking, the four `adj check` results, how to word a question with
-  options, trade-offs and a recommendation, how to narrow a read (`--key-prefix`,
-  `--ref`, `--max-bytes`, `--json`), and the commands only the owner runs. The
-  text is part of the binary, so it matches the version. `--output PATH` writes
-  `SKILL.md` to PATH, creating parent directories. `--install` writes
-  `SKILL.md` and `reference.md` (command, exit-code and JSON detail) into
-  `.claude/skills/adj/`, `.agents/skills/adj/` and `.grok/skills/adj/` under the
-  repo root, and takes `--root DIR`; it is project-only, so use `--output` for
-  any other place. Both list the paths they wrote. A file that already holds
-  the text is left alone. A file that holds different text makes the command
-  exit 1 with nothing written, unless `--force` replaces it; a destination file that
-  is itself a directory or a symbolic link always exits 1 (a symbolic link in a
-  parent folder, such as `.claude`, is followed). If a
-  write fails after others succeeded, they are put back. Printing and
-  `--output` read no repo and take no `--root`; `--root` without `--install`,
-  `--install` with `--output`, and `--force` alone exit 2. `adj ai` and its
-  1800-byte snippet are unchanged. A test fails if the skill or its reference
-  names a command, flag or variable that does not exist.
+  options, trade-offs and a recommendation, how to narrow a read
+  (`--key-prefix`, `--ref`, `--max-bytes`, `--json`), and the commands only the
+  owner runs. The text is part of the binary, so it matches the version.
+  `--output PATH` writes `SKILL.md` to PATH, creating parent directories.
+  `--install` writes `SKILL.md` and `reference.md` (command, exit-code and JSON
+  detail) into `.claude/skills/adj/`, `.agents/skills/adj/` and
+  `.grok/skills/adj/` under the repo root, and takes `--root DIR`; it is
+  project-only, so use `--output` for any other place. Both list the paths they
+  wrote. A file that already holds the text is left alone. A file that holds
+  different text makes the command exit 1 with nothing written, unless `--force`
+  replaces it; a destination file that is itself a directory or a symbolic link
+  always exits 1 (a symbolic link in a parent folder, such as `.claude`, is
+  followed). If a write fails after others succeeded, they are put back.
+  Printing and `--output` read no repo and take no `--root`; `--root` without
+  `--install`, `--install` with `--output`, and `--force` alone exit 2. This
+  change leaves `adj ai` and its snippet as they were. A test fails if the skill
+  or its reference names a command, flag or variable that does not exist.
 - `adj inbox` takes a repeatable `--ref REF` (S53), also with `--all` and
   `-i`: it keeps the open questions that have every ref given, matched exactly,
   case-sensitively and as typed, as `adj list --ref` does, so `--ref S11` does
@@ -103,7 +154,8 @@ but never renames, removes or retypes an existing key.
   not who decided (`--by`), and how the owner gave it, for example `--via
   "interactive question, session ID"`. Both are free text, kept as typed. A
   flag that is given but blank exits 2 before the store is looked at. No
-  environment variable sets them. Without them a record, `adj show` and the
+  environment variable sets them. `adj show` prints them after `Decided by`
+  (`Recorded by`, `Via`) when set. Without them a record, `adj show` and the
   JSON are byte for byte what they were. `adj amend`, `adj supersede`,
   `adj renumber` and `adj inbox -i` leave them unchanged. The `adj ai` snippet
   does not name them.
@@ -112,40 +164,50 @@ but never renames, removes or retypes an existing key.
 - A record may have two more optional keys, `narrowed_by` (a list of `{"id",
   "scope"}`) and `narrows` (a list of IDs), written after `superseded_by` and
   left out when empty (S51), and its history a new event, `narrow`. They are
-  known keys and a known event, so this version reads and rewrites them; an `adj`
-  from before this change keeps them as an unknown key and an unknown event
-  (S44, S46), and `adj lint` there warns. A record file with a link to itself or
-  to a non-positive ID, an ID listed twice or a blank or multi-line scope is
-  invalid (`fields`). An unknown key inside a `narrowed_by` entry is an error,
-  as inside an option.
+  known keys and a known event, so this version reads and rewrites them (0.2.0
+  refuses them, see "Compatibility with 0.2.0"). A record file with a link to
+  itself or to a non-positive ID, an ID listed twice or a blank or multi-line
+  scope is invalid (`fields`). An unknown key inside a `narrowed_by` entry is an
+  error, as inside an option.
 - A record may have two more optional keys, `recorded_by` and `via`, written
   right after `decided_by` and left out when empty. A record file that has a
-  blank one is invalid (`adj lint` reports it as a `fields` error).
+  blank one is invalid (`adj lint` reports it as a `fields` error). 0.2.0
+  refuses a record that has either (see "Compatibility with 0.2.0").
 - A history entry whose `event` this version does not know, and unknown keys
   inside a history entry, are now read and kept instead of making `show`,
   `list`, `check`, `context`, `inbox` and the commands that change a record
   fail. Rewriting a record (decide, reject, withdraw, amend, supersede,
   renumber) writes those entries back unchanged: the unknown keys follow the
   known ones, in sorted order, so the bytes are stable. A later event kind, as
-  `import` was in 0.2.0, no longer makes an older `adj` refuse a store. The
-  `was` of an unknown event is kept as written,
-  whatever it holds. A key that differs from a known one only in letter case
+  `import` was in 0.2.0, no longer makes `adj` refuse a store; releases before
+  1.0.0 still do. The `was` of an unknown event is kept as written, whatever it
+  holds. A key that differs from a known one only in letter case
   (`Note` beside `note`) is kept as an unknown key. A blank `event` is still
   invalid.
 - Keys at the top level of a record that this version does not know, and keys
   it does not know inside the `was` of an `amend` entry (at its top and inside
-  each `options` entry), are now read and kept too (S46), so a field a later
-  1.x release adds, or an `amend` of such a field, does not make a 1.0 binary
-  refuse the store. Every command that rewrites a record writes them back
-  unchanged, after the known keys in sorted order, so the bytes are stable. Known
-  keys keep their types, and an unknown key inside an option or the
-  recommendation is still an error, as is any key in `.adjudicate.json`. A `was`
-  or an option in it with only unknown keys still counts as old text. `adj
-  renumber` also requires the unknown top-level keys to match when it decides
-  whether a file is the stale copy of a moved record. `kind`, once refused as a
-  retired key, and `body` are now just unknown keys in the file; a `body` key
-  in the frontmatter is never printed in the JSON of the read commands, where
-  `body` stays the text after the frontmatter.
+  each `options` entry), are now read and kept too (S46), so a field a later 1.x
+  release adds, or an `amend` of such a field, does not make a 1.0 binary refuse
+  the store. Every command that rewrites a record writes them back unchanged,
+  after the known keys in sorted order, so the bytes are stable. Known keys keep
+  their types, and an unknown key inside an option, the recommendation or a
+  `narrowed_by` entry is still an error, as is any key in `.adjudicate.json`.
+  The 1.x rule follows from this: a later 1.x release adds a new field of a
+  record as a top-level key and never inside one of those objects, which a 1.0
+  binary would refuse. A `was` or an option in it with only unknown keys still
+  counts as old text. `adj renumber` also requires the unknown top-level keys to
+  match when it decides whether a file is the stale copy of a moved record.
+  `kind`, once refused as a retired key, and `body` are now just unknown keys in
+  the file; a `body` key in the frontmatter is never printed in the JSON of the
+  read commands, where `body` stays the text after the frontmatter.
+- A history entry whose value has the wrong type (`"event": 5`) is refused in
+  plain words, naming the key and the type it needs and the type it has:
+  `history entry: "event" must be a string, got a number`. 0.2.0 gave Go's
+  text (`json: cannot unmarshal number into Go struct field
+  Record.history.0.event of type model.Event`). The same for the `was` of an
+  `amend` entry (`history entry: was: "title" must be a string, got a number`),
+  and an entry that is not an object reads `want a JSON object, got an array`.
+  The error is still `invalid record` and exit 1.
 - `adj lint` adds four warning checks, `unknown-event` (`history entry N:
   unknown event "X"`), `unknown-history-key` (one finding per entry, naming
   its unknown keys), `unknown-was-key` (one finding per `amend` entry, naming
@@ -154,6 +216,8 @@ but never renames, removes or retypes an existing key.
   and an unknown key a `parse` error.
 
 ### JSON shapes
+- Every addition below is additive, and the contract stays `adj-json v1`: no key
+  of 0.2.0 is renamed, removed or retyped. These shapes are the frozen ones.
 - A record object may have two more optional keys, `narrowed_by` (an array of
   `{"id", "scope"}`) and `narrows` (an array of integers), and the entries of
   `adj context --format json` the same two (S51). They are present only for a
@@ -214,12 +278,13 @@ but never renames, removes or retypes an existing key.
   PNG remain byte-preserved.
 
 ### Commands
-- Owner-only `adj inbox -i` walks open questions oldest first with line prompts
-  to decide by option or free text, reject, withdraw, skip or quit. Writes require
-  a rationale and use one-shot command validation and history; `--by` falls back
-  to `$ADJ_DECIDED_BY`. EOF discards an incomplete answer. A summary counts
-  outcomes; failed writes report stderr, continue and make the final exit 1.
-  `-i` with `--all`, `--json` or an argument, and `--by` without `-i`, exit 2.
+- Owner-only `adj inbox -i` walks open questions oldest first with line
+  prompts to decide by option or free text, reject, withdraw, skip or quit.
+  Writes require a rationale and use one-shot command validation and history;
+  `--by` falls back to `$ADJ_DECIDED_BY`. EOF discards an incomplete answer. A
+  summary counts outcomes; failed writes report stderr, continue and make the
+  final exit 1. `-i` with `--all`, `--json` or an argument, and `--by` without
+  `-i`, exit 2.
 - `adj inbox --all` groups the user repo list's open records by root, in config
   order, including empty repos. Unreadable repos warn on stderr while other
   results remain available; partial failure exits 1. `--all --json` adds a new

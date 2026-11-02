@@ -1,6 +1,6 @@
 # adjudicate — decision log for owner and agent work
 
-Version 0.2.0 (see [CHANGELOG.md](CHANGELOG.md)). CLI `adj`, Go module
+Version 1.0.0 (see [CHANGELOG.md](CHANGELOG.md)). CLI `adj`, Go module
 `github.com/squalor-xyz/adjudicate`, Go standard library only, licensed
 GPL-3.0-or-later (Squalor LLC).
 
@@ -44,7 +44,7 @@ in the repository.
 
 ## Goals
 
-Each goal is a catalog record (C01-C08) and each is met in 0.1.0.
+Each goal is a catalog record (C01-C08) and each has been met since 0.1.0.
 
 1. **Capture open questions** with options and a recommendation in one command:
    `adj ask` (C01).
@@ -96,7 +96,8 @@ The original brief left these open; the owner decided them on 2026-10-15.
 - **Owner-only decide (C27):** a convention plus an AGENTS.md rule. `decided_by`
   is recorded on each decision and `adj lint` warns when it is missing. No git
   hook, no signed commits.
-- **Scope (C28):** one repo's store; `adj inbox --all` aggregates the user repo list (S18).
+- **Scope (C28):** one repo's store; `adj inbox --all` aggregates the user repo
+  list (S18).
 - **Store (C29):** `decisions/` at the repo root, configurable.
 - **No `kind` field (C30):** the status alone says whether a record is a
   question (`open`) or answered.
@@ -121,8 +122,6 @@ each with its own decision:
   history (C166, C178-C180). Agents amend only the title, context and option
   texts of an `open` record; only the owner amends a decided record (C182).
 - `adj version` and `adj --version` (C169, C177).
-- `adj contract`, a version number for the JSON shapes that a repo can pin
-  (S45, C236-C242).
 - This file, rewritten to match what shipped, and the CHANGELOG.
 
 C165 also made publishing a later step. The owner then decided to publish
@@ -130,6 +129,14 @@ C165 also made publishing a later step. The owner then decided to publish
 `github.com/squalor-xyz/adjudicate`, the module path, so
 `go install github.com/squalor-xyz/adjudicate/cmd/adj@v0.1.0` works. GitHub
 Actions runs CI and builds the releases (see Distribution).
+
+0.2.0 added `adj import-adr`, `adj inbox -i` and `--all`, the user repo list,
+`--ref` filters, `--max-bytes` and Windows locking. Before 1.0.0 came the JSON
+error object (S42), a store that tolerates what later releases add (S44, S46),
+`adj contract` and the pinnable contract version (S45, C236-C242), `adj narrow`
+(S51), `--recorded-by` and `--via` (S52), `adj inbox --ref` (S53) and the agent
+skill (S54). Release 1.0.0 (S39) froze the JSON shapes, the error codes and the
+contract number.
 
 ## Data model
 
@@ -203,34 +210,36 @@ Empty fields are left out. The fields, with their exact types, are in
 | `recommendation` | Either an option `label` or a free `text`, never both, plus `reasoning` |
 | `decision` | The chosen option label, or free text |
 | `rationale` | The owner's "why"; for a rejected or withdrawn record, the reason |
-| `consequences` | What the decision implies; `adj show` prints it, but 0.1.0 has no flag that sets it, so it is written by hand |
+| `consequences` | What the decision implies; `adj show` prints it, but no `ask`, `decide` or `amend` flag sets it: `adj import-adr` fills it from an ADR, and otherwise it is written by hand |
 | `supersedes` / `superseded_by` | Links to other record IDs |
 | `narrowed_by` / `narrows` | Optional (S51), left out when empty. `narrowed_by` is a list of `{"id", "scope"}` on a decided record that another decided record narrows, `scope` being one line saying which part of the decision the other changes; `narrows` lists the IDs a decided record narrows. Both records stay `decided` and in force. Set by `adj narrow` |
 | `refs` | Opaque reference strings (slice IDs, PRs, files), kept as typed and in order |
 | `history` | One entry per change: `date`, `event` and, when set, `note` and `was` |
 
 **Lifecycle:** `adj ask` creates an `open` record. `adj decide` moves it to
-`decided`; `adj reject` and `adj withdraw` move it to `rejected` or
-`withdrawn`. `adj supersede OLD --by NEW` links two decided records and marks
-OLD `superseded`; NEW stays `decided`. `adj narrow OLD --by NEW --scope TEXT`
-(S51) links two decided records without changing either's status: NEW changes
-only the part of OLD that the scope names, so OLD stays in force and in
-`adj context`, shown with the scope. No transition leaves `superseded`. Every
-transition, an `adj amend` and an `adj renumber` appends a dated entry to the
-history, so a record shows what happened and when. A record made by
-`adj import-adr` from an ADR file has one `import` entry instead of `ask` and
-`decide`. The history's `event` is `ask`, `decide`, `reject`, `withdraw`,
-`supersede`, `narrow`, `renumber`, `amend` or `import`. A reader accepts an event it does
-not know, and keys it does not know inside a history entry, so a later event
-kind does not make an older `adj` refuse a store; they are kept unchanged when
-the record is rewritten, and `adj lint` warns (`unknown-event`,
+`decided`; `adj reject` and `adj withdraw` move it to `rejected` or `withdrawn`.
+`adj supersede OLD --by NEW` links two decided records and marks OLD
+`superseded`; NEW stays `decided`. `adj narrow OLD --by NEW --scope TEXT` (S51)
+links two decided records without changing either's status: NEW changes only the
+part of OLD that the scope names, so OLD stays in force and in `adj context`,
+shown with the scope. No transition leaves `superseded`. Every transition, an
+`adj amend` and an `adj renumber` appends a dated entry to the history, so a
+record shows what happened and when. A record made by `adj import-adr` from an
+ADR file has one `import` entry instead of `ask` and `decide`. The history's
+`event` is `ask`, `decide`, `reject`, `withdraw`, `supersede`, `narrow`,
+`renumber`, `amend` or `import`. A reader accepts an event it does not know, and
+keys it does not know inside a history entry, so a later event kind does not
+make this `adj` refuse a store (0.2.0 does); they are kept unchanged when the
+record is rewritten, and `adj lint` warns (`unknown-event`,
 `unknown-history-key`, S44). The `was` of an unknown event is kept as written.
 The same holds for keys at the top level of a record and for keys inside the
 `was` of an `amend` entry (and inside each of its `options`): they are kept,
 written back after the known keys in sorted order, and `adj lint` warns
 (`unknown-record-key`, `unknown-was-key`, S46). Known keys keep their types, and
-an unknown key inside an option or the recommendation is still an error. The
-repo config `.adjudicate.json` stays strict.
+an unknown key inside an option, the recommendation or a `narrowed_by` entry is
+still an error, which is why a 1.x release adds a new record field as a
+top-level key and never inside one of those objects (owner decision, 2026-11-02,
+S39). The repo config `.adjudicate.json` stays strict.
 
 **The JSON contract (S45).** The JSON shapes in `docs/json.md` have a version,
 `adj-json vN`, starting at 1 (`internal/contract`); it is adj's own number,
@@ -246,6 +255,8 @@ differs from the built-in version the JSON commands (`show`, `list`, `inbox`,
 the error code `contract_mismatch`, commands without JSON are not refused, and
 `adj lint` warns (`contract-pin`, about the config file, `id` 0). Older
 releases refuse a pinned file as an invalid config. The decisions are C236-C242.
+From 1.0.0 the number, the shapes and the error codes are frozen for every 1.x
+release, and the five statuses are closed (see Output for scripts and agents).
 
 **Store and config:** `adj init` writes `.adjudicate.json`
 (`{"store": "decisions"}`) at the repo root and creates the store directory.
@@ -254,11 +265,12 @@ Commands find the root as the nearest directory, from the working directory
 upwards, that holds `.adjudicate.json`; `--root DIR` names it instead.
 
 **User config:** `$XDG_CONFIG_HOME/adjudicate/config.json`, falling back to
-`$HOME/.config/adjudicate/config.json` when XDG_CONFIG_HOME is unset, empty or relative
-(on every OS), holds `{"repos": ["/absolute/repo/path", ...]}`. A missing file
-is an empty list. Unknown keys, bad JSON and non-absolute repo paths are errors.
-Writes create the directory (0755) and atomically rename a same-directory temp
-file over the config (0644). This is separate from `.adjudicate.json`.
+`$HOME/.config/adjudicate/config.json` when XDG_CONFIG_HOME is unset, empty or
+relative (on every OS), holds `{"repos": ["/absolute/repo/path", ...]}`. A
+missing file is an empty list. Unknown keys, bad JSON and non-absolute repo
+paths are errors. Writes create the directory (0755) and atomically rename a
+same-directory temp file over the config (0644). This is separate from
+`.adjudicate.json`.
 
 HOME must be absolute when used; otherwise path resolution fails with exit 1.
 
@@ -329,9 +341,9 @@ adj inbox -i [--ref REF]... [--by NAME] [--root DIR]
 
 `--all` groups the user repo list's open questions by root, in config order,
 including empty repos. A per-repo failure warns and exits 1 after showing the
-other repos. It needs no current repo and cannot combine with `--root`.
-`--all --json` has `repos` and `errors` arrays (see [docs/json.md](docs/json.md)).
-Repo order, empty headers and the JSON shape are C32 decisions from S18.
+other repos. It needs no current repo and cannot combine with `--root`. `--all
+--json` has `repos` and `errors` arrays (see [docs/json.md](docs/json.md)). Repo
+order, empty headers and the JSON shape are C32 decisions from S18.
 
 Owner-only `-i` walks one repo's questions oldest first with line prompts to
 answer by option or free text, reject, withdraw, skip or quit. It requires a
@@ -347,48 +359,48 @@ filter applies in each repo and a repo with no match keeps its header; with `-i`
 the walk and its summary cover only the matching questions. Without `--ref` the
 output is unchanged. `adj check` stays a substring search.
 
-**Importing ADRs.** `adj import-adr DIR` (S22) moves a team that keeps ADRs
-to adj with its history. DIR must be inside the repo; the files in it (not in
+**Importing ADRs.** `adj import-adr DIR` (S22) moves a team that keeps ADRs to
+adj with its history. DIR must be inside the repo; the files in it (not in
 subfolders) whose names start with a number (`0007-use-postgres.md`,
 `adr-0007-use-postgres.md`) are read, in ADR number order, and never changed.
-Two layouts are read: Michael Nygard's template as adr-tools writes it
-(`# N. Title`, a `Date:` line, `## Status`, `## Context`, `## Decision`,
-`## Consequences`) and MADR (optional YAML front matter, or `Status:` and
-`Date:` lines, with `## Context and Problem Statement`, `## Considered
-Options`, `## Decision Outcome`); the front matter is read by hand, only for its
-flat `key: value` lines. The first word of the status, in any case, gives the
-record's status: `accepted` is `decided` (the Decision section, or the MADR
-chosen option, is the `decision`; the MADR justification after `because`, else
-the Consequences section, else the Context, is the `rationale`), `proposed` is
+Two layouts are read: Michael Nygard's template as adr-tools writes it (`# N.
+Title`, a `Date:` line, `## Status`, `## Context`, `## Decision`, `##
+Consequences`) and MADR (optional YAML front matter, or `Status:` and `Date:`
+lines, with `## Context and Problem Statement`, `## Considered Options`, `##
+Decision Outcome`); the front matter is read by hand, only for its flat `key:
+value` lines. The first word of the status, in any case, gives the record's
+status: `accepted` is `decided` (the Decision section, or the MADR chosen
+option, is the `decision`; the MADR justification after `because`, else the
+Consequences section, else the Context, is the `rationale`), `proposed` is
 `open` (its decision is the `recommendation`), `rejected` is `rejected`,
 `deprecated` is `withdrawn`, and `superseded by ...` is `superseded` with the
 links to the ADR that replaced it, found by file name or number, when that ADR
 is in the same run and is accepted or itself superseded. Otherwise, or in a
 loop, the record is `decided` and a warning says why. The ADR date is `created`
 and `decided_at` (the run date, with a warning, if there is none, it is not a
-real date or it is after the run date); MADR
-Considered Options are `options`; `decided_by` is `--by`, else
-the ADR's deciders, else `$ADJ_DECIDED_BY`, else blank (so `adj lint` warns); the
-record's `refs` are the file's path from the repo root and `ADR-NNNN`, and its
-history is one `import` entry (`from FILE`). A file is skipped, so a second run
-adds only new files, when a record has an `import` entry for it (a record asked
-by hand with the file as a ref does not count); a skipped file is read again
-only to warn, with the `adj supersede OLD --by NEW` command, when its record is
-still `decided` but the file now says it is superseded by an ADR whose record is
-`decided`. A write that fails partway leaves the records created so far
-(printed) and the error lists the links not yet written as `adj supersede`
-commands. An ADR file that is a symbolic link is skipped with a warning. Every
-file is checked before any record is written. `--dry-run` writes nothing. Unlike a hand-made
-question, an imported record was never asked or decided with adj, so it has no
-`ask` or `decide` entry (C32 decision S22).
+real date or it is after the run date); MADR Considered Options are `options`;
+`decided_by` is `--by`, else the ADR's deciders, else `$ADJ_DECIDED_BY`, else
+blank (so `adj lint` warns); the record's `refs` are the file's path from the
+repo root and `ADR-NNNN`, and its history is one `import` entry (`from FILE`). A
+file is skipped, so a second run adds only new files, when a record has an
+`import` entry for it (a record asked by hand with the file as a ref does not
+count); a skipped file is read again only to warn, with the `adj supersede OLD
+--by NEW` command, when its record is still `decided` but the file now says it
+is superseded by an ADR whose record is `decided`. A write that fails partway
+leaves the records created so far (printed) and the error lists the links not
+yet written as `adj supersede` commands. An ADR file that is a symbolic link is
+skipped with a warning. Every file is checked before any record is written.
+`--dry-run` writes nothing. Unlike a hand-made question, an imported record was
+never asked or decided with adj, so it has no `ask` or `decide` entry (C32
+decision S22).
 
-**The version.** `adj version` prints one line. A binary built with
-`-ldflags "-X github.com/squalor-xyz/adjudicate/internal/cli.versionOverride=v0.2.0"`
+**The version.** `adj version` prints one line. A binary built with `-ldflags
+"-X github.com/squalor-xyz/adjudicate/internal/cli.versionOverride=v1.0.0"`
 prints that string. Otherwise it prints the main module version from Go's build
 information (`runtime/debug.ReadBuildInfo`); if that version is empty or
 `(devel)`, it prints `(devel)`, followed by a space and the `vcs.revision` build
-setting when there is one; if there is no build information it prints
-`(devel)` (C169, C177). It reads no repo and needs no config.
+setting when there is one; if there is no build information it prints `(devel)`
+(C169, C177). It reads no repo and needs no config.
 
 **A short session.** The same steps that the acceptance round trip in
 `cmd/adj/roundtrip_test.go` walks:
@@ -441,10 +453,13 @@ decided
 
 `show`, `list`, `inbox`, `check` and `lint` print JSON with `--json`, and
 `context` with `--format json`. The shapes are in
-[docs/json.md](docs/json.md), which also states how stable they are: until 1.0
-a shape may change in a minor release and the CHANGELOG names every change;
-from 1.0 a release may add keys but never renames, removes or retypes an
-existing key. The same store always gives the same bytes. A failed command
+[docs/json.md](docs/json.md), which also states how stable they are: from 1.0
+the shapes, the error codes and the contract number are frozen, and a 1.x
+release may add keys, codes, lint checks and history events (the CHANGELOG names
+each) but never renames, removes or retypes an existing key. The five statuses
+are closed in 1.x (a new one needs a breaking release), and a non-additive
+change needs adj 2.0.0 and `adj-json v2`. Message text is not frozen. The same
+store always gives the same bytes. A failed command
 in JSON mode prints an error object, `{"error": {"code", "message",
 "command"}}`, on stdout, with the code one of `usage`, `no_repo`,
 `invalid_config`, `not_found`, `duplicate_id`, `invalid_record`, `user_config`,
@@ -456,11 +471,11 @@ of `not found` and `inbox --all` per-repo errors are results, not failures
 It tells agents to check before asking, what each `check` result means, how to
 ask (including `--ref` and `--recommend-text`), to read the decisions, to
 withdraw only their own question, to amend only an open question, and never to
-run `adj decide`, `adj reject`, `adj supersede` or `adj narrow`. An agent that finds no repo
-or a duplicate ID tells the owner instead of running `adj init` or
+run `adj decide`, `adj reject`, `adj supersede` or `adj narrow`. An agent that
+finds no repo or a duplicate ID tells the owner instead of running `adj init` or
 `adj renumber`. The snippet does not name `--decided-at`: agents never run
-decide, so the flag is the owner's. A test fails if the snippet names a
-command, flag or variable that does not exist.
+decide, so the flag is the owner's. A test fails if the snippet names a command,
+flag or variable that does not exist.
 
 `adj ai skill` (S54) prints the long form of that snippet as an agent skill
 named `adj`: `SKILL.md` (check before asking and the four results, asking well,
@@ -488,23 +503,24 @@ copy differs from the binary's text.
   record file format.
 - `internal/store`: one repo's record directory, its config, ID allocation with
   the lock, and `Renumber`.
-- `internal/userconfig`: per-user config path resolution, strict loading and atomic saving.
+- `internal/userconfig`: per-user config path resolution, strict loading and
+  atomic saving.
 - `internal/query`: record filters and the `check` search.
 - `internal/lint`: the `adj lint` checks.
 - `internal/render`: text and JSON output.
 
 - **ID allocation:** the next ID is one past the highest ID in the file names.
-  `adj ask` takes the ID under a lock on `<store>/.adj.lock` (advisory `flock` on
-  unix, mandatory `LockFileEx` on Windows), so two asks on one checkout cannot take
-  one ID (C114, S36). `adj ask` (and `adj renumber`, for a record it moves) also
-  takes an ID above the highest ID in the store of every other worktree of the
-  same git repository, found with `git worktree list --porcelain` (S43, C251-C255;
-  only when the repo root is the top level of its worktree, with a 3 second
-  limit on git, and silently as before when git is missing or fails; each
-  sibling's store is read by file name, without its lock). Clones, other machines
-  and two asks at the same moment in two worktrees can still collide: `adj lint`
-  reports files that share an ID as `duplicate-id` and `adj renumber` resolves
-  them (C26, C146-C156).
+  `adj ask` takes the ID under a lock on `<store>/.adj.lock` (advisory `flock`
+  on unix, mandatory `LockFileEx` on Windows), so two asks on one checkout
+  cannot take one ID (C114, S36). `adj ask` (and `adj renumber`, for a record it
+  moves) also takes an ID above the highest ID in the store of every other
+  worktree of the same git repository, found with `git worktree list
+  --porcelain` (S43, C251-C255; only when the repo root is the top level of its
+  worktree, with a 3 second limit on git, and silently as before when git is
+  missing or fails; each sibling's store is read by file name, without its
+  lock). Clones, other machines and two asks at the same moment in two worktrees
+  can still collide: `adj lint` reports files that share an ID as `duplicate-id`
+  and `adj renumber` resolves them (C26, C146-C156).
 - **Determinism:** the same store always produces the same output, so
   `adj context` diffs are stable.
 - **Writes:** a record is written through a synced temp file, renamed over the
@@ -524,9 +540,9 @@ copy differs from the binary's text.
   `adj lint` on this repo's `decisions/` for each push to `main` and each pull
   request, and `go test` on macOS and `go vet` and `go test` on Windows too.
 - **Release:** pushing a tag `vX.Y.Z` runs `.github/workflows/release.yml`. It
-  runs the same checks, builds the eight archives with plain `go build -trimpath`
-  and the version set from the tag (`-ldflags -X`), and publishes a GitHub
-  release with `gh` whose notes are the tag's `## X.Y.Z` section of the
+  runs the same checks, builds the eight archives with plain `go build
+  -trimpath` and the version set from the tag (`-ldflags -X`), and publishes a
+  GitHub release with `gh` whose notes are the tag's `## X.Y.Z` section of the
   CHANGELOG. The release fails without that section. There is no GoReleaser
   (C193).
 - GitHub Actions is a hosted, proprietary service, used by owner decision
@@ -534,7 +550,7 @@ copy differs from the binary's text.
 
 ## v1 acceptance criteria
 
-All met in 0.1.0.
+All met in 0.1.0, and kept by the tests named below in 1.0.0.
 
 | Criterion | Met by |
 |---|---|
@@ -542,18 +558,21 @@ All met in 0.1.0.
 | Round trip: `ask`, `inbox` shows it, `decide`, `context` includes it, `check` finds it as decided | `TestV1AcceptanceRoundTrip` in `cmd/adj/roundtrip_test.go`, which builds the binary |
 | `supersede` hides the old decision from `context` and keeps it in `show` and the history | the same test |
 | `lint` catches each defect class in Goals, with a fixture for each | `TestRunReportsEachDefectClass` and `TestEveryCheckHasAFixture` in `internal/lint/lint_test.go` |
-| Every read command has `--json` output with a documented, stable shape | `docs/json.md`, pinned by `internal/cli/jsonshape_test.go`; "stable" is the 0.x promise described there |
+| Every read command has `--json` output with a documented, stable shape | `docs/json.md`, pinned by `internal/cli/jsonshape_test.go` and, for every key path and type, by `TestContractShapesAreTiedToTheVersion`; "stable" is the 1.x promise in "Stability" there (S39) |
 | Tests cover the model transitions and the CLI end to end against temp directories | `internal/model/transition_test.go`; `internal/cli` tests run the CLI in-process on temp roots |
 | adjudicate's own design decisions are recorded with adjudicate | `decisions/` holds records 0001-0016: 0001-0010 are C23-C32, one each, 0011-0015 are the release decisions C165-C169, and 0016 is the publish decision C193 |
 
 ## Later
 
-Not in 0.1.0. These are planned after 0.1.0 (C165), in the slices named; the
-owner re-prioritized or added them on 2026-10-18, so they are open work,
-not parked:
+Not in 1.0.0. These are open work, in the slices named, and none is planned
+for a date:
 
-- A 1.0 release that freezes the JSON shapes (S39).
-- Deferred import and config/lock edge cases (S40).
+- S47: `adj import-adr` hardening.
+- S48: `userconfig` Save keeps a symlinked config and syncs it.
+- S49: a test that a dead process releases the ID lock.
+
+They replace the deferred import and config/lock edge cases of the retired S40;
+the cosmetic items of S40 were done in the 1.0.0 release (S39).
 
 Optional enforcement of owner-only decide (a git hook or signed-commit check)
 is no longer planned; owner-only decide stays a convention (C11, C27).

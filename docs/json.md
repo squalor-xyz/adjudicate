@@ -3,15 +3,13 @@
 `adj show ID --json`, `adj list --json`, `adj inbox --json`,
 `adj check QUERY --json`, `adj context --format json`, `adj lint --json`,
 `adj repos list --json`, `adj contract --json` and `adj version --json` print
-JSON for agents, and any of them that fails prints
-an error object (see "Errors").
-The shapes on this page are the contract: a key keeps its name and its type,
-within the limits under "Stability" below. The contract has a version number,
-`adj-json v1`, that `adj contract` prints and a repo can pin (see "Contract
-version"). Readers should ignore keys they do
-not know, because a later release may add keys. That includes the history: an
-entry may have an event or keys a reader does not know (see "Keys of a history
-entry").
+JSON for agents, and any of them that fails prints an error object (see
+"Errors"). The shapes on this page are the contract: a key keeps its name and
+its type, within the limits under "Stability" below. The contract has a version
+number, `adj-json v1`, that `adj contract` prints and a repo can pin (see
+"Contract version"). Readers should ignore keys they do not know, because a
+later release may add keys. That includes the history: an entry may have an
+event or keys a reader does not know (see "Keys of a history entry").
 
 Every one of these commands prints the JSON with two-space indentation and
 HTML characters unescaped, ends it with one newline, and prints the same bytes
@@ -19,16 +17,58 @@ for the same store.
 
 ## Stability
 
-adjudicate is at version 0.x (`adj version`). Until 1.0, a shape on this page
-may change in a minor release (from 0.1 to 0.2, for example), and the
-[CHANGELOG](../CHANGELOG.md) names every such change. From 1.0 a release may add
-keys but never renames, removes or retypes an existing key.
+From adjudicate 1.0 (`adj version`) the shapes on this page are frozen. Every
+1.x release keeps these:
 
-Before 1.0 a change that is not additive also raises the contract version (see
-"Contract version"), so a tool that pins it hears about the change as a refusal
-and not as a decode error.
+- Every key on this page keeps its name and its JSON type, and a key that is
+  present when it has a value stays so. A 1.x release never renames, removes or
+  retypes a key, and never gives a documented value a new meaning (a status, an
+  event, a lint check or an error code).
+- The error codes under "Errors", with their exit codes.
+- The contract number, `adj-json v1`, and the rule that moves it (see
+  "Contract version"). A change that is not additive does not ship in a 1.x
+  release: it would need adj 2.0.0 and `adj-json v2`.
+- The five statuses (`open`, `decided`, `rejected`, `withdrawn`, `superseded`).
+  They are closed in 1.x: an older 1.x refuses a record with another status, so
+  adding a status would need a breaking release too.
 
-Two things a reader of 0.1 must not assume:
+A 1.x release may add, without moving the contract number:
+
+- keys in an object that this page documents, in the JSON the commands print
+  and in the record file;
+- error codes, lint checks and history events;
+- commands and flags, with their own shapes.
+
+A reader therefore ignores keys it does not know, treats a code it does not
+know as a generic failure (see "Errors"), and skips an event or a lint check it
+does not know.
+
+These are not frozen, and a reader must not match on them:
+
+- Message text: the `message` of the error object, the `message` of a lint
+  finding and the `error` text of an `inbox --all` error are for people. They
+  can change in any release and can vary by OS.
+- The order of the `errors` array of `adj inbox --all --json` (it is the order
+  of the user repo list today).
+- The text output of the commands and the text on stderr. Only the exit codes
+  and the JSON are the contract.
+
+The [CHANGELOG](../CHANGELOG.md) names every addition to a shape.
+
+Record files and nested objects: a 1.x release adds a new field of a record as
+a new top-level key, never as a key inside an object a record already has
+(inside `options`, `recommendation` or a `narrowed_by` entry). An `adj` that
+reads a record file keeps top-level keys it does not know and writes them back
+unchanged (`unknown-record-key` is a lint warning), so a store written by a
+later 1.x release still works with 1.0. Inside `options`, `recommendation` and
+`narrowed_by` entries an unknown key is an error (`parse` in `adj lint`), so
+those objects do not grow. History entries and the `was` of an `amend` entry
+keep keys and events they do not know (see "Keys of a history entry").
+A release before 1.0 refuses a record file with a top-level key or a history
+event it does not know; the [CHANGELOG](../CHANGELOG.md) tells under 1.0.0 what
+0.2.0 does with each addition since.
+
+Two things a reader must not assume:
 
 - `recommendation.label` is optional. A recommendation has exactly one of
   `label`, one of the option labels, or `text`, a free-text recommendation set
@@ -48,7 +88,7 @@ speaks, `adj-json v1`, and `adj version --json` carries it too.
 
 The number moves on any change to a shape on this page that is not purely
 additive: a key removed, renamed or retyped, or a value that now means something
-else. Adding a key, a code or a check never moves it. A test ties the number to
+else. Adding a key, a code, a check or an event never moves it. A test ties the number to
 a recorded list of every key path and type the JSON commands print
 (`internal/cli/testdata/contract/shapes.json`), so a change that is not
 additive fails until the number is raised.
@@ -68,8 +108,8 @@ one, since a pin is repo config.
 
 One line per version, saying what it changed:
 
-- `adj-json v1`: the shapes of this page when the contract got a number. Nothing
-  changed; the number starts here.
+- `adj-json v1`: the shapes of this page, frozen at adjudicate 1.0. The number
+  starts here; no shape changed when it was introduced.
 
 ## Errors
 
@@ -306,9 +346,11 @@ Successful repos are in user config insertion order, including empty repos.
 Records use the same shape as `adj inbox --json`, oldest first per repo. With
 `--ref REF` the filter applies in each repo; a repo with no match is still
 listed, with `"records": []`.
-Errors are in config order and also produce warnings on stderr. A per-repo
-error gives exit 1 after all repos are attempted. A user config error gives
-exit 1 with no JSON output. `--root` with `--all` is a usage error (exit 2).
+Errors are in config order (the order of `errors` is not part of the contract,
+see "Stability") and also produce warnings on stderr. A per-repo error gives
+exit 1 after all repos are attempted. A user config error gives exit 1 and the
+error object (code `user_config`), not this report. `--root` with `--all` is a
+usage error (exit 2).
 
 ```json
 {
@@ -337,8 +379,8 @@ adj speaks (see "Contract version") is not read in JSON mode: it is in `errors`,
 with the `contract mismatch` message, and not in `repos`; the text form lists it.
 
 Both arrays are always present, never null. Empty or missing user config gives
-`{"repos": [], "errors": []}`. Error messages are diagnostic text and may
-vary by OS. Repo order, empty-repo display and this shape are owner-delegated
+`{"repos": [], "errors": []}`. Error messages are diagnostic text, may
+vary by OS and are not frozen. Repo order, empty-repo display and this shape are owner-delegated
 implementer decisions (S18).
 
 ## `adj check QUERY --json`
@@ -615,10 +657,10 @@ prints one line per finding, `FILE: record ID: SEVERITY: CHECK: MESSAGE`
 The checks:
 
 - `parse` (error): the file cannot be read or decoded, for example it has no
-  opening `---` line, its JSON is bad or it has an unknown key inside an option
-  or the recommendation (an unknown top-level key is `unknown-record-key`).
-  Nothing else is
-  checked for that file; its ID still counts as taken.
+  opening `---` line, its JSON is bad or it has an unknown key inside an option,
+  the recommendation or a `narrowed_by` entry (an unknown top-level key is
+  `unknown-record-key`). Nothing else is checked for that file; its ID still
+  counts as taken.
 - `fields` (error): the record breaks a rule of the model, one finding per
   rule: a missing required field (`id`, `title`, `status`, `created`; `rationale`
   and `decided_at` once answered; `decision` once decided or superseded;

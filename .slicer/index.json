@@ -1602,7 +1602,7 @@
       "id": "S39",
       "title": "Release 1.0: freeze JSON shapes",
       "short_title": "Release 1.0",
-      "status": "open",
+      "status": "done",
       "has_slice": true,
       "depends_on": [
         "S44",
@@ -1658,6 +1658,62 @@
           "retracted_by": "",
           "retracted_at": "",
           "retracted_reason": ""
+        },
+        {
+          "id": "8576b300-22ab-42f6-957f-570ecfe125f8",
+          "kind": "",
+          "text": "**2026-11-02** — Owner answer 2026-11-02: nested objects in record files (narrowed_by {id, scope}, options, recommendation) stay strict at 1.0. Document the rule: 1.x adds new record fields as top-level keys, never inside an existing nested object; no new behaviour before the freeze. (Settles S51 later note on narrowed_by.)",
+          "created_at": "2026-11-02T21:01:40Z",
+          "attempt": 0,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
+        },
+        {
+          "id": "3eb580bf-b151-4952-bab7-d05f491c7215",
+          "kind": "",
+          "text": "**2026-11-02** — Owner answers 2026-11-02 (review): (1) the five statuses are closed in 1.x: an older 1.x refuses a record with another status, so a new status needs a breaking release; state this in docs/json.md Stability, the CHANGELOG preamble and PROJECT.md/AGENTS.md where the freeze is described. (2) The breaking-change rule reads: a non-additive change would need adj 2.0.0 and adj-json v2 (C257 wording, CHANGELOG, docs/json.md).",
+          "created_at": "2026-11-02T21:27:00Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
+        },
+        {
+          "id": "4f588f94-15a7-4bd1-9f0c-d880e4168569",
+          "kind": "later",
+          "text": "**2026-11-02** — Record-level type errors still print Go text (unknown field \"x\", Go struct field Record.id of type int); internal/lint/lint_test.go:102 pins one. Message text is not frozen, so plain-words errors at the record level can ship in a 1.0.x release (C256 covers history entries and was only).",
+          "created_at": "2026-11-02T21:30:50Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
+        },
+        {
+          "id": "85227f9c-7d86-4904-81d0-fdd9ca745705",
+          "kind": "later",
+          "text": "**2026-11-02** — CHANGELOG 'Compatibility with 0.2.0' (about lines 36-39 vs 45-46): 'prints nothing on stdout' does not cover adj lint, which prints its report (the parse error) on stdout with exit 1 under 0.2.0 (observed 201 bytes). Wording only; the lint bullet already says lint reports it.",
+          "created_at": "2026-11-02T21:30:50Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         }
       ],
       "claim": null,
@@ -1679,7 +1735,7 @@
         "importance": 2,
         "urgency": 2,
         "effort": 1,
-        "attempts": 0
+        "attempts": 1
       }
     },
     {
@@ -3895,7 +3951,7 @@
   "goals": "adjudicate is a small CLI (`adj`) with a plain-text store that records project decisions as a loop: an agent asks, the owner decides in batches, and every later agent reads the decision. The goal and non-goal records below come from PROJECT.md; the owner's decisions on its open questions are catalog records C23-C33, and they override PROJECT.md where it differs (name, runtime, record format, license).",
   "non_goals": "",
   "catalog": {
-    "next_id": 256,
+    "next_id": 260,
     "id_prefix": "C",
     "id_width": 2,
     "records": [
@@ -6190,6 +6246,42 @@
         "kind": "decision",
         "title": "S43: the root and git's top level are compared as directories (os.SameFile), not as strings",
         "body": "git prints the top level with forward slashes on Windows and as a physical path (macOS /var is /private/var, Windows short names and case differ), so the repo root is compared to it with os.Stat and os.SameFile, which follows symbolic links. The spec said 'cleaned, symlinks resolved'; SameFile covers that and the Windows spellings. The same comparison drops the current worktree from the list (S43, C32).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C256",
+        "kind": "decision",
+        "title": "S39: a wrong-typed value in a history entry is reported as KEY must be TYPE, got TYPE",
+        "body": "decodeError (internal/model/record.go) turns the decoder's UnmarshalTypeError into plain words (\"event\" must be a string, got a number; was: \"title\" ...), and a non-object reads got an array, not got a array. Scope is the history entry and its was, as the slice named; type errors of the record itself (Record.id of type int) keep Go's text because lint's parse finding pins them. Chosen so the message names no Go type. C32.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C257",
+        "kind": "decision",
+        "title": "S39: what the 1.x freeze covers, and what it leaves open",
+        "body": "docs/json.md Stability: frozen are key names and types, the error codes, documented values' meaning, the five statuses and the adj-json number with its bump rule; allowed without moving it are new keys, codes, lint checks, history events, commands; not frozen are message text (error object, lint finding, inbox --all errors[].error), the order of the inbox --all errors array, text output and stderr. The five statuses are closed in 1.x: an older 1.x refuses a record with another status, so a new status needs a breaking release (owner, 2026-11-02). A change that is not additive does not ship in 1.x; it needs adj 2.0.0 and adj-json v2 (owner, 2026-11-02). New record fields are top-level keys, never inside options, recommendation or narrowed_by entries (owner, 2026-11-02). C32.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C258",
+        "kind": "decision",
+        "title": "S39: CHANGELOG states what 0.2.0 does with a 1.0 store, as observed",
+        "body": "0.2.0 built from the v0.2.0 tag was run against a store written by this build. It exits 1 and prints nothing on stdout, even with --json, for a contract pin in .adjudicate.json (unknown field contract; every store command), for a top-level key it does not know, narrowed_by, narrows, recorded_by or via (unknown field KEY; lint reports parse), and for an unknown history event or key; adj ask still works because it reads no records. 1.0 prints identical bytes to 0.2.0 for list, show, inbox, check, context and lint on a store 0.2.0 wrote. The CHANGELOG says exactly this and tells owners to upgrade every reader before using narrow, --recorded-by, --via or a pin. C32.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C259",
+        "kind": "decision",
+        "title": "S39: docs/json.md says a user config error of inbox --all prints the error object",
+        "body": "The page said exit 1 with no JSON output, which S42 made false: the object with code user_config is printed (checked by running it). Corrected before the freeze; no code change. C32.",
         "status": "active",
         "reason": "",
         "successor": ""

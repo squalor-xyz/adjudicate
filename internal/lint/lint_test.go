@@ -197,6 +197,14 @@ var fixtureCases = []struct {
 		finding(3, "0003-both.md", warnSev, lint.CheckUnknownEvent, `history entry 2: unknown event "other-thing"`),
 		finding(3, "0003-both.md", warnSev, lint.CheckUnknownHistoryKey, `history entry 1: unknown keys "alpha", "zeta"`),
 	}},
+	// Keys that differ from a known key only in letter case: with the exact
+	// key beside it (before or after) the other is an unknown key and a
+	// warning, and the exact key decides the event; alone, it is the known
+	// key and no finding (S39).
+	{"unknown-history-case-folded", []lint.Finding{
+		finding(1, "0001-event-before.md", warnSev, lint.CheckUnknownHistoryKey, `history entry 0: unknown key "Event"`),
+		finding(2, "0002-event-after.md", warnSev, lint.CheckUnknownHistoryKey, `history entry 0: unknown key "Event"`),
+	}},
 	// A record's own unknown keys are read and kept too (S46): one finding per
 	// record, the keys in sorted order.
 	{"unknown-record-keys", []lint.Finding{

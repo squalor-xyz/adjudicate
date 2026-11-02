@@ -11,6 +11,7 @@ import (
 	"errors"
 	"fmt"
 	"maps"
+	"reflect"
 	"slices"
 	"strings"
 	"time"
@@ -170,7 +171,7 @@ func objectFields(data []byte) (fields []objectField, null bool, err error) {
 		case bool:
 			kind = "boolean"
 		}
-		return nil, false, fmt.Errorf("want a JSON object, got a %s", kind)
+		return nil, false, fmt.Errorf("want a JSON object, got %s", withArticle(kind))
 	}
 	for dec.More() {
 		kt, err := dec.Token()
@@ -266,10 +267,37 @@ func renameStruct(err error, from, to string) error {
 	return err
 }
 
+// typeWords says in plain words what a JSON type error is about: the key, the
+// type it must have and the type it has, as `"event" must be a string, got a
+// number`. Any other error is returned as it is.
+func typeWords(err error) error {
+	var te *json.UnmarshalTypeError
+	if !errors.As(err, &te) {
+		return err
+	}
+	want := "a string" // all keys in an entry and its was are text but options
+	if te.Type.Kind() == reflect.Slice {
+		want = "an array"
+	}
+	got := te.Value
+	if got == "bool" {
+		got = "boolean"
+	}
+	return fmt.Errorf("%q must be %s, got %s", te.Field, want, withArticle(got))
+}
+
+// withArticle puts "a" or "an" before word.
+func withArticle(word string) string {
+	if strings.ContainsRune("aeiou", rune(word[0])) {
+		return "an " + word
+	}
+	return "a " + word
+}
+
 // decodeError names the history entry in err and keeps the types that decode
-// it out of the message.
+// it out of the message (S39).
 func decodeError(err error) error {
-	return fmt.Errorf("history entry: %w", renameStruct(err, "knownEntry", "HistoryEntry"))
+	return fmt.Errorf("history entry: %w", typeWords(err))
 }
 
 // UnmarshalJSON decodes the known keys as encoding/json does (a key matches
@@ -300,7 +328,7 @@ func (h *HistoryEntry) UnmarshalJSON(data []byte) error {
 	if hasWas {
 		if k.Event.Known() {
 			if err := json.Unmarshal(wasRaw, &h.Was); err != nil {
-				return decodeError(fmt.Errorf("was: %w", err))
+				return decodeError(fmt.Errorf("was: %w", typeWords(err)))
 			}
 		} else {
 			raw, err := encodeJSON(wasRaw)

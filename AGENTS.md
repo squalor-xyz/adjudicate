@@ -27,20 +27,20 @@ library only.
   process entry; `RunWith(Env, ...)` takes the repo root, clock, environment
   and working directory as parameters for tests. Each command's handler is in
   its own file (`init.go`, `ask.go`, `decide.go`, which holds decide,
-  reject and withdraw, `supersede.go`, `narrow.go`, `amend.go`, `show.go`, `list.go`,
-  `inbox.go`, `check.go`, `context.go`, `lint.go`, `renumber.go`,
+  reject and withdraw, `supersede.go`, `narrow.go`, `amend.go`, `show.go`,
+  `list.go`, `inbox.go`, `check.go`, `context.go`, `lint.go`, `renumber.go`,
   `importadr.go`, `version.go`, `contract.go`, `repos.go` and `ai.go`);
   `contract.go` also holds `guardContract`, the one guard in front of every
   command with JSON output; `inbox_interactive.go` holds the interactive walk;
   `cli.go` holds the dispatch and shared helpers.
 - `internal/commands`: what each command does to the store, apart from
   parsing, output and exit codes (`init.go`, `ask.go`, `decide.go`,
-  `supersede.go`, `narrow.go`, `amend.go`, `show.go`, `list.go`, `inbox.go`, `check.go`,
-  `context.go`, `lint.go`, `renumber.go`, `importadr.go`, `repos.go`,
-  `contract.go`, `ai.go`). `ai.md` is the agent snippet, embedded by `ai.go`;
-  `skill.md` and `skill_reference.md` are the two files of the agent skill (`SKILL.md` and
-  `reference.md` once installed), embedded there too, and `ai.go` holds
-  `WriteTextFiles`, which `adj ai skill` uses to write them.
+  `supersede.go`, `narrow.go`, `amend.go`, `show.go`, `list.go`, `inbox.go`,
+  `check.go`, `context.go`, `lint.go`, `renumber.go`, `importadr.go`,
+  `repos.go`, `contract.go`, `ai.go`). `ai.md` is the agent snippet, embedded by
+  `ai.go`; `skill.md` and `skill_reference.md` are the two files of the agent
+  skill (`SKILL.md` and `reference.md` once installed), embedded there too, and
+  `ai.go` holds `WriteTextFiles`, which `adj ai skill` uses to write them.
   `errors.go` holds `UsageError`, the error that exits 2.
 - `internal/adr`: one ADR file (Nygard/adr-tools or MADR) parsed into a neutral
   struct (`adr.go`); pure functions, no file I/O, fixtures in `testdata/`.
@@ -57,8 +57,8 @@ library only.
   (`Record.UnknownKeys`), keep keys they do not know the same way (S46); the
   known keys stay strict about type, and an unknown key inside an option or the
   recommendation is still an error. A `was` or an option in it with only
-  unknown keys counts as old text (C233). A frontmatter `body` is an unknown key;
-  `Record.MarshalJSONWithBody`, which the read commands' JSON uses, always
+  unknown keys counts as old text (C233). A frontmatter `body` is an unknown
+  key; `Record.MarshalJSONWithBody`, which the read commands' JSON uses, always
   leaves that key out, so `body` there is only the text after the frontmatter
   (C234, C235). The unknown parts are unexported strings, so records,
   entries and was are comparable (renumber compares entries with
@@ -116,22 +116,35 @@ JSON error object (S42): a command in JSON mode (`--json` among its arguments,
 read before parsing and so seen even when another flag is bad, or `adj context`
 with `--format json`; `--json=VALUE` is on unless `strconv.ParseBool` reads it
 as false, so `--json=maybe` is JSON mode and a usage error, S50) that fails
-with exit 1 or 2 prints `{"error": {"code", "message", "command"}}` on stdout (`render.ErrorJSON`) as
-well as the same text as before on stderr; the exit codes do not change.
-`message` is the error without the `adj NAME: ` prefix and the usage; `command`
-is null for a usage error before dispatch. `internal/cli/jsonmode.go` holds the
-detection (`wantsJSON`, derived from the command's `flag.FlagSet`, so a flag
-value such as `--key --json` is not JSON mode) and `errorCode`, which maps
-sentinels through `errors.Is`, never message text: `usage`, `no_repo`
-(`store.ErrNoRoot`), `invalid_config` (`store.ErrInvalidConfig`),
-`not_found`, `duplicate_id`, `invalid_record` (`model.ErrInvalid`),
-`user_config` (`userconfig.ErrConfig`), `budget` (`commands.ErrBudget`),
-`contract_mismatch` (`contract.ErrMismatch`, S45) and `io` (anything else).
-Every failure goes through `usageError`, `fail` or `commandError` (or `dispatchFailure` before a command is known). A `lint`
+with exit 1 or 2 prints `{"error": {"code", "message", "command"}}` on stdout
+(`render.ErrorJSON`) as well as the same text as before on stderr; the exit
+codes do not change. `message` is the error without the `adj NAME: ` prefix and
+the usage; `command` is null for a usage error before dispatch.
+`internal/cli/jsonmode.go` holds the detection (`wantsJSON`, derived from the
+command's `flag.FlagSet`, so a flag value such as `--key --json` is not JSON
+mode) and `errorCode`, which maps sentinels through `errors.Is`, never message
+text: `usage`, `no_repo` (`store.ErrNoRoot`), `invalid_config`
+(`store.ErrInvalidConfig`), `not_found`, `duplicate_id`, `invalid_record`
+(`model.ErrInvalid`), `user_config` (`userconfig.ErrConfig`), `budget`
+(`commands.ErrBudget`), `contract_mismatch` (`contract.ErrMismatch`, S45) and
+`io` (anything else). Every failure goes through `usageError`, `fail` or
+`commandError` (or `dispatchFailure` before a command is known). A `lint`
 report, a `check` of "not found" and the per-repo errors of `inbox --all` are
 results, not failures, and print no object; commands with no `--json` never do.
 A new failure with its own error value needs a sentinel and a code in
 `docs/json.md`, which `jsonshape_test.go` pins.
+
+From 1.0.0 (S39) the JSON shapes, the error codes and the contract number are
+frozen for every 1.x release (`docs/json.md` "Stability"): a release may add
+keys, codes, lint checks and history events and never renames, removes or
+retypes a key; the five statuses are closed (a new one needs a breaking
+release); a change that is not additive does not ship in 1.x but needs adj 2.0.0
+and `adj-json v2`. Message text
+and the order of `inbox --all`'s `errors` are not frozen. A new field of a
+record is a new top-level key, never a key inside an option, the recommendation
+or a `narrowed_by` entry, which stay strict on read (owner, 2026-11-02): an
+older 1.x keeps an unknown top-level key (S46) but refuses one inside those
+objects. Every addition to a shape goes in the CHANGELOG.
 
 ## Commands
 
@@ -231,19 +244,19 @@ A new failure with its own error value needs a sentinel and a code in
   (NEW lists OLD, OLD does not) is not a state narrow leaves; the command treats
   it as a new narrowing, and `LinkNarrows` lists the ID once but adds its entry
   again. A record may be narrowed by several records and
-  may narrow several, and two records may narrow each other. Exit 2: a missing or
-  non-positive ID, a missing `--by` or `--scope`, a blank or multi-line scope,
-  OLD equal to NEW, an extra argument (all before the store is looked for).
-  Exit 1, nothing written: an unknown ID, or a record that is not `decided`
-  (both IDs are looked up first, then OLD's status is checked before NEW's, and
-  the message names the status, as for supersede). Both records are validated in
-  memory first and written OLD first, with OLD put back if NEW cannot be written
-  (C136); if that fails too the error says OLD is left narrowed and NEW has no
-  link back (lint: `narrow-asymmetric`). Prints OLD's ID. Owner-only like
-  decide and supersede: the agent snippet lists it among the commands never to
-  run, and the skill's owner section names it. `amend`, `supersede`,
-  `renumber`, `decide` and `inbox -i` leave the narrow fields as they are; a
-  `supersede` of a narrowed record still works on either side.
+  may narrow several, and two records may narrow each other. Exit 2: a missing
+  or non-positive ID, a missing `--by` or `--scope`, a blank or multi-line
+  scope, OLD equal to NEW, an extra argument (all before the store is looked
+  for). Exit 1, nothing written: an unknown ID, or a record that is not
+  `decided` (both IDs are looked up first, then OLD's status is checked before
+  NEW's, and the message names the status, as for supersede). Both records are
+  validated in memory first and written OLD first, with OLD put back if NEW
+  cannot be written (C136); if that fails too the error says OLD is left
+  narrowed and NEW has no link back (lint: `narrow-asymmetric`). Prints OLD's
+  ID. Owner-only like decide and supersede: the agent snippet lists it among the
+  commands never to run, and the skill's owner section names it. `amend`,
+  `supersede`, `renumber`, `decide` and `inbox -i` leave the narrow fields as
+  they are; a `supersede` of a narrowed record still works on either side.
 - `adj amend ID [--title T] [--context T | --stdin] [--summary LABEL:TEXT]...
   [--tradeoffs LABEL:TEXT]... [--rationale T] [--root DIR]` (C166, C178-C180):
   corrects the text of a record of any status; it never changes status,
@@ -278,9 +291,9 @@ A new failure with its own error value needs a sentinel and a code in
   blank value exits 2 before store access.
 - `adj inbox [--ref REF]... [--json] [--root DIR]`,
   `adj inbox --all [--ref REF]... [--json]`, or
-  `adj inbox -i [--ref REF]... [--by NAME] [--root DIR]`: lists the `open` records,
-  oldest first (by `created`, then ID). Text: per record `ID  title`, then
-  indented its created date, its refs when set (C171), its context, every
+  `adj inbox -i [--ref REF]... [--by NAME] [--root DIR]`: lists the `open`
+  records, oldest first (by `created`, then ID). Text: per record `ID  title`,
+  then indented its created date, its refs when set (C171), its context, every
   option (`label: summary`,
   with `tradeoffs:` under it when set) and the recommendation (the option
   label, or the free text) with its reasoning; entries are separated by a blank
@@ -316,8 +329,8 @@ A new failure with its own error value needs a sentinel and a code in
 
   `d` asks for an option label; a blank label returns to the action prompt.
   If the record has no options, `d` reports an error pointing to `t` and returns
-  to the action prompt without asking for a label. `t` asks for free-text decision
-  text. `r` rejects,
+  to the action prompt without asking for a label. `t` asks for free-text
+  decision text. `r` rejects,
   `w` withdraws, `s` skips and `q` quits; `?` prints help. Each write asks for a
   non-blank rationale. Unknown labels and blank text or rationale re-prompt the
   same field. Decision text and rationale keep their surrounding whitespace;
@@ -326,13 +339,14 @@ A new failure with its own error value needs a sentinel and a code in
   validation, dates and history as `decide`, `reject` and `withdraw`.
 
   Quit or EOF stops without writing an incomplete answer, including a last line
-  without a newline. A nonempty walk ends with `N decided, N rejected, N withdrawn,
-  N skipped, N failed`, counting only completed actions; unvisited questions stay
-  open. A failed write reports its error on stderr and advances to the next
-  question; any failed write makes the final exit code 1. An input read error also
-  exits 1. An empty inbox prints nothing and exits 0. `-i` with `--json`, `--all`
-  or an argument exits 2, as does `--by` without `-i`. This mode is owner-only;
-  agents must not run it. It uses ordinary stdin lines, without terminal raw mode.
+  without a newline. A nonempty walk ends with `N decided, N rejected, N
+  withdrawn, N skipped, N failed`, counting only completed actions; unvisited
+  questions stay open. A failed write reports its error on stderr and advances
+  to the next question; any failed write makes the final exit code 1. An input
+  read error also exits 1. An empty inbox prints nothing and exits 0. `-i` with
+  `--json`, `--all` or an argument exits 2, as does `--by` without `-i`. This
+  mode is owner-only; agents must not run it. It uses ordinary stdin lines,
+  without terminal raw mode.
 
 - `adj check QUERY [--json] [--root DIR]`: asks whether QUERY has been decided,
   so an agent checks before it asks the owner. QUERY (trimmed, one argument:
@@ -408,29 +422,30 @@ A new failure with its own error value needs a sentinel and a code in
   (`superseded_by` on a record that is not superseded), `supersede-cycle` (a
   loop of supersede links; one finding per record in it, naming only records
   that have a file), `narrow-state` (S51: `narrowed_by` or `narrows` on a record
-  that is not decided or superseded, or naming a record that is open, rejected or
-  withdrawn; with several files on the named ID, only if every one is),
+  that is not decided or superseded, or naming a record that is open, rejected
+  or withdrawn; with several files on the named ID, only if every one is),
   `narrow-asymmetric` (a narrow link listed on one record only; a target with no
   file or that does not parse is left to `dangling-link` and `parse`),
   `narrow-superseded` (a warning: the narrowing record was superseded, so the
-  scope may no longer hold; narrow links make no cycle check), `key-conflict` (another `decided` record has the same key,
-  trimmed and case-sensitive), `decided-by` (a `decided` record without
-  `decided_by`, a warning, C27), `unknown-event` (a history entry whose event
-  this version does not know, one finding per entry: `history entry N: unknown
-  event "X"`, S44), `unknown-history-key` (one per entry, naming its unknown
-  keys in sorted order, S44), `unknown-record-key` (one per record, naming its
-  unknown top-level keys in sorted order, S46), `unknown-was-key` (one per
-  amend entry, naming the unknown keys of its `was`, those inside an option as
-  `options.LABEL.KEY`, S46, C231) and `contract-pin` (the config pins a JSON
-  contract version other than the built-in one: one warning about
-  `.adjudicate.json`, with record ID 0, S45, C240); the last six and
-  `narrow-superseded` are warnings, the rest errors (C143). A blank event is a `fields` error. Text: per finding
-  `FILE: record ID: SEVERITY: CHECK: MESSAGE` (`FILE: SEVERITY: CHECK: MESSAGE`
-  for ID 0), sorted by ID, check and file,
-  then `N errors, M warnings`; a clean store prints nothing (C141). `--json`
-  prints `{"errors", "warnings", "findings"}` (`docs/json.md`, C142). Exit 1 if
-  there is an error or lint could not run, else 0: warnings alone exit 0 (C140).
-  An argument exits 2. The agent snippet does not name it (C145).
+  scope may no longer hold; narrow links make no cycle check), `key-conflict`
+  (another `decided` record has the same key, trimmed and case-sensitive),
+  `decided-by` (a `decided` record without `decided_by`, a warning, C27),
+  `unknown-event` (a history entry whose event this version does not know, one
+  finding per entry: `history entry N: unknown event "X"`, S44),
+  `unknown-history-key` (one per entry, naming its unknown keys in sorted order,
+  S44), `unknown-record-key` (one per record, naming its unknown top-level keys
+  in sorted order, S46), `unknown-was-key` (one per amend entry, naming the
+  unknown keys of its `was`, those inside an option as `options.LABEL.KEY`, S46,
+  C231) and `contract-pin` (the config pins a JSON contract version other than
+  the built-in one: one warning about `.adjudicate.json`, with record ID 0, S45,
+  C240); the last six and `narrow-superseded` are warnings, the rest errors
+  (C143). A blank event is a `fields` error. Text: per finding `FILE: record ID:
+  SEVERITY: CHECK: MESSAGE` (`FILE: SEVERITY: CHECK: MESSAGE` for ID 0), sorted
+  by ID, check and file, then `N errors, M warnings`; a clean store prints
+  nothing (C141). `--json` prints `{"errors", "warnings", "findings"}`
+  (`docs/json.md`, C142). Exit 1 if there is an error or lint could not run,
+  else 0: warnings alone exit 0 (C140). An argument exits 2. The agent snippet
+  does not name it (C145).
 - `adj renumber [--keep-links] [--root DIR]` (C150): resolves record files that
   share an ID (`adj lint` reports them as `duplicate-id`; merged branches and
   clones make them, and so do asks on a system without the ID lock, C26, C114).
@@ -442,19 +457,19 @@ A new failure with its own error value needs a sentinel and a code in
   one `renumber` history entry (note `from N`), and the old file is removed
   after the new one is complete (C148). Prints one line per move, `OLD-FILE ->
   NEW-FILE (id N -> M)`; no collision prints nothing and changes nothing, exit
-  0. Links (`supersedes`, `superseded_by`, `narrowed_by`, `narrows`) to a colliding
-  ID cannot be told apart, so they and the history notes
-  are never rewritten (C147, C149, S51): if any record links to one, renumber lists
-  the links, exits 1 and changes nothing, until `--keep-links` accepts that they
-  stay with the record that keeps the ID (they are listed on stderr). Every
-  record file must be readable (it may hold a link); a colliding record needs a
-  valid `created` date (C158); a record that moves must be valid with the ID it
-  will get (C151); these are checked before the first write. A new ID is never
-  one that a link names without a file (C155). With a collision it holds the
-  store's ID lock from reading the files to the last move (see "Store and
-  config"), so an `adj ask` cannot take an ID a move is about to use; a refusal
-  after that leaves only the empty lock file. With no collision it takes no
-  lock. The directory is synced before the old file goes, on a best-effort
+  0. Links (`supersedes`, `superseded_by`, `narrowed_by`, `narrows`) to a
+  colliding ID cannot be told apart, so they and the history notes
+  are never rewritten (C147, C149, S51): if any record links to one, renumber
+  lists the links, exits 1 and changes nothing, until `--keep-links` accepts
+  that they stay with the record that keeps the ID (they are listed on stderr).
+  Every record file must be readable (it may hold a link); a colliding record
+  needs a valid `created` date (C158); a record that moves must be valid with
+  the ID it will get (C151); these are checked before the first write. A new ID
+  is never one that a link names without a file (C155). With a collision it
+  holds the store's ID lock from reading the files to the last move (see "Store
+  and config"), so an `adj ask` cannot take an ID a move is about to use; a
+  refusal after that leaves only the empty lock file. With no collision it takes
+  no lock. The directory is synced before the old file goes, on a best-effort
   basis: a failed sync is ignored (C157). A move that cannot remove the old file
   takes the new one away again; if that fails too the error names both files.
   After a crash between the two, the record is in both files and the old one is
@@ -463,15 +478,15 @@ A new failure with its own error value needs a sentinel and a code in
   the history, and holds the same record: equal to the old file apart from the
   entry, or, if edited since, with the old file's whole history before the entry
   and the same title, key, tags, asked_by, created, context, options,
-  recommendation and unknown top-level keys, not the body, C163, C232, once the `amend` entries after the
-  renumber entry are taken back to the old text they keep, C181; a live record
-  that only shares the ID and name text with a moved one is not a stale copy),
-  and `adj renumber` refuses (exit 1, nothing changed, `store.ErrStaleCopy`)
-  until the owner checks both files and deletes the old one (C156); nothing is
-  deleted automatically. Known limit (C163): a moved file that was changed by
-  hand without a history entry is not recognised, so before running
-  `adj renumber` on files that `adj lint` reports as `duplicate-id`, check
-  whether one holds a `renumber` entry; two files with identical records
+  recommendation and unknown top-level keys, not the body, C163, C232, once the
+  `amend` entries after the renumber entry are taken back to the old text they
+  keep, C181; a live record that only shares the ID and name text with a moved
+  one is not a stale copy), and `adj renumber` refuses (exit 1, nothing changed,
+  `store.ErrStaleCopy`) until the owner checks both files and deletes the old
+  one (C156); nothing is deleted automatically. Known limit (C163): a moved file
+  that was changed by hand without a history entry is not recognised, so before
+  running `adj renumber` on files that `adj lint` reports as `duplicate-id`,
+  check whether one holds a `renumber` entry; two files with identical records
   (contrived) flag the keeper. An argument or unknown flag exits 2.
   Owner-only: the agent snippet tells agents to report a duplicate ID and not
   to run it (C153). A name taken by a directory or another writer is skipped
@@ -482,8 +497,8 @@ A new failure with its own error value needs a sentinel and a code in
   repo root. Only files directly in DIR whose names start with a number (an
   optional `adr-` before it) are read, in ADR number order, then file name. Two
   layouts: Nygard (adr-tools: `# N. Title`, `Date:`, `## Status`, `## Context`,
-  `## Decision`, `## Consequences`) and MADR (optional front matter, read by hand
-  for flat `key: value` lines, or `Status:`/`Date:` lines; `## Context and
+  `## Decision`, `## Consequences`) and MADR (optional front matter, read by
+  hand for flat `key: value` lines, or `Status:`/`Date:` lines; `## Context and
   Problem Statement`, `## Considered Options`, `## Decision Outcome`). The first
   word of the status, in any case, is `accepted` (decided), `proposed` (open,
   its decision becomes the recommendation), `rejected`, `deprecated`
@@ -596,11 +611,11 @@ A new failure with its own error value needs a sentinel and a code in
   before asking and what each result means, ask with `--ref` and
   `--recommend-text`, read the decisions, withdraw your own question, amend an
   open question, only the owner decides or amends a decided record and never
-  run decide, reject, supersede or narrow, tell the owner about a duplicate ID or a
-  missing repo instead of running renumber or init, exit codes, `ADJ_ASKED_BY`)
-  and exits 0. It does not name `--decided-at`: agents never run decide, so the
-  flag is the owner's. It reads no repo and takes no flag and no argument but
-  `skill` (so no `--root`); any other flag or argument exits 2.
+  run decide, reject, supersede or narrow, tell the owner about a duplicate ID
+  or a missing repo instead of running renumber or init, exit codes,
+  `ADJ_ASKED_BY`) and exits 0. It does not name `--decided-at`: agents never run
+  decide, so the flag is the owner's. It reads no repo and takes no flag and no
+  argument but `skill` (so no `--root`); any other flag or argument exits 2.
   `internal/cli/ai_test.go` fails if the snippet names a command, flag or
   variable that does not exist, or runs past 1800 bytes (C124, C125). When a
   command or flag an agent uses changes, change the snippet.
@@ -611,25 +626,26 @@ A new failure with its own error value needs a sentinel and a code in
   `.claude/skills/adj/`, `.agents/skills/adj/` and `.grok/skills/adj/` under
   the repo root (project-only, adj 21; use `--output` elsewhere). Stdout lists
   the paths written. Printing and `--output` read no repo and take no `--root`;
-  `--install` finds the root like other commands (the nearest `.adjudicate.json`,
-  or `--root`, or `Env.Root`) and fails with exit 1, naming the problem and not
-  telling the reader to run `adj init`, when there is none. `--root` without
-  `--install`, `--install` with `--output`, a blank `--output`, an argument or
-  `--force` alone exit 2. Every destination is looked at before any is written:
-  a file with the same text is left alone (and not listed); different text
-  exits 1 naming each such file unless `--force`; a destination file that is
-  not a regular file (itself a directory or a symbolic link) exits 1 even with
-  `--force`; only that last element is checked, so a symbolic link in a parent
-  folder (`.claude`, say) is followed. Each
+  `--install` finds the root like other commands (the nearest
+  `.adjudicate.json`, or `--root`, or `Env.Root`) and fails with exit 1, naming
+  the problem and not telling the reader to run `adj init`, when there is none.
+  `--root` without `--install`, `--install` with `--output`, a blank `--output`,
+  an argument or `--force` alone exit 2. Every destination is looked at before
+  any is written: a file with the same text is left alone (and not listed);
+  different text exits 1 naming each such file unless `--force`; a destination
+  file that is not a regular file (itself a directory or a symbolic link) exits
+  1 even with `--force`; only that last element is checked, so a symbolic link
+  in a parent folder (`.claude`, say) is followed. Each
   file is written through a temporary file and a rename (new files 0644,
   replaced ones keep their mode); a failed write puts back the files and the
   directories written before it. `adj ai` and its snippet are not changed by
   the subcommand (a test pins the snippet's SHA-256, `snippetSHA256`, which
-  moves on purpose with any edit of `ai.md`, as S51's did). `internal/cli/ai_skill_test.go` fails if the skill
-  or its reference names a command, flag or variable that does not exist, omits
-  an owner-only command, names an owner-only flag, or if its text outgrows
-  6000 and 9000 bytes. The skill may name flags the snippet leaves out for size
-  (adj 20), never the owner's (`--decided-at`, `--recorded-by`, `--via`).
+  moves on purpose with any edit of `ai.md`, as S51's did).
+  `internal/cli/ai_skill_test.go` fails if the skill or its reference names a
+  command, flag or variable that does not exist, omits an owner-only command,
+  names an owner-only flag, or if its text outgrows 6000 and 9000 bytes. The
+  skill may name flags the snippet leaves out for size (adj 20), never the
+  owner's (`--decided-at`, `--recorded-by`, `--via`).
 - Every command except `ai`, `ai skill` (which takes it only with `--install`)
   and `inbox --all` takes `--root DIR`. Store commands
   use it as the
@@ -661,8 +677,8 @@ A new failure with its own error value needs a sentinel and a code in
   `contract`, a positive whole number: the JSON contract version the repo pins
   (S45; `Store.Contract`, `store.SetContract`). Unknown keys, a `contract` that
   is not a positive whole number, an absolute path or a path that leaves the
-  root are errors; older releases refuse a pinned file as an unknown key. With no config
-  file `store.Open(root)` uses the defaults.
+  root are errors; older releases refuse a pinned file as an unknown key. With
+  no config file `store.Open(root)` uses the defaults.
 - A record file is `<ID padded to four digits>-<slug>.md` in the store
   directory; the slug is the title's lowercase ASCII letters and digits joined
   by `-`. Files not named like that are ignored; a file named like a record
@@ -690,29 +706,29 @@ A new failure with its own error value needs a sentinel and a code in
   with an error that names `.adj.lock` and writes no record. On a network file
   system the lock may be local to each host, so asks from two hosts can still
   take one ID. `Create` also skips an ID that a `supersedes`, `superseded_by`,
-  `narrowed_by` or `narrows` link names without a file (C155, S51); a file it cannot read keeps its ID by name
-  but its links are not known. The lock only serialises one checkout.
-  Sibling worktrees (S43, `siblings.go`, C251-C255): with the lock held, once per
-  `Create` and once per `Renumber` that has a collision, `siblingFloor` runs
-  `git -C ROOT rev-parse --show-toplevel` and, only if ROOT is that directory
-  (`os.SameFile`, so symbolic links and Windows spellings do not matter), `git
-  -C ROOT worktree list --porcelain`. For each listed worktree other than ROOT
-  (bare ones skipped, prunable ones tried and skipped if gone) it opens the
-  worktree's own `.adjudicate.json` (none means the default store; an invalid
-  one skips the sibling) and takes the highest ID in the file names, with no
-  lock and no record read. The floor is one past the highest of them, passed to
-  `freeID` beside the dangling-link IDs, which still apply; `Renumber` uses the
-  same floor for its in-memory check and for each write. Git missing, failing,
-  not the top level, or slower than 3 seconds (both calls share the deadline)
-  gives floor 0, silently: behaviour is then what it was. `Store.git` is the
-  injectable runner (`runGit` in production); `Store.validated` is a test hook
-  that sees the ID each pre-check gives a move. Clones, other machines and two
-  asks at the same moment in two worktrees still collide, and `adj lint` and
-  `adj renumber` handle that. Tests in `.cache/tmp` sit inside this repo, which
-  has worktrees: the top-level guard keeps them from reading those
-  (`TestTestsInsideTheRepositoryNeverReadItsWorktrees`), and the real-git
-  integration test sets `HOME`, `GIT_CONFIG_NOSYSTEM` and `GIT_CONFIG_GLOBAL`
-  so the real git config is never read.
+  `narrowed_by` or `narrows` link names without a file (C155, S51); a file it
+  cannot read keeps its ID by name but its links are not known. The lock only
+  serialises one checkout. Sibling worktrees (S43, `siblings.go`, C251-C255):
+  with the lock held, once per `Create` and once per `Renumber` that has a
+  collision, `siblingFloor` runs `git -C ROOT rev-parse --show-toplevel` and,
+  only if ROOT is that directory (`os.SameFile`, so symbolic links and Windows
+  spellings do not matter), `git -C ROOT worktree list --porcelain`. For each
+  listed worktree other than ROOT (bare ones skipped, prunable ones tried and
+  skipped if gone) it opens the worktree's own `.adjudicate.json` (none means
+  the default store; an invalid one skips the sibling) and takes the highest ID
+  in the file names, with no lock and no record read. The floor is one past the
+  highest of them, passed to `freeID` beside the dangling-link IDs, which still
+  apply; `Renumber` uses the same floor for its in-memory check and for each
+  write. Git missing, failing, not the top level, or slower than 3 seconds (both
+  calls share the deadline) gives floor 0, silently: behaviour is then what it
+  was. `Store.git` is the injectable runner (`runGit` in production);
+  `Store.validated` is a test hook that sees the ID each pre-check gives a move.
+  Clones, other machines and two asks at the same moment in two worktrees still
+  collide, and `adj lint` and `adj renumber` handle that. Tests in `.cache/tmp`
+  sit inside this repo, which has worktrees: the top-level guard keeps them from
+  reading those (`TestTestsInsideTheRepositoryNeverReadItsWorktrees`), and the
+  real-git integration test sets `HOME`, `GIT_CONFIG_NOSYSTEM` and
+  `GIT_CONFIG_GLOBAL` so the real git config is never read.
   Locking needs `syscall.Flock` (darwin, linux, the BSDs, illumos) or, on
   Windows, `LockFileEx` (`lock_windows.go`, S36): `kernel32.dll` called through
   the standard library's `syscall` (no `golang.org/x/sys`), exclusive over the
@@ -763,8 +779,9 @@ Never run `go env -w`; it writes outside the repo. Do not add a Makefile.
 - User config tests inject `Getenv` with XDG_CONFIG_HOME/HOME pointing into
   worktree temp dirs; never touch the real home or user config.
 - Only the owner makes the decide transition (`adj decide`, C27), the
-  supersede transition (`adj supersede`) and the narrow link (`adj narrow`, S51). Agents ask, check and read; an agent
-  may withdraw its own question (`adj withdraw`).
+  supersede transition (`adj supersede`) and the narrow link (`adj narrow`,
+  S51). Agents ask, check and read; an agent may withdraw its own question (`adj
+  withdraw`).
 - Work is tracked in slicer. Read and change tracking state only through the
   `slicer` CLI; never open, search or edit `.slicer/`.
 - Standing rule (C32): an interface detail that PROJECT.md and the owner's

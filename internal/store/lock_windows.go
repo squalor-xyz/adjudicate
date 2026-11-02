@@ -61,12 +61,12 @@ func unlockFileEx(h syscall.Handle) error {
 // function that releases it (C114, S36). It behaves like the unix flock,
 // except that the lock is mandatory (it changes nothing for the empty lock
 // file): the attempts do not block (LOCKFILE_FAIL_IMMEDIATELY), acquire polls
-// for up to timeout and then
-// returns an error that names path, so a writer stuck behind a hung process
-// fails instead of hanging. busy, if not nil, is called each time the lock is
-// found held. The lock belongs to the open handle, so it is also released
-// when the process exits; the lock file stays, because removing it would let
-// a waiting writer and a new one lock different files.
+// for up to timeout and then returns an error that names path, so a writer
+// stuck behind a hung process fails instead of hanging. busy, if not nil, is
+// called each time the lock is found held. The lock belongs to the open
+// handle, so it is also released when the process exits; the lock file stays,
+// because removing it would let a waiting writer and a new one lock different
+// files.
 func acquire(path string, timeout time.Duration, busy func()) (unlock func(), err error) {
 	f, err := openLockFile(path, os.OpenFile, func(err error) bool { return errors.Is(err, syscall.ERROR_ACCESS_DENIED) })
 	if err != nil {
