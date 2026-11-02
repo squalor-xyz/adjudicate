@@ -155,6 +155,7 @@ adj decide 3 redis --why "Several hosts share it"
 adj decide 4 --text "Neither; use files" --why "No server to run"
 adj reject 5 --why "Out of scope"
 adj supersede 2 --by 6              # 6 replaces decision 2
+adj narrow 3 --by 7 --scope "only for structured questions"   # 7 changes part of 3
 adj amend 6 --rationale "Clearer reasons"
 ```
 
@@ -258,8 +259,8 @@ by `adj show` and in the JSON of `show`, `list` and `inbox`. A flag that is
 given but blank is a usage error (exit 2). Left out, the record is exactly what
 it was before. `adj reject` and `adj withdraw` take both flags too. Like
 `decided_by` they are attribution, not authentication, and no environment
-variable sets them. `adj amend`, `adj supersede`, `adj renumber` and
-`adj inbox -i` leave them as they are.
+variable sets them. `adj amend`, `adj supersede`, `adj narrow`, `adj renumber`
+and `adj inbox -i` leave them as they are.
 
 ### `adj reject ID --why TEXT` and `adj withdraw ID --why TEXT`
 
@@ -273,6 +274,28 @@ answer. Both print the ID and take `--by NAME` (default `$ADJ_DECIDED_BY`),
 Replaces a decided record with another decided one. OLD becomes `superseded`
 and points to NEW; NEW lists OLD in `supersedes`. OLD stays readable with
 `adj show` and leaves `adj context`. Prints OLD's ID.
+
+### `adj narrow OLD --by NEW --scope TEXT`
+
+Owner-only. For a decision that another decision changes only in part: `adj
+supersede` would take the whole of OLD out of `adj context`, and with it the
+parts NEW leaves alone. OLD and NEW must both be `decided`. OLD stays `decided`
+and in force; it gets a `narrowed_by` link to NEW with the scope, NEW gets a
+`narrows` link to OLD, and each gets one `narrow` history entry (`by NEW:
+SCOPE` and `narrows OLD`). `--scope` is one line that is not blank, kept as
+typed. `adj show` prints `Narrowed by: NEW (SCOPE)` and `Narrows: OLD`, and
+`adj context` prints the same lines under OLD's and NEW's decisions, so a
+reader sees what still holds and where NEW applies instead. One record may be
+narrowed by several records, and one may narrow several. The same pair can be
+linked once: a second `adj narrow` of a pair that links on both sides exits 1.
+If a failed write left only OLD linked (`adj lint` reports `narrow-asymmetric`),
+running the same command again writes only NEW, keeps OLD's scope and exits 0. A usage error (no `--by` or
+`--scope`, a blank scope or one on several lines, OLD equal to NEW) exits 2; an
+unknown ID, or a record that is not `decided` (OLD's status is checked first),
+exits 1, and nothing is written. Like `adj supersede`, the files are written
+OLD first and put back if NEW cannot be written. Prints OLD's ID. `adj lint`
+checks the links (`narrow-state`, `narrow-asymmetric`, `narrow-superseded`),
+and a full `adj supersede` of a narrowed record still works.
 
 ### `adj amend ID [flags]`
 
@@ -403,7 +426,9 @@ superseded match leads to the decided record that replaced it.
 
 Prints the decided records as compact context for an agent: per decision its
 ID, title, key, the decision and the first line of the rationale. Open,
-rejected, withdrawn and superseded records are left out.
+rejected, withdrawn and superseded records are left out. A decision that
+another one narrows (`adj narrow`) stays, with a `Narrowed by: ID (scope)` line
+for each such decision; one that narrows others has a `Narrows: ID` line.
 
 ```
 --tag T          only records with tag T; repeat to require several tags
@@ -432,12 +457,14 @@ Checks the store for integrity problems and prints one line per finding
 (`FILE: record ID: SEVERITY: CHECK: MESSAGE`), then a count. A clean store
 prints nothing. The checks are `parse`, `fields`, `id-mismatch`,
 `duplicate-id`, `renumber-leftover`, `dangling-link`, `supersede-state`,
-`supersede-cycle`, `key-conflict`, `decided-by`, `unknown-event`,
+`supersede-cycle`, `narrow-state`, `narrow-asymmetric`, `narrow-superseded`,
+`key-conflict`, `decided-by`, `unknown-event`,
 `unknown-history-key`, `unknown-record-key`, `unknown-was-key` and
-`contract-pin` (the last five are warnings). A history entry with an event or a key that this version
-does not know, a key at the top level of a record, or a key inside the old text
-of an `amend` entry, as a newer version may write, is read and kept when the
-record is rewritten; lint only warns. `contract-pin` is about `.adjudicate.json`,
+`contract-pin` (`narrow-superseded` and the last five are warnings). A history
+entry with an event or a key that this version does not know, a key at the top
+level of a record, or a key inside the old text of an `amend` entry, as a newer
+version may write, is read and kept when the record is rewritten; lint only
+warns. `contract-pin` is about `.adjudicate.json`,
 not a record (its line has no `record ID:` part): the repo pins a JSON contract
 version other than the one this adj speaks (see `adj contract`). Exit 1 if
 there is an error, else 0.

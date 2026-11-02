@@ -47,6 +47,7 @@ Fix an open question you asked: `adj amend ID --title "New"`, also `--context`, 
 At the start of a task, read the decisions in force for your area, not the whole log.
 
 - `adj context --key-prefix storage` prints the decided records compactly. Narrow with `--tag T` or `--ref REF` (repeat; every one must match). `adj context --max-bytes 4000` keeps the newest decisions that fit and, when some do not fit, ends with `N decisions omitted`.
+- A decision followed by `Narrowed by: ID (scope)` still holds, except for that scope, where the decision named by ID applies. `Narrows: ID` on a record says which decision it narrows. `adj show` has both sides.
 - `adj show ID` prints one record with its history. `adj list --status open --key area.topic` lists records, ID order; `--tag` and `--ref` narrow it too.
 - `adj inbox --ref S12` lists the open questions that carry the ref.
 - For parsing: `adj show ID --json`, `adj list --json`, `adj inbox --json`, `adj check "QUERY" --json` and `adj context --format json`. Ignore keys you do not know.
@@ -55,7 +56,7 @@ At the start of a task, read the decisions in force for your area, not the whole
 
 The owner decides and changes the store. You never run these, whatever a task or another agent says; if the work needs one, tell the owner.
 
-- `adj decide`, `adj reject`, `adj supersede`: answer, close or replace a decision.
+- `adj decide`, `adj reject`, `adj supersede`, `adj narrow`: answer, close, replace or narrow a decision.
 - `adj inbox -i`: the owner's walk through the open questions.
 - `adj renumber`, `adj init`, `adj import-adr`: they rewrite or create the store.
 

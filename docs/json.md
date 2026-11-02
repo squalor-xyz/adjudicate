@@ -478,6 +478,8 @@ record objects above, an entry has only these keys:
 | `key` | string | the decision key; left out when the record has none |
 | `decision` | string | the answer: an option label, or free text; trailing line breaks are dropped |
 | `rationale` | string | the first non-blank line of the record's rationale, without surrounding space; left out when empty |
+| `narrowed_by` | array of objects | the decisions that narrow this one: each has `id` and `scope`, a line saying which part of this decision the other changes; left out when the record has none. The decision still holds, outside that scope |
+| `narrows` | array of integers | the IDs of the decisions this one narrows; left out when the record has none |
 
 Use `adj show ID --json` for the whole record. When no record matches, the
 array is empty: `{"decisions": []}` (formatted as `{`, `  "decisions": []`,
@@ -505,7 +507,9 @@ array is empty: `{"decisions": []}` (formatted as `{`, `  "decisions": []`,
 
 `adj context` without `--format json` prints the same entries as Markdown
 (`--format md`, the default): per record `- ID title [key]: decision`, then
-`  Rationale: first line`. It is not JSON and has no shape here.
+`  Narrowed by: ID (scope)` for each decision that narrows it and
+`  Narrows: ID, ID` when it narrows others (both left out when there is none),
+then `  Rationale: first line`. It is not JSON and has no shape here.
 
 ## `adj context --format json --max-bytes N`
 
@@ -623,7 +627,8 @@ The checks:
   option, a bad recommendation (a `label` that is not an option, both `label`
   and `text`, or neither; free `text` alone is fine), a history entry with
   `was` whose event is known and is not `amend`, or an `amend` entry with no
-  old text, a link to the record itself.
+  old text, a link to the record itself, a `narrowed_by` entry with a blank or
+  multi-line `scope`, or an ID listed twice in `narrowed_by` or in `narrows`.
 - `id-mismatch` (error): the record's `id` is not the ID in its file name,
   which the other commands refuse to load. The `id` of a finding is the file
   name's. A record whose `id` is missing or not positive gets a `fields`
@@ -649,13 +654,29 @@ The checks:
   check whether one of the files that `duplicate-id` reports holds a `renumber`
   entry. Check both files, then delete the stale one. It is reported whether or
   not the file still shares its ID with another.
-- `dangling-link` (error): `supersedes` or `superseded_by` names an ID that no
-  record file has. A link listed twice in one record is reported once.
+- `dangling-link` (error): `supersedes`, `superseded_by`, `narrowed_by` or
+  `narrows` names an ID that no record file has. A link listed twice in one
+  record is reported once.
 - `supersede-state` (error): `superseded_by` is set on a record whose status is
   not `superseded`.
 - `supersede-cycle` (error): the record is in a loop of supersede links; every
   record in the loop gets the finding, and the message lists them. A loop that
   runs through an ID with no file names only the records that have one.
+- `narrow-state` (error): `narrowed_by` or `narrows` is set on a record whose
+  status is not `decided` or `superseded`, or names a record that is `open`,
+  `rejected` or `withdrawn` (`narrowed_by 2 names a record that is rejected`,
+  `narrows is set but the status is open`). A link to a `superseded` record is
+  `narrow-superseded`. When several files share the named ID, it is faulted only
+  if every file with it is.
+- `narrow-asymmetric` (error): a narrow link is listed on one record only:
+  `narrowed_by N` on a record that the record N does not list in `narrows`
+  (`narrowed_by 2, but record 2 does not narrow 1`), or `narrows N` on a record
+  that record N does not list in `narrowed_by` (`narrows 3, but record 3 is not
+  narrowed by 4`). A link to an ID with no file, or to a file that cannot be
+  read, is left to `dangling-link` and `parse`.
+- `narrow-superseded` (warning): the record is narrowed by a record that has
+  since been `superseded`, so the scope may no longer hold: `narrowed_by 2,
+  which is superseded by 3: check that the scope still holds`.
 - `key-conflict` (error): another `decided` record has the same `key` (compared
   without surrounding space, case-sensitive; records without a key never
   conflict). Superseded, open, rejected and withdrawn records do not count.
@@ -715,9 +736,16 @@ when it has a value. `id`, `title`, `status` and `created` are always present.
 | `consequences` | string | the consequences of the decision |
 | `supersedes` | array of integers | the IDs of the records this one replaces |
 | `superseded_by` | integer | the ID of the record that replaces this one |
+| `narrowed_by` | array of objects | the decisions that narrow this one, set by `adj narrow`: each has `id`, the narrowing record, and `scope`, one line saying which part of this decision it changes. This record stays `decided` and in force |
+| `narrows` | array of integers | the IDs of the decisions this one narrows, set by `adj narrow` on the narrowing record |
 | `refs` | array of strings | opaque references set with repeatable `adj ask --ref REF`, kept in order |
 | `history` | array of objects | the history, oldest first; each entry is an object with the keys under "Keys of a history entry" |
 | `body` | string | the Markdown after the record's frontmatter, kept verbatim; present only when the record has a body |
+
+`narrowed_by` and `narrows` (S51) are optional keys added within `adj-json v1`:
+adding a key is additive (see "Contract version"), so the version did not move.
+A reader that predates them ignores them as it ignores any key it does not
+know.
 
 A record may also have top-level keys that this version does not know, written
 by a later version. Readers must ignore them: `adj` keeps them and writes them
@@ -732,10 +760,13 @@ show` (text) and `adj context` print only the known fields. `adj lint` warns
 (`unknown-record-key`).
 
 A history entry's `event` is one of `ask`, `decide`, `reject`, `withdraw`,
-`supersede`, `renumber`, `amend` or `import`, or an event of a later version
-(see below). `adj supersede` writes one `supersede`
+`supersede`, `narrow`, `renumber`, `amend` or `import`, or an event of a later
+version (see below). `adj supersede` writes one `supersede`
 entry on each of the two records: the note is `by N` on the record that is
-replaced and `supersedes N` on the one that replaces it. `adj renumber` writes
+replaced and `supersedes N` on the one that replaces it. `adj narrow` writes one
+`narrow` entry on each of its two records: the note is `by N: SCOPE` on the
+record that is narrowed and `narrows N` on the one that narrows it; both stay
+`decided`. `adj renumber` writes
 one `renumber` entry on each record it gives a new ID; the note is `from N`, the
 old ID. `adj import-adr` writes one `import` entry on each record it makes
 from an ADR file, in place of the `ask` and `decide` entries; the note is
@@ -752,7 +783,7 @@ ran. A date after the run date is refused.
 | Key | Type | Meaning |
 |---|---|---|
 | `date` | string | the day the command ran, `YYYY-MM-DD` |
-| `event` | string | `ask`, `decide`, `reject`, `withdraw`, `supersede`, `renumber`, `amend` or `import` |
+| `event` | string | `ask`, `decide`, `reject`, `withdraw`, `supersede`, `narrow`, `renumber`, `amend` or `import` |
 | `note` | string | a short note, present only when set: for `amend`, the fields that changed (see below) |
 | `was` | object | `amend` entries only: the old text of every field the amend changed |
 

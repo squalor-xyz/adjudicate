@@ -37,12 +37,12 @@ type Move struct {
 	KeptName         string // the file that kept OldID
 }
 
-// Link is a supersedes or superseded_by link to an ID that more than one file
-// had. Renumber leaves such links as they are (C147).
+// Link is a supersedes, superseded_by, narrowed_by or narrows link to an ID that
+// more than one file had. Renumber leaves such links as they are (C147).
 type Link struct {
 	File  string // the file name that holds the link
 	ID    int    // that file's ID
-	Field string // "supersedes" or "superseded_by"
+	Field string // "supersedes", "superseded_by", "narrowed_by" or "narrows"
 	To    int    // the colliding ID
 
 	KeptName string // the file that keeps To, and so the one the link now names
@@ -361,8 +361,8 @@ func (s *Store) collisions() (files []File, groups map[int][]File, shared []int,
 	return files, groups, shared, nil
 }
 
-// collidingLinks lists the supersedes and superseded_by links, in any record
-// file, to an ID that more than one file has, in file order. A link listed
+// collidingLinks lists the supersedes, superseded_by, narrowed_by and narrows
+// links, in any record file, to an ID that more than one file has, in file order. A link listed
 // twice in one record is listed once.
 func collidingLinks(files []File, recs map[string]model.Record, groups map[int][]File, keeper map[int]File) []Link {
 	var out []Link
@@ -381,23 +381,39 @@ func collidingLinks(files []File, recs map[string]model.Record, groups map[int][
 			add("supersedes", to)
 		}
 		add("superseded_by", rec.SupersededBy)
+		for _, n := range rec.NarrowedBy {
+			add("narrowed_by", n.ID)
+		}
+		for _, to := range rec.Narrows {
+			add("narrows", to)
+		}
 	}
 	return out
 }
 
-// linkedIDs returns the IDs that a supersedes or superseded_by link in the
-// store names although no file has them.
+// linkedIDs returns the IDs that a supersedes, superseded_by, narrowed_by or
+// narrows link in the store names although no file has them.
 func linkedIDs(files []File, recs map[string]model.Record, groups map[int][]File) map[int]bool {
 	out := map[int]bool{}
 	for _, f := range files {
 		rec := recs[f.Name]
-		for _, to := range append(slices.Clone(rec.Supersedes), rec.SupersededBy) {
+		for _, to := range recordLinks(rec) {
 			if to > 0 && len(groups[to]) == 0 {
 				out[to] = true
 			}
 		}
 	}
 	return out
+}
+
+// recordLinks returns the IDs of every link r holds: supersedes, superseded_by,
+// the narrowing records of narrowed_by and narrows.
+func recordLinks(r model.Record) []int {
+	links := append(slices.Clone(r.Supersedes), r.SupersededBy)
+	for _, n := range r.NarrowedBy {
+		links = append(links, n.ID)
+	}
+	return append(links, r.Narrows...)
 }
 
 // freeID returns the next ID for a moved record: one past highest, at least

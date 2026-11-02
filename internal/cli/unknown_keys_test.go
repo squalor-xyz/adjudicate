@@ -195,6 +195,10 @@ func TestRewritingCommandsKeepUnknownKeys(t *testing.T) {
 			decidedTail, wasUnknown}},
 		{"supersede, the old record", "0001-cache-layer.md", []string{"supersede", "1", "--by", "3"}, []string{
 			decidedTail, wasUnknown}},
+		{"narrow, the old record", "0001-cache-layer.md", []string{"narrow", "1", "--by", "3", "--scope", "s"}, []string{
+			decidedTail, wasUnknown}},
+		{"narrow, the new record", "0001-cache-layer.md", []string{"narrow", "3", "--by", "1", "--scope", "s"}, []string{
+			decidedTail, wasUnknown}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

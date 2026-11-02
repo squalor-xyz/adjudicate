@@ -471,7 +471,7 @@ func TestContextBudgetJSONKeysAndExampleMatchTheDocs(t *testing.T) {
 	}
 	// The plain context section does not list it: without a budget the key is
 	// never there.
-	if plain := docsTableKeys(t, "## `adj context --format json`"); !reflect.DeepEqual(plain, []string{"decision", "id", "key", "rationale", "title"}) {
+	if plain := docsTableKeys(t, "## `adj context --format json`"); !reflect.DeepEqual(plain, []string{"decision", "id", "key", "narrowed_by", "narrows", "rationale", "title"}) {
 		t.Errorf("context entry table = %v; the omitted key belongs in its own section", plain)
 	}
 }

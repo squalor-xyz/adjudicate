@@ -107,7 +107,10 @@ func shapeOf(t *testing.T, outputs ...string) map[string]string {
 //	3 superseded  by 4
 //	4 decided     supersedes 3
 //	5 rejected
-//	6 decided     no decided_by (a lint warning)
+//	6 decided     no decided_by (a lint warning), narrowed by 2 (S51)
+//
+// and 2 narrows 6, so narrowed_by and narrows are recorded: they are optional
+// keys, added within contract version 1.
 func shapeFixtureRepo(t *testing.T) string {
 	t.Helper()
 	root := initRoot(t)
@@ -128,6 +131,7 @@ func shapeFixtureRepo(t *testing.T) string {
 		{"supersede", "3", "--by", "4"},
 		{"reject", "5", "--why", "not needed"},
 		{"decide", "6", "--text", "Use Z", "--why", "ok"},
+		{"narrow", "6", "--by", "2", "--scope", "only for the sidebar"},
 		{"amend", "1", "--title", "Pick a data store", "--context", "why now", "--summary", "a:Use engine A", "--tradeoffs", "a:Younger project, fewer docs"},
 		{"amend", "2", "--rationale", "fast and cheap"},
 	} {

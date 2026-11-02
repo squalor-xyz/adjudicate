@@ -222,6 +222,35 @@ var fixtureCases = []struct {
 		finding(1, "0001-was-raw.md", warnSev, lint.CheckUnknownEvent, `history entry 1: unknown event "future-thing"`),
 		finding(1, "0001-was-raw.md", warnSev, lint.CheckUnknownEvent, `history entry 2: unknown event "other-thing"`),
 	}},
+	// Narrow links (S51). A clean pair, narrowed twice over, has no finding.
+	{"narrow-clean", nil},
+	// A link to a record that is not decided is an error, and so is a record
+	// that is not decided or superseded holding one.
+	{"narrow-state", []lint.Finding{
+		finding(1, "0001-first.md", errSev, lint.CheckNarrowState, "narrowed_by 2 names a record that is rejected"),
+		finding(2, "0002-second.md", errSev, lint.CheckNarrowState, "narrows is set but the status is rejected"),
+		finding(3, "0003-third.md", errSev, lint.CheckNarrowState, "narrowed_by is set but the status is open"),
+		finding(4, "0004-fourth.md", errSev, lint.CheckNarrowState, "narrows 3 names a record that is open"),
+	}},
+	// A link listed on one side only is an error on the side that lists it.
+	{"narrow-asymmetric", []lint.Finding{
+		finding(1, "0001-first.md", errSev, lint.CheckNarrowAsymmetric, "narrowed_by 2, but record 2 does not narrow 1"),
+		finding(4, "0004-fourth.md", errSev, lint.CheckNarrowAsymmetric, "narrows 3, but record 3 is not narrowed by 4"),
+	}},
+	{"narrow-dangling", []lint.Finding{
+		finding(1, "0001-first.md", errSev, lint.CheckDanglingLink, "narrowed_by 9 names no record"),
+		finding(1, "0001-first.md", errSev, lint.CheckDanglingLink, "narrows 8 names no record"),
+	}},
+	// The narrowing record was replaced: the narrowing may no longer hold.
+	{"narrow-superseded", []lint.Finding{
+		finding(1, "0001-first.md", warnSev, lint.CheckNarrowSuperseded, "narrowed_by 2, which is superseded by 3: check that the scope still holds"),
+	}},
+	// A blank scope and a link to the record itself are fields findings, not
+	// narrow ones.
+	{"narrow-fields", []lint.Finding{
+		finding(1, "0001-first.md", errSev, lint.CheckFields, "narrowed_by: the scope for 2 must not be blank"),
+		finding(1, "0001-first.md", errSev, lint.CheckFields, "narrows: 1 is not another record's id"),
+	}},
 	{"mixed", []lint.Finding{
 		finding(1, "0001-pick-a-store.md", warnSev, lint.CheckDecidedBy, "decided_by is missing"),
 		finding(2, "0002-cache-layer.md", errSev, lint.CheckFields, "rationale: is required once decided"),

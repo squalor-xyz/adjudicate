@@ -946,6 +946,34 @@ The fixture records, per JSON command, every key path with its JSON types (merge
 
 Owner answer 2026-11-02: contract.Detail now reads '...; ask the owner to run `adj contract pin M` or to install an adj that speaks adj-json vN', both versions still named. Agents that hit the refusal are told to go to the owner, so the snippet, skill and reference stay unchanged and C241's remark that the message does the telling now holds; pinning stays an owner or ork action (S45, C32).
 
+### C244 S51: narrowing is two optional record fields and a narrow event
+
+OLD gets narrowed_by, a list of {id, scope}; NEW gets narrows, a list of IDs; both sit after superseded_by, are left out when empty, and are known record keys (S46: recordKeys), with objects strict inside like an option. The history event is narrow, notes 'by NEW: SCOPE' and 'narrows OLD', known now (an older binary keeps both as unknown parts, S44/S46). Validate refuses a link to the record itself or a non-positive ID, an ID listed twice in either list and a blank or multi-line scope; status is lint's business as for superseded_by. Chosen so a narrowing needs no new record kind and the file stays forward compatible (S51, C32).
+
+### C245 S51: narrowing the same pair twice exits 1 once linked on both sides; a half link is completed; OLD is written first with a restore
+
+A second adj narrow OLD --by NEW, when OLD lists NEW and NEW lists OLD, exits 1 with 'record OLD is already narrowed by record NEW' (model.ErrAlreadyNarrowed, an ErrInvalid), writes nothing and keeps the first scope; changing a scope is a hand edit of both sides. The half link that a failed restore leaves (OLD lists NEW, NEW has no link back) is completed by running the same command again (fix round 1): only NEW is written, with narrows and its narrow entry; OLD keeps its scope and its one entry, the --scope given is checked but not used, and the exit is 0 with OLD's ID. The reverse (NEW lists OLD, OLD does not) is not a state narrow leaves; it is treated as a new narrowing (LinkNarrows lists an ID once but adds its entry). Both records are validated in memory first and written OLD first, OLD put back if NEW fails, as supersede does (C136); if the restore fails too the error says OLD is left narrowed by NEW with no link back (lint: narrow-asymmetric). Mutual narrowing (A narrows B and B narrows A) is allowed and no cycle check is made, since narrowing is not a replacement order (S51, C32).
+
+### C246 S51: the scope is one non-blank line, kept as typed, checked before the store
+
+--scope is required; blank (empty, spaces, tabs) or containing a line break exits 2 before the store or the config is looked for, with the usage; it is stored as typed with its surrounding space, like --why. A missing or non-positive ID, a missing or non-positive --by, OLD equal to NEW and an extra argument exit 2; an unknown ID or a record that is not decided exits 1 with the status named, OLD first (supersede's order, messages 'only a decided record can be narrowed' and 'can narrow another'). narrow has no --json, so a failure prints no error object (S42) (S51, C32).
+
+### C247 S51: show and context print the narrowing on their own lines; JSON keys are additive and the contract stays v1
+
+adj show prints 'Narrowed by: NEW (SCOPE)', one line per narrowing record, and 'Narrows: OLD, OLD' after Superseded by. adj context md prints the same lines, indented, between the decision and the Rationale line, not appended to the decision line (a decision may run over several lines; the --max-bytes budget measures the real output so it counts them). This differs from the slice's 'appends the scope to the decision line' wording; the scope and the narrowing record are still on the OLD entry. Context JSON entries and the record JSON gain optional narrowed_by and narrows, after rationale in a context entry. These are additive keys within adj-json v1 (S45): no version bump, the contract fixture repo narrows record 6 by 2 so shapes.json records them, and docs/json.md says so under Keys of a record (S51, C32).
+
+### C248 S51: lint narrow-state, narrow-asymmetric (errors), narrow-superseded (warning)
+
+narrow-state (error): narrowed_by or narrows on a record that is not decided or superseded, or naming a record that is open, rejected or withdrawn. narrow-asymmetric (error): a link listed on one record only; a target with no file or that does not parse is left to dangling-link and parse. narrow-superseded (warning): narrowed_by names a record that was superseded, 'check that the scope still holds'; no warning for narrows naming a superseded OLD, which only means OLD was replaced. A superseded record may carry narrow links (a narrowed record can be superseded, and so can the narrowing one). dangling-link covers both fields; narrow links make no cycle check. When several files share the named ID (duplicate-id), a link is faulted only if every file with the ID is, and is in order if any lists it back (S51, C32).
+
+### C249 S51: renumber and Create treat narrow links like supersede links; the stale-copy test is unchanged
+
+Links in narrowed_by and narrows to a colliding ID are listed with their field name and block adj renumber until --keep-links (C147); a new ID, from Create or a move, is never one that these links name without a file (C155). IsStaleCopy needs no change: narrow links and narrow entries added after the renumber entry are like supersede links and decide entries (not compared in the edited-since case, C163), those before it are part of the history that is compared, and the whole record is compared when the renumber entry is last (S51, C32).
+
+### C250 S51: narrow is owner-only; the snippet is reworded to fit, its SHA pin moves, the skill names narrow
+
+adj narrow joins decide, reject and supersede in the commands agents never run (C137, C27). ai.md stays within 1800 bytes (now 1779) by shortening 'Line 1 of the output is' to 'Line 1 is', 'Read the decisions in force' to 'Read decisions in force' and '(open questions, oldest first)' to '(oldest first)'; the phrases that tests pin are untouched. snippetSHA256 in ai_skill_test.go was moved deliberately (its S54 comment said the snippet must not change; it now says an edit moves the pin). skill.md names adj narrow in its Owner only section and explains the Narrowed by and Narrows lines in two sentences; skill_reference.md lists the narrowed_by and narrows keys and the owner list; the three installed copies were rewritten with adj ai skill --install --force (S51, C32).
+
 ### C39 LICENSE is a stub until the owner supplies the full GPL-3.0 text and copyright holder
 
 No GPL-3.0 text exists in the adjudicate repo and the workspace has no network, so the stub carries the SPDX line, the or-later notice and TODO(owner) markers.
@@ -1008,7 +1036,7 @@ PENDING OWNER CONFIRMATION - not decided. Source: Dependency/licensing notes (ma
 
 *Retired: Owner decided 2026-10-15: see decision C31 (GPL-3.0-or-later)..*
 
-54 items · — 3 · done 46 · later 3 · retired 2
+54 items · — 2 · done 47 · later 3 · retired 2
 
 Release 1.0
 
@@ -1018,7 +1046,7 @@ Release 1.0
 | 2 | [S39](slices/S39.md) | Release 1.0 | S | 1 | release | CHANGELOG.md and docs/json.md 1.0 rule; owner 2026-10-18: 0.2.0 first, 1.0 later | — |
 | 3 | [S45](slices/S45.md) | JSON contract version and pin | M | 2 | cli | owner session 2026-10-20 (in slicer): slicer, ork and adjudicate lock to agreed contract versions; per-contract pins, each tool keeps its own pin, ork sets and checks them. Companion items: slicer s387 (relay contract pin), ork S24 (ork sets and checks the pins). | done |
 | 4 | [S46](slices/S46.md) | Forward-compatible record reads | S | 1 | model | adj records 17 (store.amend-was) and 18 (store.record-unknown-keys), filed 2026-10-20 from the S39 notes and the S44 review | done |
-| 5 | [S51](slices/S51.md) | Partial supersede | M | 2 |  | ork adj 168 ui.structured-questions, 2026-10-25 | — |
+| 5 | [S51](slices/S51.md) | Partial supersede | M | 2 |  | ork adj 168 ui.structured-questions, 2026-10-25 | done |
 | 6 | [S52](slices/S52.md) | Decision provenance: recorded by, via | S | 1 |  |  | done |
 | 7 | [S53](slices/S53.md) | inbox --ref | S | 1 |  |  | done |
 | 8 | [S54](slices/S54.md) | adj agent skill: adj ai skill --install | M | 2 |  |  | done |

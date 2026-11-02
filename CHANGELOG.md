@@ -8,6 +8,32 @@ but never renames, removes or retypes an existing key.
 ## Unreleased
 
 ### Commands
+- New: `adj narrow OLD --by NEW --scope TEXT` (S51), owner-only, for a decision
+  that another decision changes only in part. `adj supersede` would take the
+  whole of OLD out of `adj context`, and with it the parts NEW leaves alone;
+  `narrow` keeps both records `decided` and in force and links them. OLD gets a
+  `narrowed_by` entry (`{"id": NEW, "scope": TEXT}`) and NEW a `narrows` entry
+  (OLD's ID); both records get one `narrow` history entry (notes `by NEW: SCOPE`
+  and `narrows OLD`). The scope is one line that is not blank. A record may be
+  narrowed by several records and may narrow several; the same pair is linked
+  once (a second `adj narrow` of a pair linked on both sides exits 1; if a
+  failed write left only OLD linked, running it again writes only NEW). `adj show` prints `Narrowed by: NEW
+  (SCOPE)` and `Narrows: OLD`; `adj context` prints the same under each
+  decision, between the decision and its rationale. Exit 2 for a missing or
+  non-positive ID, no `--by` or `--scope`, a blank or multi-line scope, OLD
+  equal to NEW or an extra argument; exit 1, nothing written, for an unknown ID
+  or a record that is not `decided`. The files are written OLD first and OLD is
+  put back if NEW cannot be written, as for `supersede`. `adj supersede` is
+  unchanged, and a narrowed record can still be superseded. `adj lint` gains
+  `narrow-state` (a narrow link on a record that is not decided or superseded,
+  or to one that is open, rejected or withdrawn), `narrow-asymmetric` (a link
+  listed on one record only) and `narrow-superseded` (a warning: the narrowing
+  record was superseded, so check that the scope still holds), and
+  `dangling-link` covers the new links. `adj renumber` lists and holds back
+  `narrowed_by` and `narrows` links to a colliding ID like the supersede links,
+  and a new ID is never one that they name without a file. The agent snippet and
+  the skill name `adj narrow` among the commands an agent never runs (the
+  snippet's wording is tightened elsewhere to stay within 1800 bytes).
 - New: `adj contract` (S45) prints the version of the JSON contract this adj
   speaks, `adj-json v1`: the revision of the shapes in
   [docs/json.md](docs/json.md), adj's own number, starting at 1. `--json`
@@ -69,6 +95,15 @@ but never renames, removes or retypes an existing key.
   does not name them.
 
 ### Store format
+- A record may have two more optional keys, `narrowed_by` (a list of `{"id",
+  "scope"}`) and `narrows` (a list of IDs), written after `superseded_by` and
+  left out when empty (S51), and its history a new event, `narrow`. They are
+  known keys and a known event, so this version reads and rewrites them; an `adj`
+  from before this change keeps them as an unknown key and an unknown event
+  (S44, S46), and `adj lint` there warns. A record file with a link to itself or
+  to a non-positive ID, an ID listed twice or a blank or multi-line scope is
+  invalid (`fields`). An unknown key inside a `narrowed_by` entry is an error,
+  as inside an option.
 - A record may have two more optional keys, `recorded_by` and `via`, written
   right after `decided_by` and left out when empty. A record file that has a
   blank one is invalid (`adj lint` reports it as a `fields` error).
@@ -105,6 +140,12 @@ but never renames, removes or retypes an existing key.
   and an unknown key a `parse` error.
 
 ### JSON shapes
+- A record object may have two more optional keys, `narrowed_by` (an array of
+  `{"id", "scope"}`) and `narrows` (an array of integers), and the entries of
+  `adj context --format json` the same two (S51). They are present only for a
+  record that `adj narrow` linked, so no existing key changes: the change is
+  additive and the contract stays `adj-json v1`. A history entry's `event` may
+  be `narrow`. See [docs/json.md](docs/json.md).
 - New: the contract version (S45). `docs/json.md` has a "Contract version"
   section with one line per version; version 1 is the shapes of this release,
   unchanged. The number moves on any change to a shape that is not purely

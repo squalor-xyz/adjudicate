@@ -27,7 +27,7 @@ library only.
   process entry; `RunWith(Env, ...)` takes the repo root, clock, environment
   and working directory as parameters for tests. Each command's handler is in
   its own file (`init.go`, `ask.go`, `decide.go`, which holds decide,
-  reject and withdraw, `supersede.go`, `amend.go`, `show.go`, `list.go`,
+  reject and withdraw, `supersede.go`, `narrow.go`, `amend.go`, `show.go`, `list.go`,
   `inbox.go`, `check.go`, `context.go`, `lint.go`, `renumber.go`,
   `importadr.go`, `version.go`, `contract.go`, `repos.go` and `ai.go`);
   `contract.go` also holds `guardContract`, the one guard in front of every
@@ -35,7 +35,7 @@ library only.
   `cli.go` holds the dispatch and shared helpers.
 - `internal/commands`: what each command does to the store, apart from
   parsing, output and exit codes (`init.go`, `ask.go`, `decide.go`,
-  `supersede.go`, `amend.go`, `show.go`, `list.go`, `inbox.go`, `check.go`,
+  `supersede.go`, `narrow.go`, `amend.go`, `show.go`, `list.go`, `inbox.go`, `check.go`,
   `context.go`, `lint.go`, `renumber.go`, `importadr.go`, `repos.go`,
   `contract.go`, `ai.go`). `ai.md` is the agent snippet, embedded by `ai.go`;
   `skill.md` and `skill_reference.md` are the two files of the agent skill (`SKILL.md` and
@@ -198,6 +198,50 @@ A new failure with its own error value needs a sentinel and a code in
   and the message names the status.
   Only the owner supersedes, as for decide (C27): the agent snippet lists it
   among the commands never to run (C137). `adj lint` finds supersede cycles.
+- `adj narrow OLD --by NEW --scope TEXT [--root DIR]` (S51): narrows a decided
+  record with another decided one, for a decision that NEW changes only in
+  part; `adj supersede` is unchanged and still replaces a whole record. Both
+  records stay `decided`: OLD gets `narrowed_by` (a list of `{"id", "scope"}`,
+  here NEW and the scope as typed) and NEW gets `narrows` (a list of IDs, here
+  OLD), both left out of the file when empty and placed after `superseded_by`;
+  each gets one `narrow` history entry, notes `by NEW: SCOPE` and `narrows OLD`.
+  The two fields are known record keys (S46: `recordKeys`; the narrowing
+  objects are strict inside, like an option) and `narrow` is a known event, so
+  a binary from before S51 keeps them as unknown parts. `Validate` refuses a
+  link to the record itself or to no record, an ID listed twice in either list,
+  and a blank or multi-line scope; the status they sit on is lint's business.
+  The scope is one line that is not blank, kept as typed. OLD stays in
+  `adj context`: md has `  Narrowed by: ID (scope)` for each narrowing record
+  and `  Narrows: ID, ID`, between the decision and the rationale (not on the
+  decision line, which may run over several lines), and `--format json` entries
+  gain the optional `narrowed_by` and `narrows` keys; `adj show` prints
+  `Narrowed by: ID (SCOPE)` (one line each) and `Narrows: ID, ID`, and the JSON
+  of `show`, `list`, `inbox` and `check` carries the keys. They are additive:
+  `adj-json v1` did not move (S45), and `internal/cli/testdata/contract/
+  shapes.json` records them from the contract fixture repo. The pair is linked
+  once: when OLD lists NEW and NEW lists OLD the command exits 1
+  (`model.ErrAlreadyNarrowed`, "record N is already narrowed by record M"),
+  writing nothing and keeping the first scope. The half link that a failed
+  restore leaves (OLD lists NEW, NEW has no link back) is completed by running
+  the same command again: only NEW is written, with the `narrows` link and its
+  `narrow` entry, OLD keeps its scope and its one entry, the `--scope` given is
+  not used (it is still checked), and it exits 0 printing OLD's ID. The reverse
+  (NEW lists OLD, OLD does not) is not a state narrow leaves; the command treats
+  it as a new narrowing, and `LinkNarrows` lists the ID once but adds its entry
+  again. A record may be narrowed by several records and
+  may narrow several, and two records may narrow each other. Exit 2: a missing or
+  non-positive ID, a missing `--by` or `--scope`, a blank or multi-line scope,
+  OLD equal to NEW, an extra argument (all before the store is looked for).
+  Exit 1, nothing written: an unknown ID, or a record that is not `decided`
+  (both IDs are looked up first, then OLD's status is checked before NEW's, and
+  the message names the status, as for supersede). Both records are validated in
+  memory first and written OLD first, with OLD put back if NEW cannot be written
+  (C136); if that fails too the error says OLD is left narrowed and NEW has no
+  link back (lint: `narrow-asymmetric`). Prints OLD's ID. Owner-only like
+  decide and supersede: the agent snippet lists it among the commands never to
+  run, and the skill's owner section names it. `amend`, `supersede`,
+  `renumber`, `decide` and `inbox -i` leave the narrow fields as they are; a
+  `supersede` of a narrowed record still works on either side.
 - `adj amend ID [--title T] [--context T | --stdin] [--summary LABEL:TEXT]...
   [--tradeoffs LABEL:TEXT]... [--rationale T] [--root DIR]` (C166, C178-C180):
   corrects the text of a record of any status; it never changes status,
@@ -356,11 +400,18 @@ A new failure with its own error value needs a sentinel and a code in
   ID), `id-mismatch` (the record's `id` is not the ID in its file name),
   `duplicate-id` (more than one file has the ID; each of them gets the finding,
   C26, C152), `renumber-leftover` (the stale old file of an interrupted `adj
-  renumber`, C156, C163), `dangling-link` (`supersedes` or `superseded_by` names
-  an ID no file has; a link listed twice is reported once), `supersede-state`
+  renumber`, C156, C163), `dangling-link` (`supersedes`, `superseded_by`,
+  `narrowed_by` or `narrows` names an ID no file has; a link listed twice is
+  reported once), `supersede-state`
   (`superseded_by` on a record that is not superseded), `supersede-cycle` (a
   loop of supersede links; one finding per record in it, naming only records
-  that have a file), `key-conflict` (another `decided` record has the same key,
+  that have a file), `narrow-state` (S51: `narrowed_by` or `narrows` on a record
+  that is not decided or superseded, or naming a record that is open, rejected or
+  withdrawn; with several files on the named ID, only if every one is),
+  `narrow-asymmetric` (a narrow link listed on one record only; a target with no
+  file or that does not parse is left to `dangling-link` and `parse`),
+  `narrow-superseded` (a warning: the narrowing record was superseded, so the
+  scope may no longer hold; narrow links make no cycle check), `key-conflict` (another `decided` record has the same key,
   trimmed and case-sensitive), `decided-by` (a `decided` record without
   `decided_by`, a warning, C27), `unknown-event` (a history entry whose event
   this version does not know, one finding per entry: `history entry N: unknown
@@ -370,8 +421,8 @@ A new failure with its own error value needs a sentinel and a code in
   amend entry, naming the unknown keys of its `was`, those inside an option as
   `options.LABEL.KEY`, S46, C231) and `contract-pin` (the config pins a JSON
   contract version other than the built-in one: one warning about
-  `.adjudicate.json`, with record ID 0, S45, C240); the last six are warnings,
-  the rest errors (C143). A blank event is a `fields` error. Text: per finding
+  `.adjudicate.json`, with record ID 0, S45, C240); the last six and
+  `narrow-superseded` are warnings, the rest errors (C143). A blank event is a `fields` error. Text: per finding
   `FILE: record ID: SEVERITY: CHECK: MESSAGE` (`FILE: SEVERITY: CHECK: MESSAGE`
   for ID 0), sorted by ID, check and file,
   then `N errors, M warnings`; a clean store prints nothing (C141). `--json`
@@ -388,8 +439,9 @@ A new failure with its own error value needs a sentinel and a code in
   one `renumber` history entry (note `from N`), and the old file is removed
   after the new one is complete (C148). Prints one line per move, `OLD-FILE ->
   NEW-FILE (id N -> M)`; no collision prints nothing and changes nothing, exit
-  0. Links to a colliding ID cannot be told apart, so they and the history notes
-  are never rewritten (C147, C149): if any record links to one, renumber lists
+  0. Links (`supersedes`, `superseded_by`, `narrowed_by`, `narrows`) to a colliding
+  ID cannot be told apart, so they and the history notes
+  are never rewritten (C147, C149, S51): if any record links to one, renumber lists
   the links, exits 1 and changes nothing, until `--keep-links` accepts that they
   stay with the record that keeps the ID (they are listed on stderr). Every
   record file must be readable (it may hold a link); a colliding record needs a
@@ -541,7 +593,7 @@ A new failure with its own error value needs a sentinel and a code in
   before asking and what each result means, ask with `--ref` and
   `--recommend-text`, read the decisions, withdraw your own question, amend an
   open question, only the owner decides or amends a decided record and never
-  run decide, reject or supersede, tell the owner about a duplicate ID or a
+  run decide, reject, supersede or narrow, tell the owner about a duplicate ID or a
   missing repo instead of running renumber or init, exit codes, `ADJ_ASKED_BY`)
   and exits 0. It does not name `--decided-at`: agents never run decide, so the
   flag is the owner's. It reads no repo and takes no flag and no argument but
@@ -568,8 +620,9 @@ A new failure with its own error value needs a sentinel and a code in
   folder (`.claude`, say) is followed. Each
   file is written through a temporary file and a rename (new files 0644,
   replaced ones keep their mode); a failed write puts back the files and the
-  directories written before it. `adj ai` and its snippet are unchanged (a test
-  pins the snippet's SHA-256). `internal/cli/ai_skill_test.go` fails if the skill
+  directories written before it. `adj ai` and its snippet are not changed by
+  the subcommand (a test pins the snippet's SHA-256, `snippetSHA256`, which
+  moves on purpose with any edit of `ai.md`, as S51's did). `internal/cli/ai_skill_test.go` fails if the skill
   or its reference names a command, flag or variable that does not exist, omits
   an owner-only command, names an owner-only flag, or if its text outgrows
   6000 and 9000 bytes. The skill may name flags the snippet leaves out for size
@@ -633,8 +686,8 @@ A new failure with its own error value needs a sentinel and a code in
   (ENOLCK or EOPNOTSUPP, as on some network file systems), `adj ask` exits 1
   with an error that names `.adj.lock` and writes no record. On a network file
   system the lock may be local to each host, so asks from two hosts can still
-  take one ID. `Create` also skips an ID that a `supersedes` or `superseded_by`
-  link names without a file (C155); a file it cannot read keeps its ID by name
+  take one ID. `Create` also skips an ID that a `supersedes`, `superseded_by`,
+  `narrowed_by` or `narrows` link names without a file (C155, S51); a file it cannot read keeps its ID by name
   but its links are not known. The lock only serialises one checkout: branches
   and clones still collide, and `adj lint` and `adj renumber` handle that.
   Locking needs `syscall.Flock` (darwin, linux, the BSDs, illumos) or, on
@@ -686,8 +739,8 @@ Never run `go env -w`; it writes outside the repo. Do not add a Makefile.
   `os.Chdir`.
 - User config tests inject `Getenv` with XDG_CONFIG_HOME/HOME pointing into
   worktree temp dirs; never touch the real home or user config.
-- Only the owner makes the decide transition (`adj decide`, C27) and the
-  supersede transition (`adj supersede`). Agents ask, check and read; an agent
+- Only the owner makes the decide transition (`adj decide`, C27), the
+  supersede transition (`adj supersede`) and the narrow link (`adj narrow`, S51). Agents ask, check and read; an agent
   may withdraw its own question (`adj withdraw`).
 - Work is tracked in slicer. Read and change tracking state only through the
   `slicer` CLI; never open, search or edit `.slicer/`.

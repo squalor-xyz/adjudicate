@@ -14,8 +14,10 @@ import (
 // as a Markdown list. Each entry is "- ID title [key]: decision", with the key
 // left out when the record has none, and the first line of the rationale on
 // the next line, indented. A decision with line breaks continues on indented
-// lines. Nothing else of a record is shown; adj show has it. No records
-// prints nothing.
+// lines. A record that other decisions narrow has a "Narrowed by: ID (scope)"
+// line for each, and one that narrows others a "Narrows: ID, ID" line, both
+// between the decision and the rationale (S51). Nothing else of a record is
+// shown; adj show has it. No records prints nothing.
 func ContextText(w io.Writer, recs []model.Record) error {
 	return ContextTextOmitted(w, recs, 0)
 }
@@ -33,6 +35,7 @@ func ContextTextOmitted(w io.Writer, recs []model.Record, omitted int) error {
 			fmt.Fprintf(&b, " [%s]", r.Key)
 		}
 		fmt.Fprintf(&b, ": %s\n", cont(trimBreaks(r.Decision), "    "))
+		writeNarrowing(&b, "  ", r)
 		writeField(&b, "  ", "Rationale", firstLine(r.Rationale))
 	}
 	if omitted > 0 {
@@ -56,6 +59,10 @@ type contextEntry struct {
 	Key       string `json:"key,omitempty"`
 	Decision  string `json:"decision"`
 	Rationale string `json:"rationale,omitempty"`
+	// NarrowedBy and Narrows are the narrow links of the record (S51), left out
+	// when it has none.
+	NarrowedBy []model.Narrowing `json:"narrowed_by,omitempty"`
+	Narrows    []int             `json:"narrows,omitempty"`
 }
 
 // contextJSON is the object adj context --format json prints.
@@ -88,6 +95,9 @@ func writeContextJSON(w io.Writer, recs []model.Record, omitted *int) error {
 			Key:       r.Key,
 			Decision:  trimBreaks(r.Decision),
 			Rationale: firstLine(r.Rationale),
+
+			NarrowedBy: r.NarrowedBy,
+			Narrows:    r.Narrows,
 		})
 	}
 	return encodeJSON(w, out)

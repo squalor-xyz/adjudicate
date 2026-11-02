@@ -54,6 +54,7 @@ const (
 	EventRenumber  Event = "renumber" // a collision on the ID was resolved (C26)
 	EventAmend     Event = "amend"    // text fields were corrected; the entry's Was keeps the old text (C166)
 	EventImport    Event = "import"   // the record was made from an ADR file by adj import-adr; the note is "from FILE" (S22)
+	EventNarrow    Event = "narrow"   // the record was narrowed by another, or narrows another; the note is "by N: SCOPE" or "narrows N" (S51)
 )
 
 // Option is one answer a question offers.
@@ -73,13 +74,13 @@ type Recommendation struct {
 	Reasoning string `json:"reasoning,omitempty"`
 }
 
-// Known reports whether e is one of the eight events this version knows. An
+// Known reports whether e is one of the nine events this version knows. An
 // event that is not known is still accepted in a history entry, so a store
 // that a newer version wrote can be read and changed; adj lint warns about it
 // (S44).
 func (e Event) Known() bool {
 	switch e {
-	case EventAsk, EventDecide, EventReject, EventWithdraw, EventSupersede, EventRenumber, EventAmend, EventImport:
+	case EventAsk, EventDecide, EventReject, EventWithdraw, EventSupersede, EventRenumber, EventAmend, EventImport, EventNarrow:
 		return true
 	}
 	return false
@@ -456,6 +457,15 @@ func (o OptionWas) MarshalJSON() ([]byte, error) {
 	return withExtra(out, o.extra), nil
 }
 
+// Narrowing is one link from a decided record to a decided record that narrows
+// it (S51): ID is the narrowing record and Scope says, in one line, what of the
+// decision it narrows. Unlike a supersede the narrowed record stays decided and
+// in force; the scope is the part that the narrowing record changes.
+type Narrowing struct {
+	ID    int    `json:"id"`
+	Scope string `json:"scope"`
+}
+
 // Record is one question or decision. Field order follows the PROJECT.md
 // Core concepts table (minus kind) so encoding/json output is deterministic.
 // Dates are time.DateOnly strings (YYYY-MM-DD). AskedBy and DecidedBy are
@@ -481,6 +491,8 @@ type Record struct {
 	Consequences   string          `json:"consequences,omitempty"`
 	Supersedes     []int           `json:"supersedes,omitempty"`
 	SupersededBy   int             `json:"superseded_by,omitempty"`
+	NarrowedBy     []Narrowing     `json:"narrowed_by,omitempty"`
+	Narrows        []int           `json:"narrows,omitempty"`
 	Refs           []string        `json:"refs,omitempty"`
 	History        []HistoryEntry  `json:"history,omitempty"`
 
@@ -495,7 +507,7 @@ type Record struct {
 var recordKeys = []string{
 	"id", "title", "status", "key", "tags", "asked_by", "decided_by", "recorded_by", "via", "created",
 	"decided_at", "context", "options", "recommendation", "decision", "rationale", "consequences",
-	"supersedes", "superseded_by", "refs", "history",
+	"supersedes", "superseded_by", "narrowed_by", "narrows", "refs", "history",
 }
 
 // recordJSON is Record's known keys, for encoding and decoding without the
@@ -601,6 +613,9 @@ func validDate(s string) bool {
 // superseded needs superseded_by. decided_by is never required (C27), and
 // neither are recorded_by and via, which must not be blank when set (S52).
 // A recommendation has an option label or free text, not both (C167).
+// narrowed_by and narrows list other records, each once, and a narrowing has a
+// one-line scope that is not blank (S51); the status they sit on is lint's
+// business, as for superseded_by.
 func (r Record) Validate() error {
 	var errs []error
 	bad := func(field, format string, args ...any) {
@@ -653,6 +668,32 @@ func (r Record) Validate() error {
 		if id <= 0 || id == r.ID {
 			bad("supersedes", "%d is not another record's id", id)
 		}
+	}
+	seenBy := map[int]bool{}
+	for _, n := range r.NarrowedBy {
+		switch {
+		case n.ID <= 0 || n.ID == r.ID:
+			bad("narrowed_by", "%d is not another record's id", n.ID)
+		case seenBy[n.ID]:
+			bad("narrowed_by", "%d is listed twice", n.ID)
+		}
+		seenBy[n.ID] = true
+		switch {
+		case strings.TrimSpace(n.Scope) == "":
+			bad("narrowed_by", "the scope for %d must not be blank", n.ID)
+		case strings.ContainsAny(n.Scope, "\r\n"):
+			bad("narrowed_by", "the scope for %d must be one line", n.ID)
+		}
+	}
+	seenNarrows := map[int]bool{}
+	for _, id := range r.Narrows {
+		switch {
+		case id <= 0 || id == r.ID:
+			bad("narrows", "%d is not another record's id", id)
+		case seenNarrows[id]:
+			bad("narrows", "%d is listed twice", id)
+		}
+		seenNarrows[id] = true
 	}
 
 	for i, h := range r.History {

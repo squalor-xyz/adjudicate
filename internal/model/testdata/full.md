@@ -37,6 +37,20 @@
     2
   ],
   "superseded_by": 7,
+  "narrowed_by": [
+    {
+      "id": 8,
+      "scope": "only for the --- fence case"
+    },
+    {
+      "id": 9,
+      "scope": "not in tests"
+    }
+  ],
+  "narrows": [
+    4,
+    5
+  ],
   "refs": [
     "S04",
     "PR 12"
@@ -50,6 +64,16 @@
       "date": "2026-10-02",
       "event": "decide",
       "note": "owner"
+    },
+    {
+      "date": "2026-10-05",
+      "event": "narrow",
+      "note": "by 8: only for the --- fence case"
+    },
+    {
+      "date": "2026-10-06",
+      "event": "narrow",
+      "note": "narrows 4"
     },
     {
       "date": "2026-10-07",

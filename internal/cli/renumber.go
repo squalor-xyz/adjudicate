@@ -20,12 +20,12 @@ one renumber entry noting the old ID. Prints one line per record moved,
 "OLD-FILE -> NEW-FILE (id N -> M)". With no shared ID it prints nothing and
 changes nothing.
 
-Links (supersedes, superseded_by) to a shared ID cannot be told apart: renumber
-never rewrites them or the notes in history. If a record links to a shared ID,
-renumber lists the links and stops with nothing changed. Check them (edit a
-file by hand if one meant the record that moves), then run again with
---keep-links, which leaves them as they are, so they name the record that kept
-the ID.
+Links (supersedes, superseded_by, narrowed_by, narrows) to a shared ID cannot
+be told apart: renumber never rewrites them or the notes in history. If a
+record links to a shared ID, renumber lists the links and stops with nothing
+changed. Check them (edit a file by hand if one meant the record that moves),
+then run again with --keep-links, which leaves them as they are, so they name
+the record that kept the ID.
 
 Every record file must be readable, a record that shares an ID must have a
 created date, and a record that moves must be valid with its new ID; if not,

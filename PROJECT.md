@@ -35,8 +35,8 @@ in the repository.
 ## Users
 
 - **Owner:** answers questions in batches, records decisions, supersedes old
-  ones, and is the only one who decides, supersedes or amends a decided record
-  (a convention, C27, C182).
+  ones, narrows them, and is the only one who decides, supersedes, narrows or
+  amends a decided record (a convention, C27, C182).
 - **Agents** (Claude Code, other vendors, headless relay roles): they check
   whether a topic is already decided, ask questions, and load the decisions in
   force as context.
@@ -204,18 +204,22 @@ Empty fields are left out. The fields, with their exact types, are in
 | `rationale` | The owner's "why"; for a rejected or withdrawn record, the reason |
 | `consequences` | What the decision implies; `adj show` prints it, but 0.1.0 has no flag that sets it, so it is written by hand |
 | `supersedes` / `superseded_by` | Links to other record IDs |
+| `narrowed_by` / `narrows` | Optional (S51), left out when empty. `narrowed_by` is a list of `{"id", "scope"}` on a decided record that another decided record narrows, `scope` being one line saying which part of the decision the other changes; `narrows` lists the IDs a decided record narrows. Both records stay `decided` and in force. Set by `adj narrow` |
 | `refs` | Opaque reference strings (slice IDs, PRs, files), kept as typed and in order |
 | `history` | One entry per change: `date`, `event` and, when set, `note` and `was` |
 
 **Lifecycle:** `adj ask` creates an `open` record. `adj decide` moves it to
 `decided`; `adj reject` and `adj withdraw` move it to `rejected` or
 `withdrawn`. `adj supersede OLD --by NEW` links two decided records and marks
-OLD `superseded`; NEW stays `decided`. No transition leaves `superseded`. Every
+OLD `superseded`; NEW stays `decided`. `adj narrow OLD --by NEW --scope TEXT`
+(S51) links two decided records without changing either's status: NEW changes
+only the part of OLD that the scope names, so OLD stays in force and in
+`adj context`, shown with the scope. No transition leaves `superseded`. Every
 transition, an `adj amend` and an `adj renumber` appends a dated entry to the
 history, so a record shows what happened and when. A record made by
 `adj import-adr` from an ADR file has one `import` entry instead of `ask` and
 `decide`. The history's `event` is `ask`, `decide`, `reject`, `withdraw`,
-`supersede`, `renumber`, `amend` or `import`. A reader accepts an event it does
+`supersede`, `narrow`, `renumber`, `amend` or `import`. A reader accepts an event it does
 not know, and keys it does not know inside a history entry, so a later event
 kind does not make an older `adj` refuse a store; they are kept unchanged when
 the record is rewritten, and `adj lint` warns (`unknown-event`,
@@ -286,13 +290,14 @@ when it finds an error and 0 for a clean store or warnings only.
 | `adj decide ID OPTION --why TEXT [--by NAME] [--decided-at YYYY-MM-DD] [--recorded-by NAME] [--via TEXT]`, or `adj decide ID --text TEXT --why TEXT ...` | Answer an open question. `decided_by` is `--by`, else `$ADJ_DECIDED_BY`. `--decided-at` sets an earlier effective date. `--recorded-by` and `--via` (S52) store who entered the answer and how the owner gave it. |
 | `adj reject ID --why TEXT [--by NAME] [--recorded-by NAME] [--via TEXT]`, `adj withdraw ID --why TEXT [--by NAME] [--recorded-by NAME] [--via TEXT]` | Close an open question without an answer. |
 | `adj supersede OLD --by NEW` | Replace a decided record with another decided one; OLD leaves `adj context` and stays readable. |
+| `adj narrow OLD --by NEW --scope TEXT` | Owner-only (S51). Link two decided records when NEW changes only part of OLD: both stay `decided`, OLD gets `narrowed_by` NEW with the one-line scope, NEW gets `narrows` OLD, each gets a `narrow` history entry, and `adj show` and `adj context` print the link and the scope. The same pair twice exits 1; after a failed write that left only OLD linked, running it again completes NEW. `adj supersede` is unchanged and still replaces the whole record. |
 | `adj amend ID [--title T] [--context T \| --stdin] [--summary LABEL:TEXT]... [--tradeoffs LABEL:TEXT]... [--rationale T]` | Correct text on a record of any status; the old text is kept in the history. |
 | `adj show ID [--json]` | Print one record and its history. |
 | `adj list [--status S] [--tag T]... [--ref REF]... [--key K] [--json]` | List records in ID order; every filter given must match. |
 | `adj inbox [--ref REF]... [--json]`, `adj inbox --all [--ref REF]... [--json]`, `adj inbox -i [--ref REF]... [--by NAME]` | List open questions oldest first, with options and recommendation; `--ref` (S53) keeps only questions that carry every ref given, exactly as typed; `--all` groups the user repo list by root; owner-only `-i` walks one repo to decide, reject, withdraw or skip. |
 | `adj check QUERY [--json]` | Is QUERY decided? One substring, matched ignoring case against titles, keys, tags, refs and decision text. Line 1 of the output is `decided`, `open`, `closed` or `not found`. |
 | `adj context [--tag T]... [--ref REF]... [--key-prefix P] [--format md\|json] [--max-bytes N]` | Print the decided records as compact context for an agent. With `--max-bytes N`, keep the newest decisions whose output fits in N bytes (ID order, an `N decisions omitted` line, JSON `omitted`). |
-| `adj lint [--json]` | Check the store for broken records, links, cycles and conflicts; warn about history events and keys it does not know. |
+| `adj lint [--json]` | Check the store for broken records, links (including one-sided or stale narrow links), cycles and conflicts; warn about history events and keys it does not know. |
 | `adj renumber [--keep-links]` | Owner-only. Give record files that share an ID new IDs. |
 | `adj import-adr DIR [--tag T]... [--by NAME] [--dry-run]` | Owner-only. Create one record for each ADR in DIR, in the format adr-tools writes (Nygard) or MADR; see below. |
 | `adj repos add [PATH]`, `adj repos remove PATH`, `adj repos list [--json]` | Manage the user repo list; add defaults to the current repo root (`--root`), explicit relative paths use the working directory. Store cleaned absolute strings without resolving symlinks. Add requires `.adjudicate.json`; duplicates are a no-op. Remove requires a listed path, else exit 1. Both print nothing. List prints paths in insertion order without probing them; JSON is `{"repos": [...]}` (empty: `[]`). `--root` is otherwise unused; no current repo is required. |
@@ -450,7 +455,7 @@ of `not found` and `inbox --all` per-repo errors are results, not failures
 It tells agents to check before asking, what each `check` result means, how to
 ask (including `--ref` and `--recommend-text`), to read the decisions, to
 withdraw only their own question, to amend only an open question, and never to
-run `adj decide`, `adj reject` or `adj supersede`. An agent that finds no repo
+run `adj decide`, `adj reject`, `adj supersede` or `adj narrow`. An agent that finds no repo
 or a duplicate ID tells the owner instead of running `adj init` or
 `adj renumber`. The snippet does not name `--decided-at`: agents never run
 decide, so the flag is the owner's. A test fails if the snippet names a

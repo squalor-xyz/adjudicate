@@ -48,6 +48,7 @@ func RecordText(w io.Writer, r model.Record) error {
 	if r.SupersededBy != 0 {
 		field("Superseded by", strconv.Itoa(r.SupersededBy))
 	}
+	writeNarrowing(&b, "", r)
 	field("Refs", strings.Join(r.Refs, ", "))
 	if len(r.History) > 0 {
 		b.WriteString("History:\n")
@@ -71,6 +72,19 @@ func RecordText(w io.Writer, r model.Record) error {
 	}
 	_, err := io.WriteString(w, b.String())
 	return err
+}
+
+// writeNarrowing writes the narrow links of r at indent pad (S51): one
+// "Narrowed by: ID (scope)" line for each record that narrows r, then
+// "Narrows: ID, ID" for the records r narrows. A record with neither writes
+// nothing.
+func writeNarrowing(b *strings.Builder, pad string, r model.Record) {
+	for _, n := range r.NarrowedBy {
+		writeField(b, pad, "Narrowed by", fmt.Sprintf("%d (%s)", n.ID, n.Scope))
+	}
+	if len(r.Narrows) > 0 {
+		writeField(b, pad, "Narrows", joinInts(r.Narrows))
+	}
 }
 
 // writeWas writes the old text an amend entry keeps, one "was FIELD: text" line

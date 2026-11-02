@@ -23,9 +23,10 @@ const (
 	maxReferenceBytes = 9000
 )
 
-// snippetSHA256 pins `adj ai`: S54 adds a subcommand beside it and must not
-// change a byte of the snippet (C125).
-const snippetSHA256 = "57b29bd8fa58519c7750efb750d4f300f7b19d6152db577b998e742b2fa5143b"
+// snippetSHA256 pins `adj ai`: S54 added a subcommand beside it without changing
+// a byte of the snippet (C125). S51 changes it on purpose, to put `adj narrow`
+// among the commands an agent never runs; the pin moved with it.
+const snippetSHA256 = "b8607235b925b9758275d8f4971ff51d3afc8696b3b31151d48e7839a9d6437e"
 
 func skillFile(t *testing.T, name string) string {
 	t.Helper()
@@ -54,11 +55,11 @@ func wantInstalled() map[string]string {
 	return want
 }
 
-func TestAISnippetIsUnchanged(t *testing.T) {
+func TestAISnippetMatchesItsPin(t *testing.T) {
 	out := run(testEnv(t.TempDir()), "", "ai").stdout
 	sum := sha256.Sum256([]byte(out))
 	if got := hex.EncodeToString(sum[:]); got != snippetSHA256 {
-		t.Errorf("adj ai output has sha256 %s, want %s: S54 does not change the snippet", got, snippetSHA256)
+		t.Errorf("adj ai output has sha256 %s, want %s: a change to the snippet moves the pin on purpose (C125)", got, snippetSHA256)
 	}
 }
 
@@ -602,7 +603,7 @@ func TestAISkillStatesTheOwnerOnlyCommands(t *testing.T) {
 		t.Fatalf("SKILL.md has no \"## Owner only\" section:\n%s", skill)
 	}
 	for _, want := range []string{
-		"`adj decide`", "`adj reject`", "`adj supersede`", "`adj inbox -i`",
+		"`adj decide`", "`adj reject`", "`adj supersede`", "`adj narrow`", "`adj inbox -i`",
 		"`adj renumber`", "`adj init`", "`adj import-adr`",
 		"never run",
 	} {
@@ -616,7 +617,7 @@ func TestAISkillStatesTheOwnerOnlyCommands(t *testing.T) {
 			t.Errorf("SKILL.md does not say %q", want)
 		}
 	}
-	ownerOnly := regexp.MustCompile(`^adj (decide|reject|supersede|renumber|init|import-adr|inbox -i|repos)\b`)
+	ownerOnly := regexp.MustCompile(`^adj (decide|reject|supersede|narrow|renumber|init|import-adr|inbox -i|repos)\b`)
 	rest := strings.Replace(skill, owner, "", 1)
 	ref := commands.SkillFiles()[1].Text
 	ref = strings.Replace(ref, section(ref, "When to tell the owner"), "", 1)

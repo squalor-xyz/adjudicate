@@ -36,7 +36,7 @@ func TestRecordFieldsFollowCoreConceptsTable(t *testing.T) {
 		"recorded_by", "via",
 		"created", "decided_at", "context", "options", "recommendation",
 		"decision", "rationale", "consequences", "supersedes",
-		"superseded_by", "refs", "history",
+		"superseded_by", "narrowed_by", "narrows", "refs", "history",
 	}
 	typ := reflect.TypeOf(Record{})
 	var got []string

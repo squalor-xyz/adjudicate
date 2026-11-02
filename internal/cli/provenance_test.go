@@ -34,7 +34,7 @@ func seedProvenance(t *testing.T) string {
 	return root
 }
 
-// amend, supersede and renumber change other things and leave recorded_by and
+// amend, supersede, narrow and renumber change other things and leave recorded_by and
 // via as they were (S52).
 func TestOtherCommandsLeaveRecordedByAndViaAlone(t *testing.T) {
 	check := func(t *testing.T, root string, ids ...int) {
@@ -63,6 +63,16 @@ func TestOtherCommandsLeaveRecordedByAndViaAlone(t *testing.T) {
 		}
 		if got := recordByID(t, root, 1).SupersededBy; got != 2 {
 			t.Fatalf("superseded_by = %d, the supersede did not run", got)
+		}
+		check(t, root, 1, 2)
+	})
+	t.Run("narrow", func(t *testing.T) {
+		root := seedProvenance(t)
+		if r := run(testEnv(root), "", "narrow", "1", "--by", "2", "--scope", "only for tests"); r.code != 0 {
+			t.Fatalf("narrow: %+v", r)
+		}
+		if got := recordByID(t, root, 1).NarrowedBy; len(got) != 1 {
+			t.Fatalf("narrowed_by = %+v, the narrow did not run", got)
 		}
 		check(t, root, 1, 2)
 	})

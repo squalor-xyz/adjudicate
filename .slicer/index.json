@@ -3609,10 +3609,53 @@
       "id": "S51",
       "title": "Supersede part of a record (narrow its scope) instead of all of it",
       "short_title": "Partial supersede",
-      "status": "open",
+      "status": "done",
       "has_slice": true,
       "depends_on": [],
-      "note_records": [],
+      "note_records": [
+        {
+          "id": "490a571b-b07b-49a2-955f-27b291d6c910",
+          "kind": "later",
+          "text": "**2026-11-02** — later: narrow-superseded lint (internal/lint/lint.go narrowLinks) warns when ANY file with the named ID is superseded, while C248 and docs/json.md say a link is faulted only if EVERY file with that ID is; only matters in a store that already has a duplicate-id error. Align the loop with the rule, or document the exception.",
+          "created_at": "2026-11-02T18:55:08Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
+        },
+        {
+          "id": "53503c5c-3040-4e40-b93f-6c0ef698ad3d",
+          "kind": "later",
+          "text": "**2026-11-02** — later: decide before the 1.0 freeze (S39) whether new nested objects, such as the {id, scope} objects in narrowed_by, should tolerate unknown keys from a later 1.x. They are strict inside now (like an option), consistent with S46, so a key added later makes this version refuse the record.",
+          "created_at": "2026-11-02T18:55:08Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
+        },
+        {
+          "id": "c5b9eda6-f281-41d0-aed1-e0ea06667385",
+          "kind": "later",
+          "text": "**2026-11-02** — later: no adj narrow --amend (a scope cannot be corrected except by editing both records by hand); adj inbox -i cannot narrow; adj check text does not show narrow links (its JSON does).",
+          "created_at": "2026-11-02T18:55:08Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
+        }
+      ],
       "claim": null,
       "fields": {
         "size": "M",
@@ -3630,7 +3673,7 @@
         "importance": 2,
         "urgency": 2,
         "effort": 2,
-        "attempts": 0
+        "attempts": 1
       }
     },
     {
@@ -3795,7 +3838,7 @@
   "goals": "adjudicate is a small CLI (`adj`) with a plain-text store that records project decisions as a loop: an agent asks, the owner decides in batches, and every later agent reads the decision. The goal and non-goal records below come from PROJECT.md; the owner's decisions on its open questions are catalog records C23-C33, and they override PROJECT.md where it differs (name, runtime, record format, license).",
   "non_goals": "",
   "catalog": {
-    "next_id": 244,
+    "next_id": 251,
     "id_prefix": "C",
     "id_width": 2,
     "records": [
@@ -5982,6 +6025,69 @@
         "kind": "decision",
         "title": "S45: the contract_mismatch refusal and the contract-pin warning tell the reader to ask the owner (amends C241)",
         "body": "Owner answer 2026-11-02: contract.Detail now reads '...; ask the owner to run `adj contract pin M` or to install an adj that speaks adj-json vN', both versions still named. Agents that hit the refusal are told to go to the owner, so the snippet, skill and reference stay unchanged and C241's remark that the message does the telling now holds; pinning stays an owner or ork action (S45, C32).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C244",
+        "kind": "decision",
+        "title": "S51: narrowing is two optional record fields and a narrow event",
+        "body": "OLD gets narrowed_by, a list of {id, scope}; NEW gets narrows, a list of IDs; both sit after superseded_by, are left out when empty, and are known record keys (S46: recordKeys), with objects strict inside like an option. The history event is narrow, notes 'by NEW: SCOPE' and 'narrows OLD', known now (an older binary keeps both as unknown parts, S44/S46). Validate refuses a link to the record itself or a non-positive ID, an ID listed twice in either list and a blank or multi-line scope; status is lint's business as for superseded_by. Chosen so a narrowing needs no new record kind and the file stays forward compatible (S51, C32).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C245",
+        "kind": "decision",
+        "title": "S51: narrowing the same pair twice exits 1 once linked on both sides; a half link is completed; OLD is written first with a restore",
+        "body": "A second adj narrow OLD --by NEW, when OLD lists NEW and NEW lists OLD, exits 1 with 'record OLD is already narrowed by record NEW' (model.ErrAlreadyNarrowed, an ErrInvalid), writes nothing and keeps the first scope; changing a scope is a hand edit of both sides. The half link that a failed restore leaves (OLD lists NEW, NEW has no link back) is completed by running the same command again (fix round 1): only NEW is written, with narrows and its narrow entry; OLD keeps its scope and its one entry, the --scope given is checked but not used, and the exit is 0 with OLD's ID. The reverse (NEW lists OLD, OLD does not) is not a state narrow leaves; it is treated as a new narrowing (LinkNarrows lists an ID once but adds its entry). Both records are validated in memory first and written OLD first, OLD put back if NEW fails, as supersede does (C136); if the restore fails too the error says OLD is left narrowed by NEW with no link back (lint: narrow-asymmetric). Mutual narrowing (A narrows B and B narrows A) is allowed and no cycle check is made, since narrowing is not a replacement order (S51, C32).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C246",
+        "kind": "decision",
+        "title": "S51: the scope is one non-blank line, kept as typed, checked before the store",
+        "body": "--scope is required; blank (empty, spaces, tabs) or containing a line break exits 2 before the store or the config is looked for, with the usage; it is stored as typed with its surrounding space, like --why. A missing or non-positive ID, a missing or non-positive --by, OLD equal to NEW and an extra argument exit 2; an unknown ID or a record that is not decided exits 1 with the status named, OLD first (supersede's order, messages 'only a decided record can be narrowed' and 'can narrow another'). narrow has no --json, so a failure prints no error object (S42) (S51, C32).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C247",
+        "kind": "decision",
+        "title": "S51: show and context print the narrowing on their own lines; JSON keys are additive and the contract stays v1",
+        "body": "adj show prints 'Narrowed by: NEW (SCOPE)', one line per narrowing record, and 'Narrows: OLD, OLD' after Superseded by. adj context md prints the same lines, indented, between the decision and the Rationale line, not appended to the decision line (a decision may run over several lines; the --max-bytes budget measures the real output so it counts them). This differs from the slice's 'appends the scope to the decision line' wording; the scope and the narrowing record are still on the OLD entry. Context JSON entries and the record JSON gain optional narrowed_by and narrows, after rationale in a context entry. These are additive keys within adj-json v1 (S45): no version bump, the contract fixture repo narrows record 6 by 2 so shapes.json records them, and docs/json.md says so under Keys of a record (S51, C32).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C248",
+        "kind": "decision",
+        "title": "S51: lint narrow-state, narrow-asymmetric (errors), narrow-superseded (warning)",
+        "body": "narrow-state (error): narrowed_by or narrows on a record that is not decided or superseded, or naming a record that is open, rejected or withdrawn. narrow-asymmetric (error): a link listed on one record only; a target with no file or that does not parse is left to dangling-link and parse. narrow-superseded (warning): narrowed_by names a record that was superseded, 'check that the scope still holds'; no warning for narrows naming a superseded OLD, which only means OLD was replaced. A superseded record may carry narrow links (a narrowed record can be superseded, and so can the narrowing one). dangling-link covers both fields; narrow links make no cycle check. When several files share the named ID (duplicate-id), a link is faulted only if every file with the ID is, and is in order if any lists it back (S51, C32).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C249",
+        "kind": "decision",
+        "title": "S51: renumber and Create treat narrow links like supersede links; the stale-copy test is unchanged",
+        "body": "Links in narrowed_by and narrows to a colliding ID are listed with their field name and block adj renumber until --keep-links (C147); a new ID, from Create or a move, is never one that these links name without a file (C155). IsStaleCopy needs no change: narrow links and narrow entries added after the renumber entry are like supersede links and decide entries (not compared in the edited-since case, C163), those before it are part of the history that is compared, and the whole record is compared when the renumber entry is last (S51, C32).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C250",
+        "kind": "decision",
+        "title": "S51: narrow is owner-only; the snippet is reworded to fit, its SHA pin moves, the skill names narrow",
+        "body": "adj narrow joins decide, reject and supersede in the commands agents never run (C137, C27). ai.md stays within 1800 bytes (now 1779) by shortening 'Line 1 of the output is' to 'Line 1 is', 'Read the decisions in force' to 'Read decisions in force' and '(open questions, oldest first)' to '(oldest first)'; the phrases that tests pin are untouched. snippetSHA256 in ai_skill_test.go was moved deliberately (its S54 comment said the snippet must not change; it now says an edit moves the pin). skill.md names adj narrow in its Owner only section and explains the Narrowed by and Narrows lines in two sentences; skill_reference.md lists the narrowed_by and narrows keys and the owner list; the three installed copies were rewritten with adj ai skill --install --force (S51, C32).",
         "status": "active",
         "reason": "",
         "successor": ""

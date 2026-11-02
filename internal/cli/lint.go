@@ -23,10 +23,16 @@ and the check that found it; the checks are:
   duplicate-id         more than one file has this ID (adj renumber fixes it)
   renumber-leftover    the stale old file of an interrupted adj renumber:
                        check both, then delete it
-  dangling-link        supersedes or superseded_by names an ID with no record
-                       file
+  dangling-link        supersedes, superseded_by, narrowed_by or narrows names
+                       an ID with no record file
   supersede-state      superseded_by is set on a record that is not superseded
   supersede-cycle      the record is in a loop of supersede links
+  narrow-state         narrowed_by or narrows is set on a record that is not
+                       decided or superseded, or names one that is open,
+                       rejected or withdrawn
+  narrow-asymmetric    a narrow link is listed on one of the two records only
+  narrow-superseded    the record is narrowed by a record that was superseded:
+                       check that the scope still holds (a warning)
   key-conflict         another decided record has the same key
   decided-by           a decided record has no decided_by (a warning)
   unknown-event        a history entry has an event this version does not know

@@ -300,10 +300,10 @@ const recordPerm fs.FileMode = 0o644
 // the lock file and writes nothing. Collisions between branches or clones are
 // out of the lock's reach; lint finds them and renumber fixes them (C26).
 //
-// The ID is never one that a supersedes or superseded_by link in the store
-// names without a file, which would make that link resolve to the new record
-// (C155). A file that cannot be read still holds its ID by name, but its links
-// are not known and are not avoided.
+// The ID is never one that a supersedes, superseded_by, narrowed_by or narrows
+// link in the store names without a file, which would make that link resolve
+// to the new record (C155). A file that cannot be read still holds its ID by
+// name, but its links are not known and are not avoided.
 func (s *Store) Create(r model.Record) (model.Record, error) {
 	// Check the record before the store directory or the lock file exists, so
 	// a record that is invalid whatever its ID makes neither. The ID is only
@@ -355,13 +355,13 @@ func (s *Store) Create(r model.Record) (model.Record, error) {
 // taken for a record that links to itself.
 func unlinkedID(r model.Record) int {
 	id := 1
-	for _, to := range append(slices.Clone(r.Supersedes), r.SupersededBy) {
+	for _, to := range recordLinks(r) {
 		id = max(id, to+1)
 	}
 	return id
 }
 
-// danglingIDs returns the IDs that a supersedes or superseded_by link in the
+// danglingIDs returns the IDs that a link (see recordLinks) in the
 // record files es names although no file has them. A file that cannot be read
 // or parsed is skipped: it has no links Create can know.
 func (s *Store) danglingIDs(es []entry) map[int]bool {

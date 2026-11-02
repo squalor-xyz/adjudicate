@@ -114,6 +114,52 @@ func LinkSupersedes(r *Record, old int, date string) error {
 	})
 }
 
+// ErrAlreadyNarrowed is matched by the error Narrow returns when the record is
+// already narrowed by that record: the same pair is never linked twice (S51).
+// It also matches ErrInvalid.
+var ErrAlreadyNarrowed = fmt.Errorf("%w: already narrowed", ErrInvalid)
+
+// alreadyNarrowedError is the error Narrow returns for a pair that is linked
+// already. Its text names the two records; errors.Is matches ErrAlreadyNarrowed
+// and so ErrInvalid.
+type alreadyNarrowedError struct{ id, by int }
+
+func (e *alreadyNarrowedError) Error() string {
+	return fmt.Sprintf("record %d is already narrowed by record %d", e.id, e.by)
+}
+
+func (e *alreadyNarrowedError) Unwrap() error { return ErrAlreadyNarrowed }
+
+// Narrow records on r, a decided record, that the decided record by narrows it
+// to a scope: it adds a Narrowing{by, scope} to NarrowedBy and appends one
+// narrow history entry with the note "by <by>: <scope>", dated date
+// (YYYY-MM-DD). r stays decided and in force; the scope says in one line what
+// of its decision the other record changes (S51). The scope is kept as typed
+// and must not be blank or run over several lines. The same record is never
+// listed twice: a second Narrow by the same record returns ErrAlreadyNarrowed.
+// It changes only r; LinkNarrows is the other half, which the narrow command
+// applies to the narrowing record.
+func Narrow(r *Record, by int, scope, date string) error {
+	if r.Status == StatusDecided && slices.ContainsFunc(r.NarrowedBy, func(n Narrowing) bool { return n.ID == by }) {
+		return &alreadyNarrowedError{r.ID, by}
+	}
+	return apply(r, StatusDecided, StatusDecided, EventNarrow, date, fmt.Sprintf("by %d: %s", by, scope), func(n *Record) {
+		n.NarrowedBy = append(slices.Clip(r.NarrowedBy), Narrowing{ID: by, Scope: scope})
+	})
+}
+
+// LinkNarrows records on r, a decided record, that it narrows the record with
+// ID old: it adds old to Narrows (once) and appends one narrow history entry
+// with the note "narrows <old>", dated date (YYYY-MM-DD). r stays decided. It
+// is the other half of Narrow, which changes only the narrowed record.
+func LinkNarrows(r *Record, old int, date string) error {
+	return apply(r, StatusDecided, StatusDecided, EventNarrow, date, fmt.Sprintf("narrows %d", old), func(n *Record) {
+		if !slices.Contains(n.Narrows, old) {
+			n.Narrows = append(slices.Clip(r.Narrows), old)
+		}
+	})
+}
+
 // ErrNoChange is matched by the error Amend returns when no text it was given
 // differs from the record's.
 var ErrNoChange = fmt.Errorf("%w: nothing to change", ErrInvalid)

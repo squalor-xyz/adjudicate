@@ -255,23 +255,26 @@ func TestAISnippetLimitsWhatAgentsDo(t *testing.T) {
 }
 
 // S12 gate note: supersede changes a decision, so it is on the never-run list
-// (C27). The drift test checks that a command exists, not that it is listed.
-func TestAISnippetNeverRunListNamesSupersede(t *testing.T) {
+// (C27). S51 adds narrow, which changes what a decision covers, beside it. The
+// drift test checks that a command exists, not that it is listed.
+func TestAISnippetNeverRunListNamesSupersedeAndNarrow(t *testing.T) {
 	snippet := run(testEnv(t.TempDir()), "", "ai").stdout
 	_, after, ok := strings.Cut(snippet, "never run ")
 	if !ok {
 		t.Fatalf("snippet has no \"never run\" list:\n%s", snippet)
 	}
 	list, _, _ := strings.Cut(after, ".")
-	for _, want := range []string{"`adj decide`", "`adj reject`", "`adj supersede`"} {
+	for _, want := range []string{"`adj decide`", "`adj reject`", "`adj supersede`", "`adj narrow`"} {
 		if !strings.Contains(list, want) {
 			t.Errorf("the never-run list %q does not name %s", list, want)
 		}
 	}
-	// Only the owner supersedes: no agent line tells an agent to.
+	// Only the owner supersedes or narrows: no agent line tells an agent to.
 	for _, line := range strings.Split(snippet, "\n") {
-		if strings.HasPrefix(strings.TrimSpace(line), "adj supersede") {
-			t.Errorf("snippet line %q tells an agent to supersede", line)
+		for _, cmd := range []string{"adj supersede", "adj narrow"} {
+			if strings.HasPrefix(strings.TrimSpace(line), cmd) {
+				t.Errorf("snippet line %q tells an agent to run %s", line, cmd)
+			}
 		}
 	}
 }

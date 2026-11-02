@@ -2,11 +2,12 @@
 
 // Package lint checks a store for integrity problems: records that break the
 // model's rules, two files with one ID, links to records that do not exist,
-// supersede cycles, two decided records on one key, a decision with no
+// supersede cycles, narrow links that are one-sided or point at a record that
+// is not decided, two decided records on one key, a decision with no
 // decided_by, and history entries, record keys and amend old texts with an
 // event or key this version does not know, which are warnings, as is a config
 // that pins another JSON contract version than this binary speaks (C08, C26,
-// C27, S44, S45, S46).
+// C27, S44, S45, S46, S51).
 // It reads the record files itself with model.Parse, so a broken or invalid
 // file becomes a finding where store.List would fail (C61).
 package lint
@@ -43,14 +44,25 @@ const (
 	// CheckFields: the record breaks a rule of model.Validate, such as a
 	// missing required field or a bad date.
 	CheckFields = "fields"
-	// CheckDanglingLink: supersedes or superseded_by names an ID that no
-	// record file has.
+	// CheckDanglingLink: supersedes, superseded_by, narrowed_by or narrows
+	// names an ID that no record file has.
 	CheckDanglingLink = "dangling-link"
 	// CheckSupersedeState: superseded_by is set on a record whose status is
 	// not superseded (model.Validate does not check it).
 	CheckSupersedeState = "supersede-state"
 	// CheckSupersedeCycle: the record is in a loop of supersede links.
 	CheckSupersedeCycle = "supersede-cycle"
+	// CheckNarrowState: narrowed_by or narrows is set on a record that is not
+	// decided or superseded, or names a record that is open, rejected or
+	// withdrawn (S51). A link to a superseded record is narrow-superseded.
+	CheckNarrowState = "narrow-state"
+	// CheckNarrowAsymmetric: a narrow link is listed on one record only:
+	// narrowed_by on the narrowed one with no narrows on the narrowing one, or
+	// the other way round (S51).
+	CheckNarrowAsymmetric = "narrow-asymmetric"
+	// CheckNarrowSuperseded: the record is narrowed by a record that has been
+	// superseded, so the scope may no longer hold (a warning, S51).
+	CheckNarrowSuperseded = "narrow-superseded"
 	// CheckKeyConflict: another decided record has the same key.
 	CheckKeyConflict = "key-conflict"
 	// CheckIDMismatch: the record's id is not the ID in its file name, which
@@ -87,7 +99,8 @@ const (
 // Checks lists every check name.
 var Checks = []string{
 	CheckParse, CheckFields, CheckIDMismatch, CheckDuplicateID, CheckRenumberLeftover, CheckDanglingLink,
-	CheckSupersedeState, CheckSupersedeCycle, CheckKeyConflict, CheckDecidedBy, CheckUnknownEvent, CheckUnknownHistoryKey,
+	CheckSupersedeState, CheckSupersedeCycle, CheckNarrowState, CheckNarrowAsymmetric, CheckNarrowSuperseded,
+	CheckKeyConflict, CheckDecidedBy, CheckUnknownEvent, CheckUnknownHistoryKey,
 	CheckUnknownRecordKey, CheckUnknownWasKey, CheckContractPin,
 }
 
@@ -212,6 +225,12 @@ func Run(st *store.Store, root string) ([]Finding, error) {
 			dangling("supersedes", link)
 		}
 		dangling("superseded_by", r.SupersededBy)
+		for _, n := range r.NarrowedBy {
+			dangling("narrowed_by", n.ID)
+		}
+		for _, link := range r.Narrows {
+			dangling("narrows", link)
+		}
 		if r.Status == model.StatusDecided && strings.TrimSpace(r.DecidedBy) == "" {
 			add(p.id, p.file, SeverityWarning, CheckDecidedBy, "decided_by is missing")
 		}
@@ -235,6 +254,7 @@ func Run(st *store.Store, root string) ([]Finding, error) {
 
 	out = append(out, leftovers(recs)...)
 	out = append(out, cycles(recs, exists)...)
+	out = append(out, narrowLinks(recs)...)
 	out = append(out, keyConflicts(recs)...)
 
 	sort.SliceStable(out, func(i, j int) bool {
@@ -419,6 +439,89 @@ func cycles(recs []parsed, exists map[int]bool) []Finding {
 	for _, p := range recs {
 		if msg, ok := inCycle[p.id]; ok {
 			out = append(out, Finding{ID: p.id, File: p.file, Severity: SeverityError, Check: CheckSupersedeCycle, Message: msg})
+		}
+	}
+	return out
+}
+
+// narrowLinks checks the narrow links of the records that parsed (S51): the
+// status of the record that holds a link and of the record it names
+// (narrow-state), that both sides list the link (narrow-asymmetric) and that
+// the narrowing record has not been superseded (narrow-superseded, a warning).
+// A link to an ID with no parsed record is dangling-link's or parse's business,
+// and a link that Validate refuses is a fields finding; neither is checked
+// here. When several files share the named ID (duplicate-id reports them) a
+// link is in order if any of them is: an ID is only faulted when every file
+// with it is.
+func narrowLinks(recs []parsed) []Finding {
+	byID := map[int][]parsed{}
+	for _, p := range recs {
+		byID[p.id] = append(byID[p.id], p)
+	}
+	// holds reports whether any record with the ID satisfies ok; found says
+	// whether there is a record to ask.
+	holds := func(id int, ok func(model.Record) bool) (found, any bool) {
+		for _, q := range byID[id] {
+			found = true
+			if ok(q.rec) {
+				any = true
+			}
+		}
+		return found, any
+	}
+	var out []Finding
+	add := func(p parsed, sev Severity, check, format string, args ...any) {
+		out = append(out, Finding{ID: p.id, File: p.file, Severity: sev, Check: check, Message: fmt.Sprintf(format, args...)})
+	}
+	inForce := func(r model.Record) bool {
+		return r.Status == model.StatusDecided || r.Status == model.StatusSuperseded
+	}
+	for _, p := range recs {
+		r := p.rec
+		if !r.Status.Valid() {
+			continue // a fields finding
+		}
+		if len(r.NarrowedBy) > 0 && !inForce(r) {
+			add(p, SeverityError, CheckNarrowState, "narrowed_by is set but the status is %s", r.Status)
+		}
+		if len(r.Narrows) > 0 && !inForce(r) {
+			add(p, SeverityError, CheckNarrowState, "narrows is set but the status is %s", r.Status)
+		}
+		valid := func(id int) bool { return id > 0 && id != r.ID && id != p.id }
+		reported := map[int]bool{}
+		for _, n := range r.NarrowedBy {
+			if !valid(n.ID) || reported[n.ID] {
+				continue
+			}
+			reported[n.ID] = true
+			found, inOrder := holds(n.ID, inForce)
+			if found && !inOrder {
+				add(p, SeverityError, CheckNarrowState, "narrowed_by %d names a record that is %s", n.ID, byID[n.ID][0].rec.Status)
+			}
+			if found, lists := holds(n.ID, func(q model.Record) bool { return slices.Contains(q.Narrows, p.id) }); found && !lists {
+				add(p, SeverityError, CheckNarrowAsymmetric, "narrowed_by %d, but record %d does not narrow %d", n.ID, n.ID, p.id)
+			}
+			for _, q := range byID[n.ID] {
+				if q.rec.Status == model.StatusSuperseded {
+					add(p, SeverityWarning, CheckNarrowSuperseded, "narrowed_by %d, which is superseded by %d: check that the scope still holds", n.ID, q.rec.SupersededBy)
+					break
+				}
+			}
+		}
+		reported = map[int]bool{}
+		for _, id := range r.Narrows {
+			if !valid(id) || reported[id] {
+				continue
+			}
+			reported[id] = true
+			if found, inOrder := holds(id, inForce); found && !inOrder {
+				add(p, SeverityError, CheckNarrowState, "narrows %d names a record that is %s", id, byID[id][0].rec.Status)
+			}
+			if found, lists := holds(id, func(q model.Record) bool {
+				return slices.ContainsFunc(q.NarrowedBy, func(n model.Narrowing) bool { return n.ID == p.id })
+			}); found && !lists {
+				add(p, SeverityError, CheckNarrowAsymmetric, "narrows %d, but record %d is not narrowed by %d", id, id, p.id)
+			}
 		}
 	}
 	return out
