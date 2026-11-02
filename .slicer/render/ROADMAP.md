@@ -870,6 +870,30 @@ The walk is built from the filtered list, so unvisited non-matching questions ar
 
 commands.checkRefs is the one blank-ref check for ListInput and InboxInput, so adj list and adj inbox refuse the same values; the synopsis lines of adj inbox name --ref in all three modes.
 
+### C225 adj ai skill: --root only with --install
+
+Printing and --output read no repo and take no --root; --install finds the repo root like other commands and takes --root DIR; --root without --install, --install with --output and --force alone exit 2 (S54, C32). Reason: the spec says the command reads no repo, but --install must write under a repo root.
+
+### C226 adj ai skill --install without a repo exits 1 and does not suggest init
+
+With no .adjudicate.json the error names the missing config and exits 1 (code no_repo style); it omits the run adj init hint that other commands print, because init is owner-only (S54, C32).
+
+### C227 adj ai skill: differing destination exits 1, nothing written
+
+Every destination is looked at before any is written; a file with the same text is left alone and not listed, a file with different text exits 1 (a failed operation, not a usage error) naming each such file and --force. A destination file that is itself a directory or a symbolic link exits 1 even with --force, so replacing it never swaps a link for a file. Only that last element is checked: a symbolic link in a parent folder (.claude, say) is followed on purpose (S54, C32).
+
+### C228 adj ai skill --output writes SKILL.md only
+
+--output PATH writes the one SKILL.md text; reference.md is written only by --install, and stdout lists only the paths written (S54, C32). Reason: the spec says --output writes the text and printing prints SKILL.md alone; SKILL.md points to reference.md in its folder.
+
+### C229 adj ai skill writes atomically and rolls back
+
+Each file goes through a same-directory temporary file and a rename (new files 0644, replaced ones keep their mode); if a write fails after others succeeded they are restored and directories the install made are removed, so there is no partial install (S54, C32).
+
+### C230 Agent skill file names and size caps
+
+The skill is named adj with files SKILL.md and reference.md (embedded as internal/commands/skill.md and skill_reference.md); tests cap them at 6000 and 9000 bytes and pin that this repo's own installed copy equals the binary's text (S54, C32).
+
 ### C39 LICENSE is a stub until the owner supplies the full GPL-3.0 text and copyright holder
 
 No GPL-3.0 text exists in the adjudicate repo and the workspace has no network, so the stub carries the SPDX line, the or-later notice and TODO(owner) markers.
@@ -932,7 +956,7 @@ PENDING OWNER CONFIRMATION - not decided. Source: Dependency/licensing notes (ma
 
 *Retired: Owner decided 2026-10-15: see decision C31 (GPL-3.0-or-later)..*
 
-54 items · — 6 · done 43 · later 3 · retired 2
+54 items · — 5 · done 44 · later 3 · retired 2
 
 Release 1.0
 
@@ -945,7 +969,7 @@ Release 1.0
 | 5 | [S51](slices/S51.md) | Partial supersede | M | 2 |  | ork adj 168 ui.structured-questions, 2026-10-25 | — |
 | 6 | [S52](slices/S52.md) | Decision provenance: recorded by, via | S | 1 |  |  | done |
 | 7 | [S53](slices/S53.md) | inbox --ref | S | 1 |  |  | done |
-| 8 | [S54](slices/S54.md) | adj agent skill: adj ai skill --install | M | 2 |  |  | — |
+| 8 | [S54](slices/S54.md) | adj agent skill: adj ai skill --install | M | 2 |  |  | done |
 
 ---
 

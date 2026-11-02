@@ -36,7 +36,10 @@ library only.
   parsing, output and exit codes (`init.go`, `ask.go`, `decide.go`,
   `supersede.go`, `amend.go`, `show.go`, `list.go`, `inbox.go`, `check.go`,
   `context.go`, `lint.go`, `renumber.go`, `importadr.go`, `repos.go`,
-  `ai.go`). `ai.md` is the agent snippet, embedded by `ai.go`.
+  `ai.go`). `ai.md` is the agent snippet, embedded by `ai.go`; `skill.md` and
+  `skill_reference.md` are the two files of the agent skill (`SKILL.md` and
+  `reference.md` once installed), embedded there too, and `ai.go` holds
+  `WriteTextFiles`, which `adj ai skill` uses to write them.
   `errors.go` holds `UsageError`, the error that exits 2.
 - `internal/adr`: one ADR file (Nygard/adr-tools or MADR) parsed into a neutral
   struct (`adr.go`); pure functions, no file I/O, fixtures in `testdata/`.
@@ -73,6 +76,10 @@ library only.
 - `README.md`: what adjudicate is, how to build it and use each command.
   `PROJECT.md`: goals, non-goals, data model, commands, acceptance criteria
   and Later items. `CHANGELOG.md`: release notes.
+- `.claude/skills/adj/`, `.agents/skills/adj/`, `.grok/skills/adj/`: this repo's
+  own install of the agent skill (`adj ai skill --install`); `internal/cli`
+  fails if any file differs from the binary's text, so rerun the install with
+  `--force` after a change to `skill.md` or `skill_reference.md`.
 - `scripts/env.sh`: Go cache and temp setup (see below).
 - `.gitattributes`: text files are checked out with LF on every system
   (`* text=auto eol=lf`), so the Windows CI job sees the bytes the tests
@@ -485,12 +492,38 @@ A new failure with its own error value needs a sentinel and a code in
   run decide, reject or supersede, tell the owner about a duplicate ID or a
   missing repo instead of running renumber or init, exit codes, `ADJ_ASKED_BY`)
   and exits 0. It does not name `--decided-at`: agents never run decide, so the
-  flag is the owner's. It reads no repo and takes no flag or argument (so no
-  `--root`); either exits 2.
+  flag is the owner's. It reads no repo and takes no flag and no argument but
+  `skill` (so no `--root`); any other flag or argument exits 2.
   `internal/cli/ai_test.go` fails if the snippet names a command, flag or
   variable that does not exist, or runs past 1800 bytes (C124, C125). When a
   command or flag an agent uses changes, change the snippet.
-- Every command except `ai` and `inbox --all` takes `--root DIR`. Store commands
+- `adj ai skill [--output PATH | --install [--root DIR]] [--force]` (S54): the
+  long form of the snippet as an agent skill named `adj`. With no flag it prints
+  `SKILL.md` and exits 0. `--output PATH` writes it to PATH (parent directories
+  created); `--install` writes `SKILL.md` and `reference.md` into
+  `.claude/skills/adj/`, `.agents/skills/adj/` and `.grok/skills/adj/` under
+  the repo root (project-only, adj 21; use `--output` elsewhere). Stdout lists
+  the paths written. Printing and `--output` read no repo and take no `--root`;
+  `--install` finds the root like other commands (the nearest `.adjudicate.json`,
+  or `--root`, or `Env.Root`) and fails with exit 1, naming the problem and not
+  telling the reader to run `adj init`, when there is none. `--root` without
+  `--install`, `--install` with `--output`, a blank `--output`, an argument or
+  `--force` alone exit 2. Every destination is looked at before any is written:
+  a file with the same text is left alone (and not listed); different text
+  exits 1 naming each such file unless `--force`; a destination file that is
+  not a regular file (itself a directory or a symbolic link) exits 1 even with
+  `--force`; only that last element is checked, so a symbolic link in a parent
+  folder (`.claude`, say) is followed. Each
+  file is written through a temporary file and a rename (new files 0644,
+  replaced ones keep their mode); a failed write puts back the files and the
+  directories written before it. `adj ai` and its snippet are unchanged (a test
+  pins the snippet's SHA-256). `internal/cli/ai_skill_test.go` fails if the skill
+  or its reference names a command, flag or variable that does not exist, omits
+  an owner-only command, names an owner-only flag, or if its text outgrows
+  6000 and 9000 bytes. The skill may name flags the snippet leaves out for size
+  (adj 20), never the owner's (`--decided-at`, `--recorded-by`, `--via`).
+- Every command except `ai`, `ai skill` (which takes it only with `--install`)
+  and `inbox --all` takes `--root DIR`. Store commands
   use it as the
   repo root; without it the root is found from the working directory upwards
   (`store.FindRoot`). With it nothing is searched for. Every store command
@@ -507,8 +540,9 @@ A new failure with its own error value needs a sentinel and a code in
   after the command still takes the last. A leading `--root` with no value or
   no command exits 2, and before `ai` exits 2 (`ai` takes no `--root`) unless
   `ai` is given `--help`, which is handled first and exits 0, as `adj ai --help
-  --root D` does. A leading `--root` followed by `--help`/`-h` prints the main
-  usage (exit 0).
+  --root D` does, or `skill --install`, which takes it (`adj --root D ai skill
+  --install`; `adj --root D ai skill` without `--install` exits 2). A leading
+  `--root` followed by `--help`/`-h` prints the main usage (exit 0).
 
 ## Store and config
 

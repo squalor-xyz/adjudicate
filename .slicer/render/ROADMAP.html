@@ -462,6 +462,18 @@
 <div class="prose"><p>The walk is built from the filtered list, so unvisited non-matching questions are never shown or counted; no match prints nothing and exits 0 like an empty inbox.</p></div>
 <h3>C224 adj inbox --ref: a blank value exits 2 before the store and the user config are read, via the check shared with adj list</h3>
 <div class="prose"><p>commands.checkRefs is the one blank-ref check for ListInput and InboxInput, so adj list and adj inbox refuse the same values; the synopsis lines of adj inbox name --ref in all three modes.</p></div>
+<h3>C225 adj ai skill: --root only with --install</h3>
+<div class="prose"><p>Printing and --output read no repo and take no --root; --install finds the repo root like other commands and takes --root DIR; --root without --install, --install with --output and --force alone exit 2 (S54, C32). Reason: the spec says the command reads no repo, but --install must write under a repo root.</p></div>
+<h3>C226 adj ai skill --install without a repo exits 1 and does not suggest init</h3>
+<div class="prose"><p>With no .adjudicate.json the error names the missing config and exits 1 (code no_repo style); it omits the run adj init hint that other commands print, because init is owner-only (S54, C32).</p></div>
+<h3>C227 adj ai skill: differing destination exits 1, nothing written</h3>
+<div class="prose"><p>Every destination is looked at before any is written; a file with the same text is left alone and not listed, a file with different text exits 1 (a failed operation, not a usage error) naming each such file and --force. A destination file that is itself a directory or a symbolic link exits 1 even with --force, so replacing it never swaps a link for a file. Only that last element is checked: a symbolic link in a parent folder (.claude, say) is followed on purpose (S54, C32).</p></div>
+<h3>C228 adj ai skill --output writes SKILL.md only</h3>
+<div class="prose"><p>--output PATH writes the one SKILL.md text; reference.md is written only by --install, and stdout lists only the paths written (S54, C32). Reason: the spec says --output writes the text and printing prints SKILL.md alone; SKILL.md points to reference.md in its folder.</p></div>
+<h3>C229 adj ai skill writes atomically and rolls back</h3>
+<div class="prose"><p>Each file goes through a same-directory temporary file and a rename (new files 0644, replaced ones keep their mode); if a write fails after others succeeded they are restored and directories the install made are removed, so there is no partial install (S54, C32).</p></div>
+<h3>C230 Agent skill file names and size caps</h3>
+<div class="prose"><p>The skill is named adj with files SKILL.md and reference.md (embedded as internal/commands/skill.md and skill_reference.md); tests cap them at 6000 and 9000 bytes and pin that this repo&#x27;s own installed copy equals the binary&#x27;s text (S54, C32).</p></div>
 <h3>C39 LICENSE is a stub until the owner supplies the full GPL-3.0 text and copyright holder</h3>
 <div class="prose"><p>No GPL-3.0 text exists in the adjudicate repo and the workspace has no network, so the stub carries the SPDX line, the or-later notice and TODO(owner) markers.</p></div>
 <p><em>Retired: Replaced by the full GPL-3.0 text and NOTICE (owner supplied the text and named Squalor LLC, 2026-10-15).. Successor: C131.</em></p>
@@ -495,7 +507,7 @@
 <div class="prose"><p>PENDING OWNER CONFIRMATION - not decided. Source: Dependency/licensing notes (marked open there, not in the Open decisions list). Recommendation: a permissive FLOSS license such as MIT or Apache-2.0; PROJECT.md does not pick between them (owner must choose).</p></div>
 <p><em>Retired: Owner decided 2026-10-15: see decision C31 (GPL-3.0-or-later)..</em></p>
 </section>
-<p class="summary">54 items · — 6 · done 43 · later 3 · retired 2</p>
+<p class="summary">54 items · — 5 · done 44 · later 3 · retired 2</p>
 <h2>Release 1.0</h2>
 <table><thead><tr><th>#</th><th>ID</th><th>Title</th><th>Size</th><th>Effort</th><th>Trees</th><th>Findings</th><th>Status</th></tr></thead><tbody>
 <tr class="open"><td>1</td><td>S43</td><td>Sibling-aware record IDs</td><td>M</td><td>3</td><td>store</td><td>ork integration review 2026-10-19 (squalor-xyz/ork docs/review-2026-10-19-integration.md), R6: two ork branches both allocated records 50 and 51 on 2026-10-19 and needed adj renumber; the store lock cannot see other branches (internal/store/store.go:282-286); slicer already allocates past sibling worktrees.</td><td class="status">—</td></tr>
@@ -505,7 +517,7 @@
 <tr class="open"><td>5</td><td>S51</td><td>Partial supersede</td><td>M</td><td>2</td><td></td><td>ork adj 168 ui.structured-questions, 2026-10-25</td><td class="status">—</td></tr>
 <tr class="done"><td>6</td><td>S52</td><td>Decision provenance: recorded by, via</td><td>S</td><td>1</td><td></td><td></td><td class="status">done</td></tr>
 <tr class="done"><td>7</td><td>S53</td><td>inbox --ref</td><td>S</td><td>1</td><td></td><td></td><td class="status">done</td></tr>
-<tr class="open"><td>8</td><td>S54</td><td>adj agent skill: adj ai skill --install</td><td>M</td><td>2</td><td></td><td></td><td class="status">—</td></tr>
+<tr class="done"><td>8</td><td>S54</td><td>adj agent skill: adj ai skill --install</td><td>M</td><td>2</td><td></td><td></td><td class="status">done</td></tr>
 </tbody></table>
 <table><thead><tr><th>#</th><th>ID</th><th>Title</th><th>Size</th><th>Effort</th><th>Trees</th><th>Findings</th><th>Status</th></tr></thead><tbody>
 <tr class="retired"><td>9</td><td>S40</td><td>Hardening edge cases</td><td>M</td><td>2</td><td>cli</td><td>S18, S22, S36 and S38 review later notes (2026-10-18), deferred from S37 · Split 2026-10-20: import-adr edge cases -&gt; S47; userconfig Save symlink/fsync -&gt; S48; lock release at process death test -&gt; S49; cosmetic nits (decodeError Go type names, case-folded duplicate key lint fixture, lock_windows.go:64 comment, over-width lines) -&gt; S39.</td><td class="status">retired</td></tr>

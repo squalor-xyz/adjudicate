@@ -244,7 +244,8 @@ without either locking primitive retain the store lock's no-lock fallback.
 
 ## Commands
 
-Every command takes `--root DIR` except `adj ai` and `adj inbox --all`.
+Every command takes `--root DIR` except `adj ai`, `adj ai skill` (which takes
+it only with `--install`) and `adj inbox --all`.
 Exit codes for all of them:
 0 success; 1 a failed operation or check (no repo, an unknown ID, a record in
 the wrong status); 2 a usage error (C34). In JSON mode (`--json`, or
@@ -274,6 +275,7 @@ when it finds an error and 0 for a clean store or warnings only.
 | `adj repos add [PATH]`, `adj repos remove PATH`, `adj repos list [--json]` | Manage the user repo list; add defaults to the current repo root (`--root`), explicit relative paths use the working directory. Store cleaned absolute strings without resolving symlinks. Add requires `.adjudicate.json`; duplicates are a no-op. Remove requires a listed path, else exit 1. Both print nothing. List prints paths in insertion order without probing them; JSON is `{"repos": [...]}` (empty: `[]`). `--root` is otherwise unused; no current repo is required. |
 | `adj version`, `adj --version` | Print the version (see below). |
 | `adj ai` | Print the snippet for an agent's AGENTS.md. |
+| `adj ai skill [--output PATH \| --install] [--force]` | Print the agent skill (`SKILL.md`), write it to PATH, or install `SKILL.md` and `reference.md` into `.claude/skills/adj/`, `.agents/skills/adj/` and `.grok/skills/adj/` under the repo root (S54). |
 
 `--root DIR` may come before the command (`adj --root DIR list`) or after it,
 not both. Before the command `adj` takes `--root DIR`; `--help` and `-h` print
@@ -429,6 +431,22 @@ or a duplicate ID tells the owner instead of running `adj init` or
 `adj renumber`. The snippet does not name `--decided-at`: agents never run
 decide, so the flag is the owner's. A test fails if the snippet names a
 command, flag or variable that does not exist.
+
+`adj ai skill` (S54) prints the long form of that snippet as an agent skill
+named `adj`: `SKILL.md` (check before asking and the four results, asking well,
+reading decisions, the owner-only commands, exit codes) and `reference.md`
+(commands, exit codes and the JSON shapes an agent reads). Both are embedded in
+the binary. It names flags the snippet leaves out for size, such as
+`context --max-bytes`, but never the owner's (`--decided-at`, `--recorded-by`,
+`--via`). `--output PATH` writes `SKILL.md`; `--install` writes the two files
+into three project folders (`.claude/`, `.agents/` and `.grok/` under
+`skills/adj/`) and is project-only (adj 21). Printing and `--output`
+read no repo; `--install` finds the repo like other commands and takes
+`--root`. All destinations are checked before any is written: identical text is
+left alone, different text exits 1 unless `--force`, and a failed write puts
+back what was written. A test fails if the skill or its reference names a
+command, flag or variable that does not exist, or if the repo's own installed
+copy differs from the binary's text.
 
 ## Architecture
 

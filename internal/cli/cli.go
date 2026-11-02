@@ -50,7 +50,8 @@ Commands:
   adj import-adr create records from a folder of ADRs (Nygard or MADR)
   adj repos      manage the user repo list (add, remove, list)
   adj version    print the version
-  adj ai         print an AGENTS.md snippet that tells agents how to use adj
+  adj ai         print an AGENTS.md snippet that tells agents how to use adj,
+                 or with skill the longer agent skill (adj ai skill)
 
 Run adj <command> --help for a command's flags. --root DIR may come before the
 command or after it, but not both. The only other flags accepted before the

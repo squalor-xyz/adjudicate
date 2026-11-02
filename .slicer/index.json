@@ -3679,10 +3679,39 @@
       "id": "S54",
       "title": "adj agent skill: adj ai skill --install",
       "short_title": "adj agent skill: adj ai skill --install",
-      "status": "open",
+      "status": "done",
       "has_slice": true,
       "depends_on": [],
-      "note_records": [],
+      "note_records": [
+        {
+          "id": "4dcdd307-0d74-4a56-89a0-ac2bd18197b6",
+          "kind": "",
+          "text": "**2026-11-02** — Later (from gate): skill_reference.md:48 says a --max-bytes budget failure prints nothing; in --format json it prints the error object (line 11 covers JSON errors generally). Say so.",
+          "created_at": "2026-11-02T16:28:48Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
+        },
+        {
+          "id": "f8f106c0-64c5-4ad3-b0ad-b21add5799c3",
+          "kind": "",
+          "text": "**2026-11-02** — Owner note (gate, 2026-11-02): a symlinked parent folder such as .claude is followed by adj ai skill --install on purpose (C227); only the destination file itself, if a link or directory, is refused.",
+          "created_at": "2026-11-02T16:28:48Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
+        }
+      ],
       "claim": null,
       "fields": {
         "size": "M",
@@ -3700,7 +3729,7 @@
         "importance": 2,
         "urgency": 2,
         "effort": 2,
-        "attempts": 0
+        "attempts": 1
       }
     }
   ],
@@ -3708,7 +3737,7 @@
   "goals": "adjudicate is a small CLI (`adj`) with a plain-text store that records project decisions as a loop: an agent asks, the owner decides in batches, and every later agent reads the decision. The goal and non-goal records below come from PROJECT.md; the owner's decisions on its open questions are catalog records C23-C33, and they override PROJECT.md where it differs (name, runtime, record format, license).",
   "non_goals": "",
   "catalog": {
-    "next_id": 225,
+    "next_id": 231,
     "id_prefix": "C",
     "id_width": 2,
     "records": [
@@ -5724,6 +5753,60 @@
         "kind": "decision",
         "title": "adj inbox --ref: a blank value exits 2 before the store and the user config are read, via the check shared with adj list",
         "body": "commands.checkRefs is the one blank-ref check for ListInput and InboxInput, so adj list and adj inbox refuse the same values; the synopsis lines of adj inbox name --ref in all three modes.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C225",
+        "kind": "decision",
+        "title": "adj ai skill: --root only with --install",
+        "body": "Printing and --output read no repo and take no --root; --install finds the repo root like other commands and takes --root DIR; --root without --install, --install with --output and --force alone exit 2 (S54, C32). Reason: the spec says the command reads no repo, but --install must write under a repo root.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C226",
+        "kind": "decision",
+        "title": "adj ai skill --install without a repo exits 1 and does not suggest init",
+        "body": "With no .adjudicate.json the error names the missing config and exits 1 (code no_repo style); it omits the run adj init hint that other commands print, because init is owner-only (S54, C32).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C227",
+        "kind": "decision",
+        "title": "adj ai skill: differing destination exits 1, nothing written",
+        "body": "Every destination is looked at before any is written; a file with the same text is left alone and not listed, a file with different text exits 1 (a failed operation, not a usage error) naming each such file and --force. A destination file that is itself a directory or a symbolic link exits 1 even with --force, so replacing it never swaps a link for a file. Only that last element is checked: a symbolic link in a parent folder (.claude, say) is followed on purpose (S54, C32).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C228",
+        "kind": "decision",
+        "title": "adj ai skill --output writes SKILL.md only",
+        "body": "--output PATH writes the one SKILL.md text; reference.md is written only by --install, and stdout lists only the paths written (S54, C32). Reason: the spec says --output writes the text and printing prints SKILL.md alone; SKILL.md points to reference.md in its folder.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C229",
+        "kind": "decision",
+        "title": "adj ai skill writes atomically and rolls back",
+        "body": "Each file goes through a same-directory temporary file and a rename (new files 0644, replaced ones keep their mode); if a write fails after others succeeded they are restored and directories the install made are removed, so there is no partial install (S54, C32).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C230",
+        "kind": "decision",
+        "title": "Agent skill file names and size caps",
+        "body": "The skill is named adj with files SKILL.md and reference.md (embedded as internal/commands/skill.md and skill_reference.md); tests cap them at 6000 and 9000 bytes and pin that this repo's own installed copy equals the binary's text (S54, C32).",
         "status": "active",
         "reason": "",
         "successor": ""

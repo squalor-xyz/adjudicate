@@ -8,6 +8,25 @@ but never renames, removes or retypes an existing key.
 ## Unreleased
 
 ### Commands
+- New: `adj ai skill` (S54) prints the agent skill, `SKILL.md`: when to check
+  before asking, the four `adj check` results, how to word a question with
+  options, trade-offs and a recommendation, how to narrow a read (`--key-prefix`,
+  `--ref`, `--max-bytes`, `--json`), and the commands only the owner runs. The
+  text is part of the binary, so it matches the version. `--output PATH` writes
+  `SKILL.md` to PATH, creating parent directories. `--install` writes
+  `SKILL.md` and `reference.md` (command, exit-code and JSON detail) into
+  `.claude/skills/adj/`, `.agents/skills/adj/` and `.grok/skills/adj/` under the
+  repo root, and takes `--root DIR`; it is project-only, so use `--output` for
+  any other place. Both list the paths they wrote. A file that already holds
+  the text is left alone. A file that holds different text makes the command
+  exit 1 with nothing written, unless `--force` replaces it; a destination file that
+  is itself a directory or a symbolic link always exits 1 (a symbolic link in a
+  parent folder, such as `.claude`, is followed). If a
+  write fails after others succeeded, they are put back. Printing and
+  `--output` read no repo and take no `--root`; `--root` without `--install`,
+  `--install` with `--output`, and `--force` alone exit 2. `adj ai` and its
+  1800-byte snippet are unchanged. A test fails if the skill or its reference
+  names a command, flag or variable that does not exist.
 - `adj inbox` takes a repeatable `--ref REF` (S53), also with `--all` and
   `-i`: it keeps the open questions that have every ref given, matched exactly,
   case-sensitively and as typed, as `adj list --ref` does, so `--ref S11` does

@@ -127,6 +127,7 @@ tell its agents about it:
 ```sh
 adj init                  # writes .adjudicate.json and creates decisions/
 adj ai >> AGENTS.md       # the agent instructions; or paste them into CLAUDE.md
+adj ai skill --install    # optional: the longer agent skill, for Claude Code and others
 git add .adjudicate.json decisions AGENTS.md
 ```
 
@@ -138,6 +139,12 @@ git (`adj` writes no `.gitignore`).
 Agents work from the snippet that `adj ai` printed. Before they ask, they run
 `adj check QUERY`; they read the decisions in force with `adj context`, and ask
 with `adj ask`. Set `ADJ_ASKED_BY` to name the asker. Agents never decide.
+
+The snippet is 1800 bytes at most. The skill is the long form: when to check
+and ask, how to word a question, which flags narrow a read, and what is the
+owner's alone. Agent tools that read skill folders pick it up from
+`.claude/skills/adj/`, `.agents/skills/adj/` or `.grok/skills/adj/`; run
+`adj ai skill --install` again after an upgrade (see `adj ai skill`).
 
 The owner clears the inbox in batches:
 
@@ -537,7 +544,34 @@ does not use it.
 
 Prints a short snippet for your own `AGENTS.md` that tells agents how to check,
 ask and read decisions, and what they must leave to the owner. It reads no repo
-and takes no argument.
+and takes no argument or flag, except the subcommand `skill` below.
+
+### `adj ai skill [--output PATH | --install [--root DIR]] [--force]`
+
+Prints the agent skill, `SKILL.md`: the long form of the snippet. It tells an
+agent to check before asking and what the four `adj check` results mean, how to
+ask well (options, trade-offs, a recommendation, `--key`, `--ref`,
+`--recommend-text`), how to read decisions (`context --key-prefix`, `--ref`,
+`--max-bytes`, `--json`), and which commands only the owner runs. The text is
+part of the binary, so it matches the version you installed. It reads no repo.
+
+- `--output PATH` writes `SKILL.md` to PATH instead, creating parent
+  directories, and prints the path. It reads no repo and takes no `--root`.
+- `--install` writes `SKILL.md` and `reference.md` (command, exit-code and JSON
+  detail) into `.claude/skills/adj/`, `.agents/skills/adj/` and
+  `.grok/skills/adj/` under the repo root, and prints each path it wrote. It
+  needs a repo (the nearest `.adjudicate.json`, or `--root DIR`), and it is
+  project-only: use `--output` to put the skill anywhere else.
+- A file that already holds the text is left alone and not printed, so a second
+  run changes nothing. A file that holds different text, for example one you
+  edited, exits 1 and nothing is written; `--force` replaces it. A destination
+  file that is itself a directory or a symbolic link exits 1 even with
+  `--force`; a symbolic link in a parent folder (`.claude`, say) is followed.
+  If a write fails part way, the files already written are put back.
+- Exit 2: an unknown flag or an argument, `--root` without `--install`,
+  `--install` with `--output`, a blank `--output`, or `--force` alone.
+
+Commit the installed folders, or add them to `.gitignore`, as you prefer.
 
 ## Output for scripts
 
