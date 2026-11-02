@@ -34,6 +34,10 @@ and the check that found it; the checks are:
                        rewritten)
   unknown-history-key  a history entry has keys this version does not know
                        (a warning; they are kept too)
+  unknown-record-key   a record has top-level keys this version does not know
+                       (a warning; they are kept too)
+  unknown-was-key      the was of an amend entry, or an option in it, has keys
+                       this version does not know (a warning; kept too)
 
 Lint reads the record files itself, so it works on a store that other commands
 refuse to load. Text output is one line per finding, "FILE: record ID:

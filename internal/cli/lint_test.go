@@ -96,7 +96,7 @@ decisions/0002-second.md: record 2: error: supersede-cycle: supersede cycle amon
 			"6 errors, 0 warnings",
 		}},
 		{fixture: "parse-errors", code: 1, lines: []string{
-			"decisions/0002-unknown-key.md: record 2: error: parse: frontmatter: json: unknown field \"colour\"",
+			"decisions/0002-unknown-option-key.md: record 2: error: parse: frontmatter: json: unknown field \"colour\"",
 			"5 errors, 0 warnings",
 		}},
 		{fixture: "broken-file", code: 1, lines: []string{

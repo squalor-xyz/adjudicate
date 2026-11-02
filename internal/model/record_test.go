@@ -42,8 +42,8 @@ func TestRecordFieldsFollowCoreConceptsTable(t *testing.T) {
 	var got []string
 	for i := 0; i < typ.NumField(); i++ {
 		name, _, _ := strings.Cut(typ.Field(i).Tag.Get("json"), ",")
-		if name == "-" {
-			continue // Body is the Markdown after the frontmatter, not a frontmatter field (file.go)
+		if name == "-" || !typ.Field(i).IsExported() {
+			continue // Body is the Markdown after the frontmatter, not a frontmatter field (file.go); extra holds the unknown keys (S46)
 		}
 		got = append(got, name)
 	}

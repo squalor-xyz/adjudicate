@@ -55,16 +55,31 @@ but never renames, removes or retypes an existing key.
   fail. Rewriting a record (decide, reject, withdraw, amend, supersede,
   renumber) writes those entries back unchanged: the unknown keys follow the
   known ones, in sorted order, so the bytes are stable. A later event kind, as
-  `import` was in 0.2.0, no longer makes an older `adj` refuse a store. An
-  unknown key at the top level of a record, or inside the `was` of an `amend`
-  entry, is still an error. The `was` of an unknown event is kept as written,
+  `import` was in 0.2.0, no longer makes an older `adj` refuse a store. The
+  `was` of an unknown event is kept as written,
   whatever it holds. A key that differs from a known one only in letter case
   (`Note` beside `note`) is kept as an unknown key. A blank `event` is still
   invalid.
-- `adj lint` adds two warning checks, `unknown-event` (`history entry N:
-  unknown event "X"`) and `unknown-history-key` (one finding per entry, naming
-  its unknown keys). Warnings alone exit 0. Before, an unknown event was a
-  `fields` error and an unknown key a `parse` error.
+- Keys at the top level of a record that this version does not know, and keys
+  it does not know inside the `was` of an `amend` entry (at its top and inside
+  each `options` entry), are now read and kept too (S46), so a field a later
+  1.x release adds, or an `amend` of such a field, does not make a 1.0 binary
+  refuse the store. Every command that rewrites a record writes them back
+  unchanged, after the known keys in sorted order, so the bytes are stable. Known
+  keys keep their types, and an unknown key inside an option or the
+  recommendation is still an error, as is any key in `.adjudicate.json`. A `was`
+  or an option in it with only unknown keys still counts as old text. `adj
+  renumber` also requires the unknown top-level keys to match when it decides
+  whether a file is the stale copy of a moved record. `kind`, once refused as a
+  retired key, and `body` are now just unknown keys in the file; a `body` key
+  in the frontmatter is never printed in the JSON of the read commands, where
+  `body` stays the text after the frontmatter.
+- `adj lint` adds four warning checks, `unknown-event` (`history entry N:
+  unknown event "X"`), `unknown-history-key` (one finding per entry, naming
+  its unknown keys), `unknown-was-key` (one finding per `amend` entry, naming
+  the unknown keys of its `was`) and `unknown-record-key` (one finding per
+  record). Warnings alone exit 0. Before, an unknown event was a `fields` error
+  and an unknown key a `parse` error.
 
 ### JSON shapes
 - A record object may have two more optional string keys, `recorded_by` and
@@ -87,9 +102,13 @@ but never renames, removes or retypes an existing key.
   (`--json=false`, `--json=0`) turns it off. See "Errors" in
   [docs/json.md](docs/json.md).
 - `show --json`, `list --json` and the other commands that print records
-  include an entry's unknown keys beside `date`, `event`, `note` and `was`.
-  Readers must ignore history events and keys they do not know. No existing
-  key is changed. See [docs/json.md](docs/json.md).
+  include an entry's unknown keys beside `date`, `event`, `note` and `was`, the
+  unknown keys of a record's `was` and its options, and the record's own unknown
+  top-level keys (S46), after the known ones and before `body` (a frontmatter
+  key named `body` is left out). `adj show` text
+  and `adj context` print the known fields only. Readers must ignore history
+  events and keys they do not know. No existing key is changed. See
+  [docs/json.md](docs/json.md).
 
 ## 0.2.0 - 2026-10-18
 

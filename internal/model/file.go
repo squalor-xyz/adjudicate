@@ -66,8 +66,10 @@ func Unmarshal(name string, data []byte) (Record, error) {
 
 // Parse decodes a record file without validating the record (C51), so lint
 // can report a record that Validate rejects. A missing fence, a byte order
-// mark, CRLF line endings, a JSON syntax or type error, an unknown key or data
-// after the JSON are still errors, matching ErrInvalid (C53). The JSON error
+// mark, CRLF line endings, a JSON syntax or type error, an unknown key inside
+// an option or the recommendation or data after the JSON are still errors,
+// matching ErrInvalid (C53). A top-level key this version does not know is not
+// one: the record keeps it and Marshal writes it back (S46). The JSON error
 // stays reachable with errors.As.
 func Parse(name string, data []byte) (Record, error) {
 	front, body, err := splitFile(data)
@@ -76,7 +78,6 @@ func Parse(name string, data []byte) (Record, error) {
 	}
 	var r Record
 	dec := json.NewDecoder(bytes.NewReader(front))
-	dec.DisallowUnknownFields()
 	if err := dec.Decode(&r); err != nil {
 		if errors.Is(err, io.EOF) {
 			err = errors.New("frontmatter is empty")

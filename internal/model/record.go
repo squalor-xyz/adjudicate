@@ -124,31 +124,35 @@ type knownEntry struct {
 // UnknownKeys returns the keys of the entry that this version does not know,
 // sorted; none for an entry without any. A was kept raw is not one: was is a
 // key this version knows, and the event is what it does not.
-func (h HistoryEntry) UnknownKeys() []string {
-	if h.extra == "" {
+func (h HistoryEntry) UnknownKeys() []string { return keysOf(h.extra) }
+
+// keysOf returns the sorted keys of extra, the JSON object of the unknown keys
+// of a record, an entry, a was or an option in a was ("" for none).
+func keysOf(extra string) []string {
+	if extra == "" {
 		return nil
 	}
 	var m map[string]json.RawMessage
-	if err := json.Unmarshal([]byte(h.extra), &m); err != nil { // cannot fail: extra is made here
+	if err := json.Unmarshal([]byte(extra), &m); err != nil { // cannot fail: extra is made here
 		return nil
 	}
 	return slices.Sorted(maps.Keys(m))
 }
 
-// entryField is one key of a history entry as written, with its raw value.
-type entryField struct {
+// objectField is one key of a JSON object as written, with its raw value.
+type objectField struct {
 	key string
 	raw json.RawMessage
 }
 
-// entryFields reads the keys of a JSON object in the order written. null is
-// reported, so the entry can be the zero entry; any other value that is not an
+// objectFields reads the keys of a JSON object in the order written. null is
+// reported, so the value can be the zero one; any other value that is not an
 // object is an error.
-func entryFields(data []byte) (fields []entryField, null bool, err error) {
+func objectFields(data []byte) (fields []objectField, null bool, err error) {
 	dec := json.NewDecoder(bytes.NewReader(data))
 	tok, err := dec.Token()
 	if err != nil {
-		return nil, false, fmt.Errorf("history entry: %w", err)
+		return nil, false, err
 	}
 	if tok == nil {
 		return nil, true, nil
@@ -165,56 +169,38 @@ func entryFields(data []byte) (fields []entryField, null bool, err error) {
 		case bool:
 			kind = "boolean"
 		}
-		return nil, false, fmt.Errorf("history entry: want a JSON object, got a %s", kind)
+		return nil, false, fmt.Errorf("want a JSON object, got a %s", kind)
 	}
 	for dec.More() {
 		kt, err := dec.Token()
 		if err != nil {
-			return nil, false, fmt.Errorf("history entry: %w", err)
+			return nil, false, err
 		}
-		f := entryField{key: kt.(string)} // an object's key is a string
+		f := objectField{key: kt.(string)} // an object's key is a string
 		if err := dec.Decode(&f.raw); err != nil {
-			return nil, false, fmt.Errorf("history entry: %w", err)
+			return nil, false, err
 		}
 		fields = append(fields, f)
 	}
 	return fields, false, nil
 }
 
-// decodeError names the history entry in err and keeps the types that decode
-// it out of the message.
-func decodeError(err error) error {
-	var te *json.UnmarshalTypeError
-	if errors.As(err, &te) && (te.Struct == "knownEntry" || te.Struct == "" && te.Field != "") {
-		fixed := *te
-		fixed.Struct = "HistoryEntry" // the date, event or note
-		if te.Struct == "" {
-			fixed.Struct = "Was" // a field of was
-		}
-		err = &fixed
+// splitObject splits the JSON object in data into the values of the keys in
+// names, under those names, and the other keys, kept as their JSON object text
+// (compact, keys sorted; "" when there are none). A key matches a name in any
+// letter case, as encoding/json does. When keys differ only in letter case from
+// one name, the one spelled exactly is the known key (else the last, as
+// encoding/json does) and the others are unknown keys (C214, S46); a key
+// repeated as spelled is a duplicate, and the last one wins. null is reported,
+// so the value can be the zero one.
+func splitObject(data []byte, names []string) (known map[string]json.RawMessage, extra string, null bool, err error) {
+	fields, null, err := objectFields(data)
+	if err != nil || null {
+		return nil, "", null, err
 	}
-	return fmt.Errorf("history entry: %w", err)
-}
-
-// UnmarshalJSON decodes the known keys as encoding/json does (a key matches
-// one of them in any letter case) and keeps every other key. When keys differ
-// only in letter case from one known key, the one spelled exactly is the known
-// key (else the last, as encoding/json does) and the others are unknown keys
-// (C214).
-// For a known event an unknown key inside was is still an error; for an event
-// this version does not know, was is kept as written (C213).
-func (h *HistoryEntry) UnmarshalJSON(data []byte) error {
-	fields, null, err := entryFields(data)
-	if err != nil {
-		return err
-	}
-	if null { // as for any struct, null leaves the zero entry
-		*h = HistoryEntry{}
-		return nil
-	}
-	known, extra := map[string]json.RawMessage{}, map[string]json.RawMessage{}
+	known, unknown := map[string]json.RawMessage{}, map[string]json.RawMessage{}
 	isKnown := make([]bool, len(fields))
-	for _, name := range entryKeys {
+	for _, name := range names {
 		winner := -1
 		for i, f := range fields {
 			if strings.EqualFold(f.key, name) && (f.key == name || winner < 0 || fields[winner].key != name) {
@@ -231,17 +217,73 @@ func (h *HistoryEntry) UnmarshalJSON(data []byte) error {
 				continue
 			}
 			isKnown[i] = true
-			// A key spelled otherwise is kept and reported by lint; a key
-			// repeated as spelled is a duplicate, and the last one wins.
+			// A key spelled otherwise is kept and reported by lint.
 			if f.key != fields[winner].key {
-				extra[f.key] = f.raw
+				unknown[f.key] = f.raw
 			}
 		}
 	}
 	for i, f := range fields {
 		if !isKnown[i] {
-			extra[f.key] = f.raw
+			unknown[f.key] = f.raw
 		}
+	}
+	if len(unknown) > 0 {
+		text, err := encodeJSON(unknown)
+		if err != nil {
+			return nil, "", false, err
+		}
+		extra = string(text)
+	}
+	return known, extra, false, nil
+}
+
+// withExtra adds the members of extra, a JSON object text from splitObject, to
+// the JSON object out, after its own members.
+func withExtra(out []byte, extra string) []byte {
+	if len(extra) <= 2 { // none, or "{}"
+		return out
+	}
+	members := extra[1 : len(extra)-1]
+	if string(out) == "{}" {
+		return []byte("{" + members + "}")
+	}
+	out = append(bytes.TrimSuffix(out, []byte("}")), ',')
+	out = append(out, members...)
+	return append(out, '}')
+}
+
+// renameStruct gives a type error of the decoder that is not exported the name
+// of the type it is for, so the message does not name the helper type.
+func renameStruct(err error, from, to string) error {
+	var te *json.UnmarshalTypeError
+	if errors.As(err, &te) && te.Struct == from {
+		fixed := *te
+		fixed.Struct = to
+		return &fixed
+	}
+	return err
+}
+
+// decodeError names the history entry in err and keeps the types that decode
+// it out of the message.
+func decodeError(err error) error {
+	return fmt.Errorf("history entry: %w", renameStruct(err, "knownEntry", "HistoryEntry"))
+}
+
+// UnmarshalJSON decodes the known keys as encoding/json does (a key matches
+// one of them in any letter case) and keeps every other key (splitObject).
+// A was of a known event is decoded as a Was, which keeps its own unknown keys
+// (S46); for an event this version does not know, was is kept as written
+// (C213).
+func (h *HistoryEntry) UnmarshalJSON(data []byte) error {
+	known, extra, null, err := splitObject(data, entryKeys)
+	if err != nil {
+		return fmt.Errorf("history entry: %w", err)
+	}
+	if null { // as for any struct, null leaves the zero entry
+		*h = HistoryEntry{}
+		return nil
 	}
 	wasRaw, hasWas := known["was"]
 	delete(known, "was")
@@ -253,16 +295,10 @@ func (h *HistoryEntry) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(text, &k); err != nil {
 		return decodeError(err)
 	}
-	*h = HistoryEntry{Date: k.Date, Event: k.Event, Note: k.Note}
+	*h = HistoryEntry{Date: k.Date, Event: k.Event, Note: k.Note, extra: extra}
 	if hasWas {
 		if k.Event.Known() {
-			dec := json.NewDecoder(bytes.NewReader(wasRaw))
-			dec.DisallowUnknownFields()
-			if err := dec.Decode(&h.Was); err != nil {
-				var te *json.UnmarshalTypeError
-				if errors.As(err, &te) && te.Field == "" { // was itself is not an object
-					err = fmt.Errorf("want an object, got a %s", te.Value)
-				}
+			if err := json.Unmarshal(wasRaw, &h.Was); err != nil {
 				return decodeError(fmt.Errorf("was: %w", err))
 			}
 		} else {
@@ -272,13 +308,6 @@ func (h *HistoryEntry) UnmarshalJSON(data []byte) error {
 			}
 			h.rawWas = string(raw)
 		}
-	}
-	if len(extra) > 0 {
-		text, err := encodeJSON(extra)
-		if err != nil {
-			return err
-		}
-		h.extra = string(text)
 	}
 	return nil
 }
@@ -291,18 +320,10 @@ func (h HistoryEntry) MarshalJSON() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	with := func(members string) { // members: key-value pairs, no braces
-		out = append(bytes.TrimSuffix(out, []byte("}")), ',')
-		out = append(out, members...)
-		out = append(out, '}')
-	}
 	if h.Was == nil && h.rawWas != "" {
-		with(`"was":` + h.rawWas)
+		out = withExtra(out, "{"+`"was":`+h.rawWas+"}")
 	}
-	if len(h.extra) > 2 { // more than "{}"
-		with(h.extra[1 : len(h.extra)-1])
-	}
-	return out, nil
+	return withExtra(out, h.extra), nil
 }
 
 // encodeJSON encodes v compactly, without escaping HTML characters (a file
@@ -321,23 +342,118 @@ func encodeJSON(v any) ([]byte, error) {
 // Was is the text an amend replaced: one pointer per field that changed, nil
 // for a field that did not, so an old empty text (a pointer to "") is told
 // apart from a field that was left alone.
+//
+// Keys this version does not know (an amend of a field a newer version added)
+// are kept apart, in extra, and written back after the known keys in sorted
+// order, as for a HistoryEntry (S46); extra is a string so Was stays
+// comparable with reflect.DeepEqual.
 type Was struct {
 	Title     *string     `json:"title,omitempty"`
 	Context   *string     `json:"context,omitempty"`
 	Rationale *string     `json:"rationale,omitempty"`
 	Options   []OptionWas `json:"options,omitempty"`
+
+	extra string // the keys this version does not know, as a JSON object
 }
 
-// empty reports whether w holds no old text.
+// wasKeys are the keys of a Was that this version knows.
+var wasKeys = []string{"title", "context", "rationale", "options"}
+
+// wasJSON is Was's known keys, for encoding and decoding without the methods.
+type wasJSON Was
+
+// empty reports whether w holds no old text. A key this version does not know
+// is old text of a field it does not know (C233).
 func (w Was) empty() bool {
-	return w.Title == nil && w.Context == nil && w.Rationale == nil && len(w.Options) == 0
+	return w.Title == nil && w.Context == nil && w.Rationale == nil && len(w.Options) == 0 && w.extra == ""
 }
 
-// OptionWas is the old summary and/or tradeoffs of the option with Label.
+// UnknownKeys returns the keys of w that this version does not know, sorted;
+// those inside an option are in OptionWas.UnknownKeys.
+func (w Was) UnknownKeys() []string { return keysOf(w.extra) }
+
+// UnmarshalJSON decodes the known keys and keeps the others (splitObject).
+func (w *Was) UnmarshalJSON(data []byte) error {
+	known, extra, null, err := splitObject(data, wasKeys)
+	if err != nil {
+		return err
+	}
+	if null {
+		*w = Was{}
+		return nil
+	}
+	text, err := encodeJSON(known)
+	if err != nil {
+		return err
+	}
+	var k wasJSON
+	if err := json.Unmarshal(text, &k); err != nil {
+		return renameStruct(err, "wasJSON", "Was")
+	}
+	*w = Was(k)
+	w.extra = extra
+	return nil
+}
+
+// MarshalJSON writes the known keys, then the unknown ones sorted.
+func (w Was) MarshalJSON() ([]byte, error) {
+	out, err := encodeJSON(wasJSON(w))
+	if err != nil {
+		return nil, err
+	}
+	return withExtra(out, w.extra), nil
+}
+
+// OptionWas is the old summary and/or tradeoffs of the option with Label. Keys
+// this version does not know are kept as for a Was (S46).
 type OptionWas struct {
 	Label     string  `json:"label"`
 	Summary   *string `json:"summary,omitempty"`
 	Tradeoffs *string `json:"tradeoffs,omitempty"`
+
+	extra string // the keys this version does not know, as a JSON object
+}
+
+// optionWasKeys are the keys of an OptionWas that this version knows.
+var optionWasKeys = []string{"label", "summary", "tradeoffs"}
+
+// optionWasJSON is OptionWas's known keys, for encoding and decoding without
+// the methods.
+type optionWasJSON OptionWas
+
+// UnknownKeys returns the keys of o that this version does not know, sorted.
+func (o OptionWas) UnknownKeys() []string { return keysOf(o.extra) }
+
+// UnmarshalJSON decodes the known keys and keeps the others (splitObject).
+func (o *OptionWas) UnmarshalJSON(data []byte) error {
+	known, extra, null, err := splitObject(data, optionWasKeys)
+	if err != nil {
+		return err
+	}
+	if null {
+		*o = OptionWas{}
+		return nil
+	}
+	text, err := encodeJSON(known)
+	if err != nil {
+		return err
+	}
+	var k optionWasJSON
+	if err := json.Unmarshal(text, &k); err != nil {
+		return renameStruct(err, "optionWasJSON", "OptionWas")
+	}
+	*o = OptionWas(k)
+	o.extra = extra
+	return nil
+}
+
+// MarshalJSON writes the known keys, then the unknown ones sorted.
+func (o OptionWas) MarshalJSON() ([]byte, error) {
+	out, err := encodeJSON(optionWasJSON(o))
+	if err != nil {
+		return nil, err
+	}
+	return withExtra(out, o.extra), nil
 }
 
 // Record is one question or decision. Field order follows the PROJECT.md
@@ -371,6 +487,101 @@ type Record struct {
 	// Body is the Markdown after the frontmatter, kept verbatim. It is not a
 	// frontmatter field (json:"-"); see file.go.
 	Body string `json:"-"`
+
+	extra string // the top-level keys this version does not know, as a JSON object
+}
+
+// recordKeys are the frontmatter keys of a Record that this version knows.
+var recordKeys = []string{
+	"id", "title", "status", "key", "tags", "asked_by", "decided_by", "recorded_by", "via", "created",
+	"decided_at", "context", "options", "recommendation", "decision", "rationale", "consequences",
+	"supersedes", "superseded_by", "refs", "history",
+}
+
+// recordJSON is Record's known keys, for encoding and decoding without the
+// methods below.
+type recordJSON Record
+
+// UnknownKeys returns the top-level keys of r that this version does not know,
+// sorted; none for a record without any. A newer version may write keys that
+// this one keeps and writes back unchanged (S46).
+func (r Record) UnknownKeys() []string { return keysOf(r.extra) }
+
+// UnknownJSON returns the unknown top-level keys of r as a JSON object (compact,
+// keys sorted), or "" when there are none. Two records that differ only in what
+// a newer version wrote have different texts.
+func (r Record) UnknownJSON() string { return r.extra }
+
+// UnmarshalJSON decodes the known keys, as encoding/json does but with the
+// letter-case rule of splitObject, and keeps every other top-level key apart,
+// so that rewriting the record never drops what a newer version added (S46).
+// The known keys stay strict about type, and so do the objects inside them (an
+// option, the recommendation) except the history, whose entries are tolerant
+// (S44).
+func (r *Record) UnmarshalJSON(data []byte) error {
+	known, extra, null, err := splitObject(data, recordKeys)
+	if err != nil {
+		return err
+	}
+	if null {
+		*r = Record{}
+		return nil
+	}
+	text, err := encodeJSON(known)
+	if err != nil {
+		return err
+	}
+	var k recordJSON
+	dec := json.NewDecoder(bytes.NewReader(text))
+	dec.DisallowUnknownFields()
+	if err := dec.Decode(&k); err != nil {
+		return renameStruct(err, "recordJSON", "Record")
+	}
+	*r = Record(k)
+	r.extra = extra
+	return nil
+}
+
+// MarshalJSON writes the known keys in the order of the struct, then the
+// unknown ones in sorted key order, so the bytes are the same on every write.
+func (r Record) MarshalJSON() ([]byte, error) {
+	out, err := encodeJSON(recordJSON(r))
+	if err != nil {
+		return nil, err
+	}
+	return withExtra(out, r.extra), nil
+}
+
+// MarshalJSONWithBody is MarshalJSON with the body added as a "body" key when
+// the record has one, as the read commands print a record (docs/json.md). A
+// frontmatter key of that name is an unknown key like any other in the file
+// (C234), but it is always left out here (C235): body in this JSON is the text
+// after the frontmatter, never a frontmatter value.
+func (r Record) MarshalJSONWithBody() ([]byte, error) {
+	if r.extra != "" {
+		var m map[string]json.RawMessage
+		if err := json.Unmarshal([]byte(r.extra), &m); err != nil { // cannot fail: extra is made here
+			return nil, err
+		}
+		delete(m, "body")
+		r.extra = ""
+		if len(m) > 0 {
+			text, err := encodeJSON(m)
+			if err != nil {
+				return nil, err
+			}
+			r.extra = string(text)
+		}
+	}
+	out, err := r.MarshalJSON()
+	if err != nil || r.Body == "" {
+		return out, err
+	}
+	body, err := encodeJSON(r.Body)
+	if err != nil {
+		return nil, err
+	}
+	return append(bytes.TrimSuffix(out, []byte("}")), `,"body":`+string(body)+"}"...), nil
 }
 
 // validDate reports whether s is a YYYY-MM-DD date.
@@ -464,7 +675,7 @@ func (r Record) Validate() error {
 				switch {
 				case o.Label == "":
 					bad("history", "entry %d: was.options: an option has no label", i)
-				case o.Summary == nil && o.Tradeoffs == nil:
+				case o.Summary == nil && o.Tradeoffs == nil && o.extra == "":
 					bad("history", "entry %d: was.options: option %q has no old summary or tradeoffs", i, o.Label)
 				}
 			}

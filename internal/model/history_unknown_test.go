@@ -135,19 +135,6 @@ func TestEntriesDifferingOnlyInAnUnknownKeyAreNotEqual(t *testing.T) {
 	}
 }
 
-// Only a history entry is tolerant: an unknown top-level key still fails
-// (owner decision 2026-10-19), and so does one inside was.
-func TestUnknownTopLevelAndWasKeysStillFail(t *testing.T) {
-	top := []byte("---\n{\"id\":4,\"title\":\"T\",\"status\":\"open\",\"created\":\"2026-10-01\",\"colour\":\"red\"}\n---\n")
-	if _, err := Parse("top.md", top); err == nil || !strings.Contains(err.Error(), `unknown field "colour"`) {
-		t.Errorf("Parse(unknown top-level key) = %v, want the unknown field error", err)
-	}
-	was := openFile(`{"date":"2026-10-02","event":"amend","was":{"title":"Old","colour":"red"}}`)
-	if _, err := Parse("was.md", was); err == nil || !strings.Contains(err.Error(), `unknown field "colour"`) {
-		t.Errorf("Parse(unknown key in was) = %v, want the unknown field error", err)
-	}
-}
-
 // A key that spells a known one in another case is that key, as before.
 func TestHistoryKeysMatchKnownKeysIgnoringCase(t *testing.T) {
 	r, err := Parse("x.md", openFile(`{"Date":"2026-10-01","EVENT":"ask","Note":"n"}`))
@@ -351,16 +338,16 @@ func TestTransitionsKeepAnUnknownEventsWas(t *testing.T) {
 	}
 }
 
-// For a known event the was stays strict: a new key in an amend's was is an
-// error, as is a was on a decide entry.
-func TestKnownEventsKeepWasStrict(t *testing.T) {
-	amend := openFile(`{"date":"2026-10-02","event":"amend","was":{"title":"Old","tags":["x"]}}`)
-	if _, err := Parse("x.md", amend); err == nil || !strings.Contains(err.Error(), `unknown field "tags"`) {
-		t.Errorf("Parse(amend with an unknown was key) = %v, want the unknown field error", err)
-	}
+// For a known event the was is still decoded: a decide entry cannot have one,
+// and an amend entry's must be an object (unknown keys inside it are kept, S46).
+func TestKnownEventsDecodeWas(t *testing.T) {
 	decide := openFile(`{"date":"2026-10-02","event":"decide","was":"text"}`)
 	if _, err := Parse("x.md", decide); err == nil {
 		t.Error("Parse(decide with a non-object was) = nil, want an error")
+	}
+	amend := openFile(`{"date":"2026-10-02","event":"amend","was":"text"}`)
+	if _, err := Parse("x.md", amend); err == nil {
+		t.Error("Parse(amend with a non-object was) = nil, want an error")
 	}
 }
 

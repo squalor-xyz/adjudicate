@@ -207,7 +207,7 @@ func TestMalformedFilesReturnErrorNamingFile(t *testing.T) {
 		{"no_opening.md", "no opening --- line"},
 		{"unterminated.md", "not closed by a --- line"},
 		{"bad_json.md", "invalid character"},
-		{"unknown_key.md", `unknown field "kind"`},
+		{"unknown_option_key.md", `unknown field "colour"`},
 		{"invalid_record.md", "rationale"},
 		{"bad_history_date.md", "history"},
 		{"bad_history_event.md", "entry 0: event is required"},

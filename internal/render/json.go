@@ -10,11 +10,15 @@ import (
 )
 
 // jsonRecord is a record in the JSON shape documented in docs/json.md: the
-// model's fields, plus a body key when the record has a body (C88).
+// model's fields, the keys it does not know (S46), then a body key when the
+// record has a body (C88).
 type jsonRecord struct {
 	model.Record
-	Body string `json:"body,omitempty"`
 }
+
+// MarshalJSON writes the record with its body. Without it the embedded
+// Record's own method would be used, which leaves the body out.
+func (j jsonRecord) MarshalJSON() ([]byte, error) { return j.Record.MarshalJSONWithBody() }
 
 // listJSON is the object adj list --json prints (C86).
 type listJSON struct {
@@ -23,7 +27,7 @@ type listJSON struct {
 
 // RecordJSON writes one record as a JSON object.
 func RecordJSON(w io.Writer, r model.Record) error {
-	return encodeJSON(w, jsonRecord{Record: r, Body: r.Body})
+	return encodeJSON(w, jsonRecord{Record: r})
 }
 
 // RecordsJSON writes {"records": [...]} in the order given, with an empty
@@ -37,7 +41,7 @@ func RecordsJSON(w io.Writer, recs []model.Record) error {
 func jsonRecords(recs []model.Record) []jsonRecord {
 	out := []jsonRecord{}
 	for _, r := range recs {
-		out = append(out, jsonRecord{Record: r, Body: r.Body})
+		out = append(out, jsonRecord{Record: r})
 	}
 	return out
 }

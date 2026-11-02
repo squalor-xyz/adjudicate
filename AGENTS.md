@@ -49,12 +49,19 @@ library only.
   (`Event.Known` tells) and keys it does not know, and keeps both unchanged
   (`HistoryEntry.UnknownKeys`; written after the known keys in sorted order,
   so the bytes are stable). Keys that differ from a known key only in letter
-  case are unknown keys unless spelled exactly (one wins, the rest are kept).
-  For an unknown event `was` is not decoded: it is kept as written, whatever
-  its shape (C213); for a known event `was` stays strict. The unknown parts
-  are unexported strings, so entries are comparable (renumber compares them
-  with `reflect.DeepEqual`, unknown keys included; `Was` is a pointer). The
-  top-level record stays strict (S44).
+  case are unknown keys unless spelled exactly (one wins, the rest are kept;
+  `splitObject` is that rule for every object below). For an unknown event
+  `was` is not decoded: it is kept as written, whatever its shape (C213). The
+  `was` of a known event (`Was`, `OptionWas`), and the top level of a record
+  (`Record.UnknownKeys`), keep keys they do not know the same way (S46); the
+  known keys stay strict about type, and an unknown key inside an option or the
+  recommendation is still an error. A `was` or an option in it with only
+  unknown keys counts as old text (C233). A frontmatter `body` is an unknown key;
+  `Record.MarshalJSONWithBody`, which the read commands' JSON uses, always
+  leaves that key out, so `body` there is only the text after the frontmatter
+  (C234, C235). The unknown parts are unexported strings, so records,
+  entries and was are comparable (renumber compares entries with
+  `reflect.DeepEqual`, unknown keys included; `Was` is a pointer).
 - `internal/store`: one repo's record directory (`store.go`), its config
   (`config.go`), `Renumber` (`renumber.go`) and the ID lock (`lock_unix.go`,
   `lock_windows.go`, `lock_open.go`, `lock_other.go`); see "Store and config"
@@ -353,8 +360,11 @@ A new failure with its own error value needs a sentinel and a code in
   trimmed and case-sensitive), `decided-by` (a `decided` record without
   `decided_by`, a warning, C27), `unknown-event` (a history entry whose event
   this version does not know, one finding per entry: `history entry N: unknown
-  event "X"`, S44) and `unknown-history-key` (one per entry, naming its unknown
-  keys in sorted order, S44); the last three are warnings, the rest errors
+  event "X"`, S44), `unknown-history-key` (one per entry, naming its unknown
+  keys in sorted order, S44), `unknown-record-key` (one per record, naming its
+  unknown top-level keys in sorted order, S46) and `unknown-was-key` (one per
+  amend entry, naming the unknown keys of its `was`, those inside an option as
+  `options.LABEL.KEY`, S46, C231); the last five are warnings, the rest errors
   (C143). A blank event is a `fields` error. Text: per finding
   `FILE: record ID: SEVERITY: CHECK: MESSAGE`, sorted by ID, check and file,
   then `N errors, M warnings`; a clean store prints nothing (C141). `--json`
@@ -390,8 +400,8 @@ A new failure with its own error value needs a sentinel and a code in
   `renumber` history entry `from N` for the old file's ID, wherever it sits in
   the history, and holds the same record: equal to the old file apart from the
   entry, or, if edited since, with the old file's whole history before the entry
-  and the same title, key, tags, asked_by, created, context, options and
-  recommendation, not the body, C163, once the `amend` entries after the
+  and the same title, key, tags, asked_by, created, context, options,
+  recommendation and unknown top-level keys, not the body, C163, C232, once the `amend` entries after the
   renumber entry are taken back to the old text they keep, C181; a live record
   that only shares the ID and name text with a moved one is not a stale copy),
   and `adj renumber` refuses (exit 1, nothing changed, `store.ErrStaleCopy`)

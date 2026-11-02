@@ -92,7 +92,7 @@ var fixtureCases = []struct {
 	}},
 	{"parse-errors", []lint.Finding{
 		finding(1, "0001-bad-json.md", errSev, lint.CheckParse, "frontmatter: unexpected EOF"),
-		finding(2, "0002-unknown-key.md", errSev, lint.CheckParse, `frontmatter: json: unknown field "colour"`),
+		finding(2, "0002-unknown-option-key.md", errSev, lint.CheckParse, `frontmatter: json: unknown field "colour"`),
 		finding(3, "0003-type-error.md", errSev, lint.CheckParse, "frontmatter: json: cannot unmarshal string into Go struct field Record.id of type int"),
 		finding(4, "0004-empty.md", errSev, lint.CheckParse, "frontmatter: frontmatter is empty"),
 		finding(5, "0005-trailing.md", errSev, lint.CheckParse, "frontmatter: data after the JSON object"),
@@ -190,6 +190,20 @@ var fixtureCases = []struct {
 		finding(3, "0003-both.md", warnSev, lint.CheckUnknownEvent, `history entry 1: unknown event "future-thing"`),
 		finding(3, "0003-both.md", warnSev, lint.CheckUnknownEvent, `history entry 2: unknown event "other-thing"`),
 		finding(3, "0003-both.md", warnSev, lint.CheckUnknownHistoryKey, `history entry 1: unknown keys "alpha", "zeta"`),
+	}},
+	// A record's own unknown keys are read and kept too (S46): one finding per
+	// record, the keys in sorted order.
+	{"unknown-record-keys", []lint.Finding{
+		finding(1, "0001-one-key.md", warnSev, lint.CheckUnknownRecordKey, `unknown key "colour"`),
+		finding(2, "0002-two-keys.md", warnSev, lint.CheckUnknownHistoryKey, `history entry 0: unknown key "by"`),
+		finding(2, "0002-two-keys.md", warnSev, lint.CheckUnknownRecordKey, `unknown keys "alpha", "zeta"`),
+	}},
+	// The unknown keys of an amend entry's was, at its top and inside its
+	// options, are warned about under their own check, one finding per entry
+	// (S46); a was of unknown keys only is still an old text.
+	{"unknown-was-keys", []lint.Finding{
+		finding(1, "0001-was-keys.md", warnSev, lint.CheckUnknownWasKey, `history entry 1: unknown was keys "options.a.url", "tags"`),
+		finding(2, "0002-only-unknown.md", warnSev, lint.CheckUnknownWasKey, `history entry 1: unknown was key "key"`),
 	}},
 	// A blank event is still an error, and only that: it is not also an unknown
 	// event (S44).

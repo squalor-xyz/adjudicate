@@ -218,7 +218,12 @@ not know, and keys it does not know inside a history entry, so a later event
 kind does not make an older `adj` refuse a store; they are kept unchanged when
 the record is rewritten, and `adj lint` warns (`unknown-event`,
 `unknown-history-key`, S44). The `was` of an unknown event is kept as written.
-An unknown key elsewhere in a record is still an error.
+The same holds for keys at the top level of a record and for keys inside the
+`was` of an `amend` entry (and inside each of its `options`): they are kept,
+written back after the known keys in sorted order, and `adj lint` warns
+(`unknown-record-key`, `unknown-was-key`, S46). Known keys keep their types, and
+an unknown key inside an option or the recommendation is still an error. The
+repo config `.adjudicate.json` stays strict.
 
 **Store and config:** `adj init` writes `.adjudicate.json`
 (`{"store": "decisions"}`) at the repo root and creates the store directory.

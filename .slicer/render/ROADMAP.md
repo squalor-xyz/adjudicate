@@ -894,6 +894,26 @@ Each file goes through a same-directory temporary file and a rename (new files 0
 
 The skill is named adj with files SKILL.md and reference.md (embedded as internal/commands/skill.md and skill_reference.md); tests cap them at 6000 and 9000 bytes and pin that this repo's own installed copy equals the binary's text (S54, C32).
 
+### C231 adj lint: unknown-record-key and unknown-was-key checks
+
+adj lint warns with unknown-record-key (one finding per record, keys sorted) and a new unknown-was-key (one per amend entry; keys inside an option are named options.LABEL.KEY) rather than folding was keys into unknown-history-key, so a reader can tell the entry's own keys from keys of the old text (S46, C32).
+
+### C232 Stale-copy test compares unknown top-level keys
+
+store.IsStaleCopy requires the unknown top-level keys of the moved record to equal the stale one's, in the last-entry path (through the whole stored form) and in the edited-since path (UnknownJSON compared beside the ask-set fields); no command of this version changes them, so a keeper that differs in one is not the copy (S46, C32).
+
+### C233 A was of unknown keys only still counts as old text
+
+Was.empty and the option check in Validate count unknown keys as old text, so an amend entry of a later version whose was holds only keys this version lacks (key, tags) does not make this version refuse the record; an empty was or an option with no text of any kind stays an error (S46, C32).
+
+### C234 A frontmatter body key is an unknown key; JSON output keeps one body
+
+body is not a known frontmatter key (the body is the text after the closing fence), so a body key in the frontmatter is kept as an unknown key like any other; the read commands' JSON gives way to the record's real body when it has one, so the object never has two body keys. A kind key, once refused (C30), is now an unknown key too (S46, C32).
+
+### C235 A frontmatter body key is always left out of the read commands' JSON
+
+Amends C234 (owner answer 2026-11-02): body in the JSON of show, list, inbox and check keeps its documented meaning, the text after the frontmatter, so a body key in the frontmatter is never printed there, with or without a real body. The file keeps the key on every rewrite (S46).
+
 ### C39 LICENSE is a stub until the owner supplies the full GPL-3.0 text and copyright holder
 
 No GPL-3.0 text exists in the adjudicate repo and the workspace has no network, so the stub carries the SPDX line, the or-later notice and TODO(owner) markers.
@@ -956,7 +976,7 @@ PENDING OWNER CONFIRMATION - not decided. Source: Dependency/licensing notes (ma
 
 *Retired: Owner decided 2026-10-15: see decision C31 (GPL-3.0-or-later)..*
 
-54 items · — 5 · done 44 · later 3 · retired 2
+54 items · — 4 · done 45 · later 3 · retired 2
 
 Release 1.0
 
@@ -965,7 +985,7 @@ Release 1.0
 | 1 | [S43](slices/S43.md) | Sibling-aware record IDs | M | 3 | store | ork integration review 2026-10-19 (squalor-xyz/ork docs/review-2026-10-19-integration.md), R6: two ork branches both allocated records 50 and 51 on 2026-10-19 and needed adj renumber; the store lock cannot see other branches (internal/store/store.go:282-286); slicer already allocates past sibling worktrees. | — |
 | 2 | [S39](slices/S39.md) | Release 1.0 | S | 1 | release | CHANGELOG.md and docs/json.md 1.0 rule; owner 2026-10-18: 0.2.0 first, 1.0 later | — |
 | 3 | [S45](slices/S45.md) | JSON contract version and pin | M | 2 | cli | owner session 2026-10-20 (in slicer): slicer, ork and adjudicate lock to agreed contract versions; per-contract pins, each tool keeps its own pin, ork sets and checks them. Companion items: slicer s387 (relay contract pin), ork S24 (ork sets and checks the pins). | — |
-| 4 | [S46](slices/S46.md) | Forward-compatible record reads | S | 1 | model | adj records 17 (store.amend-was) and 18 (store.record-unknown-keys), filed 2026-10-20 from the S39 notes and the S44 review | — |
+| 4 | [S46](slices/S46.md) | Forward-compatible record reads | S | 1 | model | adj records 17 (store.amend-was) and 18 (store.record-unknown-keys), filed 2026-10-20 from the S39 notes and the S44 review | done |
 | 5 | [S51](slices/S51.md) | Partial supersede | M | 2 |  | ork adj 168 ui.structured-questions, 2026-10-25 | — |
 | 6 | [S52](slices/S52.md) | Decision provenance: recorded by, via | S | 1 |  |  | done |
 | 7 | [S53](slices/S53.md) | inbox --ref | S | 1 |  |  | done |

@@ -566,7 +566,9 @@ a count such as `2 errors, 1 warning`; a clean store prints nothing.
 The checks:
 
 - `parse` (error): the file cannot be read or decoded, for example it has no
-  opening `---` line, its JSON is bad or it has an unknown key. Nothing else is
+  opening `---` line, its JSON is bad or it has an unknown key inside an option
+  or the recommendation (an unknown top-level key is `unknown-record-key`).
+  Nothing else is
   checked for that file; its ID still counts as taken.
 - `fields` (error): the record breaks a rule of the model, one finding per
   rule: a missing required field (`id`, `title`, `status`, `created`; `rationale`
@@ -593,7 +595,8 @@ The checks:
   this file's ID, wherever it sits in the history, and the same content: the
   moved record without that entry equals this one, or, if it was edited since,
   its history before the entry is this record's history and the fields `adj
-  ask` sets are equal; an `adj amend` after the entry is first taken back to the
+  ask` sets are equal, and so are the top-level keys this version does not know;
+  an `adj amend` after the entry is first taken back to the
   old text its `amend` entry keeps). A live record that only shares the ID and
   the name text with a moved one is not reported; the body of an edited moved
   record is not compared. A moved file changed by hand without a `renumber`
@@ -621,6 +624,16 @@ The checks:
   does not know. One finding per entry, naming its unknown keys in sorted
   order: `history entry N: unknown key "k"`, or `unknown keys "a", "b"`. The
   keys are kept when the record is rewritten and appear in `--json` output.
+- `unknown-was-key` (warning): the `was` of an `amend` entry has keys that this
+  version does not know, at its top or inside one of its `options` entries. One
+  finding per entry, naming the keys in sorted order, those inside an option as
+  `options.LABEL.KEY`: `history entry N: unknown was key "k"`, or `unknown was
+  keys "a", "options.x.b"`. The keys are kept when the record is rewritten and
+  appear in `--json` output.
+- `unknown-record-key` (warning): the record has top-level keys that this
+  version does not know. One finding per record, naming the keys in sorted
+  order: `unknown key "k"`, or `unknown keys "a", "b"`. The keys are kept when
+  the record is rewritten and appear in `--json` output.
 
 ## Keys of a record
 
@@ -651,6 +664,18 @@ when it has a value. `id`, `title`, `status` and `created` are always present.
 | `refs` | array of strings | opaque references set with repeatable `adj ask --ref REF`, kept in order |
 | `history` | array of objects | the history, oldest first; each entry is an object with the keys under "Keys of a history entry" |
 | `body` | string | the Markdown after the record's frontmatter, kept verbatim; present only when the record has a body |
+
+A record may also have top-level keys that this version does not know, written
+by a later version. Readers must ignore them: `adj` keeps them and writes them
+back unchanged after the known keys, in sorted order, whenever it rewrites the
+record, and `adj show --json`, `adj list --json`, `adj inbox --json` and
+`adj check --json` print them beside the known keys (before `body`). A
+frontmatter key named `body` is kept in the file but never printed there:
+`body` in this JSON is always the text after the frontmatter. A key that differs from a known key only in letter case (`Title` beside
+`title`) is an unknown key; keys with the wrong type for a known name are still
+refused, and so are unknown keys inside an option or the recommendation. `adj
+show` (text) and `adj context` print only the known fields. `adj lint` warns
+(`unknown-record-key`).
 
 A history entry's `event` is one of `ask`, `decide`, `reject`, `withdraw`,
 `supersede`, `renumber`, `amend` or `import`, or an event of a later version
@@ -685,9 +710,13 @@ after the known keys, in sorted order). A key that differs from a known key
 only in letter case (`Note` beside `note`) is an unknown key. For an unknown
 `event` the `was` key, if present, is kept exactly as written and may have any
 shape (an object with other keys, or a string): this version does not read it.
-For an `amend` entry `was` is strict: a key it does not know inside it is
-refused, as are unknown keys elsewhere in a record. `adj lint` warns about
-unknown events and keys (`unknown-event`, `unknown-history-key`).
+The `was` of an `amend` entry is read the same way: keys it does not know, at
+its top and inside each of its `options` entries, are kept and written back
+after the known keys in sorted order (a later version may amend a field this one
+lacks, such as `key` or `tags`); the known keys keep their types, and a `was`
+or an option in it that has only unknown keys still counts as old text. `adj
+show` (text) prints only the known fields. `adj lint` warns about unknown
+events and keys (`unknown-event`, `unknown-history-key`, `unknown-was-key`).
 
 `adj amend` appends one `amend` entry per call, whatever the number of fields
 changed. Its `note` lists the fields in a fixed order, separated by commas:

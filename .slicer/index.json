@@ -3386,10 +3386,39 @@
       "id": "S46",
       "title": "Forward-compatible record reads before 1.0",
       "short_title": "Forward-compatible record reads",
-      "status": "open",
+      "status": "done",
       "has_slice": true,
       "depends_on": [],
-      "note_records": [],
+      "note_records": [
+        {
+          "id": "81fad7aa-1829-481f-9633-5681770be8b1",
+          "kind": "",
+          "text": "**2026-11-02** — Owner answer (2026-11-02, session): a frontmatter 'body' key is always left out of the JSON of the read commands (show, list, inbox, check), so 'body' keeps its documented meaning; the file still keeps the key on rewrite. Amends C234.",
+          "created_at": "2026-11-02T17:22:17Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
+        },
+        {
+          "id": "3098439d-8fa9-46a7-98f4-5db8c1e665b3",
+          "kind": "",
+          "text": "**2026-11-02** — Later: (1) a case-variant 'Key' beside an empty 'key' is promoted to 'key' on a second rewrite (splitObject; same flaw as the S44 history entries). (2) renumber's unamended cannot undo a 1.x amend of a field this version lacks (within the C163 limit).",
+          "created_at": "2026-11-02T17:30:07Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
+        }
+      ],
       "claim": null,
       "fields": {
         "size": "S",
@@ -3409,7 +3438,7 @@
         "importance": 3,
         "urgency": 3,
         "effort": 1,
-        "attempts": 0
+        "attempts": 1
       }
     },
     {
@@ -3737,7 +3766,7 @@
   "goals": "adjudicate is a small CLI (`adj`) with a plain-text store that records project decisions as a loop: an agent asks, the owner decides in batches, and every later agent reads the decision. The goal and non-goal records below come from PROJECT.md; the owner's decisions on its open questions are catalog records C23-C33, and they override PROJECT.md where it differs (name, runtime, record format, license).",
   "non_goals": "",
   "catalog": {
-    "next_id": 231,
+    "next_id": 236,
     "id_prefix": "C",
     "id_width": 2,
     "records": [
@@ -5807,6 +5836,51 @@
         "kind": "decision",
         "title": "Agent skill file names and size caps",
         "body": "The skill is named adj with files SKILL.md and reference.md (embedded as internal/commands/skill.md and skill_reference.md); tests cap them at 6000 and 9000 bytes and pin that this repo's own installed copy equals the binary's text (S54, C32).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C231",
+        "kind": "decision",
+        "title": "adj lint: unknown-record-key and unknown-was-key checks",
+        "body": "adj lint warns with unknown-record-key (one finding per record, keys sorted) and a new unknown-was-key (one per amend entry; keys inside an option are named options.LABEL.KEY) rather than folding was keys into unknown-history-key, so a reader can tell the entry's own keys from keys of the old text (S46, C32).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C232",
+        "kind": "decision",
+        "title": "Stale-copy test compares unknown top-level keys",
+        "body": "store.IsStaleCopy requires the unknown top-level keys of the moved record to equal the stale one's, in the last-entry path (through the whole stored form) and in the edited-since path (UnknownJSON compared beside the ask-set fields); no command of this version changes them, so a keeper that differs in one is not the copy (S46, C32).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C233",
+        "kind": "decision",
+        "title": "A was of unknown keys only still counts as old text",
+        "body": "Was.empty and the option check in Validate count unknown keys as old text, so an amend entry of a later version whose was holds only keys this version lacks (key, tags) does not make this version refuse the record; an empty was or an option with no text of any kind stays an error (S46, C32).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C234",
+        "kind": "decision",
+        "title": "A frontmatter body key is an unknown key; JSON output keeps one body",
+        "body": "body is not a known frontmatter key (the body is the text after the closing fence), so a body key in the frontmatter is kept as an unknown key like any other; the read commands' JSON gives way to the record's real body when it has one, so the object never has two body keys. A kind key, once refused (C30), is now an unknown key too (S46, C32).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C235",
+        "kind": "decision",
+        "title": "A frontmatter body key is always left out of the read commands' JSON",
+        "body": "Amends C234 (owner answer 2026-11-02): body in the JSON of show, list, inbox and check keeps its documented meaning, the text after the frontmatter, so a body key in the frontmatter is never printed there, with or without a real body. The file keeps the key on every rewrite (S46).",
         "status": "active",
         "reason": "",
         "successor": ""

@@ -100,7 +100,9 @@ func RenumberedFrom(r model.Record, id int) bool {
 // entries), so the status, decision, links and body may differ; then the
 // history before the renumber entry must be staleRec's whole history, and the
 // fields that only adj ask sets (title, key, tags, asked_by, created, context,
-// options, recommendation) must be equal; the body is not compared. adj amend
+// options, recommendation) must be equal, and so must the top-level keys this
+// version does not know (S46, C232: no command here can change them, and a
+// keeper that differs in one is not the copy); the body is not compared. adj amend
 // (C166) can also change the title, the context and the summary and tradeoffs
 // of an option, so before the comparison each amend entry after the renumber
 // entry is taken back, newest first, to the old text it keeps (an entry that
@@ -145,7 +147,9 @@ func sameRecord(stale, moved model.Record, i int) bool {
 		return sameStored(stale, moved) && withNewline(stale.Body) == withNewline(moved.Body)
 	}
 	back, ok := unamended(moved, i)
-	return ok && sameStored(asked(stale), asked(back))
+	// The keys this version does not know cannot have been changed by it, so
+	// they stay compared (S46).
+	return ok && sameStored(asked(stale), asked(back)) && stale.UnknownJSON() == back.UnknownJSON()
 }
 
 // sameHistory reports whether two histories have equal entries. An amend entry

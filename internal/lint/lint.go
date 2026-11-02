@@ -3,8 +3,9 @@
 // Package lint checks a store for integrity problems: records that break the
 // model's rules, two files with one ID, links to records that do not exist,
 // supersede cycles, two decided records on one key, a decision with no
-// decided_by, and history entries with an event or key this version does not
-// know, which are warnings (C08, C26, C27, S44).
+// decided_by, and history entries, record keys and amend old texts with an
+// event or key this version does not know, which are warnings (C08, C26, C27,
+// S44, S46).
 // It reads the record files itself with model.Parse, so a broken or invalid
 // file becomes a finding where store.List would fail (C61).
 package lint
@@ -69,12 +70,19 @@ const (
 	// CheckUnknownHistoryKey: a history entry has keys this version does not
 	// know (a warning, S44).
 	CheckUnknownHistoryKey = "unknown-history-key"
+	// CheckUnknownRecordKey: the record has top-level keys this version does
+	// not know (a warning, S46).
+	CheckUnknownRecordKey = "unknown-record-key"
+	// CheckUnknownWasKey: an amend entry's was, or an option in it, has keys
+	// this version does not know (a warning, S46).
+	CheckUnknownWasKey = "unknown-was-key"
 )
 
 // Checks lists every check name.
 var Checks = []string{
 	CheckParse, CheckFields, CheckIDMismatch, CheckDuplicateID, CheckRenumberLeftover, CheckDanglingLink,
 	CheckSupersedeState, CheckSupersedeCycle, CheckKeyConflict, CheckDecidedBy, CheckUnknownEvent, CheckUnknownHistoryKey,
+	CheckUnknownRecordKey, CheckUnknownWasKey,
 }
 
 // Finding is one problem in one record file. ID is the ID in the file name
@@ -201,16 +209,14 @@ func Run(st *store.Store, root string) ([]Finding, error) {
 				add(p.id, p.file, SeverityWarning, CheckUnknownEvent, "history entry %d: unknown event %q", i, string(h.Event))
 			}
 			if keys := h.UnknownKeys(); len(keys) > 0 {
-				noun := "key"
-				if len(keys) > 1 {
-					noun = "keys"
-				}
-				quoted := make([]string, len(keys))
-				for j, k := range keys {
-					quoted[j] = strconv.Quote(k)
-				}
-				add(p.id, p.file, SeverityWarning, CheckUnknownHistoryKey, "history entry %d: unknown %s %s", i, noun, strings.Join(quoted, ", "))
+				add(p.id, p.file, SeverityWarning, CheckUnknownHistoryKey, "history entry %d: unknown %s", i, keyList(keys))
 			}
+			if keys := wasKeys(h.Was); len(keys) > 0 {
+				add(p.id, p.file, SeverityWarning, CheckUnknownWasKey, "history entry %d: unknown was %s", i, keyList(keys))
+			}
+		}
+		if keys := r.UnknownKeys(); len(keys) > 0 {
+			add(p.id, p.file, SeverityWarning, CheckUnknownRecordKey, "unknown %s", keyList(keys))
 		}
 	}
 
@@ -229,6 +235,36 @@ func Run(st *store.Store, root string) ([]Finding, error) {
 		return a.File < b.File
 	})
 	return out, nil
+}
+
+// keyList names keys for a message: `key "a"` or `keys "a", "b"`.
+func keyList(keys []string) string {
+	noun := "key"
+	if len(keys) > 1 {
+		noun = "keys"
+	}
+	quoted := make([]string, len(keys))
+	for i, k := range keys {
+		quoted[i] = strconv.Quote(k)
+	}
+	return noun + " " + strings.Join(quoted, ", ")
+}
+
+// wasKeys returns the keys of an amend entry's was that this version does not
+// know, sorted: the top-level ones as written, then those inside an option as
+// options.LABEL.KEY (S46). None for a nil was.
+func wasKeys(w *model.Was) []string {
+	if w == nil {
+		return nil
+	}
+	keys := w.UnknownKeys()
+	for _, o := range w.Options {
+		for _, k := range o.UnknownKeys() {
+			keys = append(keys, "options."+o.Label+"."+k)
+		}
+	}
+	sort.Strings(keys)
+	return keys
 }
 
 // relPath returns path relative to root with slashes, or path itself if it
