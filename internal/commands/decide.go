@@ -14,7 +14,8 @@ import (
 
 // DecideInput is the raw input of adj decide. The answer is one option label
 // (Option, with HasOption) or free text (Text, with HasText), never both. Why
-// is the reason for it, and DecidedBy who decided (C27, C70).
+// is the reason for it, and DecidedBy who decided (C27, C70). RecordedBy and
+// Via, when given, say who entered the answer and how the owner gave it (S52).
 type DecideInput struct {
 	Option       string
 	HasOption    bool
@@ -24,19 +25,28 @@ type DecideInput struct {
 	DecidedBy    string
 	DecidedAt    string
 	HasDecidedAt bool
+
+	// HasRecordedBy and HasVia are set when the flag was given, so a blank
+	// value is told apart from no flag.
+	RecordedBy, Via       string
+	HasRecordedBy, HasVia bool
 }
 
-// ReasonInput is the raw input of adj reject and adj withdraw: the reason and
-// who closed the question (C27, C70).
+// ReasonInput is the raw input of adj reject and adj withdraw: the reason, who
+// closed the question (C27, C70) and, as for DecideInput, RecordedBy and Via.
 type ReasonInput struct {
 	Why       string
 	DecidedBy string
+
+	RecordedBy, Via       string
+	HasRecordedBy, HasVia bool
 }
 
 // Check reports a *UsageError if the input cannot answer a record whatever
 // the record is: both or neither of OPTION and --text, a blank answer or no
-// reason, or an invalid --decided-at date. Whether OPTION is one of the
-// record's options needs the record, so Decide checks that.
+// reason, a blank --recorded-by or --via, or an invalid --decided-at date.
+// Whether OPTION is one of the record's options needs the record, so Decide
+// checks that.
 func (in DecideInput) Check() error {
 	switch {
 	case in.HasOption && in.HasText:
@@ -49,6 +59,9 @@ func (in DecideInput) Check() error {
 		return usagef("--text must not be blank")
 	}
 	if err := checkWhy(in.Why); err != nil {
+		return err
+	}
+	if err := checkProvenance(in.RecordedBy, in.HasRecordedBy, in.Via, in.HasVia); err != nil {
 		return err
 	}
 	if in.HasDecidedAt || in.DecidedAt != "" {
@@ -70,10 +83,25 @@ func (in DecideInput) CheckAt(now time.Time) error {
 	return nil
 }
 
-// Check reports a *UsageError if there is no reason. Reject and Withdraw run
-// it too.
+// Check reports a *UsageError if there is no reason, or if --recorded-by or
+// --via is given but blank. Reject and Withdraw run it too.
 func (in ReasonInput) Check() error {
-	return checkWhy(in.Why)
+	if err := checkWhy(in.Why); err != nil {
+		return err
+	}
+	return checkProvenance(in.RecordedBy, in.HasRecordedBy, in.Via, in.HasVia)
+}
+
+// checkProvenance reports a *UsageError for a --recorded-by or --via that was
+// given but is blank. A value that was not given is not checked (S52).
+func checkProvenance(recordedBy string, hasRecordedBy bool, via string, hasVia bool) error {
+	if (hasRecordedBy || recordedBy != "") && strings.TrimSpace(recordedBy) == "" {
+		return usagef("--recorded-by must not be blank")
+	}
+	if (hasVia || via != "") && strings.TrimSpace(via) == "" {
+		return usagef("--via must not be blank")
+	}
+	return nil
 }
 
 // checkWhy reports a *UsageError if the reason is missing or blank.
@@ -111,7 +139,7 @@ func Decide(st *store.Store, id int, in DecideInput, now time.Time) (model.Recor
 			}
 			decision = label
 		}
-		return model.DecideAt(r, decision, in.Why, in.DecidedBy, decidedAt, runDate)
+		return model.DecideAt(r, decision, in.Why, in.DecidedBy, decidedAt, runDate, model.Provenance{RecordedBy: in.RecordedBy, Via: in.Via})
 	})
 }
 
@@ -123,7 +151,7 @@ func Reject(st *store.Store, id int, in ReasonInput, now time.Time) (model.Recor
 	}
 	date := now.Format(time.DateOnly)
 	return change(st, id, "rejected", func(r *model.Record) error {
-		return model.Reject(r, in.Why, in.DecidedBy, date)
+		return model.Reject(r, in.Why, in.DecidedBy, date, model.Provenance{RecordedBy: in.RecordedBy, Via: in.Via})
 	})
 }
 
@@ -135,7 +163,7 @@ func Withdraw(st *store.Store, id int, in ReasonInput, now time.Time) (model.Rec
 	}
 	date := now.Format(time.DateOnly)
 	return change(st, id, "withdrawn", func(r *model.Record) error {
-		return model.Withdraw(r, in.Why, in.DecidedBy, date)
+		return model.Withdraw(r, in.Why, in.DecidedBy, date, model.Provenance{RecordedBy: in.RecordedBy, Via: in.Via})
 	})
 }
 

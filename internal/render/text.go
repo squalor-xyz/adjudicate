@@ -36,6 +36,8 @@ func RecordText(w io.Writer, r model.Record) error {
 		field("Reasoning", rec.Reasoning)
 	}
 	field("Decided by", r.DecidedBy)
+	field("Recorded by", r.RecordedBy)
+	field("Via", r.Via)
 	field("Decided at", r.DecidedAt)
 	field("Decision", r.Decision)
 	field("Rationale", r.Rationale)

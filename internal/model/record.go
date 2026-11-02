@@ -343,7 +343,8 @@ type OptionWas struct {
 // Record is one question or decision. Field order follows the PROJECT.md
 // Core concepts table (minus kind) so encoding/json output is deterministic.
 // Dates are time.DateOnly strings (YYYY-MM-DD). AskedBy and DecidedBy are
-// free-text attribution, not authentication (C27).
+// free-text attribution, not authentication (C27). RecordedBy is who entered
+// the answer when that is not DecidedBy, and Via how the owner gave it (S52).
 type Record struct {
 	ID             int             `json:"id"`
 	Title          string          `json:"title"`
@@ -352,6 +353,8 @@ type Record struct {
 	Tags           []string        `json:"tags,omitempty"`
 	AskedBy        string          `json:"asked_by,omitempty"`
 	DecidedBy      string          `json:"decided_by,omitempty"`
+	RecordedBy     string          `json:"recorded_by,omitempty"`
+	Via            string          `json:"via,omitempty"`
 	Created        string          `json:"created"`
 	DecidedAt      string          `json:"decided_at,omitempty"`
 	Context        string          `json:"context,omitempty"`
@@ -384,7 +387,8 @@ func validDate(s string) bool {
 // an event this version does not know is accepted (S44).
 // Once answered (decided, rejected, withdrawn, superseded):
 // rationale and decided_at; decided and superseded also need decision, and
-// superseded needs superseded_by. decided_by is never required (C27).
+// superseded needs superseded_by. decided_by is never required (C27), and
+// neither are recorded_by and via, which must not be blank when set (S52).
 // A recommendation has an option label or free text, not both (C167).
 func (r Record) Validate() error {
 	var errs []error
@@ -407,6 +411,13 @@ func (r Record) Validate() error {
 		bad("created", "is required")
 	} else if !validDate(r.Created) {
 		bad("created", "%q is not a YYYY-MM-DD date", r.Created)
+	}
+
+	if r.RecordedBy != "" && strings.TrimSpace(r.RecordedBy) == "" {
+		bad("recorded_by", "must not be blank when set")
+	}
+	if r.Via != "" && strings.TrimSpace(r.Via) == "" {
+		bad("via", "must not be blank when set")
 	}
 
 	answered := r.Status.Valid() && r.Status != StatusOpen

@@ -3579,10 +3579,39 @@
       "id": "S52",
       "title": "Record who entered a decision and how the owner gave it, beside who decided",
       "short_title": "Decision provenance: recorded by, via",
-      "status": "open",
+      "status": "done",
       "has_slice": true,
       "depends_on": [],
-      "note_records": [],
+      "note_records": [
+        {
+          "id": "9ab6a766-e776-4bcc-8662-8b51eeea5b59",
+          "kind": "",
+          "text": "**2026-11-02** — Owner answer: keep C218 (an empty flag leaves an existing recorded_by/via value); no clear, no lint warning (2026-11-02).",
+          "created_at": "2026-11-02T15:39:48Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
+        },
+        {
+          "id": "0462cc5b-61b3-4338-b7ef-7cd8f87a4e4a",
+          "kind": "",
+          "text": "**2026-11-02** — Later (from gate): add an open-status case for blank recorded_by and via to TestValidateRejects (internal/model/record_test.go:200); today only a decided record is tested although Validate applies to every status.",
+          "created_at": "2026-11-02T15:40:40Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
+        }
+      ],
       "claim": null,
       "fields": {
         "size": "S",
@@ -3600,7 +3629,7 @@
         "importance": 3,
         "urgency": 3,
         "effort": 1,
-        "attempts": 0
+        "attempts": 1
       }
     },
     {
@@ -3664,7 +3693,7 @@
   "goals": "adjudicate is a small CLI (`adj`) with a plain-text store that records project decisions as a loop: an agent asks, the owner decides in batches, and every later agent reads the decision. The goal and non-goal records below come from PROJECT.md; the owner's decisions on its open questions are catalog records C23-C33, and they override PROJECT.md where it differs (name, runtime, record format, license).",
   "non_goals": "",
   "catalog": {
-    "next_id": 218,
+    "next_id": 222,
     "id_prefix": "C",
     "id_width": 2,
     "records": [
@@ -5617,6 +5646,42 @@
         "kind": "decision",
         "title": "Failures versus results for the JSON error object: budget is a failure; lint findings, check not found and inbox --all per-repo errors are not",
         "body": "S42 implementer decision (C32): context --max-bytes too small is exit 1 and prints the object with code budget; lint exiting 1 on error findings, check with result not found (exit 0) and inbox --all per-repo errors (exit 1, errors array) are reports or results and print no error object; a failure to read the user config itself prints the object with code user_config. Exit codes stay 0/1/2 (no slicer-style exit 3), and stderr text is unchanged.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C218",
+        "kind": "decision",
+        "title": "S52: recorded_by and via are passed to model.DecideAt, Reject and Withdraw as a trailing model.Provenance; an empty part leaves the record's own value",
+        "body": "Implementer decision under C32 (S52, owner decision 2026-11-02 fixed the flag names).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C219",
+        "kind": "decision",
+        "title": "S52: a blank (whitespace-only) recorded_by or via is a usage error for the flag (exit 2, before store access) and a fields error in a record file (Validate), as for --why",
+        "body": "Implementer decision under C32 (S52, owner decision 2026-11-02 fixed the flag names).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C220",
+        "kind": "decision",
+        "title": "S52: adj show prints Recorded by and Via right after Decided by, each left out when empty; no history-entry change, since the record fields carry the data",
+        "body": "Implementer decision under C32 (S52, owner decision 2026-11-02 fixed the flag names).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C221",
+        "kind": "decision",
+        "title": "S52: no env var and no adj ai text for --recorded-by and --via; amend, supersede, renumber and inbox -i leave them as they are",
+        "body": "Implementer decision under C32 (S52, owner decision 2026-11-02 fixed the flag names).",
         "status": "active",
         "reason": "",
         "successor": ""

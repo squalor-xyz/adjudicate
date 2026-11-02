@@ -193,6 +193,7 @@ Empty fields are left out. The fields, with their exact types, are in
 | `key` | Optional stable topic key (such as `storage.cache`), used by `check`, `list`, `context` and the `key-conflict` lint |
 | `tags` | Free-form list |
 | `asked_by` / `decided_by` | Free text: attribution, not authentication |
+| `recorded_by` / `via` | Optional free text (S52): who entered an answer when that is not `decided_by`, and how the owner gave it (for example `interactive question, session ID`). Set with `--recorded-by` and `--via` on `decide`, `reject` and `withdraw`; left out when empty |
 | `created` / `decided_at` | `YYYY-MM-DD` dates; `decided_at` is the effective date of the answer |
 | `context` | Why the question came up |
 | `options` | A list of `label`, `summary` and `tradeoffs` |
@@ -258,8 +259,8 @@ when it finds an error and 0 for a clean store or warnings only.
 |---|---|
 | `adj init` | Create `.adjudicate.json` and the store directory. Running it again changes nothing. |
 | `adj ask TITLE [--option LABEL:SUMMARY]... [--tradeoffs LABEL:TEXT]... [--recommend LABEL \| --recommend-text TEXT] [--reasoning TEXT] [--key K] [--tag T]... [--ref REF]... [--context TEXT \| --stdin] [--by NAME]` | Record an open question and print its ID. `asked_by` is `--by`, else `$ADJ_ASKED_BY`. |
-| `adj decide ID OPTION --why TEXT [--by NAME] [--decided-at YYYY-MM-DD]`, or `adj decide ID --text TEXT --why TEXT ...` | Answer an open question. `decided_by` is `--by`, else `$ADJ_DECIDED_BY`. `--decided-at` sets an earlier effective date. |
-| `adj reject ID --why TEXT [--by NAME]`, `adj withdraw ID --why TEXT [--by NAME]` | Close an open question without an answer. |
+| `adj decide ID OPTION --why TEXT [--by NAME] [--decided-at YYYY-MM-DD] [--recorded-by NAME] [--via TEXT]`, or `adj decide ID --text TEXT --why TEXT ...` | Answer an open question. `decided_by` is `--by`, else `$ADJ_DECIDED_BY`. `--decided-at` sets an earlier effective date. `--recorded-by` and `--via` (S52) store who entered the answer and how the owner gave it. |
+| `adj reject ID --why TEXT [--by NAME] [--recorded-by NAME] [--via TEXT]`, `adj withdraw ID --why TEXT [--by NAME] [--recorded-by NAME] [--via TEXT]` | Close an open question without an answer. |
 | `adj supersede OLD --by NEW` | Replace a decided record with another decided one; OLD leaves `adj context` and stays readable. |
 | `adj amend ID [--title T] [--context T \| --stdin] [--summary LABEL:TEXT]... [--tradeoffs LABEL:TEXT]... [--rationale T]` | Correct text on a record of any status; the old text is kept in the history. |
 | `adj show ID [--json]` | Print one record and its history. |

@@ -231,6 +231,9 @@ convention, not enforced.
 --by NAME              who decided; default: $ADJ_DECIDED_BY, else blank
 --decided-at DATE      the date the decision took effect, YYYY-MM-DD;
                        default: today
+--recorded-by NAME     who entered the answer, when that is not who decided
+--via TEXT             how the owner gave it, for example
+                       "interactive question, session ID"
 ```
 
 `--decided-at` records a decision made earlier: `decided_at` is DATE, while
@@ -239,11 +242,24 @@ the history entry keeps the day you ran the command and notes
 after today, is a usage error (exit 2). A date before the question was created
 is allowed.
 
+`--recorded-by` and `--via` keep the record honest when an agent enters an
+answer that the owner gave elsewhere, for example an option the owner picked
+in an interactive question: `--by` names the owner, `--recorded-by` the agent
+that wrote it down, and `--via` how the owner answered. Both are optional free
+text, stored as typed in `recorded_by` and `via` beside `decided_by`, and shown
+by `adj show` and in the JSON of `show`, `list` and `inbox`. A flag that is
+given but blank is a usage error (exit 2). Left out, the record is exactly what
+it was before. `adj reject` and `adj withdraw` take both flags too. Like
+`decided_by` they are attribution, not authentication, and no environment
+variable sets them. `adj amend`, `adj supersede`, `adj renumber` and
+`adj inbox -i` leave them as they are.
+
 ### `adj reject ID --why TEXT` and `adj withdraw ID --why TEXT`
 
 Close an open question without an answer. `reject` records that the question
 will not be answered; `withdraw` records that the asker no longer needs an
-answer. Both print the ID and take `--by NAME` (default `$ADJ_DECIDED_BY`).
+answer. Both print the ID and take `--by NAME` (default `$ADJ_DECIDED_BY`),
+`--recorded-by NAME` and `--via TEXT` (as for `adj decide`).
 
 ### `adj supersede OLD --by NEW`
 

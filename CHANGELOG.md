@@ -7,7 +7,21 @@ but never renames, removes or retypes an existing key.
 
 ## Unreleased
 
+### Commands
+- `adj decide`, `adj reject` and `adj withdraw` take two optional flags,
+  `--recorded-by NAME` and `--via TEXT`: who entered the answer when that is
+  not who decided (`--by`), and how the owner gave it, for example `--via
+  "interactive question, session ID"`. Both are free text, kept as typed. A
+  flag that is given but blank exits 2 before the store is looked at. No
+  environment variable sets them. Without them a record, `adj show` and the
+  JSON are byte for byte what they were. `adj amend`, `adj supersede`,
+  `adj renumber` and `adj inbox -i` leave them unchanged. The `adj ai` snippet
+  does not name them.
+
 ### Store format
+- A record may have two more optional keys, `recorded_by` and `via`, written
+  right after `decided_by` and left out when empty. A record file that has a
+  blank one is invalid (`adj lint` reports it as a `fields` error).
 - A history entry whose `event` this version does not know, and unknown keys
   inside a history entry, are now read and kept instead of making `show`,
   `list`, `check`, `context`, `inbox` and the commands that change a record
@@ -26,6 +40,10 @@ but never renames, removes or retypes an existing key.
   `fields` error and an unknown key a `parse` error.
 
 ### JSON shapes
+- A record object may have two more optional string keys, `recorded_by` and
+  `via`, beside `decided_by`, in `show`, `list`, `inbox`, `check` and every
+  other command that prints records. They are present only when set, so no
+  existing key changes. See [docs/json.md](docs/json.md).
 - New: a command run with `--json` (or `adj context --format json`) that fails
   prints `{"error": {"code", "message", "command"}}` on stdout, as slicer does.
   The codes are `usage`, `no_repo`, `invalid_config`, `not_found`,

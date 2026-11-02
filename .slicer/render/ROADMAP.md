@@ -842,6 +842,22 @@ S42 implementer decision (C32): detection is wantsJSON(fs, args), derived from t
 
 S42 implementer decision (C32): context --max-bytes too small is exit 1 and prints the object with code budget; lint exiting 1 on error findings, check with result not found (exit 0) and inbox --all per-repo errors (exit 1, errors array) are reports or results and print no error object; a failure to read the user config itself prints the object with code user_config. Exit codes stay 0/1/2 (no slicer-style exit 3), and stderr text is unchanged.
 
+### C218 S52: recorded_by and via are passed to model.DecideAt, Reject and Withdraw as a trailing model.Provenance; an empty part leaves the record's own value
+
+Implementer decision under C32 (S52, owner decision 2026-11-02 fixed the flag names).
+
+### C219 S52: a blank (whitespace-only) recorded_by or via is a usage error for the flag (exit 2, before store access) and a fields error in a record file (Validate), as for --why
+
+Implementer decision under C32 (S52, owner decision 2026-11-02 fixed the flag names).
+
+### C220 S52: adj show prints Recorded by and Via right after Decided by, each left out when empty; no history-entry change, since the record fields carry the data
+
+Implementer decision under C32 (S52, owner decision 2026-11-02 fixed the flag names).
+
+### C221 S52: no env var and no adj ai text for --recorded-by and --via; amend, supersede, renumber and inbox -i leave them as they are
+
+Implementer decision under C32 (S52, owner decision 2026-11-02 fixed the flag names).
+
 ### C39 LICENSE is a stub until the owner supplies the full GPL-3.0 text and copyright holder
 
 No GPL-3.0 text exists in the adjudicate repo and the workspace has no network, so the stub carries the SPDX line, the or-later notice and TODO(owner) markers.
@@ -904,7 +920,7 @@ PENDING OWNER CONFIRMATION - not decided. Source: Dependency/licensing notes (ma
 
 *Retired: Owner decided 2026-10-15: see decision C31 (GPL-3.0-or-later)..*
 
-54 items · — 8 · done 41 · later 3 · retired 2
+54 items · — 7 · done 42 · later 3 · retired 2
 
 Release 1.0
 
@@ -915,7 +931,7 @@ Release 1.0
 | 3 | [S45](slices/S45.md) | JSON contract version and pin | M | 2 | cli | owner session 2026-10-20 (in slicer): slicer, ork and adjudicate lock to agreed contract versions; per-contract pins, each tool keeps its own pin, ork sets and checks them. Companion items: slicer s387 (relay contract pin), ork S24 (ork sets and checks the pins). | — |
 | 4 | [S46](slices/S46.md) | Forward-compatible record reads | S | 1 | model | adj records 17 (store.amend-was) and 18 (store.record-unknown-keys), filed 2026-10-20 from the S39 notes and the S44 review | — |
 | 5 | [S51](slices/S51.md) | Partial supersede | M | 2 |  | ork adj 168 ui.structured-questions, 2026-10-25 | — |
-| 6 | [S52](slices/S52.md) | Decision provenance: recorded by, via | S | 1 |  |  | — |
+| 6 | [S52](slices/S52.md) | Decision provenance: recorded by, via | S | 1 |  |  | done |
 | 7 | [S53](slices/S53.md) | list and inbox --ref | S | 1 |  |  | — |
 | 8 | [S54](slices/S54.md) | adj agent skill: adj ai skill --install | M | 2 |  |  | — |
 

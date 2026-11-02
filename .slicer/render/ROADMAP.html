@@ -448,6 +448,14 @@
 <div class="prose"><p>S42 implementer decision (C32): detection is wantsJSON(fs, args), derived from the command&#x27;s flag.FlagSet (a flag that takes a value owns the next argument, so adj list --key --json is a key); a value that strconv.ParseBool reads as false is off; an unparsable value is on (owner, 2026-10-22); the last occurrence wins; anything after -- is ignored. Only commands that define a json flag (or context&#x27;s format flag) enter JSON mode, so ask, decide, amend and the rest never print the object; failures before dispatch (unknown command or flag) accept --json with --root as the only value flag. Reason: flag parsing stops at the first bad flag, so --json would otherwise be missed (adj show --bogus --json).</p></div>
 <h3>C217 Failures versus results for the JSON error object: budget is a failure; lint findings, check not found and inbox --all per-repo errors are not</h3>
 <div class="prose"><p>S42 implementer decision (C32): context --max-bytes too small is exit 1 and prints the object with code budget; lint exiting 1 on error findings, check with result not found (exit 0) and inbox --all per-repo errors (exit 1, errors array) are reports or results and print no error object; a failure to read the user config itself prints the object with code user_config. Exit codes stay 0/1/2 (no slicer-style exit 3), and stderr text is unchanged.</p></div>
+<h3>C218 S52: recorded_by and via are passed to model.DecideAt, Reject and Withdraw as a trailing model.Provenance; an empty part leaves the record&#x27;s own value</h3>
+<div class="prose"><p>Implementer decision under C32 (S52, owner decision 2026-11-02 fixed the flag names).</p></div>
+<h3>C219 S52: a blank (whitespace-only) recorded_by or via is a usage error for the flag (exit 2, before store access) and a fields error in a record file (Validate), as for --why</h3>
+<div class="prose"><p>Implementer decision under C32 (S52, owner decision 2026-11-02 fixed the flag names).</p></div>
+<h3>C220 S52: adj show prints Recorded by and Via right after Decided by, each left out when empty; no history-entry change, since the record fields carry the data</h3>
+<div class="prose"><p>Implementer decision under C32 (S52, owner decision 2026-11-02 fixed the flag names).</p></div>
+<h3>C221 S52: no env var and no adj ai text for --recorded-by and --via; amend, supersede, renumber and inbox -i leave them as they are</h3>
+<div class="prose"><p>Implementer decision under C32 (S52, owner decision 2026-11-02 fixed the flag names).</p></div>
 <h3>C39 LICENSE is a stub until the owner supplies the full GPL-3.0 text and copyright holder</h3>
 <div class="prose"><p>No GPL-3.0 text exists in the adjudicate repo and the workspace has no network, so the stub carries the SPDX line, the or-later notice and TODO(owner) markers.</p></div>
 <p><em>Retired: Replaced by the full GPL-3.0 text and NOTICE (owner supplied the text and named Squalor LLC, 2026-10-15).. Successor: C131.</em></p>
@@ -481,7 +489,7 @@
 <div class="prose"><p>PENDING OWNER CONFIRMATION - not decided. Source: Dependency/licensing notes (marked open there, not in the Open decisions list). Recommendation: a permissive FLOSS license such as MIT or Apache-2.0; PROJECT.md does not pick between them (owner must choose).</p></div>
 <p><em>Retired: Owner decided 2026-10-15: see decision C31 (GPL-3.0-or-later)..</em></p>
 </section>
-<p class="summary">54 items · — 8 · done 41 · later 3 · retired 2</p>
+<p class="summary">54 items · — 7 · done 42 · later 3 · retired 2</p>
 <h2>Release 1.0</h2>
 <table><thead><tr><th>#</th><th>ID</th><th>Title</th><th>Size</th><th>Effort</th><th>Trees</th><th>Findings</th><th>Status</th></tr></thead><tbody>
 <tr class="open"><td>1</td><td>S43</td><td>Sibling-aware record IDs</td><td>M</td><td>3</td><td>store</td><td>ork integration review 2026-10-19 (squalor-xyz/ork docs/review-2026-10-19-integration.md), R6: two ork branches both allocated records 50 and 51 on 2026-10-19 and needed adj renumber; the store lock cannot see other branches (internal/store/store.go:282-286); slicer already allocates past sibling worktrees.</td><td class="status">—</td></tr>
@@ -489,7 +497,7 @@
 <tr class="open"><td>3</td><td>S45</td><td>JSON contract version and pin</td><td>M</td><td>2</td><td>cli</td><td>owner session 2026-10-20 (in slicer): slicer, ork and adjudicate lock to agreed contract versions; per-contract pins, each tool keeps its own pin, ork sets and checks them. Companion items: slicer s387 (relay contract pin), ork S24 (ork sets and checks the pins).</td><td class="status">—</td></tr>
 <tr class="open"><td>4</td><td>S46</td><td>Forward-compatible record reads</td><td>S</td><td>1</td><td>model</td><td>adj records 17 (store.amend-was) and 18 (store.record-unknown-keys), filed 2026-10-20 from the S39 notes and the S44 review</td><td class="status">—</td></tr>
 <tr class="open"><td>5</td><td>S51</td><td>Partial supersede</td><td>M</td><td>2</td><td></td><td>ork adj 168 ui.structured-questions, 2026-10-25</td><td class="status">—</td></tr>
-<tr class="open"><td>6</td><td>S52</td><td>Decision provenance: recorded by, via</td><td>S</td><td>1</td><td></td><td></td><td class="status">—</td></tr>
+<tr class="done"><td>6</td><td>S52</td><td>Decision provenance: recorded by, via</td><td>S</td><td>1</td><td></td><td></td><td class="status">done</td></tr>
 <tr class="open"><td>7</td><td>S53</td><td>list and inbox --ref</td><td>S</td><td>1</td><td></td><td></td><td class="status">—</td></tr>
 <tr class="open"><td>8</td><td>S54</td><td>adj agent skill: adj ai skill --install</td><td>M</td><td>2</td><td></td><td></td><td class="status">—</td></tr>
 </tbody></table>

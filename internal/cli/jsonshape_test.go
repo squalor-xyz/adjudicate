@@ -13,6 +13,7 @@ import (
 	"testing"
 
 	"github.com/squalor-xyz/adjudicate/internal/model"
+	"github.com/squalor-xyz/adjudicate/internal/store"
 )
 
 // docs/json.md is the contract for every read command's JSON (S12). Its
@@ -517,4 +518,78 @@ func TestInboxAllJSONShape(t *testing.T) {
 	check("top", obj, example, []string{"errors", "repos"})
 	check("repo", obj["repos"].([]any)[0].(map[string]any), example["repos"].([]any)[0].(map[string]any), []string{"records", "root"})
 	check("error", obj["errors"].([]any)[0].(map[string]any), example["errors"].([]any)[0].(map[string]any), []string{"error", "root"})
+}
+
+// recorded_by and via are optional string keys of a record, listed in the
+// table next to decided_by, and show, list and inbox carry them as strings
+// (S52). A record without them has neither key.
+func TestRecordedByAndViaAreDocumentedStringKeys(t *testing.T) {
+	doc := docsText(t)
+	section, err := sectionUnder(doc, "## Keys of a record")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, row := range []string{"| `recorded_by` | string |", "| `via` | string |"} {
+		if !strings.Contains(section, row) {
+			t.Errorf("docs/json.md key table has no row starting %q", row)
+		}
+	}
+
+	root := initRoot(t)
+	for _, args := range [][]string{
+		{"ask", "Decided one", "--option", "a:Use A"},
+		{"ask", "Plain one", "--option", "a:Use A"},
+		{"ask", "Open one"},
+		{"decide", "1", "a", "--why", "w", "--by", "owner", "--recorded-by", "claude", "--via", "chat, session abc"},
+		{"decide", "2", "a", "--why", "w", "--by", "owner"},
+	} {
+		if r := run(testEnv(root), "", args...); r.code != 0 {
+			t.Fatalf("%v: exit %d: %s", args, r.code, r.stderr)
+		}
+	}
+	// An open record can hold the keys too, and inbox prints them.
+	st, err := store.Open(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	open, err := st.Get(3)
+	if err != nil {
+		t.Fatal(err)
+	}
+	open.RecordedBy, open.Via = "claude", "hand written"
+	if err := st.Update(open); err != nil {
+		t.Fatal(err)
+	}
+
+	cases := []struct {
+		name            string
+		args            []string
+		arrays          []string
+		wantBy, wantVia map[float64]string // by record ID
+	}{
+		{"show 1", []string{"show", "1", "--json"}, nil, map[float64]string{1: "claude"}, map[float64]string{1: "chat, session abc"}},
+		{"list", []string{"list", "--json"}, []string{"records"}, map[float64]string{1: "claude", 3: "claude"}, map[float64]string{1: "chat, session abc", 3: "hand written"}},
+		{"inbox", []string{"inbox", "--json"}, []string{"records"}, map[float64]string{3: "claude"}, map[float64]string{3: "hand written"}},
+	}
+	for _, tt := range cases {
+		t.Run(tt.name, func(t *testing.T) {
+			r := run(testEnv(root), "", tt.args...)
+			if r.code != 0 {
+				t.Fatalf("exit code = %d; stderr:\n%s", r.code, r.stderr)
+			}
+			for _, rec := range recordObjects(t, r.stdout, tt.arrays...) {
+				id := rec["id"].(float64)
+				for key, want := range map[string]map[float64]string{"recorded_by": tt.wantBy, "via": tt.wantVia} {
+					got, has := rec[key]
+					if text, ok := want[id]; ok {
+						if got != text {
+							t.Errorf("record %v: %s = %#v, want the string %q", id, key, got, text)
+						}
+					} else if has {
+						t.Errorf("record %v: has %s = %#v, want the key left out", id, key, got)
+					}
+				}
+			}
+		})
+	}
 }

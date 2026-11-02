@@ -24,6 +24,10 @@ dates are refused.
   --text TEXT    the answer as free text, instead of OPTION
   --why TEXT     the reason for the answer (required)
   --by NAME      who decided; default: $ADJ_DECIDED_BY, else left blank
+  --recorded-by NAME
+                 who entered the decision, when that is not who decided; optional
+  --via TEXT     how the owner gave it, such as "interactive question, session
+                 ID"; optional
   --decided-at DATE
                  the date the decision took effect; default: the run date
   --root DIR     the repo root; default: found from the working directory
@@ -37,6 +41,10 @@ be answered. Prints its ID.
 
   --why TEXT     the reason (required)
   --by NAME      who decided; default: $ADJ_DECIDED_BY, else left blank
+  --recorded-by NAME
+                 who entered the rejection, when that is not who decided; optional
+  --via TEXT     how the owner gave it, such as "interactive question, session
+                 ID"; optional
   --root DIR     the repo root; default: found from the working directory
                  upwards (the nearest .adjudicate.json)
 `
@@ -48,6 +56,11 @@ withdrawn. Prints its ID.
 
   --why TEXT     the reason (required)
   --by NAME      who withdrew it; default: $ADJ_DECIDED_BY, else left blank
+  --recorded-by NAME
+                 who entered the withdrawal, when that is not who withdrew it;
+                 optional
+  --via TEXT     how the owner gave it, such as "interactive question, session
+                 ID"; optional
   --root DIR     the repo root; default: found from the working directory
                  upwards (the nearest .adjudicate.json)
 `
@@ -74,6 +87,8 @@ func (c *invocation) runDecide(args []string) int {
 	why := fs.String("why", "", "")
 	by := fs.String("by", "", "")
 	decidedAt := fs.String("decided-at", "", "")
+	recordedBy := fs.String("recorded-by", "", "")
+	via := fs.String("via", "", "")
 
 	pos, code, done := c.parse("decide", decideUsage, fs, args)
 	if done {
@@ -93,6 +108,9 @@ func (c *invocation) runDecide(args []string) int {
 		DecidedBy:    *by,
 		DecidedAt:    *decidedAt,
 		HasDecidedAt: fsSet(fs, "decided-at"),
+
+		RecordedBy: *recordedBy, HasRecordedBy: fsSet(fs, "recorded-by"),
+		Via: *via, HasVia: fsSet(fs, "via"),
 	}
 	if len(pos) == 2 {
 		in.HasOption = true
@@ -112,6 +130,8 @@ func (c *invocation) runReasonCommand(name, usageText string, args []string, do 
 	fs, root := newFlagSet(name)
 	why := fs.String("why", "", "")
 	by := fs.String("by", "", "")
+	recordedBy := fs.String("recorded-by", "", "")
+	via := fs.String("via", "", "")
 
 	pos, code, done := c.parse(name, usageText, fs, args)
 	if done {
@@ -124,7 +144,11 @@ func (c *invocation) runReasonCommand(name, usageText string, args []string, do 
 	if len(pos) > 1 {
 		return c.usageError(name, usageText, fmt.Errorf("want an ID and --why, got %d arguments", len(pos)))
 	}
-	in := commands.ReasonInput{Why: *why, DecidedBy: *by}
+	in := commands.ReasonInput{
+		Why: *why, DecidedBy: *by,
+		RecordedBy: *recordedBy, HasRecordedBy: fsSet(fs, "recorded-by"),
+		Via: *via, HasVia: fsSet(fs, "via"),
+	}
 	if in.DecidedBy == "" {
 		in.DecidedBy = c.env.Getenv("ADJ_DECIDED_BY")
 	}

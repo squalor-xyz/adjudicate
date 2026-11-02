@@ -3,6 +3,7 @@
 package cli
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -573,5 +574,246 @@ func TestUsageListsDecisionCommands(t *testing.T) {
 		if !strings.Contains(r.stdout, want) {
 			t.Errorf("usage does not mention %q:\n%s", want, r.stdout)
 		}
+	}
+}
+
+// answerCases are the three commands that answer or close an open record, each
+// with the arguments that make a valid call on askOpen's record.
+var answerCases = []struct {
+	name   string
+	args   []string
+	status model.Status
+	event  model.Event
+}{
+	{"decide", []string{"decide", "1", "b", "--why", "w", "--by", "owner"}, model.StatusDecided, model.EventDecide},
+	{"reject", []string{"reject", "1", "--why", "w", "--by", "owner"}, model.StatusRejected, model.EventReject},
+	{"withdraw", []string{"withdraw", "1", "--why", "w", "--by", "owner"}, model.StatusWithdrawn, model.EventWithdraw},
+}
+
+// wantAnswered is the record askOpen made after the command in tc ran on the
+// fixed clock, without recorded_by and via.
+func wantAnswered(before model.Record, status model.Status, event model.Event) model.Record {
+	want := before
+	want.Status = status
+	if status == model.StatusDecided {
+		want.Decision = "b"
+	}
+	want.Rationale = "w"
+	want.DecidedBy = "owner"
+	want.DecidedAt = "2026-03-04"
+	want.History = append(slices.Clip(before.History), model.HistoryEntry{Date: "2026-03-04", Event: event})
+	return want
+}
+
+// --recorded-by and --via store who entered an answer and how the owner gave
+// it, beside decided_by. Either alone works and the values are kept as typed
+// (S52).
+func TestDecisionCommandsStoreRecordedByAndVia(t *testing.T) {
+	flags := []struct {
+		name       string
+		args       []string
+		by, viaTxt string
+	}{
+		{"both", []string{"--recorded-by", " claude ", "--via", "interactive question, session abc "}, " claude ", "interactive question, session abc "},
+		{"recorded-by only", []string{"--recorded-by", "claude"}, "claude", ""},
+		{"via only", []string{"--via", "chat on 2026-11-02"}, "", "chat on 2026-11-02"},
+		{"equals form", []string{"--recorded-by=claude", "--via=a=b"}, "claude", "a=b"},
+	}
+	for _, tc := range answerCases {
+		for _, fl := range flags {
+			t.Run(tc.name+" "+fl.name, func(t *testing.T) {
+				root, before := askOpen(t)
+				r := run(testEnv(root), "", append(slices.Clone(tc.args), fl.args...)...)
+				if r.code != 0 || r.stdout != "1\n" || r.stderr != "" {
+					t.Fatalf("run = %+v, want exit 0, the ID and no stderr", r)
+				}
+				want := wantAnswered(before, tc.status, tc.event)
+				want.RecordedBy, want.Via = fl.by, fl.viaTxt
+				if got := records(t, root); len(got) != 1 || !reflect.DeepEqual(got[0], want) {
+					t.Errorf("records = %+v\nwant one %+v", got, want)
+				}
+			})
+		}
+	}
+}
+
+// A flag that is given but blank exits 2 before any store access: the usage
+// error comes even where there is no repo, and nothing is written where there is.
+func TestDecisionCommandsRefuseABlankRecordedByOrVia(t *testing.T) {
+	for _, tc := range answerCases {
+		for _, flag := range []string{"--recorded-by", "--via"} {
+			for _, blank := range []string{"", "  ", "\t"} {
+				for _, initialised := range []bool{false, true} {
+					name := fmt.Sprintf("%s %s %q init=%v", tc.name, flag, blank, initialised)
+					t.Run(name, func(t *testing.T) {
+						root := t.TempDir()
+						if initialised {
+							root, _ = askOpen(t)
+						}
+						before := snapshot(t, root)
+						r := run(testEnv(root), "", append(slices.Clone(tc.args), flag, blank)...)
+						if r.code != 2 {
+							t.Errorf("exit code = %d, want 2; stderr:\n%s", r.code, r.stderr)
+						}
+						if want := flag + " must not be blank"; !strings.Contains(r.stderr, want) {
+							t.Errorf("stderr does not contain %q:\n%s", want, r.stderr)
+						}
+						if !strings.Contains(r.stderr, "usage: adj "+tc.name) {
+							t.Errorf("stderr has no %s usage:\n%s", tc.name, r.stderr)
+						}
+						if r.stdout != "" {
+							t.Errorf("stdout = %q, want empty", r.stdout)
+						}
+						if after := snapshot(t, root); !reflect.DeepEqual(after, before) {
+							t.Errorf("tree changed:\nbefore %q\nafter  %q", before, after)
+						}
+					})
+				}
+			}
+		}
+	}
+}
+
+// The flag given with an empty value after "=" is blank too.
+func TestDecisionCommandsRefuseAnEmptyEqualsValue(t *testing.T) {
+	root, _ := askOpen(t)
+	before := snapshot(t, root)
+	r := run(testEnv(root), "", "decide", "1", "b", "--why", "w", "--via=")
+	if r.code != 2 || !strings.Contains(r.stderr, "--via must not be blank") {
+		t.Errorf("run = %+v, want exit 2 naming --via", r)
+	}
+	if after := snapshot(t, root); !reflect.DeepEqual(after, before) {
+		t.Errorf("tree changed")
+	}
+}
+
+// goldenDecided is the record file that `adj decide 1 b --why w --by owner`
+// leaves on askOpen's record, written before recorded_by and via existed: with
+// neither flag the file is byte for byte this (S52).
+const goldenDecided = `---
+{
+  "id": 1,
+  "title": "Pick a store",
+  "status": "decided",
+  "decided_by": "owner",
+  "created": "2026-03-04",
+  "decided_at": "2026-03-04",
+  "options": [
+    {
+      "label": "a",
+      "summary": "Use A"
+    },
+    {
+      "label": "b",
+      "summary": "Use B"
+    }
+  ],
+  "recommendation": {
+    "label": "a",
+    "reasoning": "A is proven"
+  },
+  "decision": "b",
+  "rationale": "w",
+  "history": [
+    {
+      "date": "2026-03-04",
+      "event": "ask"
+    },
+    {
+      "date": "2026-03-04",
+      "event": "decide"
+    }
+  ]
+}
+---
+`
+
+const goldenShowText = `ID: 1
+Title: Pick a store
+Status: decided
+Created: 2026-03-04
+Options:
+  a: Use A
+  b: Use B
+Recommendation: a
+Reasoning: A is proven
+Decided by: owner
+Decided at: 2026-03-04
+Decision: b
+Rationale: w
+History:
+  2026-03-04 ask
+  2026-03-04 decide
+`
+
+func TestDecideWithoutRecordedByAndViaWritesTheSameBytes(t *testing.T) {
+	root, _ := askOpen(t)
+	if r := run(testEnv(root), "", "decide", "1", "b", "--why", "w", "--by", "owner"); r.code != 0 {
+		t.Fatalf("decide: %+v", r)
+	}
+	data, err := os.ReadFile(filepath.Join(root, "decisions", "0001-pick-a-store.md"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(data) != goldenDecided {
+		t.Errorf("file =\n%s\nwant\n%s", data, goldenDecided)
+	}
+	if r := run(testEnv(root), "", "show", "1"); r.stdout != goldenShowText {
+		t.Errorf("show =\n%s\nwant\n%s", r.stdout, goldenShowText)
+	}
+	jsonOut := run(testEnv(root), "", "show", "1", "--json").stdout
+	for _, key := range []string{"recorded_by", "via"} {
+		if strings.Contains(jsonOut, key) {
+			t.Errorf("show --json mentions %q for a record without it:\n%s", key, jsonOut)
+		}
+	}
+}
+
+// With both flags the file holds the two keys right after decided_by, and
+// show prints them after "Decided by" (S52).
+func TestDecideWithRecordedByAndViaFileAndShow(t *testing.T) {
+	root, _ := askOpen(t)
+	if r := run(testEnv(root), "", "decide", "1", "b", "--why", "w", "--by", "owner",
+		"--recorded-by", "claude", "--via", "interactive question, session abc"); r.code != 0 {
+		t.Fatalf("decide: %+v", r)
+	}
+	data, err := os.ReadFile(filepath.Join(root, "decisions", "0001-pick-a-store.md"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := strings.Replace(goldenDecided, "  \"decided_by\": \"owner\",\n",
+		"  \"decided_by\": \"owner\",\n  \"recorded_by\": \"claude\",\n  \"via\": \"interactive question, session abc\",\n", 1)
+	if string(data) != want {
+		t.Errorf("file =\n%s\nwant\n%s", data, want)
+	}
+	wantText := strings.Replace(goldenShowText, "Decided by: owner\n",
+		"Decided by: owner\nRecorded by: claude\nVia: interactive question, session abc\n", 1)
+	if r := run(testEnv(root), "", "show", "1"); r.stdout != wantText {
+		t.Errorf("show =\n%s\nwant\n%s", r.stdout, wantText)
+	}
+}
+
+// Each of the three usage texts names both flags.
+func TestDecisionCommandsHelpNamesRecordedByAndVia(t *testing.T) {
+	for _, name := range []string{"decide", "reject", "withdraw"} {
+		t.Run(name, func(t *testing.T) {
+			r := run(testEnv(t.TempDir()), "", name, "--help")
+			if r.code != 0 {
+				t.Fatalf("exit code = %d, want 0", r.code)
+			}
+			for _, want := range []string{"--recorded-by NAME", "--via TEXT"} {
+				if !strings.Contains(r.stdout, want) {
+					t.Errorf("%s usage does not name %q:\n%s", name, want, r.stdout)
+				}
+			}
+			// The line under --recorded-by names what the command enters: a
+			// decision, a rejection or a withdrawal, and not another command's.
+			noun := map[string]string{"decide": "decision", "reject": "rejection", "withdraw": "withdrawal"}
+			_, after, _ := strings.Cut(r.stdout, "--recorded-by NAME\n")
+			line, _, _ := strings.Cut(after, "\n")
+			if want := "who entered the " + noun[name]; !strings.Contains(line, want) {
+				t.Errorf("%s usage describes --recorded-by as %q, want it to say %q", name, strings.TrimSpace(line), want)
+			}
+		})
 	}
 }

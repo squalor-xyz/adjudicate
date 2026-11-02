@@ -52,7 +52,7 @@ func TestUpdateKeepsUnknownHistoryEntries(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := model.Withdraw(&rec, "no longer needed", "owner", "2026-10-05"); err != nil {
+	if err := model.Withdraw(&rec, "no longer needed", "owner", "2026-10-05", model.Provenance{}); err != nil {
 		t.Fatal(err)
 	}
 	if err := s.Update(rec); err != nil {

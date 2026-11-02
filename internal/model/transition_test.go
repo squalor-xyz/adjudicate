@@ -22,10 +22,10 @@ func transitionCases() []transitionCase {
 			return Decide(r, "files", "plain text", "owner", testDate)
 		}},
 		{"reject", EventReject, StatusRejected, StatusOpen, func(r *Record) error {
-			return Reject(r, "out of scope", "owner", testDate)
+			return Reject(r, "out of scope", "owner", testDate, Provenance{})
 		}},
 		{"withdraw", EventWithdraw, StatusWithdrawn, StatusOpen, func(r *Record) error {
-			return Withdraw(r, "asked twice", "agent", testDate)
+			return Withdraw(r, "asked twice", "agent", testDate, Provenance{})
 		}},
 		{"supersede", EventSupersede, StatusSuperseded, StatusDecided, func(r *Record) error {
 			return Supersede(r, 7, testDate)
@@ -124,7 +124,7 @@ func TestDecideSetsFields(t *testing.T) {
 func TestDecideAtSeparatesDecisionAndHistoryDates(t *testing.T) {
 	r := validRecord(StatusOpen)
 	r.Created = "2026-10-10"
-	if err := DecideAt(&r, "files", "plain text", "owner", "2026-10-01", "2026-10-16"); err != nil {
+	if err := DecideAt(&r, "files", "plain text", "owner", "2026-10-01", "2026-10-16", Provenance{}); err != nil {
 		t.Fatal(err)
 	}
 	if r.DecidedAt != "2026-10-01" {
@@ -181,15 +181,15 @@ func TestTransitionRejectsBadInputAndLeavesRecordUnchanged(t *testing.T) {
 		{"decide empty decision", StatusOpen, func(r *Record) error { return Decide(r, "", "why", "o", testDate) }},
 		{"decide blank decision", StatusOpen, func(r *Record) error { return Decide(r, " ", "why", "o", testDate) }},
 		{"decide blank rationale", StatusOpen, func(r *Record) error { return Decide(r, "x", " ", "o", testDate) }},
-		{"reject blank rationale", StatusOpen, func(r *Record) error { return Reject(r, "\t", "o", testDate) }},
-		{"withdraw blank rationale", StatusOpen, func(r *Record) error { return Withdraw(r, " ", "o", testDate) }},
+		{"reject blank rationale", StatusOpen, func(r *Record) error { return Reject(r, "\t", "o", testDate, Provenance{}) }},
+		{"withdraw blank rationale", StatusOpen, func(r *Record) error { return Withdraw(r, " ", "o", testDate, Provenance{}) }},
 		{"decide empty rationale", StatusOpen, func(r *Record) error { return Decide(r, "x", "", "o", testDate) }},
 		{"decide bad date", StatusOpen, func(r *Record) error { return Decide(r, "x", "why", "o", "yesterday") }},
 		{"decide empty date", StatusOpen, func(r *Record) error { return Decide(r, "x", "why", "o", "") }},
-		{"reject empty rationale", StatusOpen, func(r *Record) error { return Reject(r, "", "o", testDate) }},
-		{"reject bad date", StatusOpen, func(r *Record) error { return Reject(r, "why", "o", "2026-02-30") }},
-		{"withdraw empty rationale", StatusOpen, func(r *Record) error { return Withdraw(r, "", "o", testDate) }},
-		{"withdraw bad date", StatusOpen, func(r *Record) error { return Withdraw(r, "why", "o", "10/15/2026") }},
+		{"reject empty rationale", StatusOpen, func(r *Record) error { return Reject(r, "", "o", testDate, Provenance{}) }},
+		{"reject bad date", StatusOpen, func(r *Record) error { return Reject(r, "why", "o", "2026-02-30", Provenance{}) }},
+		{"withdraw empty rationale", StatusOpen, func(r *Record) error { return Withdraw(r, "", "o", testDate, Provenance{}) }},
+		{"withdraw bad date", StatusOpen, func(r *Record) error { return Withdraw(r, "why", "o", "10/15/2026", Provenance{}) }},
 		{"supersede by zero", StatusDecided, func(r *Record) error { return Supersede(r, 0, testDate) }},
 		{"supersede by itself", StatusDecided, func(r *Record) error { return Supersede(r, 1, testDate) }},
 		{"supersede bad date", StatusDecided, func(r *Record) error { return Supersede(r, 7, "") }},
@@ -365,5 +365,127 @@ func TestRenumberRefusesBadInputAndLeavesTheRecordAlone(t *testing.T) {
 				t.Errorf("Renumber wrote into the caller's history backing array: %+v", got)
 			}
 		})
+	}
+}
+
+// DecideAt, Reject and Withdraw store who recorded the answer and how the owner
+// gave it, beside decided_by (S52). The values are kept as typed.
+func TestTransitionsStoreRecordedByAndVia(t *testing.T) {
+	prov := Provenance{RecordedBy: " claude ", Via: "interactive question, session abc "}
+	tests := []struct {
+		name  string
+		apply func(*Record) error
+	}{
+		{"decide", func(r *Record) error {
+			return DecideAt(r, "files", "plain text", "owner", testDate, testDate, prov)
+		}},
+		{"reject", func(r *Record) error { return Reject(r, "out of scope", "owner", testDate, prov) }},
+		{"withdraw", func(r *Record) error { return Withdraw(r, "asked twice", "owner", testDate, prov) }},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r := validRecord(StatusOpen)
+			if err := tt.apply(&r); err != nil {
+				t.Fatal(err)
+			}
+			if r.RecordedBy != " claude " || r.Via != "interactive question, session abc " {
+				t.Errorf("recorded_by = %q, via = %q, want them as typed", r.RecordedBy, r.Via)
+			}
+			if r.DecidedBy != "owner" {
+				t.Errorf("decided_by = %q, want owner", r.DecidedBy)
+			}
+		})
+	}
+}
+
+// Either one alone works, and neither leaves both empty.
+func TestTransitionsAcceptEitherProvenanceFieldAlone(t *testing.T) {
+	for _, tt := range []struct {
+		name            string
+		prov            Provenance
+		wantBy, wantVia string
+	}{
+		{"recorded_by only", Provenance{RecordedBy: "claude"}, "claude", ""},
+		{"via only", Provenance{Via: "chat"}, "", "chat"},
+		{"neither", Provenance{}, "", ""},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			r := validRecord(StatusOpen)
+			if err := Reject(&r, "no", "owner", testDate, tt.prov); err != nil {
+				t.Fatal(err)
+			}
+			if r.RecordedBy != tt.wantBy || r.Via != tt.wantVia {
+				t.Errorf("recorded_by = %q, via = %q, want %q and %q", r.RecordedBy, r.Via, tt.wantBy, tt.wantVia)
+			}
+		})
+	}
+}
+
+// A blank value is refused and the record is left as it was.
+func TestTransitionRefusesBlankProvenanceAndLeavesTheRecordAlone(t *testing.T) {
+	for _, prov := range []Provenance{{RecordedBy: " "}, {Via: "\t"}} {
+		r := validRecord(StatusOpen)
+		before := cloneRecord(r)
+		if err := Reject(&r, "no", "owner", testDate, prov); !errors.Is(err, ErrInvalid) {
+			t.Errorf("Reject with %+v = %v, want an error matching ErrInvalid", prov, err)
+		}
+		if !reflect.DeepEqual(r, before) {
+			t.Errorf("record changed after a refused transition: %+v", r)
+		}
+	}
+}
+
+// Supersede, LinkSupersedes, Amend and Renumber change other things and leave
+// who recorded the answer, and how, as it was.
+func TestOtherChangesLeaveRecordedByAndViaAlone(t *testing.T) {
+	base := func() Record {
+		r := amendable(StatusDecided)
+		r.RecordedBy, r.Via = "claude", "chat, 2026-11-02"
+		return r
+	}
+	tests := []struct {
+		name  string
+		apply func(*Record) error
+	}{
+		{"supersede", func(r *Record) error { return Supersede(r, 7, testDate) }},
+		{"link supersedes", func(r *Record) error { return LinkSupersedes(r, 7, testDate) }},
+		{"amend", func(r *Record) error {
+			return Amend(r, Amendment{Title: sp("Pick a datastore"), Rationale: sp("new why")}, testDate)
+		}},
+		{"renumber", func(r *Record) error { return Renumber(r, 9, testDate) }},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r := base()
+			if err := tt.apply(&r); err != nil {
+				t.Fatal(err)
+			}
+			if r.RecordedBy != "claude" || r.Via != "chat, 2026-11-02" {
+				t.Errorf("recorded_by = %q, via = %q, want them unchanged", r.RecordedBy, r.Via)
+			}
+		})
+	}
+}
+
+// An answer given without Provenance leaves a recorded_by or via that the open
+// record already has (a hand edit, say), as the -i walk and a decide without
+// the flags rely on; one that is given replaces it.
+func TestTransitionWithoutProvenanceKeepsWhatTheRecordHas(t *testing.T) {
+	r := validRecord(StatusOpen)
+	r.RecordedBy, r.Via = "claude", "chat"
+	if err := Reject(&r, "no", "owner", testDate, Provenance{}); err != nil {
+		t.Fatal(err)
+	}
+	if r.RecordedBy != "claude" || r.Via != "chat" {
+		t.Errorf("recorded_by = %q, via = %q, want them kept", r.RecordedBy, r.Via)
+	}
+
+	r = validRecord(StatusOpen)
+	r.RecordedBy, r.Via = "claude", "chat"
+	if err := Reject(&r, "no", "owner", testDate, Provenance{Via: "voice"}); err != nil {
+		t.Fatal(err)
+	}
+	if r.RecordedBy != "claude" || r.Via != "voice" {
+		t.Errorf("recorded_by = %q, via = %q, want claude and voice", r.RecordedBy, r.Via)
 	}
 }

@@ -632,6 +632,8 @@ when it has a value. `id`, `title`, `status` and `created` are always present.
 | `tags` | array of strings | the tags |
 | `asked_by` | string | who asked the question |
 | `decided_by` | string | who decided, rejected or withdrew the record |
+| `recorded_by` | string | who entered the answer, when that is not `decided_by`: set with `--recorded-by NAME` on `adj decide`, `adj reject` and `adj withdraw`; free text, kept as typed |
+| `via` | string | how the owner gave the answer, such as `interactive question, session ID`: set with `--via TEXT` on the same commands; free text, kept as typed |
 | `created` | string | the date the question was asked, `YYYY-MM-DD` |
 | `decided_at` | string | the effective date of the answer, `YYYY-MM-DD`; `adj decide --decided-at` may set an earlier date |
 | `context` | string | why the question is asked; may contain line breaks |

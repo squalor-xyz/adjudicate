@@ -33,6 +33,7 @@ func TestRecordFieldsFollowCoreConceptsTable(t *testing.T) {
 	// PROJECT.md Core concepts rows in order, without kind (C30), then history.
 	want := []string{
 		"id", "title", "status", "key", "tags", "asked_by", "decided_by",
+		"recorded_by", "via",
 		"created", "decided_at", "context", "options", "recommendation",
 		"decision", "rationale", "consequences", "supersedes",
 		"superseded_by", "refs", "history",
@@ -196,6 +197,8 @@ func TestValidateRejects(t *testing.T) {
 		{"rejected missing decided_at", StatusRejected, func(r *Record) { r.DecidedAt = "" }, "decided_at"},
 		{"withdrawn missing rationale", StatusWithdrawn, func(r *Record) { r.Rationale = "" }, "rationale"},
 		{"withdrawn missing decided_at", StatusWithdrawn, func(r *Record) { r.DecidedAt = "" }, "decided_at"},
+		{"blank recorded_by", StatusDecided, func(r *Record) { r.RecordedBy = " \t" }, "recorded_by"},
+		{"blank via", StatusDecided, func(r *Record) { r.Via = "  " }, "via"},
 		{"superseded missing decision", StatusSuperseded, func(r *Record) { r.Decision = "" }, "decision"},
 		{"superseded missing rationale", StatusSuperseded, func(r *Record) { r.Rationale = "" }, "rationale"},
 		{"superseded missing decided_at", StatusSuperseded, func(r *Record) { r.DecidedAt = "" }, "decided_at"},

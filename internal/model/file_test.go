@@ -352,3 +352,38 @@ func TestClosingFenceAtEndOfFileHasEmptyBody(t *testing.T) {
 		t.Fatalf("Unmarshal() = %+v, want %+v with an empty body", got, want)
 	}
 }
+
+// recorded_by and via follow decided_by in the file, are left out when empty
+// (so a record without them is byte for byte what it was) and round trip as
+// typed (S52).
+func TestRecordedByAndViaFollowDecidedByAndRoundTrip(t *testing.T) {
+	r := validRecord(StatusDecided)
+	r.DecidedBy = "jon"
+	without, err := Marshal(r)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if bytes.Contains(without, []byte("recorded_by")) || bytes.Contains(without, []byte("via")) {
+		t.Errorf("a record without them writes them:\n%s", without)
+	}
+
+	r.RecordedBy, r.Via = " claude ", "interactive question, \"session\" abc"
+	with, err := Marshal(r)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := "  \"decided_by\": \"jon\",\n" +
+		"  \"recorded_by\": \" claude \",\n" +
+		"  \"via\": \"interactive question, \\\"session\\\" abc\",\n" +
+		"  \"created\": "
+	if !bytes.Contains(with, []byte(want)) {
+		t.Errorf("file does not hold the two keys between decided_by and created:\n%s", with)
+	}
+	back, err := Parse("x.md", with)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if back.RecordedBy != r.RecordedBy || back.Via != r.Via {
+		t.Errorf("round trip: recorded_by = %q, via = %q, want %q and %q", back.RecordedBy, back.Via, r.RecordedBy, r.Via)
+	}
+}

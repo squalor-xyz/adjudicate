@@ -146,7 +146,19 @@ A new failure with its own error value needs a sentinel and a code in
   too) or is after the run date exits 2, before any store access. Only `decide`
   takes it. `adj reject ID --why TEXT` and `adj withdraw ID --why TEXT` move an
   `open` record to `rejected` or `withdrawn` the same way, with no decision.
-  `decided_by` is `--by`, else `$ADJ_DECIDED_BY`, else blank (C27). `--why` and
+  `decided_by` is `--by`, else `$ADJ_DECIDED_BY`, else blank (C27).
+  `--recorded-by NAME` and `--via TEXT` (S52; all three of decide, reject and
+  withdraw take them) store `recorded_by` and `via` on the record, right after
+  `decided_by`: who entered the answer when that is not `decided_by`, and how
+  the owner gave it (adj 170: an agent may record an option the owner picked in
+  an interactive question, with `--by` the owner). Both are optional free text,
+  kept as typed and left out of the file when empty, so a record made without
+  them is unchanged. A flag that is given but blank exits 2 before any store
+  access. No env var sets them. `show` prints them after `Decided by`; the
+  JSON of `show`, `list` and `inbox` carries them beside `decided_by`.
+  `amend`, `supersede`, `renumber` and `inbox -i` leave them as they are.
+  `Validate` rejects a blank value in a file; `adj ai` does not name them (the
+  agents never run decide, C137). `--why` and
   `--text` are kept as typed but must not be blank. All three print the
   record's ID. A bad argument exits 2, including an OPTION the record does not
   offer while the record is open. An unknown ID, or a record that is not `open`

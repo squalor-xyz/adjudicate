@@ -203,8 +203,8 @@ func TestTransitionsKeepUnknownHistoryEntries(t *testing.T) {
 		event Event
 	}{
 		{"decide", func(r *Record) error { return Decide(r, "yes", "because", "owner", day) }, EventDecide},
-		{"reject", func(r *Record) error { return Reject(r, "no", "owner", day) }, EventReject},
-		{"withdraw", func(r *Record) error { return Withdraw(r, "no", "owner", day) }, EventWithdraw},
+		{"reject", func(r *Record) error { return Reject(r, "no", "owner", day, Provenance{}) }, EventReject},
+		{"withdraw", func(r *Record) error { return Withdraw(r, "no", "owner", day, Provenance{}) }, EventWithdraw},
 		{"amend", func(r *Record) error { return Amend(r, Amendment{Title: ptr("Logging, corrected")}, day) }, EventAmend},
 		{"renumber", func(r *Record) error { return Renumber(r, 9, day) }, EventRenumber},
 	}

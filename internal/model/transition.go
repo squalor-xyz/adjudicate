@@ -34,37 +34,61 @@ func apply(r *Record, from, to Status, event Event, date, note string, mutate fu
 	return nil
 }
 
+// Provenance is who entered an answer and how the owner gave it, beside
+// decided_by (S52). Either may be empty.
+type Provenance struct {
+	RecordedBy, Via string
+}
+
+// setProvenance stores the non-empty parts of p; an empty part leaves what the
+// record has.
+func (r *Record) setProvenance(p Provenance) {
+	if p.RecordedBy != "" {
+		r.RecordedBy = p.RecordedBy
+	}
+	if p.Via != "" {
+		r.Via = p.Via
+	}
+}
+
 // Decide moves an open record to decided, recording the chosen option label
 // or free-text decision, the owner's rationale, who decided (free text; may
-// be empty) and the date (YYYY-MM-DD).
+// be empty) and the date (YYYY-MM-DD). It records no Provenance.
 func Decide(r *Record, decision, rationale, decidedBy, date string) error {
-	return DecideAt(r, decision, rationale, decidedBy, date, date)
+	return DecideAt(r, decision, rationale, decidedBy, date, date, Provenance{})
 }
 
 // DecideAt moves an open record to decided, setting decidedAt as the date the
 // decision took effect and date as the date this transition was recorded.
-// When those dates differ, the history entry notes the backdated date.
-func DecideAt(r *Record, decision, rationale, decidedBy, decidedAt, date string) error {
+// When those dates differ, the history entry notes the backdated date. p is
+// stored as recorded_by and via, as typed; a part that is empty leaves the
+// record's own, and a blank one is refused.
+func DecideAt(r *Record, decision, rationale, decidedBy, decidedAt, date string, p Provenance) error {
 	note := ""
 	if decidedAt != date {
 		note = fmt.Sprintf("backdated to %s", decidedAt)
 	}
 	return apply(r, StatusOpen, StatusDecided, EventDecide, date, note, func(n *Record) {
 		n.Decision, n.Rationale, n.DecidedBy, n.DecidedAt = decision, rationale, decidedBy, decidedAt
+		n.setProvenance(p)
 	})
 }
 
 // Reject moves an open record to rejected: the question will not be answered.
-func Reject(r *Record, rationale, decidedBy, date string) error {
+// p is stored as for DecideAt.
+func Reject(r *Record, rationale, decidedBy, date string, p Provenance) error {
 	return apply(r, StatusOpen, StatusRejected, EventReject, date, "", func(n *Record) {
 		n.Rationale, n.DecidedBy, n.DecidedAt = rationale, decidedBy, date
+		n.setProvenance(p)
 	})
 }
 
 // Withdraw moves an open record to withdrawn: the asker no longer needs an answer.
-func Withdraw(r *Record, rationale, decidedBy, date string) error {
+// p is stored as for DecideAt.
+func Withdraw(r *Record, rationale, decidedBy, date string, p Provenance) error {
 	return apply(r, StatusOpen, StatusWithdrawn, EventWithdraw, date, "", func(n *Record) {
 		n.Rationale, n.DecidedBy, n.DecidedAt = rationale, decidedBy, date
+		n.setProvenance(p)
 	})
 }
 
