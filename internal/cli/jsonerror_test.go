@@ -547,8 +547,10 @@ func TestErrorObjectMatchesDocs(t *testing.T) {
 		}
 	}
 	// The docs table lists exactly the codes the tests above produce, plus
-	// io, the catch-all.
-	want := map[string]bool{"usage": true}
+	// io, the catch-all, and contract_mismatch, which no errorCases entry can
+	// produce because the same run without --json succeeds (S45; its own
+	// tests are in contract_guard_test.go).
+	want := map[string]bool{"usage": true, "contract_mismatch": true}
 	for _, tt := range errorCases() {
 		want[tt.code] = true
 	}

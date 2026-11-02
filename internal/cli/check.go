@@ -59,6 +59,9 @@ func (c *invocation) runCheck(args []string) int {
 	if err != nil {
 		return c.fail("check", err)
 	}
+	if code, refused := c.guardContract("check", st, *asJSON); refused {
+		return code
+	}
 	res, err := commands.Check(st, in)
 	if err != nil {
 		return c.commandError("check", checkUsage, err)

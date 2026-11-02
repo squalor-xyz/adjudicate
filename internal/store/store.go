@@ -42,6 +42,9 @@ const tmpPattern = ".adj-*.tmp"
 type Store struct {
 	dir string
 
+	// contract is the JSON contract version the config pins, if any (S45).
+	contract *int
+
 	// beforeLink, if set, is called by Create, and by Renumber for each file it
 	// writes, with the target path before the temporary file is written and
 	// linked into place; the store lock is held. Tests use it to play a second
@@ -113,8 +116,12 @@ func Open(root string) (*Store, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Store{dir: filepath.Join(root, cfg.Store)}, nil
+	return &Store{dir: filepath.Join(root, cfg.Store), contract: cfg.Contract}, nil
 }
+
+// Contract returns the JSON contract version the repo's config pins, or nil
+// when it pins none (S45).
+func (s *Store) Contract() *int { return s.contract }
 
 // Dir returns the store directory.
 func (s *Store) Dir() string { return s.dir }

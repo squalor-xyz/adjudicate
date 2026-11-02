@@ -43,6 +43,9 @@ func (c *invocation) runShow(args []string) int {
 	if err != nil {
 		return c.fail("show", err)
 	}
+	if code, refused := c.guardContract("show", st, *asJSON); refused {
+		return code
+	}
 	rec, err := commands.Show(st, id)
 	if err != nil {
 		return c.fail("show", err)

@@ -48,7 +48,7 @@ func (c *invocation) runInbox(args []string) int {
 	if len(pos) > 0 {
 		return c.usageError("inbox", inboxUsage, fmt.Errorf("inbox takes no arguments, got %q", pos[0]))
 	}
-	in := commands.InboxInput{Refs: refs}
+	in := commands.InboxInput{Refs: refs, JSON: *asJSON}
 	if err := in.Check(); err != nil {
 		return c.usageError("inbox", inboxUsage, err)
 	}
@@ -90,6 +90,9 @@ func (c *invocation) runInbox(args []string) int {
 	st, err := store.Open(dir)
 	if err != nil {
 		return c.fail("inbox", err)
+	}
+	if code, refused := c.guardContract("inbox", st, *asJSON); refused {
+		return code
 	}
 	recs, err := commands.Inbox(st, in)
 	if err != nil {

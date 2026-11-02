@@ -3354,12 +3354,41 @@
       "id": "S45",
       "title": "adj publishes a JSON contract version and a repo can pin it",
       "short_title": "JSON contract version and pin",
-      "status": "open",
+      "status": "done",
       "has_slice": true,
       "depends_on": [
         "S42"
       ],
-      "note_records": [],
+      "note_records": [
+        {
+          "id": "42e6b57b-d949-4a3a-8734-8facc4ebe8ae",
+          "kind": "",
+          "text": "**2026-11-02** — Owner answer (2026-11-02, session): the contract_mismatch message and the contract-pin lint warning tell the reader to ask the owner to run 'adj contract pin M' or to install an adj that speaks the pinned version; the skill and snippet stay untouched. Corrects C241's wording.",
+          "created_at": "2026-11-02T18:11:01Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
+        },
+        {
+          "id": "29554a16-a65c-4b68-a3ed-f48a1e37afcf",
+          "kind": "",
+          "text": "**2026-11-02** — Later: (1) per-repo inbox --all errors ({root,error}) carry no error code, so a reader cannot tell contract_mismatch without parsing text (additive fix, no version bump); (2) a failed 'adj contract pin' on a new root removes the config it wrote but leaves the store directory Init made (C239 says removes it; word C239 as config only or remove a directory the run created).",
+          "created_at": "2026-11-02T18:17:55Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
+        }
+      ],
       "claim": null,
       "fields": {
         "size": "M",
@@ -3379,7 +3408,7 @@
         "importance": 3,
         "urgency": 3,
         "effort": 2,
-        "attempts": 0
+        "attempts": 1
       }
     },
     {
@@ -3766,7 +3795,7 @@
   "goals": "adjudicate is a small CLI (`adj`) with a plain-text store that records project decisions as a loop: an agent asks, the owner decides in batches, and every later agent reads the decision. The goal and non-goal records below come from PROJECT.md; the owner's decisions on its open questions are catalog records C23-C33, and they override PROJECT.md where it differs (name, runtime, record format, license).",
   "non_goals": "",
   "catalog": {
-    "next_id": 236,
+    "next_id": 244,
     "id_prefix": "C",
     "id_width": 2,
     "records": [
@@ -5881,6 +5910,78 @@
         "kind": "decision",
         "title": "A frontmatter body key is always left out of the read commands' JSON",
         "body": "Amends C234 (owner answer 2026-11-02): body in the JSON of show, list, inbox and check keeps its documented meaning, the text after the frontmatter, so a body key in the frontmatter is never printed there, with or without a real body. The file keeps the key on every rewrite (S46).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C236",
+        "kind": "decision",
+        "title": "S45: adj contract, pin and unpin; JSON key order contract, version, pinned",
+        "body": "Command names follow the slice (adj contract [--json], contract pin M, contract unpin); text prints adj-json v1; --json keys are contract, version, pinned in that order and version --json has version then contract, so a reader sees the contract string first and the number beside it. The number lives in the new internal/contract package so lint, commands and cli share one constant without an import cycle (S45, C32).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C237",
+        "kind": "decision",
+        "title": "S45: adj contract needs no repo; pin and unpin print nothing and take no --json",
+        "body": "contract and contract --json work with no repo (pinned is null) because ork asks for the built-in version before it has set a pin; an invalid config in a found repo is exit 1 invalid_config. pin and unpin print nothing on success like repos add/remove, and --json with them is a usage error rather than silently ignored (S45, C32).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C238",
+        "kind": "decision",
+        "title": "S45: one guard, contract.Check, called by cli guardContract after usage checks and store.Open",
+        "body": "The pin is read with the config in store.Open, so the guard runs once the store is open and before any record is read: a usage error stays exit 2 and an unknown record in a pinned repo is still contract_mismatch. Only JSON mode is refused (--json, context --format json); inbox --all --json applies contract.Check per repo in InboxAll and puts a mismatched repo in errors, not repos, so one stale repo does not hide the others; text --all is not refused (S45, C32).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C239",
+        "kind": "decision",
+        "title": "S45: pin M takes digits only and writes through store.SetContract; unpin of an unpinned file is a no-op",
+        "body": "M must be a whole number of at least 1 written without sign or leading zero (exit 2 otherwise). SetContract rewrites only the keys the file has, store first then contract, indented as adj init writes, with the store path as typed; a file that already has the wanted pin (or no pin for unpin) is left byte for byte, exit 0; the write is a temp file and rename in the same directory, keeps the mode and follows a symlink. pin on a root named by --root or Env.Root with no config creates it as adj init would (config plus store directory) and removes it if the pin fails; with no named root the repo must be found upwards, so pin never plants a nested config; unpin with no config is no_repo exit 1 (S45, C32).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C240",
+        "kind": "decision",
+        "title": "S45: lint contract-pin is a warning about the config file with id 0",
+        "body": "The finding has id 0 and file .adjudicate.json since it concerns no record; it sorts first, text output drops the 'record 0:' part for it, and the JSON finding shape (id, file, severity, check, message) is unchanged, so the bump rule is not triggered. Lint reports it from the store's pin and still checks every record (S45, C32).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C241",
+        "kind": "decision",
+        "title": "S45: adj contract is not named in the agent snippet or skill",
+        "body": "Setting a pin is a repo-config change like init and renumber, which the owner or ork runs, and the snippet is at its 1800-byte limit with a SHA pin test; reading adj contract --json is harmless but agents get contract_mismatch from any guarded command that tells them to ask the owner, so snippet, skill and reference are unchanged and the installed skill copies stay in step (S45, C32).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C242",
+        "kind": "decision",
+        "title": "S45: bump rule test compares the output with testdata/contract/shapes.json",
+        "body": "The fixture records, per JSON command, every key path with its JSON types (merged across a fixture repo that has every record key) for the version in the file. The test fails if the file's version is not contract.Version, or if any recorded path is gone or has other types; added paths pass. ADJ_RECORD_SHAPES=1 re-records and refuses to overwrite shapes of the current version with a lossy set, so a non-additive change cannot be hidden by re-recording without a bump. docs/json.md Contract version needs a line per version, also tested (S45, C32).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C243",
+        "kind": "decision",
+        "title": "S45: the contract_mismatch refusal and the contract-pin warning tell the reader to ask the owner (amends C241)",
+        "body": "Owner answer 2026-11-02: contract.Detail now reads '...; ask the owner to run `adj contract pin M` or to install an adj that speaks adj-json vN', both versions still named. Agents that hit the refusal are told to go to the owner, so the snippet, skill and reference stay unchanged and C241's remark that the message does the telling now holds; pinning stays an owner or ork action (S45, C32).",
         "status": "active",
         "reason": "",
         "successor": ""

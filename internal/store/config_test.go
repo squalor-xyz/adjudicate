@@ -6,6 +6,8 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"runtime"
+	"strings"
 	"testing"
 )
 
@@ -145,5 +147,216 @@ func TestFindRootStartMustBeInsideStop(t *testing.T) {
 	// would climb to tmp, where the config is. It must refuse instead.
 	if got, err := FindRootWithin(b, a); !errors.Is(err, ErrNoRoot) {
 		t.Fatalf("got %q, %v; want ErrNoRoot", got, err)
+	}
+}
+
+func intp(n int) *int { return &n }
+
+func TestLoadConfigContract(t *testing.T) {
+	tests := []struct {
+		name    string
+		file    string
+		want    *int
+		wantErr bool
+	}{
+		{"no key is no pin", `{"store": "decisions"}`, nil, false},
+		{"a positive pin", `{"store": "decisions", "contract": 1}`, intp(1), false},
+		{"a later version", `{"contract": 12}`, intp(12), false},
+		{"zero is refused", `{"contract": 0}`, nil, true},
+		{"negative is refused", `{"contract": -1}`, nil, true},
+		{"a string is refused", `{"contract": "v1"}`, nil, true},
+		{"a fraction is refused", `{"contract": 1.5}`, nil, true},
+		{"a boolean is refused", `{"contract": true}`, nil, true},
+		{"a misspelt key is still refused", `{"contracts": 1}`, nil, true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			root := t.TempDir()
+			writeFile(t, filepath.Join(root, ConfigFile), tt.file)
+			cfg, err := LoadConfig(root)
+			if tt.wantErr {
+				if !errors.Is(err, ErrInvalidConfig) {
+					t.Fatalf("err = %v, want ErrInvalidConfig", err)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatal(err)
+			}
+			if (cfg.Contract == nil) != (tt.want == nil) || (tt.want != nil && *cfg.Contract != *tt.want) {
+				t.Errorf("Contract = %v, want %v", cfg.Contract, tt.want)
+			}
+			st, err := Open(root)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if got := st.Contract(); (got == nil) != (tt.want == nil) || (tt.want != nil && *got != *tt.want) {
+				t.Errorf("Store.Contract() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestSetContract(t *testing.T) {
+	const withStore = "{\n  \"store\": \"decisions\"\n}\n"
+	tests := []struct {
+		name        string
+		file        string
+		set         *int
+		want        string
+		wantChanged bool
+	}{
+		{"pin keeps store and puts contract after it", withStore, intp(1),
+			"{\n  \"store\": \"decisions\",\n  \"contract\": 1\n}\n", true},
+		{"pin to the pinned value is left alone, whatever the layout", `{"store":"decisions","contract":1}`, intp(1),
+			`{"store":"decisions","contract":1}`, false},
+		{"pin changes the number", "{\n  \"store\": \"docs/log\",\n  \"contract\": 1\n}\n", intp(3),
+			"{\n  \"store\": \"docs/log\",\n  \"contract\": 3\n}\n", true},
+		{"unpin removes the key", "{\n  \"store\": \"decisions\",\n  \"contract\": 2\n}\n", nil, withStore, true},
+		{"unpin of an unpinned file is left alone", `{"store":"decisions"}`, nil, `{"store":"decisions"}`, false},
+		{"a file with no store key gets none", `{}`, intp(2), "{\n  \"contract\": 2\n}\n", true},
+		{"unpinning down to nothing leaves an empty object", `{"contract": 2}`, nil, "{}\n", true},
+		{"a store path is kept as typed", `{"store": "a/./b/"}`, intp(1),
+			"{\n  \"store\": \"a/./b/\",\n  \"contract\": 1\n}\n", true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			root := t.TempDir()
+			path := filepath.Join(root, ConfigFile)
+			writeFile(t, path, tt.file)
+			changed, err := SetContract(root, tt.set)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if changed != tt.wantChanged {
+				t.Errorf("changed = %v, want %v", changed, tt.wantChanged)
+			}
+			got, err := os.ReadFile(path)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if string(got) != tt.want {
+				t.Errorf("file =\n%q\nwant\n%q", got, tt.want)
+			}
+			if _, err := LoadConfig(root); err != nil {
+				t.Errorf("the written file does not load: %v", err)
+			}
+		})
+	}
+}
+
+func TestSetContractRefusesWithoutWriting(t *testing.T) {
+	t.Run("a missing file", func(t *testing.T) {
+		root := t.TempDir()
+		if _, err := SetContract(root, intp(1)); !errors.Is(err, os.ErrNotExist) {
+			t.Fatalf("err = %v, want os.ErrNotExist", err)
+		}
+		if _, err := os.Stat(filepath.Join(root, ConfigFile)); err == nil {
+			t.Error("SetContract created a config file")
+		}
+	})
+	t.Run("an invalid file", func(t *testing.T) {
+		root := t.TempDir()
+		path := filepath.Join(root, ConfigFile)
+		writeFile(t, path, `{"stor": "x"}`)
+		if _, err := SetContract(root, intp(1)); !errors.Is(err, ErrInvalidConfig) {
+			t.Fatalf("err = %v, want ErrInvalidConfig", err)
+		}
+		if got, _ := os.ReadFile(path); string(got) != `{"stor": "x"}` {
+			t.Errorf("file changed to %q", got)
+		}
+	})
+	t.Run("a non-positive pin", func(t *testing.T) {
+		root := t.TempDir()
+		path := filepath.Join(root, ConfigFile)
+		writeFile(t, path, `{}`)
+		for _, n := range []int{0, -1} {
+			if _, err := SetContract(root, intp(n)); err == nil {
+				t.Errorf("SetContract(%d) = nil, want an error", n)
+			}
+		}
+		if got, _ := os.ReadFile(path); string(got) != `{}` {
+			t.Errorf("file changed to %q", got)
+		}
+	})
+}
+
+func TestSetContractKeepsModeAndLeavesNoTempFile(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("Windows has no unix permission bits")
+	}
+	// os.CreateTemp makes 0600, so the modes that tell a kept mode from the
+	// temporary file's are the ones that differ from it.
+	for _, mode := range []os.FileMode{0o644, 0o640, 0o664} {
+		t.Run(mode.String(), func(t *testing.T) {
+			root := t.TempDir()
+			path := filepath.Join(root, ConfigFile)
+			writeFile(t, path, `{"store": "decisions"}`)
+			if err := os.Chmod(path, mode); err != nil {
+				t.Fatal(err)
+			}
+			if _, err := SetContract(root, intp(1)); err != nil {
+				t.Fatal(err)
+			}
+			fi, err := os.Stat(path)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if fi.Mode().Perm() != mode {
+				t.Errorf("mode = %v, want %v", fi.Mode().Perm(), mode)
+			}
+			entries, err := os.ReadDir(root)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if len(entries) != 1 {
+				t.Errorf("directory holds %d entries, want only the config", len(entries))
+			}
+		})
+	}
+}
+
+func TestSetContractWritesThroughASymlink(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("symlinks need privileges on Windows")
+	}
+	root := t.TempDir()
+	target := filepath.Join(root, "real.json")
+	writeFile(t, target, `{"store": "decisions"}`)
+	link := filepath.Join(root, ConfigFile)
+	if err := os.Symlink("real.json", link); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := SetContract(root, intp(1)); err != nil {
+		t.Fatal(err)
+	}
+	if fi, err := os.Lstat(link); err != nil || fi.Mode()&os.ModeSymlink == 0 {
+		t.Errorf("the config is no longer a symlink: %v, %v", fi, err)
+	}
+	if got, _ := os.ReadFile(target); !strings.Contains(string(got), `"contract": 1`) {
+		t.Errorf("target = %q, want the pin written through the link", got)
+	}
+}
+
+// A write that fails at the rename leaves the config as it was and no
+// temporary file behind.
+func TestSetContractFailedWriteLeavesTheDirectoryAsItWas(t *testing.T) {
+	old := renameFile
+	renameFile = func(oldpath, newpath string) error { return errors.New("rename refused") }
+	t.Cleanup(func() { renameFile = old })
+
+	root := t.TempDir()
+	path := filepath.Join(root, ConfigFile)
+	writeFile(t, path, `{"store": "decisions"}`)
+	changed, err := SetContract(root, intp(1))
+	if err == nil || !strings.Contains(err.Error(), "rename refused") || changed {
+		t.Fatalf("SetContract = %v, %v; want the rename error and no change", changed, err)
+	}
+	if got, _ := os.ReadFile(path); string(got) != `{"store": "decisions"}` {
+		t.Errorf("config = %q, want it untouched", got)
+	}
+	entries, _ := os.ReadDir(root)
+	if len(entries) != 1 {
+		t.Errorf("directory holds %d entries after a failed write, want only the config", len(entries))
 	}
 }

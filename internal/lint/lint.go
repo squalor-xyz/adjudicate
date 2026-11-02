@@ -4,8 +4,9 @@
 // model's rules, two files with one ID, links to records that do not exist,
 // supersede cycles, two decided records on one key, a decision with no
 // decided_by, and history entries, record keys and amend old texts with an
-// event or key this version does not know, which are warnings (C08, C26, C27,
-// S44, S46).
+// event or key this version does not know, which are warnings, as is a config
+// that pins another JSON contract version than this binary speaks (C08, C26,
+// C27, S44, S45, S46).
 // It reads the record files itself with model.Parse, so a broken or invalid
 // file becomes a finding where store.List would fail (C61).
 package lint
@@ -21,6 +22,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/squalor-xyz/adjudicate/internal/contract"
 	"github.com/squalor-xyz/adjudicate/internal/model"
 	"github.com/squalor-xyz/adjudicate/internal/store"
 )
@@ -73,6 +75,10 @@ const (
 	// CheckUnknownRecordKey: the record has top-level keys this version does
 	// not know (a warning, S46).
 	CheckUnknownRecordKey = "unknown-record-key"
+	// CheckContractPin: the config pins a JSON contract version other than the
+	// one this binary speaks, so the JSON commands refuse the repo (a warning,
+	// S45). The finding is about .adjudicate.json, not a record: its ID is 0.
+	CheckContractPin = "contract-pin"
 	// CheckUnknownWasKey: an amend entry's was, or an option in it, has keys
 	// this version does not know (a warning, S46).
 	CheckUnknownWasKey = "unknown-was-key"
@@ -82,11 +88,12 @@ const (
 var Checks = []string{
 	CheckParse, CheckFields, CheckIDMismatch, CheckDuplicateID, CheckRenumberLeftover, CheckDanglingLink,
 	CheckSupersedeState, CheckSupersedeCycle, CheckKeyConflict, CheckDecidedBy, CheckUnknownEvent, CheckUnknownHistoryKey,
-	CheckUnknownRecordKey, CheckUnknownWasKey,
+	CheckUnknownRecordKey, CheckUnknownWasKey, CheckContractPin,
 }
 
 // Finding is one problem in one record file. ID is the ID in the file name
-// (C59), which a file that does not parse still has.
+// (C59), which a file that does not parse still has. A finding about the
+// config file, not a record, has ID 0 and the config file as File.
 type Finding struct {
 	ID       int      `json:"id"`
 	File     string   `json:"file"`
@@ -133,6 +140,12 @@ func Run(st *store.Store, root string) ([]Finding, error) {
 	var out []Finding
 	add := func(id int, file string, sev Severity, check, format string, args ...any) {
 		out = append(out, Finding{ID: id, File: file, Severity: sev, Check: check, Message: fmt.Sprintf(format, args...)})
+	}
+
+	// A pin for another contract version is a warning about the config, which
+	// is no record: ID 0 sorts it first.
+	if pin := st.Contract(); contract.Check(pin) != nil {
+		add(0, store.ConfigFile, SeverityWarning, CheckContractPin, "%s", contract.Detail(*pin))
 	}
 
 	exists := map[int]bool{}

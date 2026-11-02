@@ -433,11 +433,14 @@ Checks the store for integrity problems and prints one line per finding
 prints nothing. The checks are `parse`, `fields`, `id-mismatch`,
 `duplicate-id`, `renumber-leftover`, `dangling-link`, `supersede-state`,
 `supersede-cycle`, `key-conflict`, `decided-by`, `unknown-event`,
-`unknown-history-key`, `unknown-record-key` and `unknown-was-key` (the last
-four are warnings). A history entry with an event or a key that this version
+`unknown-history-key`, `unknown-record-key`, `unknown-was-key` and
+`contract-pin` (the last five are warnings). A history entry with an event or a key that this version
 does not know, a key at the top level of a record, or a key inside the old text
 of an `amend` entry, as a newer version may write, is read and kept when the
-record is rewritten; lint only warns. Exit 1 if there is an error, else 0.
+record is rewritten; lint only warns. `contract-pin` is about `.adjudicate.json`,
+not a record (its line has no `record ID:` part): the repo pins a JSON contract
+version other than the one this adj speaks (see `adj contract`). Exit 1 if
+there is an error, else 0.
 
 ### `adj renumber [--keep-links]`
 
@@ -534,12 +537,47 @@ up to 5 seconds, then exit 1 naming the lock file without changing the config.
 The empty lock file remains after release; list ignores it. Other platforms
 without either locking primitive retain the store lock's no-lock fallback.
 
-### `adj version [--root DIR]`
+### `adj version [--json] [--root DIR]`
 
 Prints the version: the release override set with `-ldflags -X`, else what Go
 build information reports (see Build from source). The same value is printed by
 `adj --version`. It reads no repo and needs no config, and accepts `--root` but
-does not use it.
+does not use it. With `--json` it prints `{"version": "...", "contract":
+"adj-json v1"}`: the version and the JSON contract this adj speaks.
+
+### `adj contract [--json]`, `adj contract pin M`, `adj contract unpin`
+
+The JSON shapes in [docs/json.md](docs/json.md) have a version, `adj-json v1`,
+that moves when a shape changes in a way that is not purely additive (S45).
+`adj contract` prints the one this adj speaks; `--json` prints `{"contract":
+"adj-json v1", "version": 1, "pinned": null}`, where `pinned` is the version
+the repo's `.adjudicate.json` pins, or `null` (also when there is no repo: the
+command needs none).
+
+A repo can pin the version it was written for, so a tool that reads adj's JSON
+hears about a change as a refusal and not as a decode error:
+
+```sh
+adj contract pin 1       # writes "contract": 1 into .adjudicate.json
+adj contract unpin       # removes it
+```
+
+`pin M` takes a whole number of at least 1 and keeps the other keys of the file
+(`store`); pinning the pinned version, or unpinning an unpinned file, leaves the
+file as it is. Given a root that has no `.adjudicate.json` (`--root DIR`), `pin`
+creates it and the store directory as `adj init` would; without `--root` it
+needs a repo found from the working directory. Both print nothing and write
+the file through a temporary file and a rename.
+
+adj never serves an older shape. When the pin is not the version this adj
+speaks, `show`, `list`, `inbox`, `check` and `context --format json` run with
+JSON output exit 1 with the error code `contract_mismatch`, naming both
+versions and telling the reader to ask the owner; `inbox --all --json` leaves that repo out and reports it under
+`errors`. The same commands without JSON, and every command that has no JSON,
+are not refused, and `adj lint` warns (`contract-pin`) while it goes on
+checking the store. `.adjudicate.json` stays strict, so an `adj` released
+before this one refuses a pinned file as an invalid config, with that older
+message.
 
 ### `adj ai`
 
@@ -576,17 +614,18 @@ Commit the installed folders, or add them to `.gitignore`, as you prefer.
 
 ## Output for scripts
 
-`show`, `list`, `inbox`, `check`, `lint` and `repos list` print JSON with
-`--json`; `context` does it with `--format json`. The shapes are in
-[docs/json.md](docs/json.md). Until 1.0 a shape may change in a minor release;
-the CHANGELOG names every change. From 1.0 a release may add keys but never
+`show`, `list`, `inbox`, `check`, `lint`, `repos list`, `contract` and `version`
+print JSON with `--json`; `context` does it with `--format json`. The shapes are
+in [docs/json.md](docs/json.md), and `adj contract` says which version of them
+this adj speaks (a repo can pin it). Until 1.0 a shape may change in a minor
+release; the CHANGELOG names every change. From 1.0 a release may add keys but never
 renames, removes or retypes an existing key.
 
 A command run in JSON mode that fails (exit 1 or 2) prints
 `{"error": {"code", "message", "command"}}` on stdout, as well as the usual text
 on stderr, so a script can branch on `error.code` (`usage`, `no_repo`,
 `invalid_config`, `not_found`, `duplicate_id`, `invalid_record`, `user_config`,
-`budget` or `io`) instead of the message. The exit codes stay 0, 1 and 2. A
+`budget`, `contract_mismatch` or `io`) instead of the message. The exit codes stay 0, 1 and 2. A
 `lint` report with errors, a `check` result of `not found` and the per-repo
 errors of `inbox --all` are results, not failures, and print no error object;
 see "Errors" in [docs/json.md](docs/json.md). A script that read an empty stdout

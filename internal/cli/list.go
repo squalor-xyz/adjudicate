@@ -61,6 +61,9 @@ func (c *invocation) runList(args []string) int {
 	if err != nil {
 		return c.fail("list", err)
 	}
+	if code, refused := c.guardContract("list", st, *asJSON); refused {
+		return code
+	}
 	recs, err := commands.List(st, in)
 	if err != nil {
 		return c.commandError("list", listUsage, err)

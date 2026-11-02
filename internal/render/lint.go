@@ -10,14 +10,21 @@ import (
 )
 
 // LintText writes one line per finding, "FILE: record ID: SEVERITY: CHECK:
-// MESSAGE", then a summary line such as "2 errors, 1 warning". A report with
-// no finding writes nothing.
+// MESSAGE", then a summary line such as "2 errors, 1 warning". A finding about
+// no record (ID 0: the contract pin in the config file) has no "record ID:"
+// part. A report with no finding writes nothing.
 func LintText(w io.Writer, findings []lint.Finding) error {
 	if len(findings) == 0 {
 		return nil
 	}
 	for _, f := range findings {
-		if _, err := fmt.Fprintf(w, "%s: record %d: %s: %s: %s\n", f.File, f.ID, f.Severity, f.Check, f.Message); err != nil {
+		var err error
+		if f.ID == 0 {
+			_, err = fmt.Fprintf(w, "%s: %s: %s: %s\n", f.File, f.Severity, f.Check, f.Message)
+		} else {
+			_, err = fmt.Fprintf(w, "%s: record %d: %s: %s: %s\n", f.File, f.ID, f.Severity, f.Check, f.Message)
+		}
+		if err != nil {
 			return err
 		}
 	}

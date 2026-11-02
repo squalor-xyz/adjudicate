@@ -42,6 +42,12 @@ var fixtureCases = []struct {
 	want []lint.Finding
 }{
 	{"clean", nil},
+	// The config pins adj-json v2 and this binary speaks v1: a warning about
+	// the config file, which is no record (ID 0) (S45).
+	{"contract-pin", []lint.Finding{
+		{ID: 0, File: ".adjudicate.json", Severity: warnSev, Check: lint.CheckContractPin,
+			Message: "this repo pins adj-json v2 but this adj speaks adj-json v1, so its JSON commands refuse this repo; ask the owner to run `adj contract pin 1` or to install an adj that speaks adj-json v2"},
+	}},
 	{"missing-fields", []lint.Finding{
 		finding(1, "0001-no-answer.md", errSev, lint.CheckFields, "rationale: is required once decided"),
 		finding(1, "0001-no-answer.md", errSev, lint.CheckFields, "decided_at: is required once decided"),

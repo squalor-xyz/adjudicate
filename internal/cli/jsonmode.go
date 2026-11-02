@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/squalor-xyz/adjudicate/internal/commands"
+	"github.com/squalor-xyz/adjudicate/internal/contract"
 	"github.com/squalor-xyz/adjudicate/internal/model"
 	"github.com/squalor-xyz/adjudicate/internal/render"
 	"github.com/squalor-xyz/adjudicate/internal/store"
@@ -17,15 +18,16 @@ import (
 
 // The error codes of the JSON error object (S42, docs/json.md).
 const (
-	codeUsage         = "usage"
-	codeNoRepo        = "no_repo"
-	codeInvalidConfig = "invalid_config"
-	codeNotFound      = "not_found"
-	codeDuplicateID   = "duplicate_id"
-	codeInvalidRecord = "invalid_record"
-	codeUserConfig    = "user_config"
-	codeBudget        = "budget"
-	codeIO            = "io"
+	codeUsage            = "usage"
+	codeNoRepo           = "no_repo"
+	codeInvalidConfig    = "invalid_config"
+	codeNotFound         = "not_found"
+	codeDuplicateID      = "duplicate_id"
+	codeInvalidRecord    = "invalid_record"
+	codeUserConfig       = "user_config"
+	codeBudget           = "budget"
+	codeContractMismatch = "contract_mismatch"
+	codeIO               = "io"
 )
 
 // wantsJSON reports whether args ask for JSON output, read from the raw
@@ -109,6 +111,8 @@ func errorCode(err error) string {
 		return codeUserConfig
 	case errors.Is(err, commands.ErrBudget):
 		return codeBudget
+	case errors.Is(err, contract.ErrMismatch):
+		return codeContractMismatch
 	}
 	return codeIO
 }

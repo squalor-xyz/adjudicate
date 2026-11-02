@@ -120,6 +120,8 @@ each with its own decision:
   history (C166, C178-C180). Agents amend only the title, context and option
   texts of an `open` record; only the owner amends a decided record (C182).
 - `adj version` and `adj --version` (C169, C177).
+- `adj contract`, a version number for the JSON shapes that a repo can pin
+  (S45, C236-C242).
 - This file, rewritten to match what shipped, and the CHANGELOG.
 
 C165 also made publishing a later step. The owner then decided to publish
@@ -225,8 +227,24 @@ written back after the known keys in sorted order, and `adj lint` warns
 an unknown key inside an option or the recommendation is still an error. The
 repo config `.adjudicate.json` stays strict.
 
+**The JSON contract (S45).** The JSON shapes in `docs/json.md` have a version,
+`adj-json vN`, starting at 1 (`internal/contract`); it is adj's own number,
+independent of the release version and of any other tool's contract. It moves
+on any change to a shape that is not purely additive, which
+`TestContractShapesAreTiedToTheVersion` enforces against
+`internal/cli/testdata/contract/shapes.json`, and `docs/json.md` has one line
+per version under "Contract version". `adj contract` prints it. A repo may pin
+a version with `adj contract pin M` (`"contract": M` in `.adjudicate.json`,
+positive whole numbers only); adj never serves an older shape, so when the pin
+differs from the built-in version the JSON commands (`show`, `list`, `inbox`,
+`check`, `context --format json`, and `inbox --all --json` per repo) exit 1 with
+the error code `contract_mismatch`, commands without JSON are not refused, and
+`adj lint` warns (`contract-pin`, about the config file, `id` 0). Older
+releases refuse a pinned file as an invalid config. The decisions are C236-C242.
+
 **Store and config:** `adj init` writes `.adjudicate.json`
 (`{"store": "decisions"}`) at the repo root and creates the store directory.
+The only other key is the optional `contract` pin (S45, below).
 Commands find the root as the nearest directory, from the working directory
 upwards, that holds `.adjudicate.json`; `--root DIR` names it instead.
 
@@ -278,7 +296,8 @@ when it finds an error and 0 for a clean store or warnings only.
 | `adj renumber [--keep-links]` | Owner-only. Give record files that share an ID new IDs. |
 | `adj import-adr DIR [--tag T]... [--by NAME] [--dry-run]` | Owner-only. Create one record for each ADR in DIR, in the format adr-tools writes (Nygard) or MADR; see below. |
 | `adj repos add [PATH]`, `adj repos remove PATH`, `adj repos list [--json]` | Manage the user repo list; add defaults to the current repo root (`--root`), explicit relative paths use the working directory. Store cleaned absolute strings without resolving symlinks. Add requires `.adjudicate.json`; duplicates are a no-op. Remove requires a listed path, else exit 1. Both print nothing. List prints paths in insertion order without probing them; JSON is `{"repos": [...]}` (empty: `[]`). `--root` is otherwise unused; no current repo is required. |
-| `adj version`, `adj --version` | Print the version (see below). |
+| `adj version [--json]`, `adj --version` | Print the version (see below); `--json` adds the JSON contract. |
+| `adj contract [--json]`, `adj contract pin M`, `adj contract unpin` | Print the JSON contract version (`adj-json v1`), and with `--json` the pin; pin or unpin it in `.adjudicate.json` (see below). |
 | `adj ai` | Print the snippet for an agent's AGENTS.md. |
 | `adj ai skill [--output PATH \| --install] [--force]` | Print the agent skill (`SKILL.md`), write it to PATH, or install `SKILL.md` and `reference.md` into `.claude/skills/adj/`, `.agents/skills/adj/` and `.grok/skills/adj/` under the repo root (S54). |
 

@@ -1,11 +1,14 @@
 # JSON output
 
 `adj show ID --json`, `adj list --json`, `adj inbox --json`,
-`adj check QUERY --json`, `adj context --format json`, `adj lint --json` and
-`adj repos list --json` print JSON for agents, and any of them that fails prints
+`adj check QUERY --json`, `adj context --format json`, `adj lint --json`,
+`adj repos list --json`, `adj contract --json` and `adj version --json` print
+JSON for agents, and any of them that fails prints
 an error object (see "Errors").
 The shapes on this page are the contract: a key keeps its name and its type,
-within the limits under "Stability" below. Readers should ignore keys they do
+within the limits under "Stability" below. The contract has a version number,
+`adj-json v1`, that `adj contract` prints and a repo can pin (see "Contract
+version"). Readers should ignore keys they do
 not know, because a later release may add keys. That includes the history: an
 entry may have an event or keys a reader does not know (see "Keys of a history
 entry").
@@ -21,6 +24,10 @@ may change in a minor release (from 0.1 to 0.2, for example), and the
 [CHANGELOG](../CHANGELOG.md) names every such change. From 1.0 a release may add
 keys but never renames, removes or retypes an existing key.
 
+Before 1.0 a change that is not additive also raises the contract version (see
+"Contract version"), so a tool that pins it hears about the change as a refusal
+and not as a decode error.
+
 Two things a reader of 0.1 must not assume:
 
 - `recommendation.label` is optional. A recommendation has exactly one of
@@ -31,6 +38,38 @@ Two things a reader of 0.1 must not assume:
   the ID part). `adj amend --title` changes `title` but does not rename the file
   (C180, C182), so the slug in the file name can drift from the title. Read
   `title` from the record, not from the file name.
+
+## Contract version
+
+The shapes on this page have a version, `adj-json vN`, starting at 1. It is
+adj's own number and has nothing to do with the release version (`adj version`)
+or with any other tool's contract. `adj contract` prints the one this adj
+speaks, `adj-json v1`, and `adj version --json` carries it too.
+
+The number moves on any change to a shape on this page that is not purely
+additive: a key removed, renamed or retyped, or a value that now means something
+else. Adding a key, a code or a check never moves it. A test ties the number to
+a recorded list of every key path and type the JSON commands print
+(`internal/cli/testdata/contract/shapes.json`), so a change that is not
+additive fails until the number is raised.
+
+A repo may pin the version it was written for, with
+`adj contract pin M` (it writes `"contract": M` into `.adjudicate.json`) and
+`adj contract unpin`. adj never serves an older shape. When the pin is not the
+version this adj speaks, `adj show`, `list`, `inbox`, `check` and `context
+--format json` with JSON output exit 1 and print the error object with code
+`contract_mismatch` (see "Errors"), and `adj inbox --all --json` leaves that
+repo out of `repos` and names it in `errors`. The same commands without JSON,
+and every command that has no JSON, work as before. `adj lint` stays usable on
+such a repo: it reports a `contract-pin` warning (see "Keys of a lint
+finding"). Both the refusal and the warning tell the reader to ask the owner
+to pin the version this adj speaks or to install an adj that speaks the pinned
+one, since a pin is repo config.
+
+One line per version, saying what it changed:
+
+- `adj-json v1`: the shapes of this page when the contract got a number. Nothing
+  changed; the number starts here.
 
 ## Errors
 
@@ -79,6 +118,7 @@ unescaped and one final newline, and it is all that is on stdout.
 | `invalid_record` | 1 | a record file cannot be read as a record |
 | `user_config` | 1 | the user repo list (`adj repos`, `adj inbox --all`) is not valid, or HOME cannot be found |
 | `budget` | 1 | `adj context --max-bytes N` is smaller than the shortest output |
+| `contract_mismatch` | 1 | `.adjudicate.json` pins a JSON contract version other than the one this adj speaks (see "Contract version") |
 | `io` | 1 | any other failure: an unreadable file or directory, a write error |
 
 These are not failures and do not print the object: `adj lint --json` when it
@@ -291,6 +331,10 @@ exit 1 with no JSON output. `--root` with `--all` is a usage error (exit 2).
 |---|---|---|
 | `repos` | array | Successful repos, each with absolute `root` and `records` array. |
 | `errors` | array | Failed repos, each with absolute `root` and nonempty `error` text. |
+
+A repo whose `.adjudicate.json` pins another JSON contract version than this
+adj speaks (see "Contract version") is not read in JSON mode: it is in `errors`,
+with the `contract mismatch` message, and not in `repos`; the text form lists it.
 
 Both arrays are always present, never null. Empty or missing user config gives
 `{"repos": [], "errors": []}`. Error messages are diagnostic text and may
@@ -550,15 +594,16 @@ prints the object too.
 
 A clean store is `{"errors": 0, "warnings": 0, "findings": []}` (formatted as
 `{`, one key per line, `[]` for the empty array). `adj lint` without `--json`
-prints one line per finding, `FILE: record ID: SEVERITY: CHECK: MESSAGE`, then
-a count such as `2 errors, 1 warning`; a clean store prints nothing.
+prints one line per finding, `FILE: record ID: SEVERITY: CHECK: MESSAGE`
+(no `record ID:` for a finding about the config file), then a count such as
+`2 errors, 1 warning`; a clean store prints nothing.
 
 ## Keys of a lint finding
 
 | Key | Type | Meaning |
 |---|---|---|
-| `id` | integer | the record's ID, taken from its file name, so a file that cannot be decoded has one too |
-| `file` | string | the record file, relative to the repo root with `/` separators |
+| `id` | integer | the record's ID, taken from its file name, so a file that cannot be decoded has one too; `0` for a finding about the config file, which is no record (`contract-pin`) |
+| `file` | string | the record file, relative to the repo root with `/` separators; `.adjudicate.json` for `contract-pin` |
 | `severity` | string | `error` or `warning` |
 | `check` | string | the check that found it, one of the names below |
 | `message` | string | what is wrong, in one line |
@@ -630,6 +675,15 @@ The checks:
   `options.LABEL.KEY`: `history entry N: unknown was key "k"`, or `unknown was
   keys "a", "options.x.b"`. The keys are kept when the record is rewritten and
   appear in `--json` output.
+- `contract-pin` (warning): `.adjudicate.json` pins a JSON contract version
+  other than the one this adj speaks (see "Contract version"), so the JSON
+  commands refuse the repo with code `contract_mismatch`. One finding, with
+  `id` 0 and `file` `.adjudicate.json`; the message names both versions:
+  `this repo pins adj-json v2 but this adj speaks adj-json v1, so its JSON
+  commands refuse this repo; ask the owner to run `adj contract pin 1` or to
+  install an adj that speaks adj-json v2`. It comes first in the report, being
+  the lowest `id`, and lint goes on to check the store as usual. Text output
+  leaves out `record ID:` for it.
 - `unknown-record-key` (warning): the record has top-level keys that this
   version does not know. One finding per record, naming the keys in sorted
   order: `unknown key "k"`, or `unknown keys "a", "b"`. The keys are kept when
@@ -749,6 +803,46 @@ record file is not renamed when the title changes.
       }
     ]
   }
+}
+```
+
+## `adj contract --json`
+
+The contract this adj speaks and the repo's pin. One JSON object with three keys,
+in this order:
+
+| Key | Type | Meaning |
+|---|---|---|
+| `contract` | string | the contract and its version, `adj-json v1`, as `adj contract` prints it |
+| `version` | integer | the version number alone |
+| `pinned` | integer or null | the version `.adjudicate.json` pins, or `null` when it pins none or there is no repo |
+
+```json
+{
+  "contract": "adj-json v1",
+  "version": 1,
+  "pinned": null
+}
+```
+
+`pinned` is not compared with `version` here: a repo pinned to another version
+still gets this answer, which is how a tool finds out. Without `--json` the
+command prints `adj-json v1` and nothing else.
+
+## `adj version --json`
+
+The build's version text and the contract. One JSON object with two keys, in
+this order:
+
+| Key | Type | Meaning |
+|---|---|---|
+| `version` | string | what `adj version` prints |
+| `contract` | string | the contract this adj speaks, `adj-json v1` |
+
+```json
+{
+  "version": "v1.0.0",
+  "contract": "adj-json v1"
 }
 ```
 

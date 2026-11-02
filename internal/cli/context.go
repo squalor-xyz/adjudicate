@@ -83,6 +83,9 @@ func (c *invocation) runContext(args []string) int {
 	if err != nil {
 		return c.fail("context", err)
 	}
+	if code, refused := c.guardContract("context", st, *format == "json"); refused {
+		return code
+	}
 	recs, err := commands.Context(st, in)
 	if err != nil {
 		return c.commandError("context", contextUsage, err)

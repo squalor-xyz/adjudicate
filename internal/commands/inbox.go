@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"slices"
 
+	"github.com/squalor-xyz/adjudicate/internal/contract"
 	"github.com/squalor-xyz/adjudicate/internal/model"
 	"github.com/squalor-xyz/adjudicate/internal/query"
 	"github.com/squalor-xyz/adjudicate/internal/store"
@@ -19,6 +20,11 @@ import (
 // must be on a record for it to be listed.
 type InboxInput struct {
 	Refs []string
+
+	// JSON says the output will be JSON. InboxAll then refuses a repo whose
+	// config pins another contract version (S45), as the CLI does for the
+	// repo of a single inbox; text is never refused.
+	JSON bool
 }
 
 // Check reports a *UsageError if a filter cannot be used: a blank ref, as in
@@ -110,6 +116,11 @@ func repoInbox(root string, in InboxInput) ([]model.Record, error) {
 	st, err := store.Open(root)
 	if err != nil {
 		return nil, err
+	}
+	if in.JSON {
+		if err := contract.Check(st.Contract()); err != nil {
+			return nil, err
+		}
 	}
 	return Inbox(st, in)
 }

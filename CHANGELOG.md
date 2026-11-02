@@ -8,6 +8,29 @@ but never renames, removes or retypes an existing key.
 ## Unreleased
 
 ### Commands
+- New: `adj contract` (S45) prints the version of the JSON contract this adj
+  speaks, `adj-json v1`: the revision of the shapes in
+  [docs/json.md](docs/json.md), adj's own number, starting at 1. `--json`
+  prints `{"contract", "version", "pinned"}`; it needs no repo (`pinned` is
+  `null` without one). `adj contract pin M` writes `"contract": M` into
+  `.adjudicate.json` (whole numbers of at least 1; the `store` key stays; a root
+  named with `--root` that has no config gets one, and the store directory, as
+  `adj init` would) and `adj contract unpin` removes it; an unchanged file is not
+  rewritten, and a write goes through a temporary file and a rename. adj never
+  serves an older shape: when a repo pins a version other than the one this adj
+  speaks, `show`, `list`, `inbox`, `check` and `context --format json` run with
+  JSON output exit 1 and print the error object with the new code
+  `contract_mismatch` (its message names both versions and tells the reader to
+  ask the owner to run `adj contract pin` or to install a matching adj), and
+  `inbox --all --json` reports that repo under
+  `errors`; the same commands without JSON and the commands with no JSON are
+  not refused. `adj lint` warns about such a pin (`contract-pin`, a warning, with
+  `id` 0 and file `.adjudicate.json`; its text line has no `record ID:` part)
+  and goes on checking the store. `adj version --json` prints `{"version",
+  "contract"}`; plain `adj version` is unchanged. Known effect:
+  `.adjudicate.json` is strict, so an `adj` released before this change refuses
+  a pinned file as an invalid config, with that release's old message, which
+  does not mention the pin. Repos that pin nothing are unaffected.
 - New: `adj ai skill` (S54) prints the agent skill, `SKILL.md`: when to check
   before asking, the four `adj check` results, how to word a question with
   options, trade-offs and a recommendation, how to narrow a read (`--key-prefix`,
@@ -82,6 +105,13 @@ but never renames, removes or retypes an existing key.
   and an unknown key a `parse` error.
 
 ### JSON shapes
+- New: the contract version (S45). `docs/json.md` has a "Contract version"
+  section with one line per version; version 1 is the shapes of this release,
+  unchanged. The number moves on any change to a shape that is not purely
+  additive, and a test compares every key path and type with a recorded list so
+  that such a change cannot ship without it. New: `adj contract --json` and
+  `adj version --json`, new error code `contract_mismatch`, and a lint finding
+  with `id` 0 for the config file. Additive: no existing key changes.
 - A record object may have two more optional string keys, `recorded_by` and
   `via`, beside `decided_by`, in `show`, `list`, `inbox`, `check` and every
   other command that prints records. They are present only when set, so no

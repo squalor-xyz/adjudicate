@@ -29,15 +29,16 @@ library only.
   its own file (`init.go`, `ask.go`, `decide.go`, which holds decide,
   reject and withdraw, `supersede.go`, `amend.go`, `show.go`, `list.go`,
   `inbox.go`, `check.go`, `context.go`, `lint.go`, `renumber.go`,
-  `importadr.go`, `version.go`, `repos.go` and `ai.go`); `inbox_interactive.go`
-  holds the interactive walk;
+  `importadr.go`, `version.go`, `contract.go`, `repos.go` and `ai.go`);
+  `contract.go` also holds `guardContract`, the one guard in front of every
+  command with JSON output; `inbox_interactive.go` holds the interactive walk;
   `cli.go` holds the dispatch and shared helpers.
 - `internal/commands`: what each command does to the store, apart from
   parsing, output and exit codes (`init.go`, `ask.go`, `decide.go`,
   `supersede.go`, `amend.go`, `show.go`, `list.go`, `inbox.go`, `check.go`,
   `context.go`, `lint.go`, `renumber.go`, `importadr.go`, `repos.go`,
-  `ai.go`). `ai.md` is the agent snippet, embedded by `ai.go`; `skill.md` and
-  `skill_reference.md` are the two files of the agent skill (`SKILL.md` and
+  `contract.go`, `ai.go`). `ai.md` is the agent snippet, embedded by `ai.go`;
+  `skill.md` and `skill_reference.md` are the two files of the agent skill (`SKILL.md` and
   `reference.md` once installed), embedded there too, and `ai.go` holds
   `WriteTextFiles`, which `adj ai skill` uses to write them.
   `errors.go` holds `UsageError`, the error that exits 2.
@@ -66,6 +67,9 @@ library only.
   (`config.go`), `Renumber` (`renumber.go`) and the ID lock (`lock_unix.go`,
   `lock_windows.go`, `lock_open.go`, `lock_other.go`); see "Store and config"
   below.
+- `internal/contract`: the JSON contract version (`Version`, `String`,
+  `Check`, `ErrMismatch`, S45); imported by `cli`, `commands`, `lint` and
+  `render`, and by nothing else in the module.
 - `internal/userconfig`: per-user repo list, injected environment path
   resolution, strict loading, atomic saving and locked updates; separate from
   repo config.
@@ -120,9 +124,9 @@ value such as `--key --json` is not JSON mode) and `errorCode`, which maps
 sentinels through `errors.Is`, never message text: `usage`, `no_repo`
 (`store.ErrNoRoot`), `invalid_config` (`store.ErrInvalidConfig`),
 `not_found`, `duplicate_id`, `invalid_record` (`model.ErrInvalid`),
-`user_config` (`userconfig.ErrConfig`), `budget` (`commands.ErrBudget`) and `io`
-(anything else). Every failure goes through `usageError`, `fail` or
-`commandError` (or `dispatchFailure` before a command is known). A `lint`
+`user_config` (`userconfig.ErrConfig`), `budget` (`commands.ErrBudget`),
+`contract_mismatch` (`contract.ErrMismatch`, S45) and `io` (anything else).
+Every failure goes through `usageError`, `fail` or `commandError` (or `dispatchFailure` before a command is known). A `lint`
 report, a `check` of "not found" and the per-repo errors of `inbox --all` are
 results, not failures, and print no object; commands with no `--json` never do.
 A new failure with its own error value needs a sentinel and a code in
@@ -362,11 +366,14 @@ A new failure with its own error value needs a sentinel and a code in
   this version does not know, one finding per entry: `history entry N: unknown
   event "X"`, S44), `unknown-history-key` (one per entry, naming its unknown
   keys in sorted order, S44), `unknown-record-key` (one per record, naming its
-  unknown top-level keys in sorted order, S46) and `unknown-was-key` (one per
+  unknown top-level keys in sorted order, S46), `unknown-was-key` (one per
   amend entry, naming the unknown keys of its `was`, those inside an option as
-  `options.LABEL.KEY`, S46, C231); the last five are warnings, the rest errors
-  (C143). A blank event is a `fields` error. Text: per finding
-  `FILE: record ID: SEVERITY: CHECK: MESSAGE`, sorted by ID, check and file,
+  `options.LABEL.KEY`, S46, C231) and `contract-pin` (the config pins a JSON
+  contract version other than the built-in one: one warning about
+  `.adjudicate.json`, with record ID 0, S45, C240); the last six are warnings,
+  the rest errors (C143). A blank event is a `fields` error. Text: per finding
+  `FILE: record ID: SEVERITY: CHECK: MESSAGE` (`FILE: SEVERITY: CHECK: MESSAGE`
+  for ID 0), sorted by ID, check and file,
   then `N errors, M warnings`; a clean store prints nothing (C141). `--json`
   prints `{"errors", "warnings", "findings"}` (`docs/json.md`, C142). Exit 1 if
   there is an error or lint could not run, else 0: warnings alone exit 0 (C140).
@@ -491,10 +498,45 @@ A new failure with its own error value needs a sentinel and a code in
   up to 5 seconds, then exit 1 naming the lock file without changing the config.
   The empty lock file remains after release; list ignores it. Other platforms
   without either locking primitive retain the store lock's no-lock fallback.
-- `adj version` and `adj --version`: print one line from Go build information,
-  or the release override set with `-ldflags -X`. `version` reads no repo and
-  needs no config; it accepts `--root` but does not use it. The leading
-  `--version` form invokes the same command.
+- `adj version [--json]` and `adj --version`: print one line from Go build
+  information, or the release override set with `-ldflags -X`. `version` reads
+  no repo and needs no config; it accepts `--root` but does not use it. The
+  leading `--version` form invokes the same command. `--json` prints
+  `{"version", "contract"}` (S45, C236).
+- `adj contract [--json] [--root DIR]`, `adj contract pin M [--root DIR]`,
+  `adj contract unpin [--root DIR]` (S45, C236-C242): the JSON contract
+  (`internal/contract`: `Version` 1, printed `adj-json v1`). With no
+  subcommand it prints `adj-json v1`; with `--json`,
+  `{"contract": "adj-json v1", "version": 1, "pinned": null}`, `pinned` being
+  the `contract` pin of `.adjudicate.json` (null without one or without a repo:
+  it needs no repo; an invalid config exits 1). `pin M` (digits only, at least
+  1; anything else exits 2 before store access) writes `"contract": M` through
+  `store.SetContract`: only the keys the file has are written back, `store`
+  then `contract`, indented as `adj init` writes them, the store path as typed;
+  a file that already has the wanted state (the same pin, or no pin for
+  `unpin`) is not rewritten, so a second run changes nothing and `unpin` of an
+  unpinned file exits 0; otherwise a temporary file in the same directory and a
+  rename (mode kept, a symbolic link followed). A root named by `--root` or
+  `Env.Root` with no config is set up as `adj init` does (config with the pin,
+  and the store directory; a failed pin removes what this run wrote); with no
+  named root the repo is found upwards and a missing one exits 1 (`no_repo`),
+  as does `unpin` with no config; an invalid config exits 1, untouched. They
+  print nothing and take no `--json` (exit 2). Owner-only in spirit, like
+  `init`: the snippet and skill do not name it (C241). The guard
+  (`invocation.guardContract`, over `contract.Check`) runs in `show`, `list`,
+  `inbox`, `check` and `context` once the store is open and before any record
+  is read, in JSON mode only: a pin other than the built-in version exits 1
+  with code `contract_mismatch` and nothing else on stdout; text mode and the
+  commands with no JSON are never refused. `commands.InboxAll`, given
+  `InboxInput.JSON`, applies `contract.Check` to each repo: a mismatched repo
+  is an `errors` entry (and a stderr warning, exit 1), not a `repos` entry
+  (C238). `adj lint` warns instead (`contract-pin`, C240). The version moves on
+  any change to a pinned shape that is not purely additive, which
+  `TestContractShapesAreTiedToTheVersion` checks against
+  `internal/cli/testdata/contract/shapes.json` (C242; record it with
+  `ADJ_RECORD_SHAPES=1 go test ./internal/cli -run TestRecordContractShapes`,
+  after raising `contract.Version` and adding its line to "Contract version" in
+  `docs/json.md`).
 - `adj ai`: prints the AGENTS.md snippet in `internal/commands/ai.md` (check
   before asking and what each result means, ask with `--ref` and
   `--recommend-text`, read the decisions, withdraw your own question, amend an
@@ -558,9 +600,12 @@ A new failure with its own error value needs a sentinel and a code in
 
 - The repo root is the nearest directory, from the working directory up, that
   holds `.adjudicate.json` (`store.FindRoot`), unless `--root` names it (see
-  Commands). The file is one JSON object; its only key is `store`, the store
-  directory relative to the root (default `decisions`, C29). Unknown keys, an
-  absolute path or a path that leaves the root are errors. With no config
+  Commands). The file is one JSON object; its keys are `store`, the store
+  directory relative to the root (default `decisions`, C29), and the optional
+  `contract`, a positive whole number: the JSON contract version the repo pins
+  (S45; `Store.Contract`, `store.SetContract`). Unknown keys, a `contract` that
+  is not a positive whole number, an absolute path or a path that leaves the
+  root are errors; older releases refuse a pinned file as an unknown key. With no config
   file `store.Open(root)` uses the defaults.
 - A record file is `<ID padded to four digits>-<slug>.md` in the store
   directory; the slug is the title's lowercase ASCII letters and digits joined

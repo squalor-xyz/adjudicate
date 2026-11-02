@@ -38,10 +38,14 @@ and the check that found it; the checks are:
                        (a warning; they are kept too)
   unknown-was-key      the was of an amend entry, or an option in it, has keys
                        this version does not know (a warning; kept too)
+  contract-pin         .adjudicate.json pins a JSON contract version other than
+                       the one this adj speaks, so the JSON commands refuse the
+                       repo (a warning, about no record: id 0; adj contract)
 
 Lint reads the record files itself, so it works on a store that other commands
 refuse to load. Text output is one line per finding, "FILE: record ID:
-SEVERITY: CHECK: MESSAGE", then a count; a clean store prints nothing. With
+SEVERITY: CHECK: MESSAGE" (no "record ID:" for a finding about the config file),
+then a count; a clean store prints nothing. With
 --json, print {"errors", "warnings", "findings"} (the shape is in
 docs/json.md).
 
