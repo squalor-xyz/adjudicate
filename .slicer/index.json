@@ -1515,10 +1515,67 @@
       "id": "S43",
       "title": "New record IDs clear the highest ID in every sibling worktree, so parallel branches do not collide",
       "short_title": "Sibling-aware record IDs",
-      "status": "open",
+      "status": "done",
       "has_slice": true,
       "depends_on": [],
-      "note_records": [],
+      "note_records": [
+        {
+          "id": "4a71179f-36c3-4bdd-b0eb-1467c6f1e4cc",
+          "kind": "later",
+          "text": "**2026-11-02** — No test pins cmd.WaitDelay in runGit (internal/store/siblings.go): removing it fails no test (the hang test uses an injected runner). Behaviour verified by a probe with a slow git wrapper: ask returns in 3 s. A Unix-only test with a wrapper git on PATH would pin it.",
+          "created_at": "2026-11-02T19:13:32Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
+        },
+        {
+          "id": "d4af82e8-b460-4d9e-9a7e-2826b4ce07cd",
+          "kind": "later",
+          "text": "**2026-11-02** — The Store.validated test hook is a production-code seam used only by tests; a hook-free behavioural test (a moving record linking to the ID it would get without the floor) could replace it.",
+          "created_at": "2026-11-02T19:13:33Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
+        },
+        {
+          "id": "224cdf70-c02d-470a-a4bd-423c29f8f520",
+          "kind": "later",
+          "text": "**2026-11-02** — A store whose adj root is below the git top level (monorepo subdirectory) gets no sibling floor (spec and C252 exclude it, documented); mapping the relative path into each sibling is a possible follow-up after 1.0.",
+          "created_at": "2026-11-02T19:13:33Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
+        },
+        {
+          "id": "990f0f84-cd8b-4f1f-9541-527229532a63",
+          "kind": "later",
+          "text": "**2026-11-02** — cli and commands tests now spawn real git through runGit on every Create (read-only, real HOME; the top-level guard keeps them off this repo's worktrees). A test Env runner that returns an error would remove the dependency; TestCreateOutsideGitTakesTheNextLocalID passes because of the guard, not because it is outside git (naming nit). Also: git worktree list -z (git 2.36+) would avoid parsing quoted paths.",
+          "created_at": "2026-11-02T19:13:33Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
+        }
+      ],
       "claim": null,
       "fields": {
         "size": "M",
@@ -1538,7 +1595,7 @@
         "importance": 2,
         "urgency": 3,
         "effort": 3,
-        "attempts": 0
+        "attempts": 1
       }
     },
     {
@@ -3838,7 +3895,7 @@
   "goals": "adjudicate is a small CLI (`adj`) with a plain-text store that records project decisions as a loop: an agent asks, the owner decides in batches, and every later agent reads the decision. The goal and non-goal records below come from PROJECT.md; the owner's decisions on its open questions are catalog records C23-C33, and they override PROJECT.md where it differs (name, runtime, record format, license).",
   "non_goals": "",
   "catalog": {
-    "next_id": 251,
+    "next_id": 256,
     "id_prefix": "C",
     "id_width": 2,
     "records": [
@@ -6088,6 +6145,51 @@
         "kind": "decision",
         "title": "S51: narrow is owner-only; the snippet is reworded to fit, its SHA pin moves, the skill names narrow",
         "body": "adj narrow joins decide, reject and supersede in the commands agents never run (C137, C27). ai.md stays within 1800 bytes (now 1779) by shortening 'Line 1 of the output is' to 'Line 1 is', 'Read the decisions in force' to 'Read decisions in force' and '(open questions, oldest first)' to '(oldest first)'; the phrases that tests pin are untouched. snippetSHA256 in ai_skill_test.go was moved deliberately (its S54 comment said the snippet must not change; it now says an edit moves the pin). skill.md names adj narrow in its Owner only section and explains the Narrowed by and Narrows lines in two sentences; skill_reference.md lists the narrowed_by and narrows keys and the owner list; the three installed copies were rewritten with adj ai skill --install --force (S51, C32).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C251",
+        "kind": "decision",
+        "title": "S43: sibling worktrees are found by running the git binary (os/exec), as slicer does",
+        "body": "Owner answer 2026-10-20: siblings are found by running git (git -C ROOT rev-parse --show-toplevel, then git -C ROOT worktree list --porcelain), not by parsing .git. This is within C24: os/exec is the standard library and git is an optional runtime tool, not a dependency; with no git on PATH, or git failing, the floor is 0 and every command behaves as before S43. Store keeps its root and a gitRunner (production runGit, tests inject output); the runner gets a context so the deadline is the caller's (S43, C32).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C252",
+        "kind": "decision",
+        "title": "S43: the sibling floor is read only when the root is the top level of its git worktree",
+        "body": "siblingFloor runs git worktree list only when git rev-parse --show-toplevel names the repo root itself. A store below the top level (monorepo subdirectory) gets no floor: the sibling's matching directory would need a relative-path rule the spec does not ask for. The guard also keeps tests that run in .cache/tmp inside this repo from reading this repo's own worktrees (TestTestsInsideTheRepositoryNeverReadItsWorktrees pins that git is asked for the top level and nothing else). Behaviour there is exactly what it was before S43 (S43, C32).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C253",
+        "kind": "decision",
+        "title": "S43: a sibling that cannot be read is skipped silently; no debug note",
+        "body": "As in slicer, a sibling with an invalid config, a store that is not a directory or cannot be listed, a bare or missing worktree, or git failing or missing, contributes nothing and prints nothing: sibling visibility must never stop a local write, and there is no output change or flag (the spec's Not in this slice). Spec's question 'debug note?': no. Prunable entries are tried like others and skipped if their directory is gone; a sibling with no .adjudicate.json uses the default store; only file names are read (a file that does not parse still reserves its ID) and the sibling's lock is not taken (S43, C32).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C254",
+        "kind": "decision",
+        "title": "S43: all git calls of one floor share a 3 second deadline, run under the store lock",
+        "body": "siblingGitTimeout is 3 seconds for the rev-parse and the worktree list together, one context per Create or Renumber, so a hung git holds the store lock for at most 3 seconds, less than the 5 second lock wait of C114. On the deadline the floor is 0. runGit sets WaitDelay to 100 ms so a wrapper that leaves a child holding the pipe cannot extend it. The floor is computed once per Create (not per retry) and once per Renumber that has a collision, after the lock is taken (S43, C32).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C255",
+        "kind": "decision",
+        "title": "S43: the root and git's top level are compared as directories (os.SameFile), not as strings",
+        "body": "git prints the top level with forward slashes on Windows and as a physical path (macOS /var is /private/var, Windows short names and case differ), so the repo root is compared to it with os.Stat and os.SameFile, which follows symbolic links. The spec said 'cleaned, symlinks resolved'; SameFile covers that and the Windows spellings. The same comparison drops the current worktree from the list (S43, C32).",
         "status": "active",
         "reason": "",
         "successor": ""

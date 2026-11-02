@@ -134,7 +134,8 @@ git add .adjudicate.json decisions AGENTS.md
 Commit `.adjudicate.json` and `decisions/`: the records are plain Markdown
 files that diff, merge and review like code. `adj ask` takes IDs under a lock
 file, `decisions/.adj.lock`; add it to `.gitignore` if you do not want it in
-git (`adj` writes no `.gitignore`).
+git (`adj` writes no `.gitignore`). It also keeps IDs clear of the other git
+worktrees of the repository (see `adj ask` below).
 
 Agents work from the snippet that `adj ai` printed. Before they ask, they run
 `adj check QUERY`; they read the decisions in force with `adj context`, and ask
@@ -227,6 +228,17 @@ TITLE.
 --by NAME                 who asks; default: $ADJ_ASKED_BY, else left blank
 --root DIR                the repo root
 ```
+
+The ID is one past the highest ID in the store, and also above the highest ID
+in the store of every other worktree of the same git repository (see
+`git worktree list`), so branches checked out side by side in one clone do not
+take the same ID. `adj` finds them by running `git`; without git on `PATH`, in
+a directory that is not the top level of its worktree, or when git fails, only
+the store itself counts, as before. A worktree whose store cannot be read is
+skipped without a message. This covers worktrees of one repository on one
+machine: separate clones and other machines still collide, as do two asks run
+at the same moment in two worktrees (`adj lint` reports the collision and
+`adj renumber` fixes it).
 
 ### `adj decide ID OPTION --why TEXT [flags]`
 
@@ -474,7 +486,8 @@ there is an error, else 0.
 Owner-only. Resolves record files that share an ID, which merged branches and
 clones can produce (`adj lint` reports them as `duplicate-id`). The record
 created first keeps the ID; each other one is written to a new file with the
-next free ID, and its old file is removed. Links to a shared ID cannot be told
+next free ID (above the other git worktrees' IDs too, as for `adj ask`), and
+its old file is removed. Links to a shared ID cannot be told
 apart, so renumber stops until you check them and pass `--keep-links`. See
 `adj renumber --help`.
 

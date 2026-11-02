@@ -8,6 +8,20 @@ but never renames, removes or retypes an existing key.
 ## Unreleased
 
 ### Commands
+- `adj ask` now takes an ID above the highest ID in the store of every other
+  worktree of the same git repository (S43), as slicer does, so two branches
+  checked out side by side in one clone no longer both take 50 and 51. `adj
+  renumber` gives a moved record such an ID too. The worktrees are found by
+  running `git -C ROOT rev-parse --show-toplevel` and, only when the repo root
+  is that top level, `git -C ROOT worktree list --porcelain`; each sibling's
+  store is read by file name (its own `.adjudicate.json` names the store, the
+  default `decisions` without one) and its lock is not taken. Without `git` on
+  `PATH`, when git fails or takes longer than 3 seconds, when the root is below
+  the top level, or for a sibling whose config or store cannot be read, the
+  sibling is skipped without a message and the ID is what it was. No output,
+  flag, config key or JSON shape changes (`adj-json v1` stays). Not covered:
+  separate clones and other machines, and two asks at the same moment in two
+  worktrees; `adj lint` and `adj renumber` remain the remedy for those.
 - New: `adj narrow OLD --by NEW --scope TEXT` (S51), owner-only, for a decision
   that another decision changes only in part. `adj supersede` would take the
   whole of OLD out of `adj context`, and with it the parts NEW leaves alone;

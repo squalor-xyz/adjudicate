@@ -42,6 +42,18 @@ const tmpPattern = ".adj-*.tmp"
 type Store struct {
 	dir string
 
+	// root is the repo root the store was opened for; sibling worktrees are
+	// looked for from it (S43).
+	root string
+
+	// git runs the git binary for the sibling floor; nil means the real one.
+	// Tests inject output.
+	git gitRunner
+
+	// validated, if set, is called by Renumber for each move its in-memory
+	// check validates, with the file name and the ID the check gave it.
+	validated func(name string, id int)
+
 	// contract is the JSON contract version the config pins, if any (S45).
 	contract *int
 
@@ -116,7 +128,7 @@ func Open(root string) (*Store, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Store{dir: filepath.Join(root, cfg.Store), contract: cfg.Contract}, nil
+	return &Store{dir: filepath.Join(root, cfg.Store), root: root, contract: cfg.Contract}, nil
 }
 
 // Contract returns the JSON contract version the repo's config pins, or nil
@@ -297,8 +309,15 @@ const recordPerm fs.FileMode = 0o644
 // The scan and the link happen under the store's lock (C114), which Renumber
 // takes too, so two writers on one checkout cannot take one ID. If the lock
 // stays held longer than the writer waits, Create returns an error that names
-// the lock file and writes nothing. Collisions between branches or clones are
-// out of the lock's reach; lint finds them and renumber fixes them (C26).
+// the lock file and writes nothing.
+//
+// The ID is also above the highest ID in the store of every other worktree of
+// the same git repository (S43, siblingFloor), so branches checked out side by
+// side do not take one ID. Those stores are read without their locks, and
+// without git, or where the root is not the top level of its worktree, nothing
+// is read. Clones, other machines and two asks at the same moment in two
+// worktrees are out of reach; lint finds the collisions and renumber fixes
+// them (C26).
 //
 // The ID is never one that a supersedes, superseded_by, narrowed_by or narrows
 // link in the store names without a file, which would make that link resolve
@@ -322,6 +341,11 @@ func (s *Store) Create(r model.Record) (model.Record, error) {
 	}
 	defer unlock()
 
+	// With the lock held, so the sibling worktrees are looked at once and as
+	// late as possible; asks in two worktrees at the same moment can still
+	// collide (S43).
+	floor := s.siblingFloor()
+
 	var path string
 	for range createAttempts {
 		es, err := s.scan()
@@ -332,7 +356,7 @@ func (s *Store) Create(r model.Record) (model.Record, error) {
 		if len(es) > 0 {
 			highest = es[len(es)-1].id
 		}
-		r.ID = freeID(highest, 0, s.danglingIDs(es))
+		r.ID = freeID(highest, floor, s.danglingIDs(es))
 		if err := r.Validate(); err != nil {
 			return model.Record{}, err
 		}

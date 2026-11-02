@@ -91,7 +91,8 @@ The original brief left these open; the owner decided them on 2026-10-15.
   written with `encoding/json`. The brief recommended TOML frontmatter; the Go
   standard library has no TOML.
 - **IDs (C26):** sequential. `adj lint` detects collisions and a command
-  resolves them; that is a separate command, `adj renumber` (C150).
+  resolves them; that is a separate command, `adj renumber` (C150). A new ID
+  also clears the other git worktrees of the same repository (S43, C251-C255).
 - **Owner-only decide (C27):** a convention plus an AGENTS.md rule. `decided_by`
   is recorded on each decision and `adj lint` warns when it is missing. No git
   hook, no signed commits.
@@ -495,9 +496,15 @@ copy differs from the binary's text.
 - **ID allocation:** the next ID is one past the highest ID in the file names.
   `adj ask` takes the ID under a lock on `<store>/.adj.lock` (advisory `flock` on
   unix, mandatory `LockFileEx` on Windows), so two asks on one checkout cannot take
-  one ID (C114, S36). Branches and clones can
-  still collide: `adj lint` reports files that share an ID as `duplicate-id`
-  and `adj renumber` resolves them (C26, C146-C156).
+  one ID (C114, S36). `adj ask` (and `adj renumber`, for a record it moves) also
+  takes an ID above the highest ID in the store of every other worktree of the
+  same git repository, found with `git worktree list --porcelain` (S43, C251-C255;
+  only when the repo root is the top level of its worktree, with a 3 second
+  limit on git, and silently as before when git is missing or fails; each
+  sibling's store is read by file name, without its lock). Clones, other machines
+  and two asks at the same moment in two worktrees can still collide: `adj lint`
+  reports files that share an ID as `duplicate-id` and `adj renumber` resolves
+  them (C26, C146-C156).
 - **Determinism:** the same store always produces the same output, so
   `adj context` diffs are stable.
 - **Writes:** a record is written through a synced temp file, renamed over the
@@ -560,9 +567,10 @@ is no longer planned; owner-only decide stays a convention (C11, C27).
   and key-prefix filters, superseded records are left out, and
   `adj context --max-bytes N` keeps only the newest decisions that fit in N
   bytes and says how many it left out.
-- **Merge conflicts on IDs:** mitigated by the ID lock, `adj lint` and
-  `adj renumber`; two clones or branches can still collide until one of them
-  runs `adj renumber`.
+- **Merge conflicts on IDs:** mitigated by the ID lock, the floor above sibling
+  git worktrees (S43), `adj lint` and `adj renumber`; two clones, branches
+  created from separate clones, or asks at the same moment in two worktrees can
+  still collide until one of them runs `adj renumber`.
 - **Overlap with slicer's catalog (decisions and assumptions):** the boundary is
   in the Non-goals; exact ref filters link records to slice IDs without a
   dependency between the tools (S20).

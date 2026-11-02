@@ -218,7 +218,8 @@ func withNewline(body string) string {
 // Renumber resolves every ID that more than one record file has (C26). Of the
 // files that share an ID, the record created first keeps it, and the file name
 // breaks a tie (C146); each other file gets the next free ID (one past the
-// highest in the store), taking colliding IDs in ascending order. The record is
+// highest in the store, and at least the sibling floor, below), taking
+// colliding IDs in ascending order. The record is
 // written to a new file named with the new ID and the old file's text, with the
 // old file's permission bits and one renumber history entry dated date; then
 // the old file is removed (C148).
@@ -232,7 +233,10 @@ func withNewline(body string) string {
 //
 // A new ID is one past the highest in the store and never one that a link in
 // the store names without a file, which would resolve that link to the moved
-// record (C155).
+// record (C155). It is also above the highest ID in every other worktree of the
+// same git repository (S43, siblingFloor: read once, with the lock held), so a
+// moved record does not collide with a sibling branch's records; the check
+// before the first write gives each move the ID that will be written.
 //
 // With a collision, Renumber holds the store's lock (the one Create takes,
 // C114) from reading the files to the last move, so no Create can take an ID
@@ -293,6 +297,11 @@ func (s *Store) Renumber(date string, keepLinks bool) (RenumberResult, error) {
 		}
 	}
 
+	// The lowest ID a move may take so as not to collide with a sibling
+	// worktree (S43), read once with the lock held, for the check below and for
+	// the writes.
+	floor := s.siblingFloor()
+
 	// Pick the file that keeps each colliding ID; the rest move.
 	keeper := map[int]File{}
 	type pending struct {
@@ -326,7 +335,10 @@ func (s *Store) Renumber(date string, keepLinks bool) (RenumberResult, error) {
 	for _, m := range moving {
 		rec := recs[m.file.Name]
 		rec.ID = m.file.ID // the ID in the file name is the record's identity (C59)
-		id := freeID(highest, 0, avoid)
+		id := freeID(highest, floor, avoid)
+		if s.validated != nil {
+			s.validated(m.file.Name, id)
+		}
 		if err := model.Renumber(&rec, id, date); err != nil {
 			return res, fmt.Errorf("renumber: %s: %w", m.file.Name, err)
 		}
@@ -334,7 +346,7 @@ func (s *Store) Renumber(date string, keepLinks bool) (RenumberResult, error) {
 	}
 
 	for _, m := range moving {
-		move, err := s.moveFile(m.file, m.kept, recs[m.file.Name], date, avoid)
+		move, err := s.moveFile(m.file, m.kept, recs[m.file.Name], date, avoid, floor)
 		if err != nil {
 			return res, err
 		}
@@ -440,14 +452,14 @@ func ambiguousLinks(links []Link) error {
 // old, under the next free ID and removes old. The new file is complete before
 // the old one goes, so a crash between the two leaves both and loses nothing
 // (C148).
-func (s *Store) moveFile(old, kept File, rec model.Record, date string, avoid map[int]bool) (Move, error) {
+func (s *Store) moveFile(old, kept File, rec model.Record, date string, avoid map[int]bool, siblings int) (Move, error) {
 	perm := recordPerm
 	if fi, err := os.Stat(old.Path); err == nil {
 		perm = fi.Mode().Perm()
 	}
 	text := NameText(old.Name)
 
-	floor := 0 // the lowest ID not tried yet
+	floor := siblings // the lowest ID not tried yet: at least the sibling floor (S43)
 	var newName, newPath string
 	for range renumberAttempts {
 		es, err := s.scan()

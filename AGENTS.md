@@ -64,7 +64,8 @@ library only.
   entries and was are comparable (renumber compares entries with
   `reflect.DeepEqual`, unknown keys included; `Was` is a pointer).
 - `internal/store`: one repo's record directory (`store.go`), its config
-  (`config.go`), `Renumber` (`renumber.go`) and the ID lock (`lock_unix.go`,
+  (`config.go`), `Renumber` (`renumber.go`), the ID floor from sibling git
+  worktrees (`siblings.go`, S43) and the ID lock (`lock_unix.go`,
   `lock_windows.go`, `lock_open.go`, `lock_other.go`); see "Store and config"
   below.
 - `internal/contract`: the JSON contract version (`Version`, `String`,
@@ -151,7 +152,8 @@ A new failure with its own error value needs a sentinel and a code in
   opaque strings, kept as typed and in order. `asked_by` is `--by`, else
   `$ADJ_ASKED_BY`, else blank. The ID is taken under the store's lock (see
   "Store and config"): an `ask` that cannot get the lock within 5 seconds exits
-  1 with an error that names `.adj.lock` and creates no record.
+  1 with an error that names `.adj.lock` and creates no record. It is also above
+  the highest ID of every sibling git worktree (S43, "Store and config").
 - `adj decide ID OPTION --why TEXT`, or `adj decide ID --text TEXT --why TEXT`,
   `[--by NAME] [--decided-at YYYY-MM-DD] [--root DIR]`: moves an `open` record
   to `decided`. OPTION (trimmed) must be one of the record's option labels;
@@ -435,7 +437,8 @@ A new failure with its own error value needs a sentinel and a code in
   Of the files with one ID the record `created` first keeps it, then the file
   name breaks a tie (C146). Each other record is written to a new file `<next
   free ID>-<same name text>.md` (next free ID: one past the highest in the
-  store, colliding IDs taken in ascending order), with its permission bits and
+  store, colliding IDs taken in ascending order, and at least the sibling
+  worktree floor of S43), with its permission bits and
   one `renumber` history entry (note `from N`), and the old file is removed
   after the new one is complete (C148). Prints one line per move, `OLD-FILE ->
   NEW-FILE (id N -> M)`; no collision prints nothing and changes nothing, exit
@@ -688,8 +691,28 @@ A new failure with its own error value needs a sentinel and a code in
   system the lock may be local to each host, so asks from two hosts can still
   take one ID. `Create` also skips an ID that a `supersedes`, `superseded_by`,
   `narrowed_by` or `narrows` link names without a file (C155, S51); a file it cannot read keeps its ID by name
-  but its links are not known. The lock only serialises one checkout: branches
-  and clones still collide, and `adj lint` and `adj renumber` handle that.
+  but its links are not known. The lock only serialises one checkout.
+  Sibling worktrees (S43, `siblings.go`, C251-C255): with the lock held, once per
+  `Create` and once per `Renumber` that has a collision, `siblingFloor` runs
+  `git -C ROOT rev-parse --show-toplevel` and, only if ROOT is that directory
+  (`os.SameFile`, so symbolic links and Windows spellings do not matter), `git
+  -C ROOT worktree list --porcelain`. For each listed worktree other than ROOT
+  (bare ones skipped, prunable ones tried and skipped if gone) it opens the
+  worktree's own `.adjudicate.json` (none means the default store; an invalid
+  one skips the sibling) and takes the highest ID in the file names, with no
+  lock and no record read. The floor is one past the highest of them, passed to
+  `freeID` beside the dangling-link IDs, which still apply; `Renumber` uses the
+  same floor for its in-memory check and for each write. Git missing, failing,
+  not the top level, or slower than 3 seconds (both calls share the deadline)
+  gives floor 0, silently: behaviour is then what it was. `Store.git` is the
+  injectable runner (`runGit` in production); `Store.validated` is a test hook
+  that sees the ID each pre-check gives a move. Clones, other machines and two
+  asks at the same moment in two worktrees still collide, and `adj lint` and
+  `adj renumber` handle that. Tests in `.cache/tmp` sit inside this repo, which
+  has worktrees: the top-level guard keeps them from reading those
+  (`TestTestsInsideTheRepositoryNeverReadItsWorktrees`), and the real-git
+  integration test sets `HOME`, `GIT_CONFIG_NOSYSTEM` and `GIT_CONFIG_GLOBAL`
+  so the real git config is never read.
   Locking needs `syscall.Flock` (darwin, linux, the BSDs, illumos) or, on
   Windows, `LockFileEx` (`lock_windows.go`, S36): `kernel32.dll` called through
   the standard library's `syscall` (no `golang.org/x/sys`), exclusive over the
