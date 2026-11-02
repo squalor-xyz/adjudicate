@@ -212,9 +212,9 @@ A new failure with its own error value needs a sentinel and a code in
   an error (exit 0). `--ref` repeats: every ref must be on the record, matched
   exactly, case-sensitively and as typed, including surrounding whitespace; a
   blank value exits 2 before store access.
-- `adj inbox [--json] [--root DIR]`,
-  `adj inbox --all [--json]`, or
-  `adj inbox -i [--by NAME] [--root DIR]`: lists the `open` records,
+- `adj inbox [--ref REF]... [--json] [--root DIR]`,
+  `adj inbox --all [--ref REF]... [--json]`, or
+  `adj inbox -i [--ref REF]... [--by NAME] [--root DIR]`: lists the `open` records,
   oldest first (by `created`, then ID). Text: per record `ID  title`, then
   indented its created date, its refs when set (C171), its context, every
   option (`label: summary`,
@@ -224,6 +224,14 @@ A new failure with its own error value needs a sentinel and a code in
   `--json` prints `{"records": [...]}`, the same record objects as `adj list`
   (`docs/json.md`). An empty inbox prints nothing (JSON: an empty array) and
   exits 0. An argument or other flag exits 2.
+  `--ref REF` (S53) repeats and keeps the open records that have every ref,
+  matched exactly, case-sensitively and as typed, including surrounding
+  whitespace (the `adj list` match: `commands.InboxInput.Check` and
+  `ListInput.Check` share `checkRefs`); a blank value exits 2 before the store
+  or the user config is looked for. With `--all` it applies in each repo and a
+  repo with no match keeps its header (JSON: `"records": []`); with `-i` the
+  walk and its summary cover only the matching questions. Without `--ref` the
+  output is byte for byte what it was.
   With `--all`, read the user repo list managed by `adj repos` and show each
   repo's open questions under its absolute path, in config insertion order.
   Records remain oldest first within each repo. Successful empty repos keep

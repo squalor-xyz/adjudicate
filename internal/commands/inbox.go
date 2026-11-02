@@ -15,15 +15,32 @@ import (
 	"github.com/squalor-xyz/adjudicate/internal/userconfig"
 )
 
-// Inbox returns the open records of st, oldest first: by created date, then
-// by ID. An empty inbox is an empty result, not an error. Store failures are
-// the store's errors (C61).
-func Inbox(st *store.Store) ([]model.Record, error) {
+// InboxInput is the raw input of adj inbox: the refs as typed. Every ref given
+// must be on a record for it to be listed.
+type InboxInput struct {
+	Refs []string
+}
+
+// Check reports a *UsageError if a filter cannot be used: a blank ref, as in
+// adj list. The CLI runs it before the store or the user config is looked for.
+func (in InboxInput) Check() error {
+	return checkRefs(in.Refs)
+}
+
+// Inbox returns the open records of st that carry every ref in in, oldest
+// first: by created date, then by ID. Refs match exactly as typed, as in adj
+// list. An empty inbox is an empty result, not an error. Bad input is a
+// *UsageError and nothing is read; store failures are the store's errors
+// (C61).
+func Inbox(st *store.Store, in InboxInput) ([]model.Record, error) {
+	if err := in.Check(); err != nil {
+		return nil, err
+	}
 	recs, err := st.List()
 	if err != nil {
 		return nil, err
 	}
-	return oldestFirst(query.Select(recs, query.Filter{Status: model.StatusOpen})), nil
+	return oldestFirst(query.Select(recs, query.Filter{Status: model.StatusOpen, Refs: in.Refs})), nil
 }
 
 // oldestFirst returns a copy of recs ordered by created date (YYYY-MM-DD, so
@@ -55,9 +72,13 @@ type AllInbox struct {
 	Errors []InboxError
 }
 
-// InboxAll reads only the listed roots, never discovering a parent repo.
-func InboxAll(getenv func(string) string) (AllInbox, error) {
+// InboxAll reads only the listed roots, never discovering a parent repo. The
+// filter in applies in each repo; a repo with no match is still listed.
+func InboxAll(getenv func(string) string, in InboxInput) (AllInbox, error) {
 	out := AllInbox{Repos: []RepoInbox{}, Errors: []InboxError{}}
+	if err := in.Check(); err != nil {
+		return out, err
+	}
 	path, err := userconfig.Path(getenv)
 	if err != nil {
 		return out, err
@@ -67,7 +88,7 @@ func InboxAll(getenv func(string) string) (AllInbox, error) {
 		return out, err
 	}
 	for _, root := range cfg.Repos {
-		recs, err := repoInbox(root)
+		recs, err := repoInbox(root, in)
 		if err != nil {
 			out.Errors = append(out.Errors, InboxError{Root: root, Error: err.Error()})
 			continue
@@ -77,7 +98,7 @@ func InboxAll(getenv func(string) string) (AllInbox, error) {
 	return out, nil
 }
 
-func repoInbox(root string) ([]model.Record, error) {
+func repoInbox(root string, in InboxInput) ([]model.Record, error) {
 	marker := filepath.Join(root, store.ConfigFile)
 	fi, err := os.Stat(marker)
 	if err != nil {
@@ -90,5 +111,5 @@ func repoInbox(root string) ([]model.Record, error) {
 	if err != nil {
 		return nil, err
 	}
-	return Inbox(st)
+	return Inbox(st, in)
 }

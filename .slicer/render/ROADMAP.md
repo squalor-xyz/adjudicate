@@ -858,6 +858,18 @@ Implementer decision under C32 (S52, owner decision 2026-11-02 fixed the flag na
 
 Implementer decision under C32 (S52, owner decision 2026-11-02 fixed the flag names).
 
+### C222 adj inbox --ref: with --all the filter applies in each repo and an unmatched repo keeps its header
+
+A repo that is read but has no matching question is still a successfully read repo, as an empty repo is in S18; dropping it would hide that the repo was checked.
+
+### C223 adj inbox --ref: with -i the walk and the summary cover only the matching questions
+
+The walk is built from the filtered list, so unvisited non-matching questions are never shown or counted; no match prints nothing and exits 0 like an empty inbox.
+
+### C224 adj inbox --ref: a blank value exits 2 before the store and the user config are read, via the check shared with adj list
+
+commands.checkRefs is the one blank-ref check for ListInput and InboxInput, so adj list and adj inbox refuse the same values; the synopsis lines of adj inbox name --ref in all three modes.
+
 ### C39 LICENSE is a stub until the owner supplies the full GPL-3.0 text and copyright holder
 
 No GPL-3.0 text exists in the adjudicate repo and the workspace has no network, so the stub carries the SPDX line, the or-later notice and TODO(owner) markers.
@@ -920,7 +932,7 @@ PENDING OWNER CONFIRMATION - not decided. Source: Dependency/licensing notes (ma
 
 *Retired: Owner decided 2026-10-15: see decision C31 (GPL-3.0-or-later)..*
 
-54 items · — 7 · done 42 · later 3 · retired 2
+54 items · — 6 · done 43 · later 3 · retired 2
 
 Release 1.0
 
@@ -932,7 +944,7 @@ Release 1.0
 | 4 | [S46](slices/S46.md) | Forward-compatible record reads | S | 1 | model | adj records 17 (store.amend-was) and 18 (store.record-unknown-keys), filed 2026-10-20 from the S39 notes and the S44 review | — |
 | 5 | [S51](slices/S51.md) | Partial supersede | M | 2 |  | ork adj 168 ui.structured-questions, 2026-10-25 | — |
 | 6 | [S52](slices/S52.md) | Decision provenance: recorded by, via | S | 1 |  |  | done |
-| 7 | [S53](slices/S53.md) | list and inbox --ref | S | 1 |  |  | — |
+| 7 | [S53](slices/S53.md) | inbox --ref | S | 1 |  |  | done |
 | 8 | [S54](slices/S54.md) | adj agent skill: adj ai skill --install | M | 2 |  |  | — |
 
 ---

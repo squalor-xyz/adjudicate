@@ -319,13 +319,23 @@ No match is not an error.
 ### `adj inbox`
 
 ```text
-adj inbox [--json] [--root DIR]
-adj inbox --all [--json]
-adj inbox -i [--by NAME] [--root DIR]
+adj inbox [--ref REF]... [--json] [--root DIR]
+adj inbox --all [--ref REF]... [--json]
+adj inbox -i [--ref REF]... [--by NAME] [--root DIR]
 ```
 
 Lists the open questions, oldest first, each with its references, options and
 recommendation. An empty inbox prints nothing.
+
+`--ref REF` keeps only the questions that carry that ref; repeat it to require
+every ref. Refs are matched as `adj list` matches them: exactly, case-sensitively
+and as typed, including surrounding whitespace, so `--ref S11` does not find a
+question with `S110`. A blank `--ref` exits 2 before the store is looked for.
+So `adj inbox --ref S116` shows the open questions that a slice linked with
+`adj ask --ref S116`, with their options and recommendation. With `--all` the
+filter applies in each repo and a repo with no match keeps its header; with `-i`
+the walk and its summary cover only the matching questions. Without `--ref`,
+output is unchanged.
 
 With `--all`, read the user repo list managed by `adj repos` and show each
 repo's open questions under its absolute path, in config insertion order.

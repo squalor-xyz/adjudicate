@@ -1,6 +1,6 @@
 {
   "id": "S53",
-  "title": "adj list and adj inbox filter by an exact ref",
+  "title": "adj inbox filters by an exact ref",
   "lead": [],
   "depends_note": null,
   "findings_note": "",
@@ -24,7 +24,7 @@
     },
     {
       "heading": "Implement",
-      "body": "`--ref REF` on `list` and `inbox`: an exact, case-sensitive match against a record's refs, repeatable, with every given filter matching as today."
+      "body": "`--ref REF` on `inbox` (`adj list` and `adj context` already have it from S20): an exact, case-sensitive match against a record's refs, repeatable, with every given filter matching as today."
     },
     {
       "heading": "Check",

@@ -10,14 +10,18 @@ import (
 	"github.com/squalor-xyz/adjudicate/internal/store"
 )
 
-const inboxUsage = `usage: adj inbox [--json] [--root DIR]
-       adj inbox --all [--json]
-       adj inbox -i [--by NAME] [--root DIR]
+const inboxUsage = `usage: adj inbox [--ref REF]... [--json] [--root DIR]
+       adj inbox --all [--ref REF]... [--json]
+       adj inbox -i [--ref REF]... [--by NAME] [--root DIR]
 
 List the open questions, oldest first (by created date, then ID), each with its
 options and recommendation. With --json, print {"records": [...]} (the shape is
 in docs/json.md). An empty inbox is not an error.
 
+  --ref REF    only questions with this exact ref, as typed (case-sensitive);
+               repeat to require every ref; blank values are refused; with
+               --all it applies in each repo, with -i the walk and its summary
+               cover only the matching questions
   --all        read the user repo list; group by repo, including empty repos
                warnings go to stderr and the JSON errors array; partial failure exits 1
                cannot be combined with --root
@@ -34,6 +38,8 @@ func (c *invocation) runInbox(args []string) int {
 	all := fs.Bool("all", false, "")
 	interactive := fs.Bool("i", false, "")
 	by := fs.String("by", "", "")
+	var refs stringList
+	fs.Var(&refs, "ref", "")
 
 	pos, code, done := c.parse("inbox", inboxUsage, fs, args)
 	if done {
@@ -41,6 +47,10 @@ func (c *invocation) runInbox(args []string) int {
 	}
 	if len(pos) > 0 {
 		return c.usageError("inbox", inboxUsage, fmt.Errorf("inbox takes no arguments, got %q", pos[0]))
+	}
+	in := commands.InboxInput{Refs: refs}
+	if err := in.Check(); err != nil {
+		return c.usageError("inbox", inboxUsage, err)
 	}
 	if *interactive && (*asJSON || *all) {
 		return c.usageError("inbox", inboxUsage, fmt.Errorf("-i cannot be combined with --json or --all"))
@@ -52,7 +62,7 @@ func (c *invocation) runInbox(args []string) int {
 		if fsSet(fs, "root") {
 			return c.usageError("inbox", inboxUsage, fmt.Errorf("--all cannot be combined with --root"))
 		}
-		result, err := commands.InboxAll(c.env.Getenv)
+		result, err := commands.InboxAll(c.env.Getenv, in)
 		if err != nil {
 			return c.fail("inbox", err)
 		}
@@ -81,7 +91,7 @@ func (c *invocation) runInbox(args []string) int {
 	if err != nil {
 		return c.fail("inbox", err)
 	}
-	recs, err := commands.Inbox(st)
+	recs, err := commands.Inbox(st, in)
 	if err != nil {
 		return c.commandError("inbox", inboxUsage, err)
 	}

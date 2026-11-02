@@ -201,7 +201,9 @@ The open questions, oldest first (by `created`, then by `id`), in the same
 shape as `adj list --json`: one object with one key, `records`, an array of
 record objects. Only records with status `open` appear, each with every key it
 has, so its `options` (with `tradeoffs` when set) and `recommendation` are
-there for the owner to read.
+there for the owner to read. `--ref REF` (repeatable) keeps only the open
+records that have every ref given, matched exactly as in `adj list --ref`; the
+shape does not change, and no match is `{"records": []}`.
 
 ```json
 {
@@ -261,7 +263,9 @@ When the inbox is empty, the array is empty: `{"records": []}` (formatted as
 ## `adj inbox --all --json`
 
 Successful repos are in user config insertion order, including empty repos.
-Records use the same shape as `adj inbox --json`, oldest first per repo.
+Records use the same shape as `adj inbox --json`, oldest first per repo. With
+`--ref REF` the filter applies in each repo; a repo with no match is still
+listed, with `"records": []`.
 Errors are in config order and also produce warnings on stderr. A per-repo
 error gives exit 1 after all repos are attempted. A user config error gives
 exit 1 with no JSON output. `--root` with `--all` is a usage error (exit 2).

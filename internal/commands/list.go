@@ -34,13 +34,22 @@ func (in ListInput) Check() error {
 			return usagef("--tag must not be blank")
 		}
 	}
-	for _, ref := range in.Refs {
-		if strings.TrimSpace(ref) == "" {
-			return usagef("--ref must not be blank")
-		}
+	if err := checkRefs(in.Refs); err != nil {
+		return err
 	}
 	if in.HasKey && strings.TrimSpace(in.Key) == "" {
 		return usagef("--key must not be blank")
+	}
+	return nil
+}
+
+// checkRefs reports a *UsageError for a blank --ref value. adj list and adj
+// inbox share it, so both refuse the same values.
+func checkRefs(refs []string) error {
+	for _, ref := range refs {
+		if strings.TrimSpace(ref) == "" {
+			return usagef("--ref must not be blank")
+		}
 	}
 	return nil
 }

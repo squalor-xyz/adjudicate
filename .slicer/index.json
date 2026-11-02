@@ -3634,12 +3634,27 @@
     },
     {
       "id": "S53",
-      "title": "adj list and adj inbox filter by an exact ref",
-      "short_title": "list and inbox --ref",
-      "status": "open",
+      "title": "adj inbox filters by an exact ref",
+      "short_title": "inbox --ref",
+      "status": "done",
       "has_slice": true,
       "depends_on": [],
-      "note_records": [],
+      "note_records": [
+        {
+          "id": "a4648d68-28db-4d55-8928-6339bb960767",
+          "kind": "",
+          "text": "**2026-11-02** — Later (from review): unit-test or drop the duplicate blank-ref checks in commands.Inbox and InboxAll (internal/commands/inbox.go:36-38, :79-81); no test fails without them, as for commands.List.",
+          "created_at": "2026-11-02T15:52:35Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
+        }
+      ],
       "claim": null,
       "fields": {
         "size": "S",
@@ -3657,7 +3672,7 @@
         "importance": 3,
         "urgency": 3,
         "effort": 1,
-        "attempts": 0
+        "attempts": 1
       }
     },
     {
@@ -3693,7 +3708,7 @@
   "goals": "adjudicate is a small CLI (`adj`) with a plain-text store that records project decisions as a loop: an agent asks, the owner decides in batches, and every later agent reads the decision. The goal and non-goal records below come from PROJECT.md; the owner's decisions on its open questions are catalog records C23-C33, and they override PROJECT.md where it differs (name, runtime, record format, license).",
   "non_goals": "",
   "catalog": {
-    "next_id": 222,
+    "next_id": 225,
     "id_prefix": "C",
     "id_width": 2,
     "records": [
@@ -5682,6 +5697,33 @@
         "kind": "decision",
         "title": "S52: no env var and no adj ai text for --recorded-by and --via; amend, supersede, renumber and inbox -i leave them as they are",
         "body": "Implementer decision under C32 (S52, owner decision 2026-11-02 fixed the flag names).",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C222",
+        "kind": "decision",
+        "title": "adj inbox --ref: with --all the filter applies in each repo and an unmatched repo keeps its header",
+        "body": "A repo that is read but has no matching question is still a successfully read repo, as an empty repo is in S18; dropping it would hide that the repo was checked.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C223",
+        "kind": "decision",
+        "title": "adj inbox --ref: with -i the walk and the summary cover only the matching questions",
+        "body": "The walk is built from the filtered list, so unvisited non-matching questions are never shown or counted; no match prints nothing and exits 0 like an empty inbox.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C224",
+        "kind": "decision",
+        "title": "adj inbox --ref: a blank value exits 2 before the store and the user config are read, via the check shared with adj list",
+        "body": "commands.checkRefs is the one blank-ref check for ListInput and InboxInput, so adj list and adj inbox refuse the same values; the synopsis lines of adj inbox name --ref in all three modes.",
         "status": "active",
         "reason": "",
         "successor": ""

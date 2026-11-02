@@ -8,6 +8,14 @@ but never renames, removes or retypes an existing key.
 ## Unreleased
 
 ### Commands
+- `adj inbox` takes a repeatable `--ref REF` (S53), also with `--all` and
+  `-i`: it keeps the open questions that have every ref given, matched exactly,
+  case-sensitively and as typed, as `adj list --ref` does, so `--ref S11` does
+  not find `S110`. A blank `--ref` exits 2 before the store is looked for. With
+  `--all` the filter applies in each repo and a repo with no match keeps its
+  header; with `-i` the walk and its summary cover only the matching
+  questions. The JSON shape does not change, and without `--ref` the output is
+  byte for byte what it was. `adj check` stays a substring search.
 - `adj decide`, `adj reject` and `adj withdraw` take two optional flags,
   `--recorded-by NAME` and `--via TEXT`: who entered the answer when that is
   not who decided (`--by`), and how the owner gave it, for example `--via

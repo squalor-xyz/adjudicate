@@ -265,7 +265,7 @@ when it finds an error and 0 for a clean store or warnings only.
 | `adj amend ID [--title T] [--context T \| --stdin] [--summary LABEL:TEXT]... [--tradeoffs LABEL:TEXT]... [--rationale T]` | Correct text on a record of any status; the old text is kept in the history. |
 | `adj show ID [--json]` | Print one record and its history. |
 | `adj list [--status S] [--tag T]... [--ref REF]... [--key K] [--json]` | List records in ID order; every filter given must match. |
-| `adj inbox [--json]`, `adj inbox --all [--json]`, `adj inbox -i [--by NAME]` | List open questions oldest first, with options and recommendation; `--all` groups the user repo list by root; owner-only `-i` walks one repo to decide, reject, withdraw or skip. |
+| `adj inbox [--ref REF]... [--json]`, `adj inbox --all [--ref REF]... [--json]`, `adj inbox -i [--ref REF]... [--by NAME]` | List open questions oldest first, with options and recommendation; `--ref` (S53) keeps only questions that carry every ref given, exactly as typed; `--all` groups the user repo list by root; owner-only `-i` walks one repo to decide, reject, withdraw or skip. |
 | `adj check QUERY [--json]` | Is QUERY decided? One substring, matched ignoring case against titles, keys, tags, refs and decision text. Line 1 of the output is `decided`, `open`, `closed` or `not found`. |
 | `adj context [--tag T]... [--ref REF]... [--key-prefix P] [--format md\|json] [--max-bytes N]` | Print the decided records as compact context for an agent. With `--max-bytes N`, keep the newest decisions whose output fits in N bytes (ID order, an `N decisions omitted` line, JSON `omitted`). |
 | `adj lint [--json]` | Check the store for broken records, links, cycles and conflicts; warn about history events and keys it does not know. |
@@ -290,9 +290,9 @@ depends on the other.
 **Inbox modes.**
 
 ```text
-adj inbox [--json] [--root DIR]
-adj inbox --all [--json]
-adj inbox -i [--by NAME] [--root DIR]
+adj inbox [--ref REF]... [--json] [--root DIR]
+adj inbox --all [--ref REF]... [--json]
+adj inbox -i [--ref REF]... [--by NAME] [--root DIR]
 ```
 
 `--all` groups the user repo list's open questions by root, in config order,
@@ -307,6 +307,13 @@ rationale for writes; `--by` falls back to `$ADJ_DECIDED_BY`. EOF discards an
 incomplete answer. Failed writes report errors and continue; the summary counts
 completed outcomes, and any failed write makes the exit code 1. `-i` cannot
 combine with `--all` or `--json`; `--by` requires `-i`. See README for prompts.
+
+`--ref REF` (S53) is the exact, case-sensitive ref match of `adj list`, so
+`--ref S11` does not find a question with `S110`. Every ref given must be on the
+question; a blank value exits 2 before the store is looked for. With `--all` the
+filter applies in each repo and a repo with no match keeps its header; with `-i`
+the walk and its summary cover only the matching questions. Without `--ref` the
+output is unchanged. `adj check` stays a substring search.
 
 **Importing ADRs.** `adj import-adr DIR` (S22) moves a team that keeps ADRs
 to adj with its history. DIR must be inside the repo; the files in it (not in
