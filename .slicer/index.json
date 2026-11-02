@@ -1,8 +1,8 @@
 {
-  "version": 9,
+  "version": 11,
   "id_prefix": "S",
   "id_width": 2,
-  "next_id": 54,
+  "next_id": 55,
   "preamble": "Roadmap for **adjudicate** (CLI command `adj`; formerly the working name \"dlog\"): a Go, standard-library-only CLI that records project decisions as plain files in the repo. Owner decisions from 2026-10-15 are catalog records C23-C33.",
   "passes": [],
   "items": [
@@ -23,7 +23,10 @@
           "by": "Jon Robbins",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "494d394f-f066-455f-91d9-76fdbfbd769a",
@@ -34,7 +37,10 @@
           "by": "Jon Robbins",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         }
       ],
       "claim": null,
@@ -121,7 +127,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         }
       ],
       "claim": null,
@@ -173,7 +182,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "3394e7d1-64e8-408e-b8a3-0104850f068f",
@@ -184,7 +196,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         }
       ],
       "claim": null,
@@ -233,7 +248,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "8ad57b3f-6a4d-4ced-8405-36c903556cad",
@@ -244,7 +262,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         }
       ],
       "claim": null,
@@ -293,7 +314,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "ad6b34ea-6fb7-432f-9565-f268c82c0e38",
@@ -304,7 +328,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         }
       ],
       "claim": null,
@@ -351,7 +378,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         }
       ],
       "claim": null,
@@ -395,7 +425,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         }
       ],
       "claim": null,
@@ -439,7 +472,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "2bf5405e-b17d-4a3c-8616-7347052eb040",
@@ -450,7 +486,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         }
       ],
       "claim": null,
@@ -576,7 +615,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         }
       ],
       "claim": null,
@@ -632,7 +674,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "73dd6c53-bd7a-42eb-a702-e1325ae90f64",
@@ -643,7 +688,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "d927807c-b33c-41b8-8539-27bd328814a6",
@@ -654,7 +702,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         }
       ],
       "claim": null,
@@ -706,7 +757,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "afe5953c-105b-4b0a-a509-ee909817a19d",
@@ -717,7 +771,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "66a35ad2-1e59-4a46-a173-577eb31f8d99",
@@ -728,7 +785,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "f65afac8-a622-46c1-8af9-019af273963c",
@@ -739,7 +799,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         }
       ],
       "claim": null,
@@ -797,7 +860,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "0dbbd9dd-4df6-44f4-ad93-3f7ef8856fc7",
@@ -808,7 +874,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         }
       ],
       "claim": null,
@@ -855,7 +924,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         }
       ],
       "claim": null,
@@ -895,7 +967,10 @@
           "by": "Jon Robbins",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         }
       ],
       "claim": null,
@@ -939,7 +1014,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "57c514bf-d519-4a32-a649-edac99ff0a8e",
@@ -950,7 +1028,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         }
       ],
       "claim": null,
@@ -996,7 +1077,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "c94e8a13-b884-4710-a202-871de47aec21",
@@ -1007,7 +1091,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         }
       ],
       "claim": null,
@@ -1054,7 +1141,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         }
       ],
       "claim": null,
@@ -1100,7 +1190,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "3464c683-5d43-4b33-b1c0-40312df33dde",
@@ -1111,7 +1204,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         }
       ],
       "claim": null,
@@ -1158,7 +1254,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         }
       ],
       "claim": null,
@@ -1205,7 +1304,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "dabe0b37-76d4-41e3-a0f1-5d81d10a08d9",
@@ -1216,7 +1318,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         }
       ],
       "claim": null,
@@ -1263,7 +1368,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "e474ee0a-588a-4164-b53b-9d18a3d469ca",
@@ -1274,7 +1382,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         }
       ],
       "claim": null,
@@ -1319,7 +1430,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "de69f8e1-2797-479c-a90c-e4ab58d91fb4",
@@ -1330,7 +1444,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "f4182219-5dac-4fec-99ec-8154906bbc28",
@@ -1341,7 +1458,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "34421918-97e9-4343-ad66-b6f6ad1d6fdd",
@@ -1352,7 +1472,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         }
       ],
       "claim": null,
@@ -1437,7 +1560,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "f1142564-b176-4484-b8ec-4a6a173e0136",
@@ -1448,7 +1574,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "989b0f06-d4f2-4108-b9ad-7d633b716857",
@@ -1459,7 +1588,10 @@
           "by": "Jon Robbins",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         }
       ],
       "claim": null,
@@ -1501,7 +1633,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         }
       ],
       "claim": null,
@@ -1545,7 +1680,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "958f9f72-4b25-49b2-8fe3-1b5d7e98b63c",
@@ -1556,7 +1694,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "f3764e80-0112-4c02-894d-557b3184bc56",
@@ -1567,7 +1708,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "98b7daf8-5124-49cc-aea7-937c80816b3f",
@@ -1578,7 +1722,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "e4379fc3-805b-4b9b-9c6f-128822ca46e0",
@@ -1589,7 +1736,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         }
       ],
       "claim": null,
@@ -1631,7 +1781,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "dfaa69ab-9235-494a-b492-158cad487143",
@@ -1642,7 +1795,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "25f66666-9fab-4ef7-b53a-ddbad2c59569",
@@ -1653,7 +1809,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "8639f731-0bf2-4c58-b818-1219b5fd7ced",
@@ -1664,7 +1823,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "7f671624-a315-42a5-823b-a04f890c3203",
@@ -1675,7 +1837,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "b676e982-3ffb-404c-ad62-e4adcda62840",
@@ -1686,7 +1851,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "13aa8bab-b8ca-4b82-97f3-a79a4b5148ac",
@@ -1697,7 +1865,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "7a554602-8829-4a3d-bd81-990085ffa20c",
@@ -1708,7 +1879,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "7e252afc-56c5-475d-9455-ee35bdd3ee53",
@@ -1719,7 +1893,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         }
       ],
       "claim": null,
@@ -1761,7 +1938,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "24df8940-8cfc-4654-9610-5212396ccc8c",
@@ -1772,7 +1952,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "6cdb9372-f6fe-4246-8ad5-5550d22cb707",
@@ -1783,7 +1966,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "5416a442-5738-4c8f-870e-2a12b2ff4fc2",
@@ -1794,7 +1980,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "e39fd3ee-6dde-4744-a5e7-7396e6b28caa",
@@ -1805,7 +1994,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "0c504edb-23c7-4e18-a4e2-54f5757fad75",
@@ -1816,7 +2008,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "3da57cd2-e1ea-461c-8a9e-1e299dda89e3",
@@ -1827,7 +2022,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         }
       ],
       "claim": null,
@@ -1869,7 +2067,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "be15bfdf-c0c1-4794-ad82-b4ab39f5df1d",
@@ -1880,7 +2081,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "d07c0c73-8f69-4df6-86fb-5a6cc938ac04",
@@ -1891,7 +2095,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "da8062b2-271f-4323-936d-5f53edda79cf",
@@ -1902,7 +2109,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "c447985b-5c98-47fc-91c5-72a505032ea3",
@@ -1913,7 +2123,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "95b1cab0-3701-4a2e-8e9b-04123d6a1c9d",
@@ -1924,7 +2137,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         }
       ],
       "claim": null,
@@ -1968,7 +2184,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "3c835061-83eb-4699-8796-2825987b3446",
@@ -1979,7 +2198,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "0d40c08e-1045-4519-9879-de6d40171bb0",
@@ -1990,7 +2212,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "b5f0f8e7-45e2-42f6-b56f-0c0df4f78461",
@@ -2001,7 +2226,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         }
       ],
       "claim": null,
@@ -2047,7 +2275,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "5a1a4ce8-d4fd-4eab-a4df-75c7934ee05b",
@@ -2058,7 +2289,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "95fbe1bd-597b-4fb1-abec-20a9c7afdf72",
@@ -2069,7 +2303,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         }
       ],
       "claim": null,
@@ -2113,7 +2350,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "e29caa20-7bb3-49de-b669-5a33da70f763",
@@ -2124,7 +2364,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "b707201d-b911-4780-8919-abf8665312ff",
@@ -2135,7 +2378,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "01f185f1-e13f-4745-ab71-d247c7ce5a99",
@@ -2146,7 +2392,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "cebcbbdf-b5df-4062-885a-4e60ccd87bed",
@@ -2157,7 +2406,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "d7a927ee-72a0-4a44-9793-345bcc065c02",
@@ -2168,7 +2420,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "76d6129c-b756-47b4-91af-7f9b241587ac",
@@ -2179,7 +2434,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "45675ea7-2251-457a-b3d3-25aeae776d50",
@@ -2190,7 +2448,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "2cb761bd-a870-4bb4-8110-20990136d690",
@@ -2201,7 +2462,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "b2231002-4f72-4fd7-ab10-3faa83aeaf1a",
@@ -2212,7 +2476,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "94ccfb17-b9a7-4453-aa16-88a12520d1aa",
@@ -2223,7 +2490,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "d77becef-eeee-4e04-bad3-bfe8e31d177f",
@@ -2234,7 +2504,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "e269f475-2748-406a-8a17-3ca5e62196ac",
@@ -2245,7 +2518,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "3114e46a-55f3-4dc8-831c-2e1835da728d",
@@ -2256,7 +2532,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "3f3baf0e-d1db-4fdd-8305-58fdda7c2119",
@@ -2267,7 +2546,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         }
       ],
       "claim": null,
@@ -2315,7 +2597,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "2b3fb550-e14f-4a32-86d3-c2acf72ca7c0",
@@ -2326,7 +2611,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "0fb16bfe-90b9-4804-8d02-166c24144a5c",
@@ -2337,7 +2625,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "76f33ef0-3c1b-4f27-b8f5-6ffddef8f58c",
@@ -2348,7 +2639,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "e98bf3b4-ccfa-45c3-8166-292b9be5e51c",
@@ -2359,7 +2653,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "32c2abaa-7d8d-4cfe-b27f-6bbe8deeebae",
@@ -2370,7 +2667,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "58ce211b-3d86-4f2a-bcd2-3401c5b10a80",
@@ -2381,7 +2681,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "25e91ef7-bc4d-4f6e-9868-0d670cfcf39d",
@@ -2392,7 +2695,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "fb13c6bc-a8db-43d3-920c-4911c25b1384",
@@ -2403,7 +2709,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         }
       ],
       "claim": null,
@@ -2449,7 +2758,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "036e4e92-3775-4062-b666-882cff75b2c6",
@@ -2460,7 +2772,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "3ba8f71d-61d2-4762-b4ba-086904a986c7",
@@ -2471,7 +2786,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "fa1fe322-b20d-4c4b-8d85-f88976157b40",
@@ -2482,7 +2800,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "bdf9922f-bcfa-4c3f-9eb8-a98bd7fb0638",
@@ -2493,7 +2814,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         }
       ],
       "claim": null,
@@ -2541,7 +2865,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "ef79da3d-489e-4ed7-bfd6-395beb194c05",
@@ -2552,7 +2879,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "4ffa73ac-476d-4eac-9ba7-ef78d48ab243",
@@ -2563,7 +2893,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "7780b81c-0da5-4496-83ba-7de819c5548b",
@@ -2574,7 +2907,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         }
       ],
       "claim": null,
@@ -2619,7 +2955,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         }
       ],
       "claim": null,
@@ -2670,7 +3009,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "16272624-7818-474d-92e7-5e451df25196",
@@ -2681,7 +3023,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "a54fe25b-8190-4f8a-9e24-7c49fe9e6808",
@@ -2692,7 +3037,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "e3c827cd-0b88-4d47-97e5-dc4391794511",
@@ -2703,7 +3051,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         }
       ],
       "claim": null,
@@ -2750,7 +3101,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "44ac59e2-09ed-466b-a89c-cc74e301bcff",
@@ -2761,7 +3115,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         }
       ],
       "claim": null,
@@ -2808,7 +3165,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "c5782edb-a1b7-4b63-8c42-df15689b83ea",
@@ -2819,7 +3179,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         }
       ],
       "claim": null,
@@ -2871,7 +3234,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "546cd104-5e39-487d-a6eb-84a57227e780",
@@ -2882,7 +3248,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         },
         {
           "id": "e0c3d902-4014-46b9-80b6-63e584454d5f",
@@ -2893,7 +3262,10 @@
           "by": "Jon Robbins",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         }
       ],
       "claim": null,
@@ -2938,7 +3310,10 @@
           "by": "Jon R",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         }
       ],
       "claim": null,
@@ -3135,7 +3510,10 @@
           "by": "Jon Robbins",
           "verified_by": "",
           "verified_at": "",
-          "stale_after": ""
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
         }
       ],
       "claim": null,
@@ -3241,6 +3619,34 @@
         "importance": 3,
         "urgency": 3,
         "effort": 1,
+        "attempts": 0
+      }
+    },
+    {
+      "id": "S54",
+      "title": "adj agent skill: adj ai skill --install",
+      "short_title": "adj agent skill: adj ai skill --install",
+      "status": "open",
+      "has_slice": true,
+      "depends_on": [],
+      "note_records": [],
+      "claim": null,
+      "fields": {
+        "size": "M",
+        "flags": [],
+        "trees": [],
+        "trees_literal": false,
+        "findings": "",
+        "discovered_from": "",
+        "parent": "",
+        "cites": [],
+        "key": "",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 2,
+        "urgency": 2,
+        "effort": 2,
         "attempts": 0
       }
     }
