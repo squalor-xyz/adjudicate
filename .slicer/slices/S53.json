@@ -12,15 +12,15 @@
   "sections": [
     {
       "heading": "Why",
-      "body": "A slice is ready to run only with no open design question (slicer rule u4; slicer s399 and s400, ork S116). Questions are linked to slices with `adj ask --ref S116`. `adj list` filters by status, tag and key only, and `adj check` matches a substring, so `S11` also matches `S110` and `S116`. A spec check cannot ask \"which open records reference S116\" exactly."
+      "body": "A slice is ready to run only with no open design question (slicer rule u4; slicer s399 and s400, ork S116). Questions are linked to slices with `adj ask --ref S116`. `adj list` already filters by an exact ref (S20: `internal/cli/list.go`, `internal/query/filter.go`), and `adj context` does too. `adj inbox` has no filter, and `adj check` matches a substring, so `S11` also matches `S110` and `S116`. A spec check cannot ask \"which open records reference S116\" exactly from the inbox, with the options and recommendation shown. This slice adds `--ref` to `adj inbox` only. (The first draft said `list` lacked it; it does not.)"
     },
     {
       "heading": "Files",
-      "body": "- `internal/cli/list.go`, `internal/cli/inbox.go` and their tests.\n- `internal/query/` (the filter).\n- `docs/json.md`."
+      "body": "- `internal/cli/inbox.go` (flag, usage, `--all` and `-i` handling), `internal/cli/inbox_interactive.go` if `-i` uses the filtered list, and `internal/cli/inbox_test.go`.\n- `internal/commands/inbox.go` (`Inbox`, `InboxAll`): an input carrying `Refs`, with the blank-value check shared with `ListInput.Check` (`internal/commands/list.go:37`), not a copy.\n- `internal/query/filter.go`: reuse `Filter.Refs`; no change expected.\n- `docs/json.md` (no shape change; say the filter), `README.md`, `PROJECT.md` (command table), `AGENTS.md` (Commands: inbox), `CHANGELOG.md`."
     },
     {
       "heading": "Failing tests",
-      "body": ""
+      "body": "Red first, table-driven; `t.TempDir()` under `.cache/tmp` with an explicit `cli.Env.Root`.\n- `adj inbox --ref S11` lists only open records whose refs contain `S11` exactly: records with `S110`, `S116` or `s11` do not match. Repeated `--ref` requires every ref. Order stays oldest first.\n- `--json` prints `{\"records\": [...]}` filtered the same way; an empty match prints nothing (JSON: an empty array) and exits 0.\n- A blank `--ref` exits 2 before the store is looked for, as in `adj list`. Refs are matched as typed, spaces included.\n- Proposed under C32 (the implementer records them): with `--all`, the filter applies in each repo and a repo with no match keeps its header; with `-i`, the walk visits only matching questions and the summary counts only those. With no `--ref`, today's output is byte for byte unchanged.\n- The usage text names `--ref`. Mutation-check: dropping the filter in the `--all` path fails a test."
     },
     {
       "heading": "Implement",

@@ -4,7 +4,14 @@
   "id_width": 2,
   "next_id": 55,
   "preamble": "Roadmap for **adjudicate** (CLI command `adj`; formerly the working name \"dlog\"): a Go, standard-library-only CLI that records project decisions as plain files in the repo. Owner decisions from 2026-10-15 are catalog records C23-C33.",
-  "passes": [],
+  "passes": [
+    {
+      "key": "1.0",
+      "heading": "Release 1.0",
+      "intro": "",
+      "outro": ""
+    }
+  ],
   "items": [
     {
       "id": "S44",
@@ -1525,7 +1532,7 @@
         "parent": "",
         "cites": [],
         "key": "ork.sibling-ids",
-        "pass": "",
+        "pass": "1.0",
         "group": "",
         "reason": "",
         "importance": 2,
@@ -1548,7 +1555,9 @@
         "S43",
         "S50",
         "S52",
-        "S53"
+        "S53",
+        "S51",
+        "S54"
       ],
       "note_records": [
         {
@@ -1607,7 +1616,7 @@
         "parent": "",
         "cites": [],
         "key": "",
-        "pass": "",
+        "pass": "1.0",
         "group": "",
         "reason": "",
         "importance": 2,
@@ -3364,7 +3373,7 @@
         "parent": "",
         "cites": [],
         "key": "contract.pin",
-        "pass": "",
+        "pass": "1.0",
         "group": "",
         "reason": "",
         "importance": 3,
@@ -3394,7 +3403,7 @@
         "parent": "",
         "cites": [],
         "key": "compat.record-unknown-keys",
-        "pass": "",
+        "pass": "1.0",
         "group": "",
         "reason": "",
         "importance": 3,
@@ -3557,7 +3566,7 @@
         "parent": "",
         "cites": [],
         "key": "",
-        "pass": "",
+        "pass": "1.0",
         "group": "",
         "reason": "",
         "importance": 2,
@@ -3585,7 +3594,7 @@
         "parent": "",
         "cites": [],
         "key": "",
-        "pass": "",
+        "pass": "1.0",
         "group": "",
         "reason": "",
         "importance": 3,
@@ -3613,7 +3622,7 @@
         "parent": "",
         "cites": [],
         "key": "",
-        "pass": "",
+        "pass": "1.0",
         "group": "",
         "reason": "",
         "importance": 3,
@@ -3641,7 +3650,7 @@
         "parent": "",
         "cites": [],
         "key": "",
-        "pass": "",
+        "pass": "1.0",
         "group": "",
         "reason": "",
         "importance": 2,

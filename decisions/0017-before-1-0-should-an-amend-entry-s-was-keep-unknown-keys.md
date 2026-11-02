@@ -2,14 +2,16 @@
 {
   "id": 17,
   "title": "Before 1.0: should an amend entry's was keep unknown keys?",
-  "status": "open",
+  "status": "decided",
   "key": "store.amend-was",
   "tags": [
     "store-format",
     "compat"
   ],
   "asked_by": "claude",
+  "decided_by": "jon",
   "created": "2026-10-20",
+  "decided_at": "2026-11-02",
   "context": "S44 made readers keep unknown history events and unknown entry keys, but unknown keys inside the was of a known amend event are still a decode error. If a release after 1.0 lets amend correct a new field (key, tags), its amend entries would make every 1.0 binary refuse the store. The 1.0 freeze is the last chance to change this without a major version.",
   "options": [
     {
@@ -27,6 +29,8 @@
     "label": "keep",
     "reasoning": "Same forward-compat argument the owner already accepted for S44; the cost is small and only open now."
   },
+  "decision": "keep",
+  "rationale": "Owner accepted the recorded recommendation in session 2026-11-02 (answer to the batched pre-relay questions). Same forward-compat argument accepted for S44; only cheap before the 1.0 freeze.",
   "refs": [
     "S39",
     "S44"
@@ -35,6 +39,10 @@
     {
       "date": "2026-10-20",
       "event": "ask"
+    },
+    {
+      "date": "2026-11-02",
+      "event": "decide"
     }
   ]
 }

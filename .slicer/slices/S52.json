@@ -16,15 +16,15 @@
     },
     {
       "heading": "Files",
-      "body": "- `internal/cli/decide.go` and `internal/cli/decide_test.go`.\n- `internal/model/record.go` (the decided fields beside `DecidedBy`, line 354).\n- `docs/json.md`."
+      "body": "- `internal/cli/decide.go` (flags and usage for decide, reject, withdraw) and `internal/cli/decide_test.go`.\n- `internal/commands/decide.go` (`DecideInput`, `ReasonInput`, their `Check`) and its test.\n- `internal/model/record.go` (the fields beside `DecidedBy`, around line 354; Validate) and `internal/model/transition.go` (`DecideAt`, `Reject`, `Withdraw`, `apply`).\n- `internal/render/text.go` (show) and `internal/render/json.go` if the object is built there; `internal/cli/jsonshape_test.go`.\n- `docs/json.md`, `README.md`, `PROJECT.md` (record format), `AGENTS.md` (Commands: decide), `CHANGELOG.md`.\n\nSequence: after S46, which also changes `internal/model/record.go`; a field added here is a known key, so S46's unknown-key handling does not touch it. Line numbers may have moved: the implementer re-anchors."
     },
     {
       "heading": "Failing tests",
-      "body": ""
+      "body": "Red first, table-driven; `t.TempDir()` under `.cache/tmp` with an explicit `cli.Env.Root`.\n- `adj decide ID OPT --why W --recorded-by NAME --via TEXT`, and `adj reject` and `adj withdraw` with the same two flags, store `recorded_by` and `via` on the record (omitted from the file when empty). `adj show` prints them; `show --json`, `list --json` and `inbox --json` carry them as strings beside `decided_by`.\n- Either flag alone works. Values are kept as typed. A flag that is given but blank exits 2 before any store access.\n- With neither flag, the written file, the text output and the JSON are byte for byte what they are today (a golden record round trip).\n- `adj amend`, `adj supersede`, `adj renumber` and the `-i` walk leave both fields unchanged; renumber's stale-copy test (C163, C181) is unaffected.\n- `internal/cli/jsonshape_test.go` pins the two new keys; `docs/json.md` lists them as optional keys of a record.\n- The three usage texts name both flags; `adj ai` output and its 1800-byte test are unchanged (agents never run decide, C137).\n- Mutation-check: dropping either field from the write path fails a test."
     },
     {
       "heading": "Implement",
-      "body": "Proposed, for the owner: `adj decide ... --recorded-by NAME --via TEXT` (for example `--via \"interactive question, session ID\"`), stored with the decision and shown by `show` and `list --json`. Both optional; leaving them out keeps today's records unchanged (C27: decided_by never required)."
+      "body": "Proposed, for the owner: `adj decide ... --recorded-by NAME --via TEXT` (for example `--via \"interactive question, session ID\"`), stored with the decision and shown by `show` and `list --json`. Both optional; leaving them out keeps today's records unchanged (C27: decided_by never required).\n\nOwner decisions (2026-11-02): the flags are `--recorded-by NAME` and `--via TEXT` on all three of `adj decide`, `adj reject` and `adj withdraw`, both optional. Absent flags leave records and output unchanged (C27)."
     },
     {
       "heading": "Check",

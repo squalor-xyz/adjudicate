@@ -906,21 +906,28 @@ PENDING OWNER CONFIRMATION - not decided. Source: Dependency/licensing notes (ma
 
 54 items · — 8 · done 41 · later 3 · retired 2
 
+Release 1.0
+
 | # | Slice | Title | Size | Effort | Trees | Findings | Status |
 |---|---|---|---|---|---|---|---|
 | 1 | [S43](slices/S43.md) | Sibling-aware record IDs | M | 3 | store | ork integration review 2026-10-19 (squalor-xyz/ork docs/review-2026-10-19-integration.md), R6: two ork branches both allocated records 50 and 51 on 2026-10-19 and needed adj renumber; the store lock cannot see other branches (internal/store/store.go:282-286); slicer already allocates past sibling worktrees. | — |
 | 2 | [S39](slices/S39.md) | Release 1.0 | S | 1 | release | CHANGELOG.md and docs/json.md 1.0 rule; owner 2026-10-18: 0.2.0 first, 1.0 later | — |
-| 3 | S40 | Hardening edge cases | M | 2 | cli | S18, S22, S36 and S38 review later notes (2026-10-18), deferred from S37 · Split 2026-10-20: import-adr edge cases -> S47; userconfig Save symlink/fsync -> S48; lock release at process death test -> S49; cosmetic nits (decodeError Go type names, case-folded duplicate key lint fixture, lock_windows.go:64 comment, over-width lines) -> S39. | retired |
-| 4 | [S21](slices/S21.md) | Later: optional owner-only decide enforcement | M | 2 | later | PROJECT.md Feature tiers (Later); Open decisions 5; Non-goals · Owner 2026-10-18: owner-only decide stays a convention (C11, C27); no enforcement planned | retired |
-| 5 | [S45](slices/S45.md) | JSON contract version and pin | M | 2 | cli | owner session 2026-10-20 (in slicer): slicer, ork and adjudicate lock to agreed contract versions; per-contract pins, each tool keeps its own pin, ork sets and checks them. Companion items: slicer s387 (relay contract pin), ork S24 (ork sets and checks the pins). | — |
-| 6 | [S46](slices/S46.md) | Forward-compatible record reads | S | 1 | model | adj records 17 (store.amend-was) and 18 (store.record-unknown-keys), filed 2026-10-20 from the S39 notes and the S44 review | — |
-| 7 | [S47](slices/S47.md) | import-adr hardening | M | 2 | commands | S22 review and S37 deferral (2026-10-18), formerly in S40 | later |
-| 8 | [S48](slices/S48.md) | userconfig Save safety | S | 1 | userconfig | S38 review lows (2026-10-18), formerly in S40 | later |
-| 9 | [S49](slices/S49.md) | Lock release at process death test | S | 1 | store | S36 and S37 reviews (2026-10-18), formerly in S40 | later |
-| 10 | [S51](slices/S51.md) | Partial supersede | M | 2 |  | ork adj 168 ui.structured-questions, 2026-10-25 | — |
-| 11 | [S52](slices/S52.md) | Decision provenance: recorded by, via | S | 1 |  |  | — |
-| 12 | [S53](slices/S53.md) | list and inbox --ref | S | 1 |  |  | — |
-| 13 | [S54](slices/S54.md) | adj agent skill: adj ai skill --install | M | 2 |  |  | — |
+| 3 | [S45](slices/S45.md) | JSON contract version and pin | M | 2 | cli | owner session 2026-10-20 (in slicer): slicer, ork and adjudicate lock to agreed contract versions; per-contract pins, each tool keeps its own pin, ork sets and checks them. Companion items: slicer s387 (relay contract pin), ork S24 (ork sets and checks the pins). | — |
+| 4 | [S46](slices/S46.md) | Forward-compatible record reads | S | 1 | model | adj records 17 (store.amend-was) and 18 (store.record-unknown-keys), filed 2026-10-20 from the S39 notes and the S44 review | — |
+| 5 | [S51](slices/S51.md) | Partial supersede | M | 2 |  | ork adj 168 ui.structured-questions, 2026-10-25 | — |
+| 6 | [S52](slices/S52.md) | Decision provenance: recorded by, via | S | 1 |  |  | — |
+| 7 | [S53](slices/S53.md) | list and inbox --ref | S | 1 |  |  | — |
+| 8 | [S54](slices/S54.md) | adj agent skill: adj ai skill --install | M | 2 |  |  | — |
+
+---
+
+| # | Slice | Title | Size | Effort | Trees | Findings | Status |
+|---|---|---|---|---|---|---|---|
+| 9 | S40 | Hardening edge cases | M | 2 | cli | S18, S22, S36 and S38 review later notes (2026-10-18), deferred from S37 · Split 2026-10-20: import-adr edge cases -> S47; userconfig Save symlink/fsync -> S48; lock release at process death test -> S49; cosmetic nits (decodeError Go type names, case-folded duplicate key lint fixture, lock_windows.go:64 comment, over-width lines) -> S39. | retired |
+| 10 | [S21](slices/S21.md) | Later: optional owner-only decide enforcement | M | 2 | later | PROJECT.md Feature tiers (Later); Open decisions 5; Non-goals · Owner 2026-10-18: owner-only decide stays a convention (C11, C27); no enforcement planned | retired |
+| 11 | [S47](slices/S47.md) | import-adr hardening | M | 2 | commands | S22 review and S37 deferral (2026-10-18), formerly in S40 | later |
+| 12 | [S48](slices/S48.md) | userconfig Save safety | S | 1 | userconfig | S38 review lows (2026-10-18), formerly in S40 | later |
+| 13 | [S49](slices/S49.md) | Lock release at process death test | S | 1 | store | S36 and S37 reviews (2026-10-18), formerly in S40 | later |
 
 ---
 

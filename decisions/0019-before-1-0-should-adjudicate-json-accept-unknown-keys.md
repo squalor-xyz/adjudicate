@@ -2,14 +2,16 @@
 {
   "id": 19,
   "title": "Before 1.0: should .adjudicate.json accept unknown keys?",
-  "status": "open",
+  "status": "decided",
   "key": "store.config-unknown-keys",
   "tags": [
     "config",
     "compat"
   ],
   "asked_by": "claude",
+  "decided_by": "jon",
   "created": "2026-10-20",
+  "decided_at": "2026-11-02",
   "context": "The repo config refuses unknown keys (internal/store/config.go, DisallowUnknownFields). S45 adds a contract key and now lands before 1.0, so 1.0 binaries will know it. The question is keys added after 1.0: under strict, an older binary refuses the repo; under tolerant, it ignores a setting it does not understand.",
   "options": [
     {
@@ -27,6 +29,8 @@
     "label": "strict",
     "reasoning": "Config keys change behaviour, unlike record fields; refusing is safer, and S45's pin gives the refusal a clear message."
   },
+  "decision": "strict",
+  "rationale": "Owner accepted the recorded recommendation in session 2026-11-02 (answer to the batched pre-relay questions). Config keys change behaviour; refusing is safer, and S45's pin gives the refusal a clear message.",
   "refs": [
     "S39",
     "S45"
@@ -35,6 +39,10 @@
     {
       "date": "2026-10-20",
       "event": "ask"
+    },
+    {
+      "date": "2026-11-02",
+      "event": "decide"
     }
   ]
 }
