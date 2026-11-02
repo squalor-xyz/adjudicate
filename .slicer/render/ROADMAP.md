@@ -1072,7 +1072,7 @@ PENDING OWNER CONFIRMATION - not decided. Source: Dependency/licensing notes (ma
 
 *Retired: Owner decided 2026-10-15: see decision C31 (GPL-3.0-or-later)..*
 
-54 items · done 49 · later 3 · retired 2
+55 items · — 1 · done 49 · later 3 · retired 2
 
 Release 1.0
 
@@ -1086,59 +1086,60 @@ Release 1.0
 | 6 | [S52](slices/S52.md) | Decision provenance: recorded by, via | S | 1 |  |  | done |
 | 7 | [S53](slices/S53.md) | inbox --ref | S | 1 |  |  | done |
 | 8 | [S54](slices/S54.md) | adj agent skill: adj ai skill --install | M | 2 |  |  | done |
+| 9 | [S55](slices/S55.md) | Windows CI failures | S | 1 | store | CI run 41529368698 on d660447 (2026-11-02): test-windows fails TestAISkillInstallRefusesADestinationThatIsNotAFile (S54) and TestJSONFailuresPrintTheErrorObject/store_directory_that_is_a_file (S42, red since 2026-10-26); Linux and macOS pass. release.yml runs the same checks on a tag, so v1.0.0 cannot be tagged until Windows is green. | — |
 
 ---
 
 | # | Slice | Title | Size | Effort | Trees | Findings | Status |
 |---|---|---|---|---|---|---|---|
-| 9 | S40 | Hardening edge cases | M | 2 | cli | S18, S22, S36 and S38 review later notes (2026-10-18), deferred from S37 · Split 2026-10-20: import-adr edge cases -> S47; userconfig Save symlink/fsync -> S48; lock release at process death test -> S49; cosmetic nits (decodeError Go type names, case-folded duplicate key lint fixture, lock_windows.go:64 comment, over-width lines) -> S39. | retired |
-| 10 | [S21](slices/S21.md) | Later: optional owner-only decide enforcement | M | 2 | later | PROJECT.md Feature tiers (Later); Open decisions 5; Non-goals · Owner 2026-10-18: owner-only decide stays a convention (C11, C27); no enforcement planned | retired |
-| 11 | [S47](slices/S47.md) | import-adr hardening | M | 2 | commands | S22 review and S37 deferral (2026-10-18), formerly in S40 | later |
-| 12 | [S48](slices/S48.md) | userconfig Save safety | S | 1 | userconfig | S38 review lows (2026-10-18), formerly in S40 | later |
-| 13 | [S49](slices/S49.md) | Lock release at process death test | S | 1 | store | S36 and S37 reviews (2026-10-18), formerly in S40 | later |
+| 10 | S40 | Hardening edge cases | M | 2 | cli | S18, S22, S36 and S38 review later notes (2026-10-18), deferred from S37 · Split 2026-10-20: import-adr edge cases -> S47; userconfig Save symlink/fsync -> S48; lock release at process death test -> S49; cosmetic nits (decodeError Go type names, case-folded duplicate key lint fixture, lock_windows.go:64 comment, over-width lines) -> S39. | retired |
+| 11 | [S21](slices/S21.md) | Later: optional owner-only decide enforcement | M | 2 | later | PROJECT.md Feature tiers (Later); Open decisions 5; Non-goals · Owner 2026-10-18: owner-only decide stays a convention (C11, C27); no enforcement planned | retired |
+| 12 | [S47](slices/S47.md) | import-adr hardening | M | 2 | commands | S22 review and S37 deferral (2026-10-18), formerly in S40 | later |
+| 13 | [S48](slices/S48.md) | userconfig Save safety | S | 1 | userconfig | S38 review lows (2026-10-18), formerly in S40 | later |
+| 14 | [S49](slices/S49.md) | Lock release at process death test | S | 1 | store | S36 and S37 reviews (2026-10-18), formerly in S40 | later |
 
 ---
 
 | # | Slice | Title | Size | Effort | Trees | Findings | Status |
 |---|---|---|---|---|---|---|---|
-| 14 | [S44](slices/S44.md) | Tolerate unknown history events | S | 1 | model, lint | Split from S39 owner note (from S22, 2026-10-18): must land before the 1.0 JSON freeze. · discovered from S39 | done |
-| 15 | [S01](slices/S01.md) | Confirm open decisions | S | 1 | decisions | PROJECT.md Open decisions 1-7; Core concepts (kind); Dependency/licensing notes | done |
-| 16 | [S02](slices/S02.md) | Project scaffolding | S | 1 | scaffold | PROJECT.md Stack recommendation; Dependency/licensing notes | done |
-| 17 | [S03](slices/S03.md) | Record model and lifecycle transitions | M | 2 | model | PROJECT.md Core concepts / data model; Milestone 1 | done |
-| 18 | [S04](slices/S04.md) | Record file read and write | S | 1 | model | PROJECT.md Open decisions 3; Core concepts (Record) | done |
-| 19 | [S05](slices/S05.md) | Store, config and ID allocation | M | 2 | store | PROJECT.md Architecture sketch (ID allocation, Determinism); Open decisions 4, 6, 7 | done |
-| 20 | [S25](slices/S25.md) | Fix stale-copy false positive that flags a live record | M | 2 | store, lint, cli | S15 gate note (2) on S16; reproduced in the S16 run; S23 review notes (3), (6) on S16 | done |
-| 21 | [S26](slices/S26.md) | Accept --root before the subcommand | S | 1 | cli | S17 dogfood friction (7), note on S20; C165 | done |
-| 22 | [S27](slices/S27.md) | Set refs with ask --ref | S | 1 | cli, commands | S17 dogfood friction (1), note on S20; C165 | done |
-| 23 | [S28](slices/S28.md) | Free-text recommendation with ask --recommend-text | M | 2 | model, cli, commands, render, lint | S17 dogfood friction (4), note on S20; C167 | done |
-| 24 | [S29](slices/S29.md) | Backdate a decision with decide --decided-at | S | 1 | cli, commands, model | S17 dogfood friction (5), note on S20; C168 | done |
-| 25 | [S30](slices/S30.md) | Correct a record's text with adj amend | M | 2 | model, cli, commands, store, lint | S17 dogfood friction (6), note on S20; C166 | done |
-| 26 | [S31](slices/S31.md) | Report the version with adj version | S | 1 | cli | release prep; C169 | done |
-| 27 | [S32](slices/S32.md) | Release docs: PROJECT.md, CHANGELOG and JSON stability | S | 1 | docs | release prep; C165 | done |
-| 28 | [S33](slices/S33.md) | Release 0.1.0 | S | 1 | release | C165 | done |
-| 29 | S41 | Windows CI fixes | S | 1 |  | discovered from S36 | done |
-| 30 | [S42](slices/S42.md) | JSON error object on --json failures | M | 2 | cli | ork integration review 2026-10-19 (squalor-xyz/ork docs/review-2026-10-19-integration.md), R6: adj prints only text on stderr when a --json command fails (measured: adj show 999 --json), so ork cannot keep the error code. | done |
-| 31 | [S06](slices/S06.md) | Commands: init and ask | M | 2 | cli | PROJECT.md v1 feature tier; Milestone 2 | done |
-| 32 | [S07](slices/S07.md) | Commands: decide, reject, withdraw | S | 1 | cli | PROJECT.md v1 feature tier; Lifecycle; Milestone 2 | done |
-| 33 | [S08](slices/S08.md) | Commands: show and list with --json | S | 1 | cli | PROJECT.md v1 feature tier; Milestone 2; acceptance (--json) | done |
-| 34 | [S09](slices/S09.md) | Command: inbox | S | 1 | cli | PROJECT.md Goals 2; v1 feature tier; Milestone 3 | done |
-| 35 | [S10](slices/S10.md) | Command: check | S | 1 | cli | PROJECT.md Goals 6; v1 feature tier; Milestone 3 | done |
-| 36 | [S11](slices/S11.md) | Command: context | M | 2 | cli | PROJECT.md Goals 5; v1 feature tier; Risks (context bloat); Milestone 3 | done |
-| 37 | [S13](slices/S13.md) | Command: supersede | S | 1 | cli | PROJECT.md Goals 4; Lifecycle; acceptance (supersede); Milestone 4 | done |
-| 38 | [S14](slices/S14.md) | Command: lint | M | 2 | cli | PROJECT.md Goals 8; acceptance (lint fixtures); Open decisions 5; Milestone 4 | done |
-| 39 | [S34](slices/S34.md) | Dogfood conventions | S | 1 | decisions | S20 notes 2026-10-16/17, items 2 (tag case) and 3 (keys) | done |
-| 40 | [S20](slices/S20.md) | Slicer integration | M | 2 | cli | PROJECT.md Feature tiers (Later); Non-goals (not replacing slicer); Risks (overlap with slicer catalog) | done |
-| 41 | [S35](slices/S35.md) | adj context size budget | S | 1 | cli | PROJECT.md Non-goals (not in 0.1.0: size budget flag); Risks: context bloat | done |
-| 42 | [S36](slices/S36.md) | Windows support | M | 2 | store | AGENTS.md Store and config (lock_other.go: no lock, bounded retry only); release.yml builds no windows archive | done |
-| 43 | [S38](slices/S38.md) | adj repos | M | 2 | cli | Owner decision 2026-10-18 (S18 config): user config file managed by adj repos add/remove/list | done |
-| 44 | [S18](slices/S18.md) | Cross-repo inbox | M | 2 | cli | PROJECT.md Feature tiers (Later); Open decisions 6 | done |
-| 45 | [S19](slices/S19.md) | adj inbox -i | M | 2 | cli | PROJECT.md Feature tiers (Later) | done |
-| 46 | [S22](slices/S22.md) | Import from ADR folders | L | 2 | cli | PROJECT.md Feature tiers (Later) | done |
-| 47 | [S37](slices/S37.md) | Release 0.2.0 | S | 1 | release | CHANGELOG.md and docs/json.md 1.0 rule | done |
-| 48 | [S12](slices/S12.md) | Agent snippet: adj ai and JSON shape docs | S | 1 | docs | PROJECT.md v1 feature tier; Risks (adoption); acceptance (--json documented) | done |
-| 49 | [S15](slices/S15.md) | ID collision detection and renumber | M | 2 | store | PROJECT.md Open decisions 4; Risks (merge conflicts on IDs); Milestone 4 | done |
-| 50 | [S24](slices/S24.md) | Check text shows the rationale under closed records | S | 1 | render | Owner decision 2026-10-15 (S10 gate: closed records show only ID, status, title in text) | done |
-| 51 | [S16](slices/S16.md) | Docs and v1 acceptance round trip | S | 1 | docs | PROJECT.md v1 acceptance criteria; Milestone 5 | done |
-| 52 | [S17](slices/S17.md) | Dogfood: record adjudicate's own decisions with adj | S | 1 | docs | PROJECT.md Milestone 5; acceptance (own decisions recorded) | done |
-| 53 | [S23](slices/S23.md) | Lock ID allocation with flock | M | 2 | store | Owner decision 2026-10-15 (S05 review MEDIUM-2; C62, C64) | done |
-| 54 | [S50](slices/S50.md) | --json=VALUE is JSON mode unless false | S | 1 | cli | S42 relay report; owner 2026-10-22 accepted the recommendation to overrule C216 for this case | done |
+| 15 | [S44](slices/S44.md) | Tolerate unknown history events | S | 1 | model, lint | Split from S39 owner note (from S22, 2026-10-18): must land before the 1.0 JSON freeze. · discovered from S39 | done |
+| 16 | [S01](slices/S01.md) | Confirm open decisions | S | 1 | decisions | PROJECT.md Open decisions 1-7; Core concepts (kind); Dependency/licensing notes | done |
+| 17 | [S02](slices/S02.md) | Project scaffolding | S | 1 | scaffold | PROJECT.md Stack recommendation; Dependency/licensing notes | done |
+| 18 | [S03](slices/S03.md) | Record model and lifecycle transitions | M | 2 | model | PROJECT.md Core concepts / data model; Milestone 1 | done |
+| 19 | [S04](slices/S04.md) | Record file read and write | S | 1 | model | PROJECT.md Open decisions 3; Core concepts (Record) | done |
+| 20 | [S05](slices/S05.md) | Store, config and ID allocation | M | 2 | store | PROJECT.md Architecture sketch (ID allocation, Determinism); Open decisions 4, 6, 7 | done |
+| 21 | [S25](slices/S25.md) | Fix stale-copy false positive that flags a live record | M | 2 | store, lint, cli | S15 gate note (2) on S16; reproduced in the S16 run; S23 review notes (3), (6) on S16 | done |
+| 22 | [S26](slices/S26.md) | Accept --root before the subcommand | S | 1 | cli | S17 dogfood friction (7), note on S20; C165 | done |
+| 23 | [S27](slices/S27.md) | Set refs with ask --ref | S | 1 | cli, commands | S17 dogfood friction (1), note on S20; C165 | done |
+| 24 | [S28](slices/S28.md) | Free-text recommendation with ask --recommend-text | M | 2 | model, cli, commands, render, lint | S17 dogfood friction (4), note on S20; C167 | done |
+| 25 | [S29](slices/S29.md) | Backdate a decision with decide --decided-at | S | 1 | cli, commands, model | S17 dogfood friction (5), note on S20; C168 | done |
+| 26 | [S30](slices/S30.md) | Correct a record's text with adj amend | M | 2 | model, cli, commands, store, lint | S17 dogfood friction (6), note on S20; C166 | done |
+| 27 | [S31](slices/S31.md) | Report the version with adj version | S | 1 | cli | release prep; C169 | done |
+| 28 | [S32](slices/S32.md) | Release docs: PROJECT.md, CHANGELOG and JSON stability | S | 1 | docs | release prep; C165 | done |
+| 29 | [S33](slices/S33.md) | Release 0.1.0 | S | 1 | release | C165 | done |
+| 30 | S41 | Windows CI fixes | S | 1 |  | discovered from S36 | done |
+| 31 | [S42](slices/S42.md) | JSON error object on --json failures | M | 2 | cli | ork integration review 2026-10-19 (squalor-xyz/ork docs/review-2026-10-19-integration.md), R6: adj prints only text on stderr when a --json command fails (measured: adj show 999 --json), so ork cannot keep the error code. | done |
+| 32 | [S06](slices/S06.md) | Commands: init and ask | M | 2 | cli | PROJECT.md v1 feature tier; Milestone 2 | done |
+| 33 | [S07](slices/S07.md) | Commands: decide, reject, withdraw | S | 1 | cli | PROJECT.md v1 feature tier; Lifecycle; Milestone 2 | done |
+| 34 | [S08](slices/S08.md) | Commands: show and list with --json | S | 1 | cli | PROJECT.md v1 feature tier; Milestone 2; acceptance (--json) | done |
+| 35 | [S09](slices/S09.md) | Command: inbox | S | 1 | cli | PROJECT.md Goals 2; v1 feature tier; Milestone 3 | done |
+| 36 | [S10](slices/S10.md) | Command: check | S | 1 | cli | PROJECT.md Goals 6; v1 feature tier; Milestone 3 | done |
+| 37 | [S11](slices/S11.md) | Command: context | M | 2 | cli | PROJECT.md Goals 5; v1 feature tier; Risks (context bloat); Milestone 3 | done |
+| 38 | [S13](slices/S13.md) | Command: supersede | S | 1 | cli | PROJECT.md Goals 4; Lifecycle; acceptance (supersede); Milestone 4 | done |
+| 39 | [S14](slices/S14.md) | Command: lint | M | 2 | cli | PROJECT.md Goals 8; acceptance (lint fixtures); Open decisions 5; Milestone 4 | done |
+| 40 | [S34](slices/S34.md) | Dogfood conventions | S | 1 | decisions | S20 notes 2026-10-16/17, items 2 (tag case) and 3 (keys) | done |
+| 41 | [S20](slices/S20.md) | Slicer integration | M | 2 | cli | PROJECT.md Feature tiers (Later); Non-goals (not replacing slicer); Risks (overlap with slicer catalog) | done |
+| 42 | [S35](slices/S35.md) | adj context size budget | S | 1 | cli | PROJECT.md Non-goals (not in 0.1.0: size budget flag); Risks: context bloat | done |
+| 43 | [S36](slices/S36.md) | Windows support | M | 2 | store | AGENTS.md Store and config (lock_other.go: no lock, bounded retry only); release.yml builds no windows archive | done |
+| 44 | [S38](slices/S38.md) | adj repos | M | 2 | cli | Owner decision 2026-10-18 (S18 config): user config file managed by adj repos add/remove/list | done |
+| 45 | [S18](slices/S18.md) | Cross-repo inbox | M | 2 | cli | PROJECT.md Feature tiers (Later); Open decisions 6 | done |
+| 46 | [S19](slices/S19.md) | adj inbox -i | M | 2 | cli | PROJECT.md Feature tiers (Later) | done |
+| 47 | [S22](slices/S22.md) | Import from ADR folders | L | 2 | cli | PROJECT.md Feature tiers (Later) | done |
+| 48 | [S37](slices/S37.md) | Release 0.2.0 | S | 1 | release | CHANGELOG.md and docs/json.md 1.0 rule | done |
+| 49 | [S12](slices/S12.md) | Agent snippet: adj ai and JSON shape docs | S | 1 | docs | PROJECT.md v1 feature tier; Risks (adoption); acceptance (--json documented) | done |
+| 50 | [S15](slices/S15.md) | ID collision detection and renumber | M | 2 | store | PROJECT.md Open decisions 4; Risks (merge conflicts on IDs); Milestone 4 | done |
+| 51 | [S24](slices/S24.md) | Check text shows the rationale under closed records | S | 1 | render | Owner decision 2026-10-15 (S10 gate: closed records show only ID, status, title in text) | done |
+| 52 | [S16](slices/S16.md) | Docs and v1 acceptance round trip | S | 1 | docs | PROJECT.md v1 acceptance criteria; Milestone 5 | done |
+| 53 | [S17](slices/S17.md) | Dogfood: record adjudicate's own decisions with adj | S | 1 | docs | PROJECT.md Milestone 5; acceptance (own decisions recorded) | done |
+| 54 | [S23](slices/S23.md) | Lock ID allocation with flock | M | 2 | store | Owner decision 2026-10-15 (S05 review MEDIUM-2; C62, C64) | done |
+| 55 | [S50](slices/S50.md) | --json=VALUE is JSON mode unless false | S | 1 | cli | S42 relay report; owner 2026-10-22 accepted the recommendation to overrule C216 for this case | done |

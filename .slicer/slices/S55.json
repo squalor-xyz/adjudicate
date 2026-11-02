@@ -1,0 +1,39 @@
+{
+  "id": "S55",
+  "title": "Windows CI: fix two failing tests before the v1.0.0 tag",
+  "lead": [],
+  "depends_note": null,
+  "findings_note": "CI run 41529368698 on d660447 (2026-11-02): test-windows fails TestAISkillInstallRefusesADestinationThatIsNotAFile (S54) and TestJSONFailuresPrintTheErrorObject/store_directory_that_is_a_file (S42, red since 2026-10-26); Linux and macOS pass. release.yml runs the same checks on a tag, so v1.0.0 cannot be tagged until Windows is green.",
+  "size": "S",
+  "flags": [],
+  "trees_note": "store",
+  "trees_plural": false,
+  "boundary": "**Not in this slice:** tagging or pushing (owner-only, the orchestrator does it after CI is green); new behaviour beyond the not-a-directory error; the later items on other slices; JSON shapes, snippet or skill changes.",
+  "sections": [
+    {
+      "heading": "Why",
+      "body": "CI on main d660447 is red on Windows only (run 41529368698; the same S42 test was already red on 2026-10-26, runs 40347079355 and 40327794425). `release.yml` runs the same checks on a `v*` tag, so a tag now would fail before any archive is built. The owner asked (2026-11-02) to clear both failures with one slice, then push, confirm CI green, and tag `v1.0.0` (C193).\n\n1. S54, `internal/cli/ai_skill_test.go` `TestAISkillInstallRefusesADestinationThatIsNotAFile` (~:381): the test checks stderr for the forward-slash text `.grok/skills/adj/SKILL.md`; on Windows adj prints backslashes (`...\\.grok\\skills\\adj\\SKILL.md is not a regular file`). The behaviour is right; the test compares the wrong spelling. Fix the test with `filepath.FromSlash`/`filepath.Join`. Look for the same slash-spelling pattern in the other S54 and S52-S53 tests while you are there.\n2. S42, `internal/cli/jsonerror_test.go` case \"store directory that is a file\" (`list --json` expects exit 1, code `io`): on Windows adj exits 0. `internal/store/store.go:153-154` treats `fs.ErrNotExist` from `os.ReadDir` as an empty store, and Windows reports `ReadDir` on a file as a not-exist error (path not found), where Linux and macOS report not-a-directory. Owner decision 2026-11-02 (recommended option taken): adj reports an error here on every system, as it does on Linux and macOS."
+    },
+    {
+      "heading": "Files",
+      "body": "- `internal/cli/ai_skill_test.go` (the path comparison).\n- `internal/store/store.go` (`List`, ~:148-170) and any other place that reads the store directory and treats not-exist as empty (grep `ErrNotExist` and `IsNotExist` in `internal/store`, `internal/commands`, `internal/lint`, `internal/cli`); `internal/store/store_test.go` or the nearest store test file.\n- `internal/cli/jsonerror_test.go` only if its expectation needs a Windows-aware message check; the case itself should pass unchanged."
+    },
+    {
+      "heading": "Failing tests",
+      "body": "Red first where it can be reproduced on this machine (the failures are Windows-only; there is no Windows runner here).\n- Store: a test that a store path which exists but is not a directory makes `List` (and `Get`, `Create` where they read the directory) return an error, not an empty store, whatever error `os.ReadDir` gave. To make it fail on Linux, inject the directory read (a small function field on `Store`, as S43 did for git, or read through a seam) that returns `fs.ErrNotExist` for a path that `os.Stat` says is a regular file, and assert an error naming the path. A missing store directory must still be an empty store (existing test).\n- CLI: the existing S42 case must pass on Linux and macOS unchanged and now pass on Windows (CI is the proof; say so in the report).\n- S54: after the test fix, the test passes on Linux; use `GOOS=windows go vet ./...` to check it compiles. Mutation-check: with the Stat check removed the injected-read test fails."
+    },
+    {
+      "heading": "Implement",
+      "body": "1. Record the C32 choices with `slicer catalog add --kind decision` (how not-a-directory is detected; where the check sits).\n2. Red test, then the store fix; then the S54 test fix.\n3. Check other slash-spelled path assertions in `internal/cli/*_test.go` that the Windows job would hit (grep for string literals with `/` compared to stderr or stdout); fix any that you are sure of, report the rest.\n4. Do not change JSON shapes, the snippet, the skill, or CHANGELOG semantics. Add one line under 1.0.0 in CHANGELOG if the behaviour change is user-visible (a store directory that is a file now fails on Windows as elsewhere); keep prose within 80 columns."
+    },
+    {
+      "heading": "Check",
+      "body": "`. scripts/env.sh; go test ./...; go vet ./...; GOOS=windows go vet ./...; gofmt -l cmd internal` prints nothing; fresh build; `adj lint --root .`; `slicer check --json`. The Windows proof is CI after the push: the orchestrator pushes, reads the run, and only then tags (owner-only steps are not the implementer's)."
+    },
+    {
+      "heading": "Git",
+      "body": "Worktree `.worktrees/s55` on its own branch. Commit on that branch after `VERDICT: PASS`; no push, no tag, no AI attribution."
+    }
+  ],
+  "notes": []
+}

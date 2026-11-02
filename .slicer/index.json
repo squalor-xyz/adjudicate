@@ -2,7 +2,7 @@
   "version": 11,
   "id_prefix": "S",
   "id_width": 2,
-  "next_id": 55,
+  "next_id": 56,
   "preamble": "Roadmap for **adjudicate** (CLI command `adj`; formerly the working name \"dlog\"): a Go, standard-library-only CLI that records project decisions as plain files in the repo. Owner decisions from 2026-10-15 are catalog records C23-C33.",
   "passes": [
     {
@@ -3944,6 +3944,36 @@
         "urgency": 2,
         "effort": 2,
         "attempts": 1
+      }
+    },
+    {
+      "id": "S55",
+      "title": "Windows CI: fix two failing tests before the v1.0.0 tag",
+      "short_title": "Windows CI failures",
+      "status": "open",
+      "has_slice": true,
+      "depends_on": [],
+      "note_records": [],
+      "claim": null,
+      "fields": {
+        "size": "S",
+        "flags": [],
+        "trees": [
+          "store"
+        ],
+        "trees_literal": false,
+        "findings": "CI run 41529368698 on d660447 (2026-11-02): test-windows fails TestAISkillInstallRefusesADestinationThatIsNotAFile (S54) and TestJSONFailuresPrintTheErrorObject/store_directory_that_is_a_file (S42, red since 2026-10-26); Linux and macOS pass. release.yml runs the same checks on a tag, so v1.0.0 cannot be tagged until Windows is green.",
+        "discovered_from": "",
+        "parent": "",
+        "cites": [],
+        "key": "",
+        "pass": "1.0",
+        "group": "",
+        "reason": "",
+        "importance": 3,
+        "urgency": 3,
+        "effort": 1,
+        "attempts": 0
       }
     }
   ],
