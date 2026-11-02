@@ -3950,10 +3950,39 @@
       "id": "S55",
       "title": "Windows CI: fix two failing tests before the v1.0.0 tag",
       "short_title": "Windows CI failures",
-      "status": "open",
+      "status": "done",
       "has_slice": true,
       "depends_on": [],
-      "note_records": [],
+      "note_records": [
+        {
+          "id": "f912de0a-572d-4628-bae0-d557a3ef0978",
+          "kind": "later",
+          "text": "**2026-11-02** — Windows: a store path whose parent component is a file (store a/b, a a file): unix ReadDir gives ENOTDIR (an error), but on Windows ReadDir and Stat both give path-not-found, so scan returns an empty store. Rare, and it was empty on Windows before S55 too.",
+          "created_at": "2026-11-02T21:54:13Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
+        },
+        {
+          "id": "02849f25-10a4-4586-98d5-70953440d821",
+          "kind": "later",
+          "text": "**2026-11-02** — Confirm S43's real-git tests actually run on Windows: the CI log is non-verbose go test, so a pass cannot be told from a skip. Add one go test -v -run RealGit ./internal/store step, or read the output once.",
+          "created_at": "2026-11-02T21:54:13Z",
+          "attempt": 1,
+          "by": "Jon R",
+          "verified_by": "",
+          "verified_at": "",
+          "stale_after": "",
+          "retracted_by": "",
+          "retracted_at": "",
+          "retracted_reason": ""
+        }
+      ],
       "claim": null,
       "fields": {
         "size": "S",
@@ -3973,7 +4002,7 @@
         "importance": 3,
         "urgency": 3,
         "effort": 1,
-        "attempts": 0
+        "attempts": 1
       }
     }
   ],
@@ -3981,7 +4010,7 @@
   "goals": "adjudicate is a small CLI (`adj`) with a plain-text store that records project decisions as a loop: an agent asks, the owner decides in batches, and every later agent reads the decision. The goal and non-goal records below come from PROJECT.md; the owner's decisions on its open questions are catalog records C23-C33, and they override PROJECT.md where it differs (name, runtime, record format, license).",
   "non_goals": "",
   "catalog": {
-    "next_id": 260,
+    "next_id": 261,
     "id_prefix": "C",
     "id_width": 2,
     "records": [
@@ -6312,6 +6341,15 @@
         "kind": "decision",
         "title": "S39: docs/json.md says a user config error of inbox --all prints the error object",
         "body": "The page said exit 1 with no JSON output, which S42 made false: the object with code user_config is printed (checked by running it). Corrected before the freeze; no code change. C32.",
+        "status": "active",
+        "reason": "",
+        "successor": ""
+      },
+      {
+        "id": "C260",
+        "kind": "decision",
+        "title": "S55: a store path that exists but is not a directory is an error in store.scan",
+        "body": "Detection: when os.ReadDir fails with fs.ErrNotExist, os.Stat the path; if it exists and is not a directory, return a plain error naming it (code io, not invalid_config); a missing path stays an empty store. Placed in Store.scan, the one reader behind List, Get, Update, Files, Create, Renumber and the lint path; sibling scans (highestID) already ignore a scan error, so a sibling with such a store is still skipped. Reason: Windows reports ReadDir on a file as not-exist, so the error shape cannot be trusted; Stat is the same on every system. A readDir field on Store is the test seam.",
         "status": "active",
         "reason": "",
         "successor": ""

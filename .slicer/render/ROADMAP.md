@@ -1010,6 +1010,10 @@ docs/json.md Stability: frozen are key names and types, the error codes, documen
 
 The page said exit 1 with no JSON output, which S42 made false: the object with code user_config is printed (checked by running it). Corrected before the freeze; no code change. C32.
 
+### C260 S55: a store path that exists but is not a directory is an error in store.scan
+
+Detection: when os.ReadDir fails with fs.ErrNotExist, os.Stat the path; if it exists and is not a directory, return a plain error naming it (code io, not invalid_config); a missing path stays an empty store. Placed in Store.scan, the one reader behind List, Get, Update, Files, Create, Renumber and the lint path; sibling scans (highestID) already ignore a scan error, so a sibling with such a store is still skipped. Reason: Windows reports ReadDir on a file as not-exist, so the error shape cannot be trusted; Stat is the same on every system. A readDir field on Store is the test seam.
+
 ### C39 LICENSE is a stub until the owner supplies the full GPL-3.0 text and copyright holder
 
 No GPL-3.0 text exists in the adjudicate repo and the workspace has no network, so the stub carries the SPDX line, the or-later notice and TODO(owner) markers.
@@ -1072,7 +1076,7 @@ PENDING OWNER CONFIRMATION - not decided. Source: Dependency/licensing notes (ma
 
 *Retired: Owner decided 2026-10-15: see decision C31 (GPL-3.0-or-later)..*
 
-55 items · — 1 · done 49 · later 3 · retired 2
+55 items · done 50 · later 3 · retired 2
 
 Release 1.0
 
@@ -1086,7 +1090,7 @@ Release 1.0
 | 6 | [S52](slices/S52.md) | Decision provenance: recorded by, via | S | 1 |  |  | done |
 | 7 | [S53](slices/S53.md) | inbox --ref | S | 1 |  |  | done |
 | 8 | [S54](slices/S54.md) | adj agent skill: adj ai skill --install | M | 2 |  |  | done |
-| 9 | [S55](slices/S55.md) | Windows CI failures | S | 1 | store | CI run 41529368698 on d660447 (2026-11-02): test-windows fails TestAISkillInstallRefusesADestinationThatIsNotAFile (S54) and TestJSONFailuresPrintTheErrorObject/store_directory_that_is_a_file (S42, red since 2026-10-26); Linux and macOS pass. release.yml runs the same checks on a tag, so v1.0.0 cannot be tagged until Windows is green. | — |
+| 9 | [S55](slices/S55.md) | Windows CI failures | S | 1 | store | CI run 41529368698 on d660447 (2026-11-02): test-windows fails TestAISkillInstallRefusesADestinationThatIsNotAFile (S54) and TestJSONFailuresPrintTheErrorObject/store_directory_that_is_a_file (S42, red since 2026-10-26); Linux and macOS pass. release.yml runs the same checks on a tag, so v1.0.0 cannot be tagged until Windows is green. | done |
 
 ---
 

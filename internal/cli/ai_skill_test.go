@@ -377,7 +377,7 @@ func TestAISkillInstallRefusesADestinationThatIsNotAFile(t *testing.T) {
 	before := snapshot(t, root)
 	for _, args := range [][]string{{"ai", "skill", "--install"}, {"ai", "skill", "--install", "--force"}} {
 		r := run(testEnv(root), "", args...)
-		if r.code != 1 || r.stdout != "" || !strings.Contains(r.stderr, ".grok/skills/adj/SKILL.md") {
+		if r.code != 1 || r.stdout != "" || !strings.Contains(r.stderr, filepath.FromSlash(".grok/skills/adj/SKILL.md")) {
 			t.Errorf("%v: exit %d, stdout %q, stderr %q; want exit 1 naming the directory", args, r.code, r.stdout, r.stderr)
 		}
 		if !equalSnapshots(before, snapshot(t, root)) {

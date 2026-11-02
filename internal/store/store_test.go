@@ -4,6 +4,7 @@ package store
 
 import (
 	"errors"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -768,5 +769,49 @@ func TestOpenOnAFileMatchesErrInvalidConfig(t *testing.T) {
 	}
 	if want := path + " is not a directory"; err.Error() != want {
 		t.Errorf("message = %q, want %q", err, want)
+	}
+}
+
+// notExistReadDir stands in for os.ReadDir on Windows, which reports a read of
+// a file as a missing path (S55).
+func notExistReadDir(name string) ([]os.DirEntry, error) {
+	return nil, &os.PathError{Op: "open", Path: name, Err: fs.ErrNotExist}
+}
+
+func TestScanRefusesAStoreDirectoryThatIsAFile(t *testing.T) {
+	root := t.TempDir()
+	s := mustOpen(t, root)
+	writeFile(t, s.Dir(), "x")
+	s.readDir = notExistReadDir
+
+	calls := map[string]func() error{
+		"List":  func() error { _, err := s.List(); return err },
+		"Files": func() error { _, err := s.Files(); return err },
+		"Get":   func() error { _, err := s.Get(1); return err },
+	}
+	for name, call := range calls {
+		err := call()
+		if err == nil {
+			t.Errorf("%s: want an error for a store directory that is a file", name)
+			continue
+		}
+		// Exactly this text: on unix os.ReadDir itself says "open DIR: not a
+		// directory", so a looser check would pass with the seam bypassed.
+		if want := "store directory " + s.Dir() + " is not a directory"; err.Error() != want {
+			t.Errorf("%s: error %q; want %q", name, err, want)
+		}
+		if errors.Is(err, ErrNotFound) || errors.Is(err, fs.ErrNotExist) {
+			t.Errorf("%s: error %q must not read as a missing record or path", name, err)
+		}
+	}
+}
+
+func TestScanKeepsAMissingStoreDirectoryEmptyWhateverReadDirSays(t *testing.T) {
+	root := t.TempDir()
+	s := mustOpen(t, root)
+	s.readDir = notExistReadDir // the directory is not there either
+	got, err := s.List()
+	if err != nil || len(got) != 0 {
+		t.Fatalf("missing store dir: got %v, %v; want no records and no error", got, err)
 	}
 }

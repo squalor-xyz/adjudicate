@@ -57,6 +57,11 @@ were written; the tag date is the owner's.
   stdout, where 0.2.0 printed nothing; test the exit code, not whether stdout
   is empty.
 
+### Platforms
+- Windows: a store directory that is a file is an error, as on unix (exit 1,
+  code `io` with `--json`); before, Windows read it as a store with no
+  records.
+
 ### Commands
 - `adj ask` now takes an ID above the highest ID in the store of every other
   worktree of the same git repository (S43), as slicer does, so two branches

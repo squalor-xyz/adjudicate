@@ -54,6 +54,10 @@ type Store struct {
 	// check validates, with the file name and the ID the check gave it.
 	validated func(name string, id int)
 
+	// readDir lists the store directory; nil means os.ReadDir. Tests inject
+	// the error Windows gives for a read of a file (S55).
+	readDir func(name string) ([]os.DirEntry, error)
+
 	// contract is the JSON contract version the config pins, if any (S45).
 	contract *int
 
@@ -147,11 +151,23 @@ type entry struct {
 // scan lists the record files in the store directory, sorted by ID and then
 // by file name (os.ReadDir's order). A record file is a regular file named
 // <digits>-<text>.md with at least four digits and an ID above zero; anything
-// else is ignored. A missing store directory is an empty store. The ID comes
+// else is ignored. A missing store directory is an empty store; a store path
+// that exists but is not a directory is an error, even where the read reports
+// it as missing (Windows, S55). The ID comes
 // from the file name, so a file that does not parse still holds its ID.
 func (s *Store) scan() ([]entry, error) {
-	des, err := os.ReadDir(s.dir)
+	read := s.readDir
+	if read == nil {
+		read = os.ReadDir
+	}
+	des, err := read(s.dir)
 	if errors.Is(err, fs.ErrNotExist) {
+		// Windows reports a read of a file as a missing path, so look at
+		// the path itself: only a store directory that is not there is an
+		// empty store (S55).
+		if fi, serr := os.Stat(s.dir); serr == nil && !fi.IsDir() {
+			return nil, fmt.Errorf("store directory %s is not a directory", s.dir)
+		}
 		return nil, nil
 	}
 	if err != nil {
