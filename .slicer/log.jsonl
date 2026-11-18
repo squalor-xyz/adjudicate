@@ -1002,3 +1002,4 @@
 {"when": "2026-11-02T21:54:13Z", "item": "S55", "action": "note", "from": "", "to": "", "note": "Windows: a store path whose parent component is a file (stor", "by": "Jon R"}
 {"when": "2026-11-02T21:54:13Z", "item": "S55", "action": "note", "from": "", "to": "", "note": "Confirm S43's real-git tests actually run on Windows: the CI", "by": "Jon R"}
 {"when": "2026-11-02T21:56:08Z", "item": "S55", "action": "status", "from": "started", "to": "done", "note": "Windows CI fixed: store directory that is a file errors on every OS (C260); S54 test path spelling", "by": "Jon R"}
+{"when": "2026-11-18T15:29:18Z", "item": "S56", "action": "add", "from": "", "to": "open", "note": "Say a record exists on another branch instead of plain not found"}

@@ -2,7 +2,7 @@
   "version": 11,
   "id_prefix": "S",
   "id_width": 2,
-  "next_id": 56,
+  "next_id": 57,
   "preamble": "Roadmap for **adjudicate** (CLI command `adj`; formerly the working name \"dlog\"): a Go, standard-library-only CLI that records project decisions as plain files in the repo. Owner decisions from 2026-10-15 are catalog records C23-C33.",
   "passes": [
     {
@@ -4003,6 +4003,34 @@
         "urgency": 3,
         "effort": 1,
         "attempts": 1
+      }
+    },
+    {
+      "id": "S56",
+      "title": "Say a record exists on another branch instead of plain not found",
+      "short_title": "Record on another branch",
+      "status": "open",
+      "has_slice": true,
+      "depends_on": [],
+      "note_records": [],
+      "claim": null,
+      "fields": {
+        "size": "S",
+        "flags": [],
+        "trees": [],
+        "trees_literal": false,
+        "findings": "2026-11-18, ork run ork-20261118-120855-7418 (ork slice S405, gate role, tool feedback): in the S405 worktree, `adj show 462` printed `record not found: id 462` while the worktree's docs and the UI pass cited adj 462 as decided. Record 462 had been decided on the base branch (main) after the worktree branched, so the worktree's store did not have it yet. Filed from ork S430 (retired there: adj changes belong in this repo).",
+        "discovered_from": "",
+        "parent": "",
+        "cites": [],
+        "key": "record-on-other-branch",
+        "pass": "",
+        "group": "",
+        "reason": "",
+        "importance": 2,
+        "urgency": 1,
+        "effort": 2,
+        "attempts": 0
       }
     }
   ],
